@@ -1,0 +1,174 @@
+
+
+.featured-teachers {
+  width: 100%;
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 60px 0px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.featured-teachers__header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.featured-teachers__title {
+  color: #0d2757;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.featured-teachers__desc {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Lưới hiển thị danh sách gia sư */
+.featured-teachers__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+/* Thẻ thông tin cá nhân gia sư */
+.featured-teachers__card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.featured-teachers__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+/* Khối trên cùng: Avatar, Tên, Môn học */
+.featured-teachers__profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.featured-teachers__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f1f5f9;
+}
+
+.featured-teachers__name {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.featured-teachers__subject {
+  color: #2563eb;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Khối đánh giá & số năm kinh nghiệm */
+.featured-teachers__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.featured-teachers__rating-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ea580c;
+  font-weight: 600;
+}
+
+.featured-teachers__rating-star {
+  color: #eab308;
+  fill: #eab308;
+}
+
+.featured-teachers__divider {
+  color: #cbd5e1;
+}
+
+/* Đoạn giới thiệu bản thân ngắn */
+.featured-teachers__bio {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+  flex-grow: 1; /* Đẩy phần footer của card xuống đáy đều nhau */
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Giới hạn tối đa 3 dòng chữ, dài hơn sẽ có dấu ... */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Khối Footer của Thẻ: Học phí và Nút Xem hồ sơ */
+.featured-teachers__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.featured-teachers__price-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.featured-teachers__price-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.featured-teachers__btn {
+  background-color: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.featured-teachers__btn:hover {
+  background-color: #2563eb;
+}
+
+/* Trạng thái Loading dữ liệu */
+.featured-teachers__loading {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .featured-teachers__title { font-size: 26px; }
+  .featured-teachers__grid { grid-template-columns: 1fr; }
+}

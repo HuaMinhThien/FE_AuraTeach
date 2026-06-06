@@ -9,7 +9,7 @@ export default function Headers() {
             <div className="header">
                 <div className="header-left">
                     <div className="header-logo">
-                        {/* <Image src="/img/logo.png" alt="Logo" width={100} height={50} />   */}
+                        <Image src="/img/logo-aurateach.png" alt="Logo" width={50} height={40} />  
                         <h1>AuraTeach</h1>
                     </div>
                     <div className="header-nav">

@@ -1,0 +1,121 @@
+.section4{
+  background-color: #f6f8fa;
+  padding: 60px 0px;
+}
+
+.why-aurateach {
+  width: 100%;
+  padding: 60px 0px;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  text-align: center;  
+}
+
+.why-aurateach__header {
+  max-width: 600px;
+  margin: 0 auto 40px auto;
+}
+
+.why-aurateach__title {
+  color: #0d2757;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.why-aurateach__desc {
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Khung bọc ảnh lớn */
+.why-aurateach__image-wrapper {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 50px auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ phía dưới ảnh */
+}
+
+.why-aurateach__img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Bố cục Grid Flexbox linh hoạt */
+.why-aurateach__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Đẩy các phần tử ra giữa */
+  gap: 40px 30px;          /* Khoảng cách giữa các hàng và cột */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Khung của từng thẻ tính năng đơn lẻ */
+.why-aurateach__item {
+  flex: 1 1 calc(33.333% - 30px); /* Chia 3 cột đều trên màn hình lớn */
+  min-width: 280px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* Đặc trị cho 2 thẻ ở hàng dưới cùng giúp tự động gom vào giữa cân đối */
+.why-aurateach__item--bottom-row {
+  flex: 0 1 calc(50% - 30px);
+}
+
+/* Vòng tròn chứa Icon */
+.why-aurateach__icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* Đổ màu nền và màu sắc icon chuẩn chỉnh theo ảnh mẫu */
+.why-aurateach__icon-circle--verified { background-color: #eff6ff; color: #2563eb; }
+.why-aurateach__icon-circle--payment { background-color: #f0fdf4; color: #16a34a; }
+.why-aurateach__icon-circle--time { background-color: #fff7ed; color: #ea580c; }
+.why-aurateach__icon-circle--rating { background-color: #faf5ff; color: #9333ea; }
+.why-aurateach__icon-circle--support { background-color: #fef2f2; color: #dc2626; }
+
+.why-aurateach__item-title {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+}
+
+.why-aurateach__item-desc {
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Tự động co giãn mượt mà khi đổi thiết bị (Responsive) */
+@media (max-width: 968px) {
+  .why-aurateach__item, 
+  .why-aurateach__item--bottom-row {
+    flex: 1 1 calc(50% - 30px); /* Màn hình máy tính bảng: Chuyển về 2 cột đều nhau */
+  }
+}
+
+@media (max-width: 640px) {
+  .why-aurateach__title { font-size: 26px; }
+  .why-aurateach__item, 
+  .why-aurateach__item--bottom-row {
+    flex: 1 1 100%; /* Màn hình điện thoại di động: Xếp dọc toàn bộ thành 1 cột */
+  }
+}

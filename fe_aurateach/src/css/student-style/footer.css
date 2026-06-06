@@ -1,0 +1,156 @@
+
+.aurateach-footer {
+  width: 100%;
+  background-color: #f1f5f9; /* Màu nền xám nhạt nhẹ nhàng chuẩn mẫu */
+  padding: 60px 20px 24px 20px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.aurateach-footer__container {
+  max-width: 1550px;
+  margin: 0 auto;
+}
+
+/* Khu vực các cột liên kết phía trên */
+.aurateach-footer__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+/* Cột thương hiệu bên trái (rộng hơn một chút) */
+.aurateach-footer__brand-col {
+  flex: 1.5;
+  min-width: 260px;
+}
+
+.aurateach-footer__logo {
+  color: #0b2265;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.aurateach-footer__brand-desc {
+  color: #475569;
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+  max-width: 320px;
+}
+
+/* Vùng chứa các icon mạng xã hội / liên hệ */
+.aurateach-footer__socials {
+  display: flex;
+  gap: 12px;
+}
+
+.aurateach-footer__social-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #0b2265;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.aurateach-footer__social-btn:hover {
+  background-color: #0b2265;
+  color: #ffffff;
+}
+
+/* Các cột menu liên kết */
+.aurateach-footer__menu-col {
+  flex: 1;
+  min-width: 180px;
+}
+
+.aurateach-footer__menu-title {
+  color: #0b2265;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.aurateach-footer__menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.aurateach-footer__menu-item {
+  margin-bottom: 14px;
+}
+
+.aurateach-footer__link {
+  color: #475569;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: inline-block;
+}
+
+.aurateach-footer__link:hover {
+  color: #2563eb; /* Đổi màu xanh dương nhẹ khi hover chuột */
+}
+
+/* Đường gạch ngang phân cách gãy gọn */
+.aurateach-footer__divider {
+  border: none;
+  border-top: 1px solid #cbd5e1;
+  margin: 0 0 20px 0;
+}
+
+/* Khu vực bản quyền & thông tin nhanh phía dưới đáy */
+.aurateach-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.aurateach-footer__copyright {
+  margin: 0;
+}
+
+.aurateach-footer__contacts-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.aurateach-footer__contact-txt-item {
+  margin: 0;
+}
+
+.aurateach-footer__contact-bold {
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Tự động tối ưu trên thiết bị di động */
+@media (max-width: 768px) {
+  .aurateach-footer__row {
+    flex-direction: column;
+    gap: 30px;
+  }
+  .aurateach-footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .aurateach-footer__contacts-quick {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

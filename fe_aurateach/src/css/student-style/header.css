@@ -32,7 +32,7 @@ header {
     color: #00236F;
     font-size: 32px;
     font-weight: bolder;
-    
+    margin-left: 10px;
 }
 
 .header-nav {
@@ -132,7 +132,7 @@ header {
 
 
 .header-search{
-    width: 300px;
+    width: 450px;
     height: 36px;
     background-color: #f7f7f7;
     border-radius: 18px;
@@ -144,7 +144,7 @@ header {
   display: flex;
   align-items: center;
   position: relative;
-  max-width: 400px;
+  max-width: 450px;
 }
 
 .searchInput {

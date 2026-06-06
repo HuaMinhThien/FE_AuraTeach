@@ -1,0 +1,166 @@
+
+.aurateach-sec6 {
+  width: 100%;
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 60px 0px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.aurateach-sec6__title {
+  text-align: center;
+  color: #0b2265;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 45px;
+}
+
+.aurateach-sec6__container {
+  display: flex;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.aurateach-sec6__student-card {
+  flex: 2; /* Chiếm diện tích rộng hơn (gần 2/3) */
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px;
+  box-sizing: border-box;
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.aurateach-sec6__student-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.aurateach-sec6__badge {
+  align-self: flex-start;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+}
+
+.aurateach-sec6__quote {
+  font-size: 18px;
+  color: #0b2265;
+  line-height: 1.6;
+  font-weight: 500;
+  font-style: italic;
+  margin: 0 0 30px 0;
+}
+
+/* Khối User (Avatar + Tên) dùng chung cho cả 2 bên */
+.aurateach-sec6__user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aurateach-sec6__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.aurateach-sec6__user-name {
+  color: #0b2265;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.aurateach-sec6__user-role {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Khối ảnh thành tích bên phải của card trái */
+.aurateach-sec6__media-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.aurateach-sec6__result-img {
+  width: 100%;
+  max-width: 320px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.aurateach-sec6__achievement {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+}
+
+
+/* === BÊN PHẢI: PHỤ HUYNH ĐÁNH GIÁ === */
+.aurateach-sec6__parent-card {
+  flex: 1.2; /* Chiếm diện tích nhỏ hơn (khoảng hơn 1/3) */
+  background-color: #032174; /* Màu xanh đậm nền đặc trưng */
+  border-radius: 16px;
+  padding: 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.aurateach-sec6__parent-quote {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.7;
+  font-style: italic;
+  margin: 0 0 40px 0;
+  opacity: 0.9;
+}
+
+/* Biến thể chữ màu trắng cho khối user bên nền tối */
+.aurateach-sec6__user-name--light {
+  color: #ffffff;
+}
+
+.aurateach-sec6__user-role--light {
+  color: #93c5fd;
+}
+
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+  .aurateach-sec6__container {
+    flex-direction: column; /* Màn hình nhỏ: Xếp chồng dọc 2 khối lên nhau */
+  }
+}
+
+@media (max-width: 640px) {
+  .aurateach-sec6__title {
+    font-size: 26px;
+  }
+  .aurateach-sec6__student-card {
+    flex-direction: column-reverse; /* Đẩy ảnh lên trên chữ khi ở màn hình điện thoại */
+    gap: 25px;
+    padding: 24px;
+  }
+  .aurateach-sec6__parent-card {
+    padding: 24px;
+  }
+}
