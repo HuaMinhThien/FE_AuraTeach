@@ -1,4 +1,5 @@
 import StatsSection from "@/components/users/StatsSection";
+import TeacherSection from "@/components/users/TeacherSection";
 
 export default function Home() {
     return (
@@ -53,8 +54,12 @@ export default function Home() {
                 </section>
             </div>
 
-            <div className="section2">
+            <div className="section2 ">
                 <StatsSection />
+            </div>
+
+            <div className="section3 container-center">
+                <TeacherSection />
             </div>
         </div>
     );
