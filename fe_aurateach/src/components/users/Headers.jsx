@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import SearchComponent from "./SearchInput";
 
 
 export default function Headers() {
     return (
         <header>
-            <div className="container-center header">
+            <div className="header">
                 <div className="header-left">
                     <div className="header-logo">
                         {/* <Image src="/img/logo.png" alt="Logo" width={100} height={50} />   */}
@@ -24,7 +25,8 @@ export default function Headers() {
                     </div>
                 </div>
 
-                <input type="text" className="header-search" placeholder="Tìm kiếm gia sư, lớp học..." />
+                {/* <input type="text" className="header-search" placeholder="Tìm kiếm gia sư, lớp học..." /> */}
+                <SearchComponent />
 
                 <div className="header-right">
                     <Link href="/login" className="header-btn login-btn">

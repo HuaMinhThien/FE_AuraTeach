@@ -1,0 +1,168 @@
+
+.teacher-sec3 {
+  width: 100%;
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+.teacher-sec3__title {
+  color: #0d2757;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Tabs môn học */
+.teacher-sec3__tab-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 35px;
+  flex-wrap: wrap;
+}
+
+.teacher-sec3__tab-item {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: #eef2f6;
+  color: #64748b;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.teacher-sec3__tab-item:hover {
+  background-color: #cbd5e1;
+}
+
+.teacher-sec3__tab-item--active {
+  background-color: #0b2265;
+  color: #ffffff;
+}
+
+/* Grid danh sách card */
+.teacher-sec3__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+/* Thẻ Card */
+.teacher-sec3__card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.teacher-sec3__image-box {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* Tỉ lệ ảnh 16:9 */
+}
+
+.teacher-sec3__image-box img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.teacher-sec3__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #004ecc;
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.teacher-sec3__badge--hot {
+  background-color: #b45309; /* Màu đỏ/cam đất cho chữ Hot */
+}
+
+/* Phần nội dung chữ */
+.teacher-sec3__content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.teacher-sec3__sub-info {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.teacher-sec3__card-title {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.4;
+  margin: 0 0 20px 0;
+  min-height: 50px;
+}
+
+/* Chân Card */
+.teacher-sec3__footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.teacher-sec3__price-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.teacher-sec3__price-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1d4ed8;
+  margin-top: 2px;
+}
+
+.teacher-sec3__action-btn {
+  background-color: #1d4ed8;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.teacher-sec3__action-btn:hover {
+  background-color: #1e40af;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .teacher-sec3__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .teacher-sec3__grid { grid-template-columns: 1fr; }
+}
