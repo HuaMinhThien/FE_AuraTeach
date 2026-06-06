@@ -1,0 +1,111 @@
+.section7 {
+  background-color: #f8fafc; 
+}
+
+.aurateach-sec7 {
+  width: 100%;
+  margin: 0 auto;
+  padding: 60px 0px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.aurateach-sec7__header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.aurateach-sec7__title {
+  color: #0b2265;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.aurateach-sec7__desc {
+  color: #64748b;
+  font-size: 15px;
+}
+
+.aurateach-sec7__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Thẻ card trắng tinh tế */
+.aurateach-sec7__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+  flex: 1 1 calc(25% - 20px); /* Chia 4 cột đều nhau trên màn hình lớn */
+  min-width: 260px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.aurateach-sec7__author {
+  color: #0b2265;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.aurateach-sec7__role {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0 0 16px 0;
+}
+
+/* Khu vực xếp hạng sao */
+.aurateach-sec7__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.aurateach-sec7__stars {
+  display: flex;
+  gap: 2px;
+  color: #b45309; /* Màu cam đậm của ngôi sao */
+}
+
+.aurateach-sec7__star-icon {
+  fill: #b45309;
+}
+
+.aurateach-sec7__score {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  margin-left: 4px;
+}
+
+/* Nội dung bình luận text */
+.aurateach-sec7__content {
+  color: #334155;
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .aurateach-sec7__card {
+    flex: 1 1 calc(50% - 20px); /* Màn hình vừa: Chuyển sang 2 cột */
+  }
+}
+
+@media (max-width: 640px) {
+  .aurateach-sec7__title { font-size: 26px; }
+  .aurateach-sec7__card {
+    flex: 1 1 100%; /* Màn hình điện thoại: Full 1 cột dọc */
+    max-width: none;
+  }
+}

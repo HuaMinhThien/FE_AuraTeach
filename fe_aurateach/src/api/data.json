@@ -36,5 +36,106 @@
       "badge": "Hot",
       "image": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600"
     }
+  ],
+  "teachers_list": [
+    {
+      "id": 1,
+      "name": "Nguyễn Văn A",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+      "subject": "Toán học (Cấp 3 & Ôn thi ĐH)",
+      "rating": 5.0,
+      "reviews": 120,
+      "experience": "5 năm kinh nghiệm",
+      "bio": "Cựu sinh viên ĐH Bách Khoa, chuyên trị học sinh mất gốc và luyện thi trường chuyên, đại học điểm cao.",
+      "price": "180.000đ/giờ"
+    },
+    {
+      "id": 2,
+      "name": "Trần Thị B",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
+      "subject": "Tiếng Anh (IELTS & Giao tiếp)",
+      "rating": 4.9,
+      "reviews": 95,
+      "experience": "4 năm kinh nghiệm",
+      "bio": "Sở hữu chứng chỉ IELTS 8.5. Phương pháp dạy tương tác trực quan, giúp học viên tự tin giao tiếp sau 3 tháng.",
+      "price": "250.000đ/giờ"
+    },
+    {
+      "id": 3,
+      "name": "Lê Hoàng C",
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200",
+      "subject": "Ngữ Văn (Cấp 2 & Cấp 3)",
+      "rating": 4.8,
+      "reviews": 84,
+      "experience": "6 năm kinh nghiệm",
+      "bio": "Giáo viên tại trường THPT chuyên. Giúp học sinh thay đổi tư duy làm bài văn nghị luận xã hội ngắn gọn, sâu sắc.",
+      "price": "150.000đ/giờ"
+    },
+    {
+      "id": 4,
+      "name": "Phạm Minh D",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
+      "subject": "Vật Lý & Hóa Học (Cấp 3)",
+      "rating": 4.9,
+      "reviews": 110,
+      "experience": "3 năm kinh nghiệm",
+      "bio": "Phương pháp giải bài tập bằng sơ đồ tư duy siêu tốc, tối ưu hóa thời gian làm bài trắc nghiệm thi THPT Quốc gia.",
+      "price": "160.000đ/giờ"
+    }
+  ],
+  "honored_members": {
+    "sectionTitle": "Gương Mặt Vàng AuraTeach",
+    "studentSpotlight": {
+      "badge": "HỌC VIÊN TIÊU BIỂU",
+      "quote": "“Nhờ sự kiên nhẫn và phương pháp dạy dễ hiểu của gia sư AuraTeach, tôi đã vượt qua nỗi sợ môn Toán và đạt điểm 9.0 trong kỳ thi học kỳ vừa qua.”",
+      "name": "Lê Văn Hùng",
+      "role": "Học sinh lớp 12 - THPT Chuyên",
+      "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200",
+      "resultImage": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600",
+      "achievement": "Kết quả: Giải Nhì HSG Thành phố"
+    },
+    "parentReview": {
+      "quote": "“Lộ trình học tại AuraTeach cực kỳ cá nhân hóa. Con tôi hào hứng hơn hẳn với việc học Ngữ Văn nhờ thầy giáo rất tâm lý.”",
+      "name": "Chị Kim Anh",
+      "role": "Phụ huynh bé Gia Bảo (Lớp 8)",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
+    }
+  },
+  "comments": [
+    {
+      "id": 1,
+      "author": "Nguyễn Văn An",
+      "role": "Học sinh lớp 9",
+      "rating": 5.0,
+      "content": "\"Em rất thích cách thầy Nam giảng bài. Những bài văn khô khan trở nên rất sinh động qua lời kể của thầy. Em đã không còn sợ viết văn nữa.\""
+    },
+    {
+      "id": 2,
+      "author": "Lê Thị Mai",
+      "role": "Phụ huynh học sinh",
+      "rating": 4.8,
+      "content": "\"Gia sư Thảo rất nhiệt tình và kiên nhẫn với bé nhà tôi. Chỉ sau 2 tháng, điểm số tiếng Anh của cháu đã cải thiện rõ rệt.\""
+    },
+    {
+      "id": 3,
+      "author": "Trần Hoàng Minh",
+      "role": "Học sinh lớp 12",
+      "rating": 4.9,
+      "content": "\"Anh Kiệt dạy Toán cực kỳ hay, phương pháp giải nhanh của anh giúp em tiết kiệm rất nhiều thời gian khi làm bài thi trắc nghiệm.\""
+    },
+    {
+      "id": 4,
+      "author": "Phạm Thanh Vân",
+      "role": "Phụ huynh bé lớp 3",
+      "rating": 4.7,
+      "content": "\"Cô Hoa dạy tiểu học rất tâm lý. Con tôi giờ đây đã tự giác ngồi vào bàn học mà không cần mẹ nhắc nhở như trước.\""
+    },
+    {
+      "id": 5,
+      "author": "Người Dùng Thử",
+      "role": "Học sinh",
+      "rating": 4.0,
+      "content": "\"Nội dung bài học bình thường, chưa có nhiều đột phá.\""
+    }
   ]
 }
