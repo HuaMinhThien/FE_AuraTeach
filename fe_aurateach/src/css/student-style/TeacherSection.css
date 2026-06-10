@@ -39,7 +39,7 @@
 }
 
 .teacher-sec3__tab-item--active {
-  background-color: #0b2265;
+  background-color: #1565c0;
   color: #ffffff;
 }
 
@@ -80,7 +80,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background-color: #004ecc;
+  background-color: #1565c0;
   color: white;
   font-size: 11px;
   padding: 4px 8px;

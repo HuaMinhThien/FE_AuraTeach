@@ -4,6 +4,8 @@ import ReviewSection from "@/components/users/ReviewSection";
 import StatsSection from "@/components/users/StatsSection";
 import TeacherSection from "@/components/users/TeacherSection";
 
+
+
 export default function Home() {
     return (
         <div className="home">
