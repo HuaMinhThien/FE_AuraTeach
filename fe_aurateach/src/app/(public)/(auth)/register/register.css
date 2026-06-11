@@ -1,0 +1,287 @@
+/* Trang đăng ký học viên AuraTeach */
+.aurateach-register-page {
+  min-height: calc(100vh - 80px);
+  background: #F7F9FB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  margin-top: 80px;
+}
+
+.aurateach-register-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+}
+
+/* ========= PHẦN BÊN TRÁI - HÌNH ẢNH ========= */
+.aurateach-register-left {
+  flex: 1;
+  max-width: 450px;
+}
+
+.aurateach-register-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  aspect-ratio: 3/4;
+}
+
+.aurateach-register-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.aurateach-register-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 35, 111, 0.9), rgba(0, 35, 111, 0.5), transparent);
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  color: white;
+}
+
+.aurateach-hero-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.aurateach-register-hero-overlay h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.aurateach-register-hero-overlay p {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* ========= PHẦN BÊN PHẢI - FORM ĐĂNG KÝ ========= */
+.aurateach-register-right {
+  flex: 1;
+  max-width: 500px;
+}
+
+.aurateach-register-card {
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.aurateach-register-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00236F;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.aurateach-register-subtitle {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.aurateach-register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.aurateach-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.aurateach-form-group label {
+  font-weight: 600;
+  color: #444651;
+  font-size: 0.85rem;
+}
+
+.aurateach-form-input {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.aurateach-form-input:focus {
+  outline: none;
+  border-color: #1565c0;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+.aurateach-form-input::placeholder {
+  color: #9ca3af;
+}
+
+.aurateach-form-options {
+  margin: 0.25rem 0;
+}
+
+.aurateach-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  cursor: pointer;
+  color: #444651;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.aurateach-checkbox-label input {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #1565c0;
+}
+
+.aurateach-link {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+.aurateach-link:hover {
+  text-decoration: underline;
+}
+
+.aurateach-register-button {
+  background: linear-gradient(135deg, #00236F, #1565c0);
+  color: white;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.aurateach-register-button:hover {
+  background: linear-gradient(135deg, #1565c0, #00236F);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(21, 101, 192, 0.3);
+}
+
+.aurateach-register-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Phần mời đăng ký giảng viên */
+.aurateach-teacher-invite {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.aurateach-teacher-title {
+  font-weight: 700;
+  color: #00236F;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.aurateach-teacher-desc {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+}
+
+.aurateach-teacher-button {
+  display: inline-block;
+  background: transparent;
+  border: 1.5px solid #1565c0;
+  color: #1565c0;
+  padding: 0.5rem 1.2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.aurateach-teacher-button:hover {
+  background: #1565c0;
+  color: white;
+}
+
+.aurateach-login-link {
+  text-align: center;
+  margin-top: 1.2rem;
+  color: #444651;
+  font-size: 0.8rem;
+}
+
+.aurateach-login-now {
+  color: #1565c0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.aurateach-login-now:hover {
+  text-decoration: underline;
+}
+
+.aurateach-error-message {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .aurateach-register-container {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .aurateach-register-left {
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .aurateach-register-right {
+    max-width: 500px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 550px) {
+  .aurateach-register-page {
+    padding: 1rem;
+  }
+
+  .aurateach-register-card {
+    padding: 1.2rem;
+  }
+
+  .aurateach-register-title {
+    font-size: 1.2rem;
+  }
+}
