@@ -1,0 +1,322 @@
+/* Trang đăng ký giảng viên AuraTeach */
+.aurateach-teacher-page {
+  min-height: calc(100vh - 80px);
+  background: #F7F9FB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  margin-top: 80px;
+}
+
+.aurateach-teacher-container {
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3rem;
+}
+
+/* ========= PHẦN BÊN TRÁI - HÌNH ẢNH ========= */
+.aurateach-teacher-left {
+  flex: 1;
+  max-width: 400px;
+  position: sticky;
+  top: 100px;
+}
+
+.aurateach-teacher-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  aspect-ratio: 3/4;
+}
+
+.aurateach-teacher-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.aurateach-teacher-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 35, 111, 0.95), rgba(0, 35, 111, 0.6), transparent);
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  color: white;
+}
+
+.aurateach-hero-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.aurateach-teacher-hero-overlay h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.aurateach-teacher-hero-overlay p {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.aurateach-hero-quote {
+  font-size: 0.75rem;
+  font-style: italic;
+  opacity: 0.8;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+/* ========= PHẦN BÊN PHẢI - FORM ========= */
+.aurateach-teacher-right {
+  flex: 2;
+  max-width: 650px;
+}
+
+.aurateach-teacher-card {
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.aurateach-teacher-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00236F;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.aurateach-teacher-subtitle {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* 3 lợi ích */
+.aurateach-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.benefit-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.benefit-icon {
+  font-size: 1.6rem;
+}
+
+.benefit-item h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #00236F;
+  margin-bottom: 0.2rem;
+}
+
+.benefit-item p {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.aurateach-form-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #00236F;
+  margin-bottom: 0.2rem;
+}
+
+.aurateach-form-section-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 1.2rem;
+}
+
+.aurateach-teacher-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.aurateach-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.aurateach-form-group label {
+  font-weight: 600;
+  color: #444651;
+  font-size: 0.85rem;
+}
+
+.aurateach-form-input {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.aurateach-form-input:focus {
+  outline: none;
+  border-color: #1565c0;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+.aurateach-form-input::placeholder {
+  color: #9ca3af;
+}
+
+select.aurateach-form-input {
+  cursor: pointer;
+  background-color: white;
+}
+
+.aurateach-form-options {
+  margin: 0.25rem 0;
+}
+
+.aurateach-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  cursor: pointer;
+  color: #444651;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.aurateach-checkbox-label input {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #1565c0;
+}
+
+.aurateach-link {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+.aurateach-link:hover {
+  text-decoration: underline;
+}
+
+.aurateach-teacher-button {
+  background: linear-gradient(135deg, #00236F, #1565c0);
+  color: white;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.aurateach-teacher-button:hover {
+  background: linear-gradient(135deg, #1565c0, #00236F);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(21, 101, 192, 0.3);
+}
+
+.aurateach-teacher-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.aurateach-login-link {
+  text-align: center;
+  margin-top: 1.2rem;
+  color: #444651;
+  font-size: 0.8rem;
+}
+
+.aurateach-login-now {
+  color: #1565c0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.aurateach-login-now:hover {
+  text-decoration: underline;
+}
+
+.aurateach-error-message {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .aurateach-teacher-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .aurateach-teacher-left {
+    position: static;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .aurateach-teacher-right {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 550px) {
+  .aurateach-teacher-page {
+    padding: 1rem;
+  }
+
+  .aurateach-teacher-card {
+    padding: 1.2rem;
+  }
+
+  .aurateach-teacher-title {
+    font-size: 1.2rem;
+  }
+
+  .benefit-item {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .benefit-icon {
+    font-size: 1.8rem;
+  }
+}
