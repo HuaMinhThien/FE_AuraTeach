@@ -1,9 +1,15 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import SearchComponent from "./SearchInput";
+import { useState } from "react";
 
 
 export default function Headers() {
+
+    const [activeNav, setActiveNav] = useState("home");
+    
+
     return (
         <header>
             <div className="header">
@@ -13,13 +19,13 @@ export default function Headers() {
                         <h1>AuraTeach</h1>
                     </div>
                     <div className="header-nav">
-                        <Link href="/" className="nav-item active-nav">
+                        <Link href="/" className={`nav-item ${activeNav === "home" ? "active-nav" : ""}`} onClick={() => setActiveNav("home")}>
                             <span>Trang chủ</span>
                         </Link>
-                        <Link href="/ProductList" className="nav-item">
+                        <Link href="/ProductList" className={`nav-item ${activeNav === "products" ? "active-nav" : ""}`} onClick={() => setActiveNav("products")}>
                             <span>Tìm gia sư</span>
                         </Link>
-                        <Link href="/class-search" className="nav-item">
+                        <Link href="/class-search" className={`nav-item ${activeNav === "classes" ? "active-nav" : ""}`} onClick={() => setActiveNav("classes")}>
                             <span>Tìm lớp học</span>
                         </Link>
                     </div>
