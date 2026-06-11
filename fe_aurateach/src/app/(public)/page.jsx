@@ -1,8 +1,8 @@
-import FeaturedTeachers from "@/components/users/FeaturedTeachers";
-import HonoredSection from "@/components/users/HonoredSection";
-import ReviewSection from "@/components/users/ReviewSection";
-import StatsSection from "@/components/users/StatsSection";
-import TeacherSection from "@/components/users/TeacherSection";
+import FeaturedTeachers from "@/app/(public)/_component/FeaturedTeachers";
+import HonoredSection from "@/app/(public)/_component/HonoredSection";
+import ReviewSection from "@/app/(public)/_component/ReviewSection";
+import StatsSection from "@/app/(public)/_component/StatsSection";
+import TeacherSection from "@/app/(public)/_component/TeacherSection";
 
 
 
