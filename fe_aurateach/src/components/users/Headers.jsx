@@ -14,14 +14,14 @@ export default function Headers() {
         <header>
             <div className="header">
                 <div className="header-left">
-                    <div className="header-logo">
+                    <Link href="/" className="header-logo" style={{textDecoration: "none"}}>
                         <Image src="/img/logo-aurateach.png" alt="Logo" width={50} height={40} />  
-                        <h1>AuraTeach</h1>
-                    </div>
+                        <h1 style={{ textDecoration: "none" }}>AuraTeach</h1>
+                    </Link>
                     <div className="header-nav">
-                        <Link href="/" className={`nav-item ${activeNav === "home" ? "active-nav" : ""}`} onClick={() => setActiveNav("home")}>
-                            <span>Trang chủ</span>
-                        </Link>
+                            {/* <Link href="/" className={`nav-item ${activeNav === "home" ? "active-nav" : ""}`} onClick={() => setActiveNav("home")}>
+                                <span>Trang chủ</span>
+                            </Link> */}
                         <Link href="/ProductList" className={`nav-item ${activeNav === "products" ? "active-nav" : ""}`} onClick={() => setActiveNav("products")}>
                             <span>Tìm gia sư</span>
                         </Link>
