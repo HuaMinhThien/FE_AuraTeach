@@ -20,7 +20,7 @@ export default function Home() {
                             Xây dựng nền tảng kiến thức vững chắc cho hành trình học tập của con em bạn.
                         </p>
                         <div className="hero-buttons">
-                            <a href="#" className="btn-primary">Tìm Gia Sư Ngay</a>
+                            <a href="/ProductList" className="btn-primary">Tìm Gia Sư Ngay</a>
                             <a href="#" className="btn-secondary">
                             <svg className="icon-play" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
