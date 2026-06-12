@@ -9,7 +9,8 @@ function HonoredSection() {
   useEffect(() => {
     const fetchHonoredData = async () => {
       try {
-        const response = await fetch('http://localhost:3007/honored_members');
+        // 🌟 1. SỬA ĐỔI: Thêm tham số ?section=honored vào URL để lấy đúng Object dữ liệu vinh danh
+        const response = await fetch('http://localhost:8000/api/home-data?section=honored');
         if (!response.ok) {
           throw new Error('Không thể tải dữ liệu vinh danh');
         }
@@ -17,6 +18,7 @@ function HonoredSection() {
         setData(resData);
       } catch (error) {
         console.error('Lỗi gọi API Section 6:', error);
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -25,8 +27,13 @@ function HonoredSection() {
     fetchHonoredData();
   }, []);
 
-  if (loading || !data) {
-    return <div className="aurateach-sec6" style={{textAlign: 'center', color: '#64748b'}}>Đang tải dữ liệu vinh danh...</div>;
+  // 🌟 2. BẢO VỆ CHỐNG SẬP: Nếu đang loading hoặc data chưa về, hiện loading text chứ không render thẻ lỗi
+  if (loading || !data || !data.studentSpotlight || !data.parentReview) {
+    return (
+      <div className="aurateach-sec6" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+        Đang tải dữ liệu vinh danh thành tích...
+      </div>
+    );
   }
 
   return (
@@ -38,19 +45,20 @@ function HonoredSection() {
         
         {/* KHỐI BÊN TRÁI: Học viên tiêu biểu */}
         <div className="aurateach-sec6__student-card">
-          <div className="aurateach-sec6__student-info">
-            <span className="aurateach-sec6__badge">{data.studentSpotlight.badge}</span>
-            <p className="aurateach-sec6__quote">{data.studentSpotlight.quote}</p>
+          <div className="aurateach-sec6__content">
+            {/* 🌟 Thêm dấu hỏi chấm (?.) để đọc dữ liệu an toàn tuyệt đối */}
+            <span className="aurateach-sec6__badge">{data.studentSpotlight?.badge}</span>
+            <p className="aurateach-sec6__quote">“{data.studentSpotlight?.quote}”</p>
             
             <div className="aurateach-sec6__user">
               <img 
                 className="aurateach-sec6__avatar" 
-                src={data.studentSpotlight.avatar} 
-                alt={data.studentSpotlight.name} 
+                src={data.studentSpotlight?.avatar} 
+                alt={data.studentSpotlight?.name} 
               />
               <div>
-                <h4 className="aurateach-sec6__user-name">{data.studentSpotlight.name}</h4>
-                <p className="aurateach-sec6__user-role">{data.studentSpotlight.role}</p>
+                <h4 className="aurateach-sec6__user-name">{data.studentSpotlight?.name}</h4>
+                <p className="aurateach-sec6__user-role">{data.studentSpotlight?.role}</p>
               </div>
             </div>
           </div>
@@ -58,29 +66,29 @@ function HonoredSection() {
           <div className="aurateach-sec6__media-box">
             <img 
               className="aurateach-sec6__result-img" 
-              src={data.studentSpotlight.resultImage} 
+              src={data.studentSpotlight?.resultImage} 
               alt="Học tập thực tế" 
             />
-            <span className="aurateach-sec6__achievement">{data.studentSpotlight.achievement}</span>
+            <span className="aurateach-sec6__achievement">{data.studentSpotlight?.achievement}</span>
           </div>
         </div>
 
-        {/* KHỐI BÊN PHẢI: Phụ huynh đánh giá */}
+        {/* KHỐI BÊN PHẢI: Phụ huynh/Hội đồng đánh giá */}
         <div className="aurateach-sec6__parent-card">
-          <p className="aurateach-sec6__parent-quote">{data.parentReview.quote}</p>
+          <p className="aurateach-sec6__parent-quote">“{data.parentReview?.quote}”</p>
           
           <div className="aurateach-sec6__user">
             <img 
               className="aurateach-sec6__avatar" 
-              src={data.parentReview.avatar} 
-              alt={data.parentReview.name} 
+              src={data.parentReview?.avatar} 
+              alt={data.parentReview?.name} 
             />
             <div>
               <h4 className="aurateach-sec6__user-name aurateach-sec6__user-name--light">
-                {data.parentReview.name}
+                {data.parentReview?.name}
               </h4>
               <p className="aurateach-sec6__user-role aurateach-sec6__user-role--light">
-                {data.parentReview.role}
+                {data.parentReview?.role}
               </p>
             </div>
           </div>
