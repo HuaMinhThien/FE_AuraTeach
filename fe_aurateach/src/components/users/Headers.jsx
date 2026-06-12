@@ -8,7 +8,7 @@ import { useState } from "react";
 export default function Headers() {
 
     const [activeNav, setActiveNav] = useState("home");
-    
+    const [activeBtn, setActiveBtn] = useState("login");
 
     return (
         <header>
@@ -35,10 +35,10 @@ export default function Headers() {
                 <SearchComponent />
 
                 <div className="header-right">
-                    <Link href="/login" className="header-btn login-btn">
+                    <Link href="/login" className={`header-btn login-btn ${activeBtn === "login" ? "header-btn-active" : ""}`} onClick={() => setActiveBtn("login")}>
                         <span>Đăng nhập</span>
                     </Link>
-                    <Link href="/register" className="header-btn header-btn-active register-btn">
+                    <Link href="/register" className={`header-btn register-btn ${activeBtn === "register" ? "header-btn-active" : ""}`} onClick={() => setActiveBtn("register")}>
                         <span>Đăng ký</span>
                     </Link>
                 </div>
