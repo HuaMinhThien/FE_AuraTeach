@@ -19,9 +19,9 @@ export default function Headers() {
                         <h1 style={{ textDecoration: "none" }}>AuraTeach</h1>
                     </Link>
                     <div className="header-nav">
-                            {/* <Link href="/" className={`nav-item ${activeNav === "home" ? "active-nav" : ""}`} onClick={() => setActiveNav("home")}>
-                                <span>Trang chủ</span>
-                            </Link> */}
+                        <Link href="/" className={`nav-item ${activeNav === "home" ? "active-nav" : ""}`} onClick={() => setActiveNav("home")}>
+                            <span>Trang chủ</span>
+                        </Link>
                         <Link href="/ProductList" className={`nav-item ${activeNav === "products" ? "active-nav" : ""}`} onClick={() => setActiveNav("products")}>
                             <span>Tìm gia sư</span>
                         </Link>

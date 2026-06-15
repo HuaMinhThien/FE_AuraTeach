@@ -6,7 +6,6 @@ function TeacherSection() {
   const [categories, setCategories] = useState([]);
   const [teachers, setTeachers] = useState([]);
   
-  // Lưu trạng thái theo tên môn học (String) để dễ lọc dữ liệu
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +36,6 @@ function TeacherSection() {
         fetchSectionData();
     }, []);
 
-  // Lọc danh sách giảng viên dựa trên tên môn học đang chọn
   const filteredTeachers = activeTab === 'Tất cả'
     ? teachers
     : teachers.filter(item => item.subject === activeTab);
@@ -50,20 +48,18 @@ function TeacherSection() {
     <section className="teacher-sec3">
       <h2 className="teacher-sec3__title">Tìm Giảng Viên Theo Môn Học</h2>
 
-      {/* SỬA TẠI ĐÂY: Render tab từ mảng Object mới */}
       <div className="teacher-sec3__tab-container">
         {categories.map((cat) => (
           <button
-            key={cat.id} /* Dùng cat.id làm key */
+            key={cat.id} 
             className={`teacher-sec3__tab-item ${activeTab === cat.name ? 'teacher-sec3__tab-item--active' : ''}`}
-            onClick={() => setActiveTab(cat.name)} /* Kích hoạt theo cat.name */
+            onClick={() => setActiveTab(cat.name)} 
           >
             {cat.name}
           </button>
         ))}
       </div>
 
-      {/* Grid danh sách các Card (Giữ nguyên) */}
       <div className="teacher-sec3__grid">
         {filteredTeachers.map((teacher) => (
           <div key={teacher.id} className="teacher-sec3__card">
