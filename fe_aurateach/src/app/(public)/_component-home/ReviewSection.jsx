@@ -9,17 +9,23 @@ function ReviewSection() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await fetch('http://localhost:3007/comments');
+        // 🌟 SỬA ĐỔI: Thêm tham số ?section=reviews để Laravel trả về đúng mảng comment sạch
+        const response = await fetch('http://localhost:8000/api/home-data?section=reviews');
         if (!response.ok) {
           throw new Error('Không thể tải danh sách bình luận');
         }
         const data = await response.json();
         
-        const highRatingReviews = data.filter(item => item.rating >= 4.5);
-        
-        setReviews(highRatingReviews);
+        // Đảm bảo dữ liệu nhận về là mảng rồi mới tiến hành lọc để chống sập tuyệt đối
+        if (Array.isArray(data)) {
+          const highRatingReviews = data.filter(item => item.rating >= 4.5);
+          setReviews(highRatingReviews);
+        } else {
+          setReviews([]);
+        }
       } catch (error) {
         console.error('Lỗi gọi API lọc review Section 7:', error);
+        setReviews([]); // Dự phòng mảng rỗng nếu API lỗi
       } finally {
         setLoading(false);
       }
@@ -29,21 +35,26 @@ function ReviewSection() {
   }, []);
 
   if (loading) {
-    return <div className="aurateach-sec7" style={{textAlign: 'center', color: '#64748b'}}>Đang tải đánh giá học viên...</div>;
+    return (
+      <div className="aurateach-sec7" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+        Đang tải đánh giá học viên...
+      </div>
+    );
   }
 
   return (
     <section className="container-center">
       <div className='aurateach-sec7'>
-          {/* Khối tiêu đề */}
+        {/* Khối tiêu đề */}
         <div className="aurateach-sec7__header">
-          <h2 className="aurateach-sec7__title">Đánh giá từ Học viên & Phụ huynh</h2>
+          <h2 className="aurateach-sec7__title">Đánh giá từ học viên thực tế</h2>
           <p className="aurateach-sec7__desc">Lắng nghe những chia sẻ thực tế về hiệu quả học tập tại AuraTeach.</p>
         </div>
 
         {/* Vùng lưới hiển thị các card đã được lọc >= 4.5 sao */}
         <div className="aurateach-sec7__grid">
-          {reviews.map((item) => (
+          {/* Kiểm tra an toàn trước khi dùng .map */}
+          {Array.isArray(reviews) && reviews.map((item) => (
             <div key={item.id} className="aurateach-sec7__card">
               
               <h3 className="aurateach-sec7__author">{item.author}</h3>
@@ -58,18 +69,15 @@ function ReviewSection() {
                     </svg>
                   ))}
                 </div>
-                <span className="aurateach-sec7__score">{item.rating.toFixed(1)}</span>
+                <span className="aurateach-sec7__score">{Number(item.rating).toFixed(1)}</span>
               </div>
 
-              {/* Nội dung text nhận xét */}
-              <p className="aurateach-sec7__content">{item.content}</p>
-
+              {/* Nội dung đoạn nhận xét */}
+              <p className="aurateach-sec7__content">“{item.content}”</p>
             </div>
           ))}
         </div>
       </div>
-      
-
     </section>
   );
 }

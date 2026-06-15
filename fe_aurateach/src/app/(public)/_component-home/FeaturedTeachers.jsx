@@ -9,7 +9,7 @@ function FeaturedTeachers() {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const response = await fetch('http://localhost:3007/teachers_list');
+        const response = await fetch('http://localhost:8000/api/home-data?section=featured');
         if (!response.ok) {
           throw new Error('Không thể tải danh sách gia sư tổng hợp');
         }

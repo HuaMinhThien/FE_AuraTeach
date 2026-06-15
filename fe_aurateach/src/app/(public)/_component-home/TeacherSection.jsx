@@ -10,31 +10,38 @@ function TeacherSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSectionData = async () => {
-        try {
-            const [resCategories, resTeachers] = await Promise.all([
-                fetch('http://localhost:3007/categories'),
-                fetch('http://localhost:3007/teachers')
-            ]);
+      const fetchSectionData = async () => {
+          try {
+              // 🌟 Gọi đồng thời 2 đường dẫn phân tách độc lập từ Backend
+              const [resCategories, resTeachers] = await Promise.all([
+                  fetch('http://localhost:8000/api/home-data?section=categories'),
+                  fetch('http://localhost:8000/api/home-data?section=teachers')
+              ]);
 
-            if (!resCategories.ok || !resTeachers.ok) {
-                throw new Error('Lỗi khi gọi một trong hai endpoint');
-            }
+              // Bây giờ cả hai biến đều đã tồn tại, kiểm tra an toàn sẽ không bị crash
+              if (!resCategories.ok || !resTeachers.ok) {
+                  throw new Error(`Lỗi HTTP! Categories: ${resCategories.status}, Teachers: ${resTeachers.status}`);
+              }
 
-            const dataCategories = await resCategories.json();
-            const dataTeachers = await resTeachers.json();
+              const dataCategories = await resCategories.json();
+              const dataTeachers = await resTeachers.json();
 
-            setCategories(dataCategories);
-            setTeachers(dataTeachers);
-            } catch (error) {
-                console.error('Lỗi gọi API tách biệt:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+              // Đảm bảo dữ liệu nhận về luôn là mảng để tránh lỗi .map hoặc .filter sau này
+              setCategories(Array.isArray(dataCategories) ? dataCategories : []);
+              setTeachers(Array.isArray(dataTeachers) ? dataTeachers : []);
+              
+          } catch (error) {
+              console.error('Lỗi gọi API tách biệt trong TeacherSection:', error);
+              // Backup mảng rỗng phòng trường hợp API sập để giao diện không bị chết cứng
+              setCategories([{ id: 0, name: 'Tất cả' }]);
+              setTeachers([]);
+          } finally {
+              setLoading(false);
+          }
+      };
 
-        fetchSectionData();
-    }, []);
+      fetchSectionData();
+  }, []);
 
   const filteredTeachers = activeTab === 'Tất cả'
     ? teachers
