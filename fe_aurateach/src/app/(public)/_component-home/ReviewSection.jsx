@@ -7,17 +7,47 @@ function ReviewSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchReviewsData = async () => {
       try {
-        const response = await fetch('http://localhost:3007/comments');
-        if (!response.ok) {
-          throw new Error('Không thể tải danh sách bình luận');
+        // Gọi đồng thời các API endpoint cần thiết để map thông tin quan hệ
+        const [resReviews, resStudents, resUsers, resCourses] = await Promise.all([
+          fetch('http://localhost:3007/reviews'),
+          fetch('http://localhost:3007/students'),
+          fetch('http://localhost:3007/users'),
+          fetch('http://localhost:3007/courses')
+        ]);
+
+        if (!resReviews.ok || !resStudents.ok || !resUsers.ok || !resCourses.ok) {
+          throw new Error('Không thể tải danh sách dữ liệu đánh giá');
         }
-        const data = await response.json();
+
+        const reviewsData = await resReviews.json();
+        const studentsData = await resStudents.json();
+        const usersData = await resUsers.json();
+        const coursesData = await resCourses.json();
         
-        if (Array.isArray(data)) {
-          const highRatingReviews = data.filter(item => item.rating >= 4.5);
-          setReviews(highRatingReviews);
+        if (Array.isArray(reviewsData)) {
+          const highRatingReviews = reviewsData.filter(item => Number(item.rating) >= 4.5).sort(() => 0.5 - Math.random()).slice(0, 4);
+
+          // Hợp nhất dữ liệu để lấy Tên học viên và Tên khóa học làm nhãn hiển thị
+          const mergedReviews = highRatingReviews.map((review) => {
+            // 1. Tìm thông tin student trong mảng students
+            const matchedStudent = studentsData.find(s => s.student_id === review.student_id) || {};
+            // 2. Từ user_id của student, tìm thông tin cá nhân (full_name) trong mảng users
+            const matchedUser = usersData.find(u => u.user_id === matchedStudent.user_id) || {};
+            // 3. Tìm thông tin khóa học (title) để hiển thị thay cho vai trò/lớp học
+            const matchedCourse = coursesData.find(c => c.course_id === review.course_id) || {};
+
+            return {
+              id: review.review_id,
+              author: matchedUser.full_name || "Học viên ẩn danh",
+              role: matchedCourse.title ? `Học viên lớp: ${matchedCourse.title}` : "Học viên AuraTeach",
+              rating: review.rating,
+              comment: review.comment // Đổi từ comment trong JSON thành content để giữ nguyên cấu trúc JSX
+            };
+          });
+
+          setReviews(mergedReviews);
         } else {
           setReviews([]);
         }
@@ -29,7 +59,7 @@ function ReviewSection() {
       }
     };
 
-    fetchReviews();
+    fetchReviewsData();
   }, []);
 
   if (loading) {
@@ -57,8 +87,19 @@ function ReviewSection() {
               
               <div className="aurateach-sec7__rating">
                 <div className="aurateach-sec7__stars">
+                  {/* Render số ngôi sao động dựa trên số điểm rating thực tế */}
                   {[...Array(5)].map((_, index) => (
-                    <svg key={index} className="aurateach-sec7__star-icon" stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="14" width="14" xmlns="http://www.w3.org/2000/svg">
+                    <svg 
+                      key={index} 
+                      className="aurateach-sec7__star-icon" 
+                      stroke="currentColor" 
+                      fill={index < item.rating ? "currentColor" : "none"} // Tô màu sao dựa trên rating thực tế
+                      strokeWidth="2" 
+                      viewBox="0 0 24 24" 
+                      height="14" 
+                      width="14" 
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
                     </svg>
                   ))}
@@ -67,7 +108,7 @@ function ReviewSection() {
               </div>
 
               {/* Nội dung đoạn nhận xét */}
-              <p className="aurateach-sec7__content">“{item.content}”</p>
+              <p className="aurateach-sec7__content">“{item.comment}”</p>
             </div>
           ))}
         </div>

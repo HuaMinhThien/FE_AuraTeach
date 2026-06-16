@@ -20,7 +20,7 @@ export default function Headers() {
                         <Link href="/" className={`nav-item ${pathname === "/" ? "active-nav" : ""}`}>
                             <span>Trang chủ</span>
                         </Link>
-                        <Link href="/ProductList" className={`nav-item ${pathname === "/ProductList" ? "active-nav" : ""}`}>
+                        <Link href="/tutorList" className={`nav-item ${pathname === "/tutorList" ? "active-nav" : ""}`}>
                             <span>Tìm gia sư</span>
                         </Link>
                         <Link href="/class-search" className={`nav-item ${pathname === "/class-search" ? "active-nav" : ""}`}>

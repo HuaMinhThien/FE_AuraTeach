@@ -1,9 +1,9 @@
-import FeaturedTeachers from "@/app/(public)/_component-home/FeaturedTeachers";
+import FeaturedTutors from "./_component-home/FeaturedTutors";
 import HonoredSection from "@/app/(public)/_component-home/HonoredSection";
 import ReviewSection from "@/app/(public)/_component-home/ReviewSection";
 import StatsSection from "@/app/(public)/_component-home/StatsSection";
-import TeacherSection from "@/app/(public)/_component-home/TeacherSection";
 import Image from "next/image";
+import CoursesSection from "@/app/(public)/_component-home/CoursesSection";
 
 
 
@@ -59,7 +59,7 @@ export default function Home() {
             </div>
 
             <div className="section3 container-center">
-                <TeacherSection />
+                <CoursesSection />
             </div>
             <div className="section4">
                 <section className="why-aurateach container-center">
@@ -125,7 +125,7 @@ export default function Home() {
             </div>
 
             <div className="section5 container-center">
-                <FeaturedTeachers />
+                <FeaturedTutors />
             </div>
 
             {/* <div className="section6 container-center">
