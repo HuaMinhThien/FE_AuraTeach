@@ -10,7 +10,8 @@ header {
     z-index: 1000;
     width: 100%;
 }
-.header{
+
+.header {
     display: flex;
     justify-content: space-between;
     width: 100%;            
@@ -19,16 +20,19 @@ header {
     margin: 0 auto;
     box-sizing: border-box; 
 }
-.header-left{
+
+.header-left {
     display: flex;
     align-items: center;
 }
+
 .header-logo {
     display: flex;
     align-items: center;
     margin-right: 20px;
 }
-.header-logo>h1{
+
+.header-logo > h1 {
     color: #00236F;
     font-size: 32px;
     font-weight: bolder;
@@ -58,7 +62,7 @@ header {
 
 .header-nav .nav-item:hover span,
 .header-nav .nav-item.active-nav span {
-    color: #1565c0; 
+    color: #00236f; 
     transform: translateY(-3px); 
 }
 
@@ -69,9 +73,8 @@ header {
     left: 0;
     width: 100%;
     height: 3px; 
-    background-color: #1565c0; 
+    background-color: #00236f; 
     border-radius: 2px;
-    
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
@@ -88,93 +91,37 @@ header {
     gap: 10px;
 }
 
+/* Cấu hình chung cho các button bên phải */
 .header-right .header-btn {
+    border: 2px solid #000000;
     text-decoration: none;
     color: #444651;
     font-size: 14px; 
     font-weight: 600;
     padding: 8px 18px;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Khoảng cách giữa icon và chữ */
+    border-radius: 14px; /* Bo góc trực tiếp trên nút */
     position: relative;
     z-index: 2;
+    background-color: transparent; /* Nền trong suốt mặc định */
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Khi nút được kích hoạt (active), tự động đổi màu nền và màu chữ */
+.header-right .header-btn.header-btn-active {
+    background-color: #00236f;
+    color: white;
+}
+
+/* Thêm hiệu ứng mượt mà cho icon khi đổi màu */
+.header-right .header-btn svg {
     transition: color 0.3s ease;
+    color: #444651; /* Màu xám mặc định giống chữ khi chưa active */
 }
 
-
-.header-right::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 0;
-    height: 36px;
-    background-color: #1565c0;
-    border-radius: 14px;
-    z-index: 1;
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.header-right:has(.login-btn.header-btn-active)::before {
-    left: 0px;
-    width: 105px; 
-}
-.header-right .login-btn.header-btn-active {
+/* Khi nút active thì icon SVG tự động chuyển sang màu trắng theo chữ */
+.header-right .header-btn.header-btn-active svg {
     color: white;
-}
-
-.header-right:has(.register-btn.header-btn-active)::before {
-    left: 115px; 
-    width: 95px;  
-}
-.header-right .register-btn.header-btn-active {
-    color: white;
-}
-
-
-.header-search{
-    width: 450px;
-    height: 36px;
-    background-color: #f7f7f7;
-    border-radius: 18px;
-    align-self: center;
-}
-
-
-.searchForm {
-  display: flex;
-  align-items: center;
-  position: relative;
-  max-width: 450px;
-}
-
-.searchInput {
-  width: 100%;
-  padding: 12px 40px 12px 15px; 
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 25px; 
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.searchInput:focus {
-  border-color: #007bff; 
-}
-
-.searchButton {
-  position: absolute;
-  right: 5px; 
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  transition: color 0.3s;
-}
-
-.searchButton:hover {
-  color: #007bff; 
 }

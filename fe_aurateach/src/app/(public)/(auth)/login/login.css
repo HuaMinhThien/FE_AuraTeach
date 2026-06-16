@@ -122,7 +122,7 @@
 }
 
 .aurateach-login-button {
-  background: linear-gradient(135deg, #00236F, #1565c0);
+  background: #00236F;
   color: white;
   padding: 0.875rem;
   border: none;
@@ -134,7 +134,7 @@
 }
 
 .aurateach-login-button:hover {
-  background: linear-gradient(135deg, #1565c0, #00236F);
+  background: #0d47a1;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(21, 101, 192, 0.3);
 }

@@ -14,8 +14,8 @@ function TeacherSection() {
           try {
               // 🌟 Gọi đồng thời 2 đường dẫn phân tách độc lập từ Backend
               const [resCategories, resTeachers] = await Promise.all([
-                  fetch('http://localhost:8000/api/home-data?section=categories'),
-                  fetch('http://localhost:8000/api/home-data?section=teachers')
+                  fetch('http://localhost:3007/categories'),
+                  fetch('http://localhost:3007/teachers')
               ]);
 
               // Bây giờ cả hai biến đều đã tồn tại, kiểm tra an toàn sẽ không bị crash

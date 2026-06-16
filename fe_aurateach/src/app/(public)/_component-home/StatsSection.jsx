@@ -88,9 +88,9 @@ export default function StatsSection() {
             </svg>
           </div>
           <h2 className="stat-number-text">
-            <AnimatedCounter target={12} />+
+            <AnimatedCounter target={6} />+
           </h2>
-          <p className="stat-label-text">Môn học phổ thông</p>
+          <p className="stat-label-text">Môn học & Khóa học</p>
         </div>
 
         {/* <!-- CỘT 3: GIỜ HỌC --> */}
