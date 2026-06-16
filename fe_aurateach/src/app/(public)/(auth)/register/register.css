@@ -23,6 +23,7 @@
 .aurateach-register-left {
   flex: 1;
   max-width: 450px;
+  top: 0;
 }
 
 .aurateach-register-hero {
@@ -164,7 +165,7 @@
 }
 
 .aurateach-register-button {
-  background: linear-gradient(135deg, #00236F, #1565c0);
+  background: #00236F;
   color: white;
   padding: 0.7rem;
   border: none;
@@ -177,7 +178,7 @@
 }
 
 .aurateach-register-button:hover {
-  background: linear-gradient(135deg, #1565c0, #00236F);
+  background: #0d47a1;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(21, 101, 192, 0.3);
 }
@@ -213,8 +214,8 @@
 .aurateach-teacher-button {
   display: inline-block;
   background: transparent;
-  border: 1.5px solid #1565c0;
-  color: #1565c0;
+  border: 1.5px solid #00236F;
+  color: #00236F;
   padding: 0.5rem 1.2rem;
   border-radius: 12px;
   text-decoration: none;
@@ -224,7 +225,7 @@
 }
 
 .aurateach-teacher-button:hover {
-  background: #1565c0;
+  background: #0d47a1;
   color: white;
 }
 

@@ -13,7 +13,7 @@
       "id": "1",
       "subject": "Toán",
       "tag": "Cấp 1, 2, 3 • Lấy lại gốc & Nâng cao",
-      "title": "Gia sư môn Toán học toàn diện",
+      "title": "Gia sư môn Toán học ",
       "price": "150.000đ/giờ",
       "badge": "Phổ biến nhất",
       "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=600"
@@ -22,7 +22,7 @@
       "id": "2",
       "subject": "Văn",
       "tag": "Cấp 2, 3 • Ôn luyện thi vào 10 & ĐH",
-      "title": "Gia sư môn Ngữ văn truyền cảm hứng",
+      "title": "Gia sư môn Ngữ văn",
       "price": "120.000đ/giờ",
       "badge": "",
       "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600"
@@ -37,7 +37,7 @@
       "image": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600"
     }
   ],
-  "teachers_list": [
+  "featured_teachers": [
     {
       "id": 1,
       "name": "Nguyễn Văn A",

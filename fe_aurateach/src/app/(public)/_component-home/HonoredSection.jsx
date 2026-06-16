@@ -10,7 +10,7 @@ function HonoredSection() {
     const fetchHonoredData = async () => {
       try {
         // 🌟 1. SỬA ĐỔI: Thêm tham số ?section=honored vào URL để lấy đúng Object dữ liệu vinh danh
-        const response = await fetch('http://localhost:8000/api/home-data?section=honored');
+        const response = await fetch('http://localhost:3007/honored_members');
         if (!response.ok) {
           throw new Error('Không thể tải dữ liệu vinh danh');
         }
@@ -27,7 +27,6 @@ function HonoredSection() {
     fetchHonoredData();
   }, []);
 
-  // 🌟 2. BẢO VỆ CHỐNG SẬP: Nếu đang loading hoặc data chưa về, hiện loading text chứ không render thẻ lỗi
   if (loading || !data || !data.studentSpotlight || !data.parentReview) {
     return (
       <div className="aurateach-sec6" style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
@@ -51,11 +50,7 @@ function HonoredSection() {
             <p className="aurateach-sec6__quote">“{data.studentSpotlight?.quote}”</p>
             
             <div className="aurateach-sec6__user">
-              <img 
-                className="aurateach-sec6__avatar" 
-                src={data.studentSpotlight?.avatar} 
-                alt={data.studentSpotlight?.name} 
-              />
+              
               <div>
                 <h4 className="aurateach-sec6__user-name">{data.studentSpotlight?.name}</h4>
                 <p className="aurateach-sec6__user-role">{data.studentSpotlight?.role}</p>
