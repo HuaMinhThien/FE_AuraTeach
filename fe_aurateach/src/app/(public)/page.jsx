@@ -1,8 +1,9 @@
-import FeaturedTeachers from "@/app/(public)/_component/FeaturedTeachers";
-import HonoredSection from "@/app/(public)/_component/HonoredSection";
-import ReviewSection from "@/app/(public)/_component/ReviewSection";
-import StatsSection from "@/app/(public)/_component/StatsSection";
-import TeacherSection from "@/app/(public)/_component/TeacherSection";
+import FeaturedTutors from "./_component-home/FeaturedTutors";
+import HonoredSection from "@/app/(public)/_component-home/HonoredSection";
+import ReviewSection from "@/app/(public)/_component-home/ReviewSection";
+import StatsSection from "@/app/(public)/_component-home/StatsSection";
+import Image from "next/image";
+import CoursesSection from "@/app/(public)/_component-home/CoursesSection";
 
 
 
@@ -20,13 +21,7 @@ export default function Home() {
                             Xây dựng nền tảng kiến thức vững chắc cho hành trình học tập của con em bạn.
                         </p>
                         <div className="hero-buttons">
-                            <a href="#" className="btn-primary">Tìm Gia Sư Ngay</a>
-                            <a href="#" className="btn-secondary">
-                            <svg className="icon-play" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                            </svg>
-                            Xem video giới thiệu
-                            </a>
+                            <a href="/ProductList" className="btn-primary">Tìm Gia Sư Ngay</a>                          
                         </div>
                         </div>
 
@@ -64,7 +59,7 @@ export default function Home() {
             </div>
 
             <div className="section3 container-center">
-                <TeacherSection />
+                <CoursesSection />
             </div>
             <div className="section4">
                 <section className="why-aurateach container-center">
@@ -86,43 +81,43 @@ export default function Home() {
                     <div className="why-aurateach__grid">
                         
                         <div className="why-aurateach__item">
-                        <div className="why-aurateach__icon-circle why-aurateach__icon-circle--verified">
-                            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        </div>
-                        <h3 className="why-aurateach__item-title">Gia sư xác minh</h3>
-                        <p className="why-aurateach__item-desc">Đội ngũ gia sư được kiểm định khắt khe về bằng cấp và kinh nghiệm thực tế.</p>
-                        </div>
-
-                        <div className="why-aurateach__item">
-                        <div className="why-aurateach__icon-circle why-aurateach__icon-circle--payment">
-                            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        </div>
-                        <h3 className="why-aurateach__item-title">Thanh toán trực tiếp</h3>
-                        <p className="why-aurateach__item-desc">Gia sư và học viên tự do thỏa thuận phương thức thanh toán, không thông qua nền tảng.</p>
+                            <div className="why-aurateach__icon-circle why-aurateach__icon-circle--verified">
+                                <Image src="/img/icons/security.png" alt="Verified Tutors" width={20} height={20} />
+                            </div>
+                            <h3 className="why-aurateach__item-title">Gia sư xác minh</h3>
+                            <p className="why-aurateach__item-desc">Đội ngũ gia sư được kiểm định khắt khe về bằng cấp và kinh nghiệm thực tế.</p>
                         </div>
 
                         <div className="why-aurateach__item">
-                        <div className="why-aurateach__icon-circle why-aurateach__icon-circle--time">
-                            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div className="why-aurateach__icon-circle why-aurateach__icon-circle--payment">
+                                <Image src="/img/icons/payment.png" alt="Direct Payment" width={20} height={20} />
+                            </div>
+                            <h3 className="why-aurateach__item-title">Thanh toán trực tiếp</h3>
+                            <p className="why-aurateach__item-desc">Gia sư và học viên tự do thỏa thuận phương thức thanh toán, không thông qua nền tảng.</p>
                         </div>
-                        <h3 className="why-aurateach__item-title">Linh hoạt thời gian</h3>
-                        <p className="why-aurateach__item-desc">Học online hoặc offline, thời gian linh hoạt theo nhu cầu riêng của bạn.</p>
+
+                        <div className="why-aurateach__item">
+                            <div className="why-aurateach__icon-circle why-aurateach__icon-circle--time">
+                                <Image src="/img/icons/glock.png" alt="Flexible Scheduling" width={20} height={20} />
+                            </div>
+                            <h3 className="why-aurateach__item-title">Linh hoạt thời gian</h3>
+                            <p className="why-aurateach__item-desc">Học online hoặc offline, thời gian linh hoạt theo nhu cầu riêng của bạn.</p>
                         </div>
 
                         <div className="why-aurateach__item why-aurateach__item--bottom-row">
-                        <div className="why-aurateach__icon-circle why-aurateach__icon-circle--rating">
-                            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-                        </div>
-                        <h3 className="why-aurateach__item-title">Đánh giá minh bạch</h3>
-                        <p className="why-aurateach__item-desc">Hệ thống đánh giá và phản hồi từ học viên thực tế giúp bạn chọn gia sư tốt nhất.</p>
+                            <div className="why-aurateach__icon-circle why-aurateach__icon-circle--rating">
+                                <Image src="/img/icons/star-purple.png" alt="Transparent Reviews" width={20} height={20} />
+                            </div>
+                            <h3 className="why-aurateach__item-title">Đánh giá minh bạch</h3>
+                            <p className="why-aurateach__item-desc">Hệ thống đánh giá và phản hồi từ học viên thực tế giúp bạn chọn gia sư tốt nhất.</p>
                         </div>
 
                         <div className="why-aurateach__item why-aurateach__item--bottom-row">
-                        <div className="why-aurateach__icon-circle why-aurateach__icon-circle--support">
-                            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <h3 className="why-aurateach__item-title">Hỗ trợ 24/7</h3>
-                        <p className="why-aurateach__item-desc">Đội ngũ hỗ trợ khách hàng luôn sẵn sàng giúp đỡ bạn bất cứ khi nào cần.</p>
+                            <div className="why-aurateach__icon-circle why-aurateach__icon-circle--support">
+                                <Image src="/img/icons/cskh.png" alt="24/7 Support" width={20} height={20} />
+                            </div>
+                            <h3 className="why-aurateach__item-title">Hỗ trợ 24/7</h3>
+                            <p className="why-aurateach__item-desc">Đội ngũ hỗ trợ khách hàng luôn sẵn sàng giúp đỡ bạn bất cứ khi nào cần.</p>
                         </div>
 
                     </div>
@@ -130,12 +125,12 @@ export default function Home() {
             </div>
 
             <div className="section5 container-center">
-                <FeaturedTeachers />
+                <FeaturedTutors />
             </div>
 
-            <div className="section6 container-center">
+            {/* <div className="section6 container-center">
                 <HonoredSection />
-            </div>
+            </div> */}
 
             <div className="section7 ">
                 <ReviewSection />

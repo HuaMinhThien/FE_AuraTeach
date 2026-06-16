@@ -1,88 +1,325 @@
 {
   "categories": [
-    { "id": 1, "name": "Tất cả" },
-    { "id": 2, "name": "Toán" },
-    { "id": 3, "name": "Văn" },
-    { "id": 4, "name": "Anh" },
-    { "id": 5, "name": "Lý" },
-    { "id": 6, "name": "Hóa" },
-    { "id": 7, "name": "Sinh" }
+    { "category_id": "cat-01", "category_name": "Tất cả" },
+    { "category_id": "cat-02", "category_name": "Toán" },
+    { "category_id": "cat-03", "category_name": "Văn" },
+    { "category_id": "cat-04", "category_name": "Anh" },
+    { "category_id": "cat-05", "category_name": "Lý" },
+    { "category_id": "cat-06", "category_name": "Hóa" },
+    { "category_id": "cat-07", "category_name": "Sinh" }
   ],
-  "teachers": [
+
+  "users": [
     {
-      "id": "1",
-      "subject": "Toán",
-      "tag": "Cấp 1, 2, 3 • Lấy lại gốc & Nâng cao",
-      "title": "Gia sư môn Toán học toàn diện",
-      "price": "150.000đ/giờ",
-      "badge": "Phổ biến nhất",
-      "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=600"
+      "user_id": "u-01",
+      "email": "duong.nguyen@aurateach.id",
+      "password": "hashed_password_1",
+      "full_name": "Nguyễn Tùng Dương",
+      "phone": "0912345678",
+      "avatar": "/img/tutors/duong.png",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-01-15T08:00:00Z"
     },
     {
-      "id": "2",
-      "subject": "Văn",
-      "tag": "Cấp 2, 3 • Ôn luyện thi vào 10 & ĐH",
-      "title": "Gia sư môn Ngữ văn truyền cảm hứng",
-      "price": "120.000đ/giờ",
-      "badge": "",
-      "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      "id": "3",
-      "subject": "Anh",
-      "tag": "Giao tiếp • IELTS • Lấy gốc cấp tốc",
-      "title": "Gia sư Tiếng Anh chuẩn quốc tế",
-      "price": "200.000đ/giờ",
-      "badge": "Hot",
-      "image": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600"
-    }
-  ],
-  "teachers_list": [
-    {
-      "id": 1,
-      "name": "Nguyễn Văn A",
+      "user_id": "u-02",
+      "email": "tam.tran@aurateach.id",
+      "password": "hashed_password_2",
+      "full_name": "Trần Minh Tâm",
+      "phone": "0987654321",
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
-      "subject": "Toán học (Cấp 3 & Ôn thi ĐH)",
-      "rating": 5.0,
-      "reviews": 120,
-      "experience": "5 năm kinh nghiệm",
-      "bio": "Cựu sinh viên ĐH Bách Khoa, chuyên trị học sinh mất gốc và luyện thi trường chuyên, đại học điểm cao.",
-      "price": "180.000đ/giờ"
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-02-10T09:30:00Z"
     },
     {
-      "id": 2,
-      "name": "Trần Thị B",
+      "user_id": "u-03",
+      "email": "ha.le@aurateach.id",
+      "password": "hashed_password_3",
+      "full_name": "Lê Thu Hà",
+      "phone": "0905123456",
       "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
-      "subject": "Tiếng Anh (IELTS & Giao tiếp)",
-      "rating": 4.9,
-      "reviews": 95,
-      "experience": "4 năm kinh nghiệm",
-      "bio": "Sở hữu chứng chỉ IELTS 8.5. Phương pháp dạy tương tác trực quan, giúp học viên tự tin giao tiếp sau 3 tháng.",
-      "price": "250.000đ/giờ"
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-02-12T14:15:00Z"
     },
     {
-      "id": 3,
-      "name": "Lê Hoàng C",
+      "user_id": "u-04",
+      "email": "huong.nguyen@aurateach.id",
+      "password": "hashed_password_4",
+      "full_name": "Nguyễn Lan Hương",
+      "phone": "0934888999",
       "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200",
-      "subject": "Ngữ Văn (Cấp 2 & Cấp 3)",
-      "rating": 4.8,
-      "reviews": 84,
-      "experience": "6 năm kinh nghiệm",
-      "bio": "Giáo viên tại trường THPT chuyên. Giúp học sinh thay đổi tư duy làm bài văn nghị luận xã hội ngắn gọn, sâu sắc.",
-      "price": "150.000đ/giờ"
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-03-01T10:00:00Z"
     },
     {
-      "id": 4,
-      "name": "Phạm Minh D",
-      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
-      "subject": "Vật Lý & Hóa Học (Cấp 3)",
-      "rating": 4.9,
-      "reviews": 110,
-      "experience": "3 năm kinh nghiệm",
-      "bio": "Phương pháp giải bài tập bằng sơ đồ tư duy siêu tốc, tối ưu hóa thời gian làm bài trắc nghiệm thi THPT Quốc gia.",
-      "price": "160.000đ/giờ"
+      "user_id": "u-student-1",
+      "email": "trung.hoang@gmail.com",
+      "password": "password_st_1",
+      "full_name": "Hoàng Trung",
+      "phone": "0345111222",
+      "avatar": "",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-01-20T11:00:00Z"
+    },
+    {
+      "user_id": "u-student-2",
+      "email": "le.anh@gmail.com",
+      "password": "password_st_2",
+      "full_name": "Anh Lê",
+      "phone": "0356222333",
+      "avatar": "",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-01-22T15:20:00Z"
     }
   ],
+
+  "tutors": [
+    {
+      "tutor_id": "tutor_01",
+      "user_id": "u-01",
+      "bio": "Xin chào, mình là Dương – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+      "qualification": "Đại học - CNTT",
+      "rating": 4.8,
+      "verification_status": "Đã xác minh",
+      "Experience": "Dưới 1 năm"
+    },
+    {
+      "tutor_id": "tutor_02",
+      "user_id": "u-02",
+      "bio": "Cựu sinh viên chuyên ngành Sư phạm Toán học ĐH Sư Phạm. Chuyên trị các học sinh mất gốc hình học không gian và luyện thi vào các trường chuyên cấp 3.",
+      "qualification": "Cử nhân - Sư phạm Toán",
+      "rating": 5.0,
+      "verification_status": "Đã xác minh",
+      "Experience": "5 năm kinh nghiệm"
+    },
+    {
+      "tutor_id": "tutor_03",
+      "user_id": "u-03",
+      "bio": "Giáo viên Ngữ Văn tại trường THPT danh tiếng. Phương pháp truyền đạt văn học bằng bản đồ tư duy, giúp học sinh nắm bắt luận điểm nghị luận xã hội sâu sắc, ngắn gọn.",
+      "qualification": "Thạc sĩ - Ngữ Văn",
+      "rating": 4.9,
+      "verification_status": "Đã xác minh",
+      "Experience": "6 năm kinh nghiệm"
+    },
+    {
+      "tutor_id": "tutor_04",
+      "user_id": "u-04",
+      "bio": "Chứng chỉ IELTS 8.5 thương mại. Chuyên đào tạo lấy gốc tiếng Anh cấp tốc, lấy lại nền tảng ngữ pháp và phản xạ giao tiếp tự tin chỉ sau 3 tháng.",
+      "qualification": "Đại học - Ngôn ngữ Anh",
+      "rating": 4.7,
+      "verification_status": "Chưa cập nhật",
+      "Experience": "4 năm kinh nghiệm"
+    }
+  ],
+
+  "students": [
+    { "student_id": "st-01", "user_id": "u-student-1", "grade": "Lớp 9", "school_name": "THPT Chuyên Hà Nội - Amsterdam" },
+    { "student_id": "st-02", "user_id": "u-student-2", "grade": "Lớp 12", "school_name": "THPT Nguyễn Thượng Hiền" }
+  ],
+
+  "courses": [
+    {
+      "course_id": "c-01",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_01",
+      "title": "Gia sư môn Toán học",
+      "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán học bền vững cấp 1, 2, 3.",
+      "max_students": 1,
+      "current_students": 1,
+      "price_per_session": "150.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "flow": "Cấp 1, 2, 3 • Lấy lại gốc & Nâng cao" 
+    },
+    {
+      "course_id": "c-02",
+      "category_id": "cat-03",
+      "tutor_id": "tutor_01",
+      "title": "Gia sư môn Ngữ văn",
+      "description": "Hướng dẫn phương pháp làm văn, phân tích tác phẩm trọng tâm ôn thi vào 10 và THPT Quốc gia.",
+      "max_students": 1,
+      "current_students": 0,
+      "price_per_session": "120.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Zoom",
+      "permanent_room_url": "https://zoom.us/j/123456789",
+      "flow": "Cấp 2, 3 • Ôn luyện thi vào 10 & ĐH"
+    },
+    {
+      "course_id": "c-03",
+      "category_id": "cat-04",
+      "tutor_id": "tutor_01",
+      "title": "Gia sư Tiếng Anh chuẩn quốc tế",
+      "description": "Học tiếng Anh chuẩn quốc tế, nâng cao kỹ năng giao tiếp và luyện thi chứng chỉ.",
+      "max_students": 2,
+      "current_students": 1,
+      "price_per_session": "200.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/eng-tutor-room",
+      "flow": "Giao tiếp • IELTS • Lấy gốc cấp tốc"
+    },
+    {
+      "course_id": "c-04",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_02",
+      "title": "Toán hình học không gian nâng cao",
+      "description": "Khóa bứt phá điểm 8+, 9+ thi THPT Quốc Gia môn Toán phần hình học không gian phẳng.",
+      "max_students": 5,
+      "current_students": 3,
+      "price_per_session": "180.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Zoom",
+      "permanent_room_url": "https://zoom.us/j/999888777",
+      "flow": "Ôn thi Đại học khối A, A1"
+    },
+    {
+      "course_id": "c-05",
+      "category_id": "cat-05",
+      "tutor_id": "tutor_02",
+      "title": "Vật Lý Đại Cương & Ôn Thi Vào 10",
+      "description": "Hệ thống toàn bộ kiến thức chuyển động cơ học, điện học khó mạch phức tạp cho học sinh lớp 9 ôn chuyên.",
+      "max_students": 3,
+      "current_students": 1,
+      "price_per_session": "160.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/phy-tutor-01",
+      "flow": "Cấp 2, 3 • Đột phá điểm số Lý"
+    },
+    {
+      "course_id": "c-06",
+      "category_id": "cat-06",
+      "tutor_id": "tutor_03",
+      "title": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
+      "description": "Lấy lại kiến thức căn bản hóa trị, cân bằng phương trình hóa học và phương pháp giải bài tập đồ thị vô cơ nhanh.",
+      "max_students": 1,
+      "current_students": 0,
+      "price_per_session": "140.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Zoom",
+      "permanent_room_url": "https://zoom.us/j/che-tutor-01",
+      "flow": "Lớp 10, 11 • Lấy lại gốc cấp tốc"
+    },
+    {
+      "course_id": "c-07",
+      "category_id": "cat-07",
+      "tutor_id": "tutor_03",
+      "title": "Sinh Học Luyện Thi Khối B Cấp Tốc",
+      "description": "Khóa học tập trung giải các bài toán di truyền biến dị phức tạp cấu trúc ADN, cam kết ôn thi đại học đạt điểm cao.",
+      "max_students": 4,
+      "current_students": 2,
+      "price_per_session": "170.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/bio-tutor-99",
+      "flow": "Lớp 12 • Luyện thi Khối B đại học"
+    },
+    {
+      "course_id": "c-08",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_02",
+      "title": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
+      "description": "Phát triển tư duy logic toán học cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
+      "max_students": 2,
+      "current_students": 1,
+      "price_per_session": "130.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/math-kid-01",
+      "flow": "Cấp 1 • Kích thích tư duy logic"
+    },
+    {
+      "course_id": "c-09",
+      "category_id": "cat-03",
+      "tutor_id": "tutor_03",
+      "title": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
+      "description": "Phân tích chuyên sâu 9 tác phẩm văn học trọng tâm lớp 12, cách viết mở bài kết bài tạo ấn tượng thu hút người chấm thi.",
+      "max_students": 6,
+      "current_students": 4,
+      "price_per_session": "150.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Zoom",
+      "permanent_room_url": "https://zoom.us/j/van-12-vip",
+      "flow": "Lớp 12 • Chiến thuật thi THPT Quốc Gia"
+    },
+    {
+      "course_id": "c-10",
+      "category_id": "cat-04",
+      "tutor_id": "tutor_04",
+      "title": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
+      "description": "Tổng hợp 12 thì tiếng Anh cơ bản, các cấu trúc câu điều kiện, câu bị động phục vụ kỳ thi chuyển cấp lớp 9 lên 10.",
+      "max_students": 2,
+      "current_students": 0,
+      "price_per_session": "140.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/eng-grammar-02",
+      "flow": "Cấp 2 • Ngữ pháp chuyên sâu"
+    },
+    {
+      "course_id": "c-11",
+      "category_id": "cat-05",
+      "tutor_id": "tutor_04",
+      "title": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
+      "description": "Chuyên đề dao động cơ học, sóng cơ và dòng điện xoay chiều lớp 12 giúp học sinh nắm chắc điểm 8 trong tay.",
+      "max_students": 5,
+      "current_students": 2,
+      "price_per_session": "160.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Zoom",
+      "permanent_room_url": "https://zoom.us/j/phy-12-room",
+      "flow": "Lớp 12 • Ôn thi tốt nghiệp & Đại học"
+    },
+    {
+      "course_id": "c-12",
+      "category_id": "cat-06",
+      "tutor_id": "tutor_01",
+      "title": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
+      "description": "Làm chủ chuỗi phản ứng Ankan, Anken, Đơn chức, Đa chức Este Lipit và phương pháp dồn chất giải toán cực khó.",
+      "max_students": 3,
+      "current_students": 1,
+      "price_per_session": "150.000đ/giờ",
+      "status": "active",
+      "meeting_platform": "Google Meet",
+      "permanent_room_url": "https://meet.google.com/che-organic-02",
+      "flow": "Lớp 11, 12 • Đạt điểm 9+ tổ hợp tự nhiên"
+    }
+  ],
+
+  "reviews": [
+    {
+      "review_id": "rev-01",
+      "student_id": "st-01",
+      "course_id": "c-01",
+      "rating": 5,
+      "comment": "Dương dạy rất nhiệt tình và dễ hiểu. Mình đã nắm vững được tư duy giải đề chỉ sau một khóa học.",
+      "created_at": "2026-05-10T12:00:00Z"
+    },
+    {
+      "review_id": "rev-02",
+      "student_id": "st-02",
+      "course_id": "c-01",
+      "rating": 5,
+      "comment": "Kiến thức của gia sư rất chắc chắn, đặc biệt là phần tư duy thuật toán nâng cao. Rất recommend mọi người học cùng Dương!",
+      "created_at": "2026-05-12T16:30:00Z"
+    },
+    {
+      "review_id": "rev-03",
+      "student_id": "st-01",
+      "course_id": "c-02",
+      "rating": 4,
+      "comment": "Thầy giảng bài rất cuốn hút, tài liệu học tập chi tiết giúp em cải thiện điểm Văn nghị luận.",
+      "created_at": "2026-05-15T09:15:00Z"
+    }
+  ],
+
   "honored_members": {
     "sectionTitle": "Gương Mặt Vàng AuraTeach",
     "studentSpotlight": {
@@ -100,42 +337,5 @@
       "role": "Phụ huynh bé Gia Bảo (Lớp 8)",
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
     }
-  },
-  "comments": [
-    {
-      "id": 1,
-      "author": "Nguyễn Văn An",
-      "role": "Học sinh lớp 9",
-      "rating": 5.0,
-      "content": "\"Em rất thích cách thầy Nam giảng bài. Những bài văn khô khan trở nên rất sinh động qua lời kể của thầy. Em đã không còn sợ viết văn nữa.\""
-    },
-    {
-      "id": 2,
-      "author": "Lê Thị Mai",
-      "role": "Phụ huynh học sinh",
-      "rating": 4.8,
-      "content": "\"Gia sư Thảo rất nhiệt tình và kiên nhẫn với bé nhà tôi. Chỉ sau 2 tháng, điểm số tiếng Anh của cháu đã cải thiện rõ rệt.\""
-    },
-    {
-      "id": 3,
-      "author": "Trần Hoàng Minh",
-      "role": "Học sinh lớp 12",
-      "rating": 4.9,
-      "content": "\"Anh Kiệt dạy Toán cực kỳ hay, phương pháp giải nhanh của anh giúp em tiết kiệm rất nhiều thời gian khi làm bài thi trắc nghiệm.\""
-    },
-    {
-      "id": 4,
-      "author": "Phạm Thanh Vân",
-      "role": "Phụ huynh bé lớp 3",
-      "rating": 4.7,
-      "content": "\"Cô Hoa dạy tiểu học rất tâm lý. Con tôi giờ đây đã tự giác ngồi vào bàn học mà không cần mẹ nhắc nhở như trước.\""
-    },
-    {
-      "id": 5,
-      "author": "Người Dùng Thử",
-      "role": "Học sinh",
-      "rating": 4.0,
-      "content": "\"Nội dung bài học bình thường, chưa có nhiều đột phá.\""
-    }
-  ]
+  }
 }

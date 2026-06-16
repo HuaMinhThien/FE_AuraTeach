@@ -1,0 +1,511 @@
+.teacherListPage {
+	background: #f3f5f8;
+	padding-top: 20px;
+	padding-bottom: 36px;
+}
+
+.searchSection {
+	margin-top: 30px;
+}
+
+.searchCard {
+	background: #ffffff;
+	border: 1px solid #e4e8ef;
+	border-radius: 12px;
+	padding: 34px 32px 28px;
+	box-shadow: 0 8px 20px rgba(16, 24, 40, 0.04);
+	margin-top: 110px;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.searchCard:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 28px rgba(16, 24, 40, 0.08);
+}
+
+.searchCard h1 {
+	color: #0f3f8f;
+	font-size: 50px;
+	line-height: 1.18;
+	margin-bottom: 12px;
+	letter-spacing: -0.8px;
+}
+
+.searchCard p {
+	color: #5d6b7f;
+	max-width: 760px;
+	line-height: 1.6;
+	margin-bottom: 20px;
+}
+
+.searchForm {
+	display: grid;
+	grid-template-columns: 1fr 142px;
+	gap: 14px;
+	margin-bottom: 14px;
+}
+
+.inputWrap {
+	border: 1px solid #dbe2ec;
+	border-radius: 10px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 0 14px;
+	background: #f9fbfd;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inputWrap:focus-within {
+	border-color: #1259c9;
+	box-shadow: 0 0 0 3px rgba(18, 89, 201, 0.1);
+}
+
+.inputWrap svg {
+	width: 18px;
+	height: 18px;
+	color: #9ba8bc;
+	transition: color 0.3s ease;
+}
+
+.inputWrap:focus-within svg {
+	color: #1259c9;
+}
+
+.inputWrap input {
+	border: none;
+	outline: none;
+	background: transparent;
+	width: 100%;
+	font-size: 15px;
+	color: #213046;
+}
+
+.inputWrap input::placeholder {
+	color: #9ba8bc;
+	transition: color 0.3s ease;
+}
+
+.inputWrap input:focus::placeholder {
+	color: #b8c4d4;
+}
+
+.searchForm button {
+	border: none;
+	border-radius: 10px;
+	background: #1259c9;
+	color: #fff;
+	font-weight: 600;
+	font-size: 15px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.searchForm button:hover {
+	background: #0e4aab;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.3);
+}
+
+.searchForm button:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(18, 89, 201, 0.2);
+}
+
+.quickFilter {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.quickFilter > span {
+	color: #546175;
+	font-size: 14px;
+}
+
+.quickFilter div {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.quickFilter button {
+	border: 1px solid #e2e8f1;
+	background: #f8fafc;
+	color: #556174;
+	font-size: 12px;
+	font-weight: 500;
+	padding: 4px 10px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition: all 0.25s ease;
+}
+
+.quickFilter button:hover {
+	background: #1259c9;
+	color: #fff;
+	border-color: #1259c9;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 10px rgba(18, 89, 201, 0.2);
+}
+
+.quickFilter button:active {
+	transform: translateY(0);
+}
+
+.listSection {
+	margin-top: 32px;
+}
+
+.listHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 18px;
+}
+
+.listHead h2 {
+	color: #103f8f;
+	font-size: 40px;
+	line-height: 1.2;
+	letter-spacing: -0.6px;
+}
+
+.sortBtn {
+	background: #fff;
+	border: 1px solid #dbe3ef;
+	color: #3f4e63;
+	border-radius: 8px;
+	min-width: 114px;
+	height: 36px;
+	padding: 0 12px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.sortBtn:hover {
+	border-color: #1259c9;
+	color: #1259c9;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.1);
+}
+
+.sortBtn:active {
+	transform: translateY(0);
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.card {
+	background: #fff;
+	border-radius: 12px;
+	border: 1px solid #dce3ee;
+	padding: 16px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	min-height: 302px;
+	transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	cursor: pointer;
+}
+
+.card:hover {
+	transform: translateY(-8px);
+	box-shadow: 0 12px 32px rgba(16, 24, 40, 0.12);
+	border-color: #c5d4e8;
+}
+
+.card:active {
+	transform: translateY(-4px);
+}
+
+.cardTop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.cardTop img {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #ecf2fb;
+	transition: all 0.4s ease;
+}
+
+.card:hover .cardTop img {
+	border-color: #1259c9;
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.15);
+}
+
+.rating {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: #253449;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.rating small {
+	color: #7d8da4;
+	font-weight: 500;
+}
+
+.star {
+	color: #f7b500;
+	display: inline-flex;
+	transition: transform 0.3s ease;
+}
+
+.card:hover .star {
+	transform: scale(1.1);
+}
+
+.star svg {
+	width: 13px;
+	height: 13px;
+}
+
+.card h3 {
+	color: #0f3f8f;
+	font-size: 24px;
+	line-height: 1.25;
+	letter-spacing: -0.4px;
+	transition: color 0.3s ease;
+}
+
+.card:hover h3 {
+	color: #1259c9;
+}
+
+.meta {
+	color: #79879a;
+	font-size: 13px;
+	margin-top: 6px;
+	transition: color 0.3s ease;
+}
+
+.card:hover .meta {
+	color: #5d6b7f;
+}
+
+.desc {
+	margin-top: 8px;
+	color: #4d5c70;
+	font-size: 14px;
+	line-height: 1.5;
+	min-height: 84px;
+	transition: color 0.3s ease;
+}
+
+.card:hover .desc {
+	color: #3a4759;
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.tags span {
+	border: 1px solid #dce7fa;
+	border-radius: 999px;
+	color: #2661c2;
+	background: #edf3ff;
+	padding: 3px 9px;
+	font-size: 11px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.card:hover .tags span {
+	background: #1259c9;
+	color: #fff;
+	border-color: #1259c9;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 8px rgba(18, 89, 201, 0.2);
+}
+
+.detailBtn {
+	margin-top: auto;
+	border: none;
+	background: #edf0f4;
+	color: #40618f;
+	border-radius: 8px;
+	height: 38px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.detailBtn::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border-radius: 50%;
+	background: rgba(18, 89, 201, 0.1);
+	transform: translate(-50%, -50%);
+	transition: width 0.5s ease, height 0.5s ease;
+}
+
+.detailBtn:hover {
+	background: #1259c9;
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.25);
+}
+
+.detailBtn:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(18, 89, 201, 0.15);
+}
+
+.detailBtn:hover::after {
+	width: 300px;
+	height: 300px;
+}
+
+.pagination {
+	margin-top: 22px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+}
+
+.pagination button {
+	border: 1px solid #d7deea;
+	background: #fff;
+	height: 30px;
+	min-width: 30px;
+	padding: 0 10px;
+	border-radius: 6px;
+	color: #526178;
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(.activePage) {
+	background: #f0f4fa;
+	border-color: #b8c8dd;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pagination button:active:not(.activePage) {
+	transform: translateY(0);
+}
+
+.activePage {
+	background: #1259c9 !important;
+	color: #fff !important;
+	border-color: #1259c9 !important;
+}
+
+.activePage:hover {
+	transform: scale(1.05) !important;
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.3) !important;
+}
+
+.pagination span {
+	color: #8795a8;
+	font-size: 13px;
+	transition: color 0.3s ease;
+}
+
+.pagination span:hover {
+	color: #1259c9;
+}
+
+@media (max-width: 1320px) {
+	.searchCard h1,
+	.listHead h2 {
+		font-size: 42px;
+	}
+
+	.grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 1024px) {
+	.searchCard {
+		padding: 26px 22px;
+	}
+
+	.searchCard h1,
+	.listHead h2 {
+		font-size: 34px;
+	}
+
+	.searchForm {
+		grid-template-columns: 1fr;
+	}
+
+	.searchForm button {
+		height: 44px;
+	}
+
+	.grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 640px) {
+	.teacherListPage {
+		padding-top: 14px;
+	}
+
+	.searchCard {
+		padding: 18px 14px;
+		border-radius: 10px;
+	}
+
+	.searchCard h1,
+	.listHead h2 {
+		font-size: 27px;
+	}
+
+	.searchCard p {
+		font-size: 14px;
+	}
+
+	.listHead {
+		align-items: flex-start;
+		flex-direction: column;
+		margin-bottom: 12px;
+	}
+
+	.grid {
+		grid-template-columns: 1fr;
+	}
+
+	.card {
+		min-height: 280px;
+	}
+}

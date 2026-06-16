@@ -39,7 +39,7 @@
 }
 
 .teacher-sec3__tab-item--active {
-  background-color: #1565c0;
+  background-color: #00236F;
   color: #ffffff;
 }
 
@@ -159,6 +159,17 @@
   background-color: #1e40af;
 }
 
+.teacher-sec3__page-arrow:hover:not(:disabled) {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+  color: #00236F !important;
+}
+
+.teacher-sec3__page-number:hover:not(.teacher-sec3__page-number--active) {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+  color: #00236F !important;
+}
 /* Responsive */
 @media (max-width: 1024px) {
   .teacher-sec3__grid { grid-template-columns: repeat(2, 1fr); }

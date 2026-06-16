@@ -1,5 +1,5 @@
 @import './StatsSection.css';
-@import './TeacherSection.css';
+@import './coursesSection.css';
 @import './sec4.css';
 @import './sec5.css';
 @import './sec6.css';
@@ -67,7 +67,7 @@
 }
 
 .btn-primary {
-    background-color: #1565c0;
+    background-color: #00236f;
     color: #ffffff;
     box-shadow: 0 4px 14px rgba(21, 101, 192, 0.3);
 }
