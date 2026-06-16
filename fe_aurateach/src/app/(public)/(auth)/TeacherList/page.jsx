@@ -1,3 +1,4 @@
+// TeacherList/page.jsx
 import styles from "./page.module.css";
 
 const quickFilters = [
@@ -110,9 +111,9 @@ function StarIcon() {
 	);
 }
 
-export default function ProductListPage() {
+export default function TeacherListPage() {
 	return (
-		<main className={styles.productListPage}>
+		<main className={styles.teacherListPage}>
 			<section className={`container-center ${styles.searchSection}`}>
 				<div className={styles.searchCard}>
 					<h1>Khám phá Gia sư tài năng</h1>

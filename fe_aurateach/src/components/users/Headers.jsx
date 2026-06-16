@@ -16,7 +16,7 @@ export default function Headers() {
                         <Link href="/" className="nav-item active-nav">
                             <span>Trang chủ</span>
                         </Link>
-                        <Link href="/ProductList" className="nav-item">
+                        <Link href="/TeacherList" className="nav-item">
                             <span>Tìm gia sư</span>
                         </Link>
                         <Link href="/class-search" className="nav-item">

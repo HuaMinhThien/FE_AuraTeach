@@ -1,8 +1,7 @@
-.productListPage {
+.teacherListPage {
 	background: #f3f5f8;
 	padding-top: 20px;
 	padding-bottom: 36px;
-  padding-top: 20px;
 }
 
 .searchSection {
@@ -15,7 +14,13 @@
 	border-radius: 12px;
 	padding: 34px 32px 28px;
 	box-shadow: 0 8px 20px rgba(16, 24, 40, 0.04);
-  margin-top: 110px;
+	margin-top: 110px;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.searchCard:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 28px rgba(16, 24, 40, 0.08);
 }
 
 .searchCard h1 {
@@ -49,12 +54,23 @@
 	gap: 9px;
 	padding: 0 14px;
 	background: #f9fbfd;
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inputWrap:focus-within {
+	border-color: #1259c9;
+	box-shadow: 0 0 0 3px rgba(18, 89, 201, 0.1);
 }
 
 .inputWrap svg {
 	width: 18px;
 	height: 18px;
 	color: #9ba8bc;
+	transition: color 0.3s ease;
+}
+
+.inputWrap:focus-within svg {
+	color: #1259c9;
 }
 
 .inputWrap input {
@@ -66,6 +82,15 @@
 	color: #213046;
 }
 
+.inputWrap input::placeholder {
+	color: #9ba8bc;
+	transition: color 0.3s ease;
+}
+
+.inputWrap input:focus::placeholder {
+	color: #b8c4d4;
+}
+
 .searchForm button {
 	border: none;
 	border-radius: 10px;
@@ -74,6 +99,20 @@
 	font-weight: 600;
 	font-size: 15px;
 	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.searchForm button:hover {
+	background: #0e4aab;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.3);
+}
+
+.searchForm button:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(18, 89, 201, 0.2);
 }
 
 .quickFilter {
@@ -103,6 +142,19 @@
 	padding: 4px 10px;
 	border-radius: 999px;
 	cursor: pointer;
+	transition: all 0.25s ease;
+}
+
+.quickFilter button:hover {
+	background: #1259c9;
+	color: #fff;
+	border-color: #1259c9;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 10px rgba(18, 89, 201, 0.2);
+}
+
+.quickFilter button:active {
+	transform: translateY(0);
 }
 
 .listSection {
@@ -138,6 +190,18 @@
 	gap: 8px;
 	font-size: 13px;
 	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.sortBtn:hover {
+	border-color: #1259c9;
+	color: #1259c9;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.1);
+}
+
+.sortBtn:active {
+	transform: translateY(0);
 }
 
 .grid {
@@ -154,6 +218,18 @@
 	display: flex;
 	flex-direction: column;
 	min-height: 302px;
+	transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	cursor: pointer;
+}
+
+.card:hover {
+	transform: translateY(-8px);
+	box-shadow: 0 12px 32px rgba(16, 24, 40, 0.12);
+	border-color: #c5d4e8;
+}
+
+.card:active {
+	transform: translateY(-4px);
 }
 
 .cardTop {
@@ -169,6 +245,13 @@
 	border-radius: 50%;
 	object-fit: cover;
 	border: 2px solid #ecf2fb;
+	transition: all 0.4s ease;
+}
+
+.card:hover .cardTop img {
+	border-color: #1259c9;
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.15);
 }
 
 .rating {
@@ -188,6 +271,11 @@
 .star {
 	color: #f7b500;
 	display: inline-flex;
+	transition: transform 0.3s ease;
+}
+
+.card:hover .star {
+	transform: scale(1.1);
 }
 
 .star svg {
@@ -200,12 +288,22 @@
 	font-size: 24px;
 	line-height: 1.25;
 	letter-spacing: -0.4px;
+	transition: color 0.3s ease;
+}
+
+.card:hover h3 {
+	color: #1259c9;
 }
 
 .meta {
 	color: #79879a;
 	font-size: 13px;
 	margin-top: 6px;
+	transition: color 0.3s ease;
+}
+
+.card:hover .meta {
+	color: #5d6b7f;
 }
 
 .desc {
@@ -214,6 +312,11 @@
 	font-size: 14px;
 	line-height: 1.5;
 	min-height: 84px;
+	transition: color 0.3s ease;
+}
+
+.card:hover .desc {
+	color: #3a4759;
 }
 
 .tags {
@@ -231,6 +334,15 @@
 	padding: 3px 9px;
 	font-size: 11px;
 	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.card:hover .tags span {
+	background: #1259c9;
+	color: #fff;
+	border-color: #1259c9;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 8px rgba(18, 89, 201, 0.2);
 }
 
 .detailBtn {
@@ -242,6 +354,39 @@
 	height: 38px;
 	font-weight: 600;
 	cursor: pointer;
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.detailBtn::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border-radius: 50%;
+	background: rgba(18, 89, 201, 0.1);
+	transform: translate(-50%, -50%);
+	transition: width 0.5s ease, height 0.5s ease;
+}
+
+.detailBtn:hover {
+	background: #1259c9;
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.25);
+}
+
+.detailBtn:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(18, 89, 201, 0.15);
+}
+
+.detailBtn:hover::after {
+	width: 300px;
+	height: 300px;
 }
 
 .pagination {
@@ -262,6 +407,18 @@
 	color: #526178;
 	font-size: 12px;
 	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(.activePage) {
+	background: #f0f4fa;
+	border-color: #b8c8dd;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pagination button:active:not(.activePage) {
+	transform: translateY(0);
 }
 
 .activePage {
@@ -270,9 +427,19 @@
 	border-color: #1259c9 !important;
 }
 
+.activePage:hover {
+	transform: scale(1.05) !important;
+	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.3) !important;
+}
+
 .pagination span {
 	color: #8795a8;
 	font-size: 13px;
+	transition: color 0.3s ease;
+}
+
+.pagination span:hover {
+	color: #1259c9;
 }
 
 @media (max-width: 1320px) {
@@ -310,7 +477,7 @@
 }
 
 @media (max-width: 640px) {
-	.productListPage {
+	.teacherListPage {
 		padding-top: 14px;
 	}
 
