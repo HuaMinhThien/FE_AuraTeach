@@ -1,0 +1,449 @@
+.tutorProfilePage {
+  maqrgin-top: 80px;
+  font-family: system-ui, sans-serif;
+  background-color: #f8fafc;
+}
+
+.mainLayout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 30px;
+
+
+    width: 100%;            
+    max-width: 1550px;       
+    margin: 0 auto;    
+    padding: 0 100px;  
+    box-sizing: border-box;
+}
+
+/* ================= CỘT BÊN TRÁI ================= */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 1. Header Card */
+.headerCard {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tutorName {
+  fontSize: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.verifiedCheck {
+  color: #2563eb;
+  font-size: 18px;
+}
+
+.ratingMeta {
+  color: #eab308;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.ratingMeta span {
+  color: #64748b;
+}
+
+/* Khối thông số phụ */
+.statsContainer {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.statBox {
+  text-align: center;
+  background-color: #f1f5f9;
+  padding: 10px 20px;
+  border-radius: 8px;
+  min-width: 100px;
+}
+
+.statValue {
+  font-weight: 700;
+  color: #00236F;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Các khối nội dung bọc chung (Giới thiệu, Thành tích, Lớp học, Review) */
+.sectionBlock {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 30px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+.bioText {
+  color: #475569;
+  line-height: 1.6;
+  font-size: 14px;
+  margin: 0;
+}
+
+.achievementImage {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  max-height: 350px;
+  object-fit: cover;
+}
+
+.achievementList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #475569;
+  font-size: 14px;
+}
+
+/* Lưới khóa học */
+.coursesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.courseCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.courseCardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.courseCardDesc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.courseCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+.coursePrice {
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 15px;
+}
+
+.registerBtn {
+  background-color: #00236F;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Đồ thị Review */
+.ratingSummary {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bigScore {
+  font-size: 40px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.starsRow {
+  color: #eab308;
+}
+
+.voteCount {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.progressContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.progressBarTrack {
+  flex: 1;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+}
+
+.progressBarFill5 {
+  width: 85%;
+  height: 100%;
+  background-color: #2563eb;
+  border-radius: 3px;
+}
+
+.progressBarFill4 {
+  width: 15%;
+  height: 100%;
+  background-color: #2563eb;
+  border-radius: 3px;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.commentItem {
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.studentName {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.commentStars {
+  color: #eab308;
+  font-size: 12px;
+  margin: 2px 0 6px 0;
+}
+
+.commentText {
+  color: #475569;
+  font-size: 13.5px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ================= CỘT BÊN PHẢI (SIDEBAR) ================= */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.contactBox {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.callBtn {
+  width: 100%;
+  background-color: #fff;
+  color: #00236F;
+  border: 1px solid #00236F;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoBox {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.infoBoxTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13.5px;
+}
+
+.infoList span {
+  color: #64748b;
+}
+
+.infoList strong {
+  color: #0f172a;
+}
+
+.statusActive {
+  color: #16a34a !important;
+}
+
+.subjectsDivider {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.subjectsTitle {
+  color: #64748b;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.subjectTag {
+  background-color: #eff6ff;
+  color: #2563eb;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.reportBtn {
+  color: #ef4444;
+  text-align: center;
+  font-size: 12px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+/* Khối liên quan */
+.relatedBox {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.relatedBoxTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  background-color: #2563eb;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.relatedList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.relatedItem {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.relatedAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.relatedInfo {
+  flex: 1;
+}
+
+.relatedName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+}
+
+.relatedSub {
+  font-size: 11px;
+  color: #2563eb;
+  margin: 0 0 2px 0;
+}
+
+.relatedStars {
+  font-size: 11px;
+  color: #eab308;
+}
+
+.viewBtn {
+  font-size: 11px;
+  background-color: #f1f5f9;
+  color: #475569;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
