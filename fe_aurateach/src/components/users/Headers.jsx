@@ -1,16 +1,17 @@
+// src/components/users/Headers.jsx
 "use client";
-import { useState, useEffect, useRef } from "react"; // Thêm useRef
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link"; 
-import { usePathname } from "next/navigation"; 
+import { usePathname, useRouter } from "next/navigation"; 
 import SearchComponent from "./SearchInput";
 
 export default function Headers() {
     const pathname = usePathname(); 
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State quản lý dropdown
-    const dropdownRef = useRef(null); // Dùng để bắt sự kiện click ra ngoài để ẩn menu
+    const router = useRouter();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-    // Hàm thuần lấy cookie
     const getCookie = (name) => {
         if (typeof window === "undefined") return null;
         const value = `; ${document.cookie}`;
@@ -25,13 +26,32 @@ export default function Headers() {
             try {
                 return JSON.parse(decodeURIComponent(userCookie));
             } catch (error) {
-                return { name: "Tài khoản", avatar: "/img/default-avatar.png" };
+                return null;
             }
         }
         return null;
     });
 
-    // Xử lý click ra ngoài vùng Avatar thì tự động đóng Dropdown lại
+    useEffect(() => {
+        const checkUser = () => {
+            const userCookie = getCookie("user_info");
+            if (userCookie) {
+                try {
+                    const userData = JSON.parse(decodeURIComponent(userCookie));
+                    setUser(userData);
+                } catch (error) {
+                    setUser(null);
+                }
+            } else {
+                setUser(null);
+            }
+        };
+
+        checkUser();
+        const interval = setInterval(checkUser, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,8 +64,28 @@ export default function Headers() {
 
     const handleLogout = () => {
         document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         setUser(null);
-        window.location.href = "/"; 
+        setIsDropdownOpen(false);
+        router.push("/login");
+    };
+
+    // Hàm kiểm tra và trả về avatar hợp lệ
+    const getValidAvatar = (avatar) => {
+        if (!avatar) return "/img/default-avatar.png";
+        
+        // Nếu là URL hợp lệ (http, https)
+        if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+            return avatar;
+        }
+        
+        // Nếu là đường dẫn tuyệt đối (bắt đầu bằng /)
+        if (avatar.startsWith('/')) {
+            return avatar;
+        }
+        
+        // Các trường hợp khác (như "helo") -> trả về default
+        return "/img/default-avatar.png";
     };
 
     return (
@@ -73,14 +113,14 @@ export default function Headers() {
                     <SearchComponent />
 
                     {user ? (
-                        /* Gắn ref và sự kiện onClick vào cụm Profile này */
                         <div 
                             className={`header-user-profile ${isDropdownOpen ? "active" : ""}`}
                             ref={dropdownRef}
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
                         >
+                            {/* DÙNG Image VỚI src ĐÃ ĐƯỢC KIỂM TRA */}
                             <Image 
-                                src={user.avatar || "/img/default-avatar.png"} 
+                                src={getValidAvatar(user.avatar)} 
                                 alt="Avatar" 
                                 width={35} 
                                 height={35} 
@@ -88,7 +128,9 @@ export default function Headers() {
                             />
                             <span className="user-name">{user.name}</span>
                             
-                            <svg className={`arrow-icon ${isDropdownOpen ? "rotate" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00236f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <svg className={`arrow-icon ${isDropdownOpen ? "rotate" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00236f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
 
                             <div className={`dropdown-menu ${isDropdownOpen ? "show" : ""}`} onClick={(e) => e.stopPropagation()}>
                                 <Link href="/profile" onClick={() => setIsDropdownOpen(false)}>

@@ -1,7 +1,8 @@
+// src/app/(public)/(auth)/login/page.jsx
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Headers from "@/components/users/Headers";
 import "./login.css";
 
@@ -16,18 +17,58 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (!email || !password) {
-      setError("Vui lòng nhập đầy đủ email và mật khẩu");
-      return;
-    }
-
     setIsLoading(true);
 
-    setTimeout(() => {
-      console.log("Đăng nhập với:", { email, password, rememberMe });
+    try {
+      // Gọi API route (không import service)
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Đăng nhập thất bại");
+      }
+
+      // Lưu cookie và redirect...
+      const userInfo = {
+        id: data.user.user_id,
+        name: data.user.full_name,
+        email: data.user.email,
+        role: data.user.role,
+        avatar: data.user.avatar || "/img/default-avatar.png",
+      };
+
+      const expires = rememberMe ? 30 : 1;
+      document.cookie = `user_info=${encodeURIComponent(
+        JSON.stringify(userInfo)
+      )}; path=/; max-age=${expires * 24 * 60 * 60}`;
+      document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
+
+      // Redirect
+      switch (data.user.role) {
+        case "student":
+          router.push("/");
+          break;
+        case "tutor":
+          router.push("/tutor");
+          break;
+        case "admin":
+          router.push("/admin");
+          break;
+        default:
+          router.push("/");
+      }
+    } catch (error) {
+      setError(error.message || "Đăng nhập thất bại");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -35,8 +76,6 @@ export default function LoginPage() {
       <Headers />
       <div className="aurateach-login-page">
         <div className="aurateach-login-container">
-          
-          {/* Box đăng nhập - căn giữa */}
           <div className="aurateach-login-box">
             <div className="aurateach-login-card">
               <h1 className="aurateach-login-title">Đăng nhập</h1>
@@ -56,6 +95,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -68,6 +108,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -85,8 +126,8 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="aurateach-login-button"
                   disabled={isLoading}
                 >
@@ -103,7 +144,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Hình ảnh minh họa bên phải */}
           <div className="aurateach-hero-right">
             <div className="aurateach-hero-image">
               <div className="aurateach-hero-content">
@@ -114,8 +154,7 @@ export default function LoginPage() {
                   tự tin hàng đầu Việt Nam.
                 </p>
               </div>
-              
-              {/* Box nhỏ nằm trong hình ảnh minh họa - góc dưới bên trái */}
+
               <div className="aurateach-stats-box">
                 <div className="stats-item">
                   <span className="stats-icon">⭐</span>
@@ -143,7 +182,6 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </>

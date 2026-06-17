@@ -1,24 +1,53 @@
+// src/middleware.js
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
+  const token = request.cookies.get("user_info")?.value;
   const role = request.cookies.get("role")?.value;
 
-  // 1. Danh sách các trang Học sinh cần phải đăng nhập mới được vào
-  const isStudentPrivateRoute = 
-    pathname.startsWith("/profile") || 
-    pathname.startsWith("/lich-su-book") || 
-    pathname.startsWith("/book-gia-su");
+  // Route public (không cần đăng nhập)
+  const publicRoutes = ["/login", "/register", "/forgot-password","/","/tutorList","/classList","/tutorList/:path*"];
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
-  // 2. Nếu vào trang riêng tư của học sinh mà chưa đăng nhập hoặc sai role
-  if (isStudentPrivateRoute && role !== "student") {
+  // Nếu chưa đăng nhập và vào route cần bảo vệ -> redirect login
+  if (!token && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 3. Bảo vệ các tuyến đường của Tutor và Admin như cũ
+  // Nếu đã đăng nhập và vào login/register -> redirect theo role
+  if (token && isPublicRoute) {
+    if (role === "student") {
+      return NextResponse.redirect(new URL("/", request.url));
+    } else if (role === "tutor") {
+      return NextResponse.redirect(new URL("/tutor", request.url));
+    } else if (role === "admin") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Admin có thể truy cập tất cả
+  if (role === "admin") {
+    return NextResponse.next();
+  }
+
+  // Phân quyền student
+  const studentRoutes = ["/", "/profile", "/lich-su-book", "/book-gia-su"];
+  const isStudentRoute = studentRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + "/")
+  );
+  
+  if (isStudentRoute && role !== "student") {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Phân quyền tutor
   if (pathname.startsWith("/tutor") && role !== "tutor") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
+
+  // Phân quyền admin
   if (pathname.startsWith("/admin") && role !== "admin") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -26,13 +55,15 @@ export function middleware(request) {
   return NextResponse.next();
 }
 
-// Cấu hình quét tất cả các route cần bảo mật
 export const config = {
   matcher: [
-    "/tutor/:path*", 
+    "/tutor/:path*",
     "/admin/:path*",
     "/profile/:path*",
     "/lich-su-book/:path*",
-    "/book-gia-su/:path*"
+    "/book-gia-su/:path*",
+    "/login",
+    "/register",
+    "/forgot-password",
   ],
 };
