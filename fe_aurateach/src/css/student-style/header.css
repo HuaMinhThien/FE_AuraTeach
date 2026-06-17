@@ -125,3 +125,89 @@ header {
 .header-right .header-btn.header-btn-active svg {
     color: white;
 }
+
+
+/* Cấu hình cụm Avatar và Tên */
+.header-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    padding: 5px 12px;
+    border-radius: 20px;
+    transition: background-color 0.2s ease;
+    user-select: none; /* Ngăn bôi đen chữ khi click nhiều lần */
+}
+
+/* Hover vào CHỈ để đổi nền mờ mờ cho user biết là click được */
+.header-user-profile:hover, 
+.header-user-profile.active {
+    background-color: #eef2f6; 
+}
+
+.user-avatar {
+    border-radius: 50%; 
+    object-fit: cover;
+    border: 2px solid #00236f;
+}
+
+.user-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #00236f;
+}
+
+/* Icon mũi tên đi kèm */
+.arrow-icon {
+    transition: transform 0.2s ease;
+}
+.arrow-icon.rotate {
+    transform: rotate(180deg); /* Xoay ngược mũi tên lên khi mở tab */
+}
+
+/* Cấu hình Dropdown menu */
+.dropdown-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    
+    display: none; /* Mặc định ẩn hẳn */
+    flex-direction: column;
+    min-width: 160px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+/* XÓA BỎ HOÀN TOÀN dòng HOVER CSS cũ (.header-user-profile:hover .dropdown-menu) */
+/* Thay bằng CLASS được kích hoạt bởi React State: */
+.dropdown-menu.show {
+    display: flex; /* Chỉ hiện khi có class .show */
+}
+
+.dropdown-menu a, .dropdown-menu .logout-btn {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #444651;
+    font-size: 14px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.dropdown-menu a:hover, .dropdown-menu .logout-btn:hover {
+    background-color: #f5f5f5;
+    color: #00236f;
+}
+
+.dropdown-menu .logout-btn {
+    border-top: 1px solid #eee;
+    color: #ff4d4f; 
+}
