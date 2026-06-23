@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Headers from "@/components/users/Headers";
+import Headers from "@/components/users/Header";
 import "./register.css";
 
 export default function RegisterPage() {
@@ -53,20 +53,20 @@ export default function RegisterPage() {
       <Headers />
       <div className="aurateach-register-page">
         <div className="aurateach-register-container">
-          
           {/* Phần bên trái - Hình ảnh minh họa */}
           <div className="aurateach-register-left">
             <div className="aurateach-register-hero">
-              <img 
-                src="/images/register-hero.jpg" 
-                alt="Đăng ký AuraTeach" 
+              <img
+                src="/images/register-hero.jpg"
+                alt="Đăng ký AuraTeach"
                 className="aurateach-register-hero-img"
               />
               <div className="aurateach-register-hero-overlay">
                 <div className="aurateach-hero-icon">📚✨</div>
                 <h2>AuraTeach</h2>
                 <p>
-                  Nền tảng kết nối gia sư và học viên<br />
+                  Nền tảng kết nối gia sư và học viên
+                  <br />
                   uy tín hàng đầu Việt Nam.
                 </p>
               </div>
@@ -76,13 +76,17 @@ export default function RegisterPage() {
           {/* Phần bên phải - Form đăng ký */}
           <div className="aurateach-register-right">
             <div className="aurateach-register-card">
-              <h1 className="aurateach-register-title">Đăng ký tài khoản AuraTeach</h1>
+              <h1 className="aurateach-register-title">
+                Đăng ký tài khoản AuraTeach
+              </h1>
               <p className="aurateach-register-subtitle">
                 Kiến tạo tương lai của bạn ngay hôm nay.
               </p>
 
               <form onSubmit={handleSubmit} className="aurateach-register-form">
-                {error && <div className="aurateach-error-message">{error}</div>}
+                {error && (
+                  <div className="aurateach-error-message">{error}</div>
+                )}
 
                 <div className="aurateach-form-group">
                   <label htmlFor="fullName">Họ và Tên</label>
@@ -153,8 +157,8 @@ export default function RegisterPage() {
                   </label>
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="aurateach-register-button"
                   disabled={isLoading}
                 >
@@ -166,9 +170,13 @@ export default function RegisterPage() {
               <div className="aurateach-teacher-invite">
                 <p className="aurateach-teacher-title">Bạn là chuyên gia?</p>
                 <p className="aurateach-teacher-desc">
-                  Hãy trở thành đối tác giảng dạy để chia sẻ kiến thức và tăng thu nhập cùng AuraTeach.
+                  Hãy trở thành đối tác giảng dạy để chia sẻ kiến thức và tăng
+                  thu nhập cùng AuraTeach.
                 </p>
-                <Link href="/register/teacher" className="aurateach-teacher-button">
+                <Link
+                  href="/register/teacher"
+                  className="aurateach-teacher-button"
+                >
                   Đăng ký làm Giảng viên
                 </Link>
               </div>
@@ -181,7 +189,6 @@ export default function RegisterPage() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </>

@@ -1,0 +1,426 @@
+.container {
+  
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.headerCreate {
+  margin-bottom: 32px;
+}
+
+.headerCreate h1 {
+  font-size: 28px;
+  color: #0f172a;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.headerCreate p {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Bố cục chia 2 cột */
+.formLayout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Các khối nội dung dạng Thẻ */
+.card {
+  background: #ffffff;
+  border: 1fr solid #e2e8f0;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.cardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cardHeaderFlex h2 {
+  margin-bottom: 0;
+}
+
+/* Ô nhập liệu */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.formGroup label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="number"],
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #334155;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.rowGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Phân khúc chọn Cấp học (Cấp 1, Cấp 2, Cấp 3) */
+.segmentedControl {
+  display: flex;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 46px;
+}
+
+.segmentedControl button {
+  flex: 1;
+  border: none;
+  background: #ffffff;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.segmentedControl button:not(:last-child) {
+  border-right: 1px solid #cbd5e1;
+}
+
+.segmentedControl .activeSegment {
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 600;
+  border: 1px solid #1e40af;
+}
+
+/* Khu vực chọn hình ảnh đại diện */
+.subText {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: -12px;
+  margin-bottom: 16px;
+}
+
+.imageSelectionArea {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.defaultGrid {
+  display: flex;
+  gap: 12px;
+}
+
+.imgWrapper {
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  height: 60px;
+  width: 90px;
+}
+
+.imgWrapper:hover {
+  transform: translateY(-2px);
+}
+
+.selectedImg {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.uploadBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.uploadLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 60px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.uploadLabel:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+/* Lịch học & Báo lỗi trùng lịch */
+.addSessionBtn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.endDateNotification {
+  background-color: #f1f5f9;
+  border-left: 4px solid #64748b;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 20px;
+}
+
+.daysSelector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.daysSelector button {
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daysSelector button:hover {
+  background: #f1f5f9;
+}
+
+.daysSelector .activeDay {
+  background: #0066cc;
+  color: #ffffff;
+  border-color: #0066cc;
+  font-weight: 500;
+}
+
+.timePickerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f1f5f9;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.timePickerRow input[type="time"] {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+}
+
+.durationLabel {
+  margin-left: auto;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.errorAlert {
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+/* CỘT PHẢI STICKY (Học phí & Mẹo) */
+.rightColumn {
+  position: relative;
+}
+
+.stickyWrapper {
+  position: sticky;
+  top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feeEstimateCard {
+  background: #1e62ec;
+  color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.feeEstimateCard h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.feeEstimateCard p {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.feeDisplay {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.feeLabel {
+  display: block;
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.feeValue {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.feeFootnote {
+  font-size: 12px !important;
+  margin-bottom: 0 !important;
+  opacity: 0.75 !important;
+}
+
+.tipsCard {
+  background: #f5efe6;
+  border: 1px solid #e6dcce;
+  padding: 20px;
+  border-radius: 12px;
+  color: #5c4d3c;
+}
+
+.tipsCard h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #3e3327;
+}
+
+.tipsCard ul {
+  padding-left: 16px;
+  margin: 0;
+}
+
+.tipsCard li {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.tipsCard li:last-child {
+  margin-bottom: 0;
+}
+
+/* Các nút hành động */
+.submitBtn {
+  background: #002266;
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #001a4d;
+}
+
+.submitBtn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.saveDraftBtn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  margin-top: -8px;
+}
+
+.saveDraftBtn:hover {
+  color: #334155;
+  text-decoration: underline;
+}
