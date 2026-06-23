@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Headers from "@/components/users/Headers";
+import Headers from "@/components/users/Header";
 import "./teacher.css";
 
 export default function TeacherRegisterPage() {
@@ -34,14 +34,21 @@ export default function TeacherRegisterPage() {
     "Ngoại ngữ khác",
     "Âm nhạc - Nghệ thuật",
     "Thể dục - Thể thao",
-    "Khác"
+    "Khác",
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!fullName || !email || !phone || !expertise || !password || !confirmPassword) {
+    if (
+      !fullName ||
+      !email ||
+      !phone ||
+      !expertise ||
+      !password ||
+      !confirmPassword
+    ) {
       setError("Vui lòng nhập đầy đủ thông tin");
       return;
     }
@@ -69,7 +76,14 @@ export default function TeacherRegisterPage() {
     setIsLoading(true);
 
     setTimeout(() => {
-      console.log("Đăng ký giảng viên:", { fullName, email, phone, expertise, cvLink, password });
+      console.log("Đăng ký giảng viên:", {
+        fullName,
+        email,
+        phone,
+        expertise,
+        cvLink,
+        password,
+      });
       setIsLoading(false);
       router.push("/login");
     }, 1000);
@@ -80,20 +94,20 @@ export default function TeacherRegisterPage() {
       <Headers />
       <div className="aurateach-teacher-page">
         <div className="aurateach-teacher-container">
-          
           {/* Phần bên trái - Hình ảnh minh họa */}
           <div className="aurateach-teacher-left">
             <div className="aurateach-teacher-hero">
-              <img 
-                src="/images/teacher-hero.jpg" 
-                alt="Đăng ký giảng viên AuraTeach" 
+              <img
+                src="/images/teacher-hero.jpg"
+                alt="Đăng ký giảng viên AuraTeach"
                 className="aurateach-teacher-hero-img"
               />
               <div className="aurateach-teacher-hero-overlay">
                 <div className="aurateach-hero-icon">🎓✨</div>
                 <h2>AuraTeach</h2>
                 <p>
-                  Nền tảng kết nối gia sư và học viên<br />
+                  Nền tảng kết nối gia sư và học viên
+                  <br />
                   uy tín hàng đầu Việt Nam.
                 </p>
                 <div className="aurateach-hero-quote">
@@ -106,7 +120,9 @@ export default function TeacherRegisterPage() {
           {/* Phần bên phải - Form đăng ký giảng viên */}
           <div className="aurateach-teacher-right">
             <div className="aurateach-teacher-card">
-              <h1 className="aurateach-teacher-title">Trở thành Giảng viên tại AuraTeach</h1>
+              <h1 className="aurateach-teacher-title">
+                Trở thành Giảng viên tại AuraTeach
+              </h1>
               <p className="aurateach-teacher-subtitle">
                 Chia sẻ kiến thức của bạn và xây dựng thương hiệu cá nhân.
               </p>
@@ -117,14 +133,20 @@ export default function TeacherRegisterPage() {
                   <span className="benefit-icon">💰</span>
                   <div>
                     <h4>Tăng thu nhập xứng đáng</h4>
-                    <p>Mô hình chia sẻ lợi nhuận hàng đầu nhất thị trường giáo dục trực tuyến.</p>
+                    <p>
+                      Mô hình chia sẻ lợi nhuận hàng đầu nhất thị trường giáo
+                      dục trực tuyến.
+                    </p>
                   </div>
                 </div>
                 <div className="benefit-item">
                   <span className="benefit-icon">⏰</span>
                   <div>
                     <h4>Quản lý linh hoạt</h4>
-                    <p>Trợ giúp thiết kế giáo trình và chủ động thời gian giảng dạy của riêng bạn.</p>
+                    <p>
+                      Trợ giúp thiết kế giáo trình và chủ động thời gian giảng
+                      dạy của riêng bạn.
+                    </p>
                   </div>
                 </div>
                 <div className="benefit-item">
@@ -136,13 +158,18 @@ export default function TeacherRegisterPage() {
                 </div>
               </div>
 
-              <h3 className="aurateach-form-section-title">Đăng ký giảng viên</h3>
+              <h3 className="aurateach-form-section-title">
+                Đăng ký giảng viên
+              </h3>
               <p className="aurateach-form-section-desc">
-                Cung cấp thông tin của bạn để bắt đầu hành trình giảng dạy chuyên nghiệp.
+                Cung cấp thông tin của bạn để bắt đầu hành trình giảng dạy
+                chuyên nghiệp.
               </p>
 
               <form onSubmit={handleSubmit} className="aurateach-teacher-form">
-                {error && <div className="aurateach-error-message">{error}</div>}
+                {error && (
+                  <div className="aurateach-error-message">{error}</div>
+                )}
 
                 <div className="aurateach-form-group">
                   <label htmlFor="fullName">Họ và tên</label>
@@ -189,7 +216,9 @@ export default function TeacherRegisterPage() {
                     className="aurateach-form-input"
                   >
                     {expertiseOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -247,8 +276,8 @@ export default function TeacherRegisterPage() {
                   </label>
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="aurateach-teacher-button"
                   disabled={isLoading}
                 >
@@ -264,7 +293,6 @@ export default function TeacherRegisterPage() {
               </form>
             </div>
           </div>
-
         </div>
       </div>
     </>

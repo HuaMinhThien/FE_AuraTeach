@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Headers from "@/components/users/Headers";
+import Headers from "@/components/users/Header";
 import "./login.css";
 
 export default function LoginPage() {
@@ -46,7 +46,7 @@ export default function LoginPage() {
 
       const expires = rememberMe ? 30 : 1;
       document.cookie = `user_info=${encodeURIComponent(
-        JSON.stringify(userInfo)
+        JSON.stringify(userInfo),
       )}; path=/; max-age=${expires * 24 * 60 * 60}`;
       document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
 
@@ -56,7 +56,7 @@ export default function LoginPage() {
           router.push("/");
           break;
         case "tutor":
-          router.push("/tutor");
+          window.location.href = "/tutor-dashboard";
           break;
         case "admin":
           router.push("/admin");
@@ -84,7 +84,9 @@ export default function LoginPage() {
               </p>
 
               <form onSubmit={handleSubmit} className="aurateach-login-form">
-                {error && <div className="aurateach-error-message">{error}</div>}
+                {error && (
+                  <div className="aurateach-error-message">{error}</div>
+                )}
 
                 <div className="aurateach-form-group">
                   <label htmlFor="email">Email</label>
@@ -121,7 +123,10 @@ export default function LoginPage() {
                     />
                     <span>Ghi nhớ đăng nhập</span>
                   </label>
-                  <Link href="/forgot-password" className="aurateach-forgot-link">
+                  <Link
+                    href="/forgot-password"
+                    className="aurateach-forgot-link"
+                  >
                     Quên mật khẩu?
                   </Link>
                 </div>
@@ -150,7 +155,8 @@ export default function LoginPage() {
                 <div className="aurateach-hero-icon">📚✨</div>
                 <h2>AuraTeach</h2>
                 <p>
-                  Nền tảng kết nối gia sư và học viên<br />
+                  Nền tảng kết nối gia sư và học viên
+                  <br />
                   tự tin hàng đầu Việt Nam.
                 </p>
               </div>

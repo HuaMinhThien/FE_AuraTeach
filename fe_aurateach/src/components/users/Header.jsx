@@ -133,9 +133,15 @@ export default function Headers() {
                             </svg>
 
                             <div className={`dropdown-menu ${isDropdownOpen ? "show" : ""}`} onClick={(e) => e.stopPropagation()}>
+                            {user.role === "tutor" ? (
+                                <Link href="/tutor-dashboard" onClick={() => setIsDropdownOpen(false)}>
+                                    Trang cá nhân
+                                </Link>
+                            ) : (
                                 <Link href="/profile" onClick={() => setIsDropdownOpen(false)}>
                                     Trang cá nhân
                                 </Link>
+                            )}
                                 <button onClick={handleLogout} className="logout-btn">Đăng xuất</button>
                             </div>
                         </div>

@@ -1,0 +1,58 @@
+
+.welcomeSection {
+    margin-bottom: 24px;
+}
+.headerTitle h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+.headerTitle p {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 24px;
+}
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+.statCard {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+}
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.icon {
+    font-size: 20px;
+}
+.badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.greenBg { background-color: #f0fdf4; color: #16a34a; }
+.blueBg { background-color: #eff6ff; color: #2563eb; }
+.goldBg { background-color: #fffbeb; color: #d97706; }
+
+.cardLabel {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+.cardValue {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+@media (max-width: 1024px) {
+    .statsGrid { grid-template-columns: repeat(2, 1fr); }
+}
