@@ -87,9 +87,9 @@ export default function ClassListPage() {
     );
   }, [filteredCourses, currentPage]);
 
-  // Điều hướng đến trang chi tiết
+  // ✅ Điều hướng đến trang chi tiết - ĐÃ SỬA
   const handleCardClick = useCallback((course) => {
-    router.push(`/classdetail/${course.course_id}`);
+    router.push(`/classList/${course.course_id}`);
   }, [router]);
 
   // Xử lý lỗi ảnh
@@ -244,7 +244,7 @@ export default function ClassListPage() {
 
                 <div className={styles.tutorMeta}>
                   <div>📅 12 buổi - Tối T2, T4, T6</div>
-                  <div>👥 8/10 học viên đã đăng ký</div>
+                  <div>👥 {course.current_students}/{course.max_students} học viên đã đăng ký</div>
                 </div>
 
                 <div className={styles.tutorFooter}>

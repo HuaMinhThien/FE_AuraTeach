@@ -8,6 +8,11 @@ import data from "../../api/data.json";
 
 const quickFilters = ["Tất cả", "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh"];
 
+// Thêm hàm helper để tạo dữ liệu ngẫu nhiên cho tutor
+const getRandomDate = (start, end) => {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+};
+
 const allTutors = data.tutors.map((tutor) => {
   const user = data.users.find(u => u.user_id === tutor.user_id);
   
@@ -15,6 +20,12 @@ const allTutors = data.tutors.map((tutor) => {
   if (!avatar || avatar === "") {
     avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
   }
+
+  // Tạo ngày tạo ngẫu nhiên cho tutor (trong vòng 1 năm qua)
+  const createdAt = getRandomDate(
+    new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+    new Date()
+  );
 
   return {
     id: tutor.tutor_id,
@@ -26,6 +37,7 @@ const allTutors = data.tutors.map((tutor) => {
     tags: ["Gia sư", tutor.qualification?.split(" - ")[1] || "Chuyên môn"].filter(Boolean),
     avatar: avatar,
     qualification: tutor.qualification || "",
+    createdAt: createdAt, // Thêm ngày tạo
   };
 });
 
@@ -41,11 +53,14 @@ export default function TeacherListPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOption, setSortOption] = useState("newest"); // Thêm state cho sort
+  const [isSortOpen, setIsSortOpen] = useState(false); // State cho dropdown
   const tutorsPerPage = 8;
 
-  // Lọc theo search và filter
-  const filteredTutors = useMemo(() => {
-    return allTutors.filter((tutor) => {
+  // Lọc và sắp xếp tutor
+  const filteredAndSortedTutors = useMemo(() => {
+    // Lọc trước
+    let filtered = allTutors.filter((tutor) => {
       const matchesSearch = 
         tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tutor.desc.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,17 +73,33 @@ export default function TeacherListPage() {
 
       return matchesSearch && matchesFilter;
     });
-  }, [searchTerm, activeFilter]);
+
+    // Sắp xếp sau
+    if (sortOption === "newest") {
+      filtered = filtered.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (sortOption === "oldest") {
+      filtered = filtered.sort((a, b) => a.createdAt - b.createdAt);
+    }
+
+    return filtered;
+  }, [searchTerm, activeFilter, sortOption]);
 
   // Phân trang
-  const totalPages = Math.ceil(filteredTutors.length / tutorsPerPage);
-  const currentTutors = filteredTutors.slice(
+  const totalPages = Math.ceil(filteredAndSortedTutors.length / tutorsPerPage);
+  const currentTutors = filteredAndSortedTutors.slice(
     (currentPage - 1) * tutorsPerPage,
     currentPage * tutorsPerPage
   );
 
   const handleSearch = (e) => {
     e.preventDefault();
+  };
+
+  // Hàm xử lý sort
+  const handleSortChange = (option) => {
+    setSortOption(option);
+    setIsSortOpen(false);
+    setCurrentPage(1);
   };
 
   return (
@@ -92,7 +123,7 @@ export default function TeacherListPage() {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setCurrentPage(1); // Reset về trang 1 khi search
+                  setCurrentPage(1);
                 }}
                 aria-label="Tìm kiếm gia sư"
               />
@@ -123,10 +154,36 @@ export default function TeacherListPage() {
 
       <section className={`container-center ${styles.listSection}`}>
         <div className={styles.listHead}>
-          <h2>{filteredTutors.length} gia sư phù hợp</h2>
-          <button type="button" className={styles.sortBtn}>
-            Mới nhất <span>▾</span>
-          </button>
+          <h2>{filteredAndSortedTutors.length} gia sư phù hợp</h2>
+          
+          {/* Dropdown Sort */}
+          <div className={styles.sortWrapper}>
+            <button 
+              type="button" 
+              className={styles.sortBtn}
+              onClick={() => setIsSortOpen(!isSortOpen)}
+            >
+              {sortOption === "newest" ? "Mới nhất" : "Cũ nhất"} 
+              <span className={isSortOpen ? styles.arrowUp : styles.arrowDown}>▾</span>
+            </button>
+            
+            {isSortOpen && (
+              <div className={styles.sortDropdown}>
+                <button 
+                  className={sortOption === "newest" ? styles.activeSort : ""}
+                  onClick={() => handleSortChange("newest")}
+                >
+                  Mới nhất
+                </button>
+                <button 
+                  className={sortOption === "oldest" ? styles.activeSort : ""}
+                  onClick={() => handleSortChange("oldest")}
+                >
+                  Cũ nhất
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.grid}>
