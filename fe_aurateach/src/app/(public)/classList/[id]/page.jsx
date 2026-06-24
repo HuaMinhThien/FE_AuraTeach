@@ -29,7 +29,12 @@ export default function ClassDetailPage({ params }) {
     return <div className={styles.container}>Không tìm thấy khóa học</div>;
   }
 
+  // Sửa hàm formatPrice để xử lý trường hợp undefined/null
   const formatPrice = (priceStr) => {
+    // Kiểm tra nếu priceStr là undefined, null hoặc không phải string
+    if (!priceStr || typeof priceStr !== 'string') {
+      return '0';
+    }
     // Xử lý chuỗi kiểu "150.000đ/giờ"
     return priceStr.replace(/[^0-9]/g, '');
   };
@@ -139,8 +144,12 @@ export default function ClassDetailPage({ params }) {
         <div className={styles.sidebar}>
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
-              <span className={styles.price}>{formatPrice(course.price_per_session)}đ</span>
-              <span className={styles.priceUnit}>/giờ</span>
+              <span className={styles.price}>
+                {course.price_per_session ? formatPrice(course.price_per_session) : 'Liên hệ'}
+              </span>
+              {course.price_per_session && (
+                <span className={styles.priceUnit}>/giờ</span>
+              )}
             </div>
 
             <div className={styles.priceDetails}>
