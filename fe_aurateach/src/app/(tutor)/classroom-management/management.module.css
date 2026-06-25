@@ -111,15 +111,20 @@
 }
 .detailBtn {
     flex: 1;
-    background-color: #f8fafc;
+    background-color: #00236f;
     border: 1px solid #cbd5e1;
     padding: 8px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 500;
-    color: #334155;
+    color: #ffffff;
     cursor: pointer;
 }
+.detailBtn:hover{
+    background-color: #0d47a1;
+
+}
+
 .closeActionBtn {
     background-color: #fff1f2;
     border: 1px solid #fecdd3;
@@ -130,7 +135,10 @@
     font-weight: 500;
     cursor: pointer;
 }
-
+.closeActionBtn:hover{
+    color: #fff1f2;
+    background-color: #e11d48;
+}
 /* Thanh phân trang */
 .paginationBox {
     display: flex;

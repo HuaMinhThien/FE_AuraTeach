@@ -286,7 +286,7 @@ export default function CreateClassPage() {
             <div className={styles.rowGrid} style={{ marginBottom: "20px" }}>
               <div className={styles.formGroup}>
                 <label>📅 Ngày bắt đầu dạy (Khai giảng)</label>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required style={{padding: "12px 16px;", border: "1px solid #cbd5e1", borderRadius: "8px;"}} />
               </div>
               <div className={styles.formGroup}>
                 <label>⏳ Số tuần dự kiến hoàn thành</label>
@@ -314,7 +314,6 @@ export default function CreateClassPage() {
             </div>
 
             <div className={styles.timePickerRow}>
-              <span>⏰</span>
               <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
               <span>—</span>
               <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />

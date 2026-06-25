@@ -49,15 +49,7 @@ export default function ClassDetailPage({ params }) {
     : tutorInfo?.rating || 4.8;
 
   return (
-    <div className={styles.container}>
-      {/* Breadcrumb */}
-      <div className={styles.breadcrumb}>
-        <Link href="/student-private">Học viên</Link>
-        <span className={styles.separator}>›</span>
-        <Link href="/student-private/classList">Tìm lớp học</Link>
-        <span className={styles.separator}>›</span>
-        <span className={styles.current}>Chi tiết lớp học</span>
-      </div>
+    <div className={styles.container} style={{marginTop: "80px"}}>
 
       {/* Header */}
       <div className={styles.header}>

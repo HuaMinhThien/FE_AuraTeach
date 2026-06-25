@@ -20,7 +20,7 @@ export default function TutorDashboardPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "24px", width: "100%", marginTop: "80px" }}>
       
       {/* SECTION 1: Lời chào và Thống kê thẻ số đầu trang */}
-      <Tutor_sec1 tutorName="Nguyễn Tùng Dương" statsData={null} />
+      <Tutor_sec1 tutorName="Thien day ne" statsData={null} />
 
       <div style={{ 
         display: "grid", 
