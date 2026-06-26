@@ -1,13 +1,13 @@
-import Headers from '@/components/users/Headers';
-import '../../css/student-style/main.css';
-import Footer from '@/components/users/Footer';
+import Header from "@/components/users/Header";
+import "../../css/student-style/main.css";
+import Footer from "@/components/users/Footer";
 
 export default function RootLayout({ children }) {
   return (
     <>
-      <Headers />
+      <Header />
 
-        {children}
+      {children}
 
       <Footer />
     </>

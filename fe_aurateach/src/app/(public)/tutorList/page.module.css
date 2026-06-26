@@ -357,6 +357,7 @@
 	transition: all 0.3s ease;
 	position: relative;
 	overflow: hidden;
+	width: 300px;
 }
 
 .detailBtn::after {
@@ -508,4 +509,143 @@
 	.card {
 		min-height: 280px;
 	}
+}
+
+.detailLink {
+  display: block;
+  text-decoration: none;
+  margin-top: auto;
+}
+
+.detailLink:hover .detailBtn,
+.detailLink:focus .detailBtn {
+  background: #1259c9;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(18, 89, 201, 0.25);
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+}
+.cardLink:hover .card {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Thêm vào cuối file page.module.css */
+
+/* Sort Dropdown */
+.sortWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.sortBtn {
+  background: #fff;
+  border: 1px solid #dbe3ef;
+  color: #3f4e63;
+  border-radius: 8px;
+  min-width: 130px;
+  height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.sortBtn:hover {
+  border-color: #1259c9;
+  color: #1259c9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(18, 89, 201, 0.1);
+}
+
+.arrowUp {
+  transform: rotate(180deg);
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.arrowDown {
+  transform: rotate(0deg);
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.sortDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  min-width: 130px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sortDropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  color: #3f4e63;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sortDropdown button:hover {
+  background: #f0f4fa;
+  color: #1259c9;
+}
+
+.sortDropdown button:not(:last-child) {
+  border-bottom: 1px solid #f0f4fa;
+}
+
+.activeSort {
+  background: #edf3ff !important;
+  color: #1259c9 !important;
+  font-weight: 600;
+}
+
+/* Responsive cho sort dropdown */
+@media (max-width: 640px) {
+  .sortWrapper {
+    width: 100%;
+  }
+  
+  .sortBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .sortDropdown {
+    width: 100%;
+    min-width: unset;
+  }
 }

@@ -132,7 +132,7 @@ export default function Headers() {
                         <Link href="/tutorList" className={`nav-item ${pathname === "/tutorList" ? "active-nav" : ""}`}>
                             <span>Tìm gia sư</span>
                         </Link>
-                        <Link href="/class-search" className={`nav-item ${pathname === "/class-search" ? "active-nav" : ""}`}>
+                        <Link href="/classList" className={`nav-item ${pathname === "/classList" ? "active-nav" : ""}`}>
                             <span>Tìm lớp học</span>
                         </Link>
                     </div>
@@ -170,6 +170,7 @@ export default function Headers() {
                                     </button>
                                     <button onClick={handleLogout} className="dropdown-item logout-btn">Đăng xuất</button>
                                 </div>
+
                             </div>
                         ) : (
                             <Link href="/login" className={`header-btn login-btn ${pathname === "/login" ? "header-btn-active" : ""}`}>

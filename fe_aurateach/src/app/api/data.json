@@ -1,25 +1,48 @@
 {
   "categories": [
-    { "category_id": "cat-01", "category_name": "Tất cả" },
-    { "category_id": "cat-02", "category_name": "Toán" },
-    { "category_id": "cat-03", "category_name": "Văn" },
-    { "category_id": "cat-04", "category_name": "Anh" },
-    { "category_id": "cat-05", "category_name": "Lý" },
-    { "category_id": "cat-06", "category_name": "Hóa" },
-    { "category_id": "cat-07", "category_name": "Sinh" }
+    {
+      "category_id": "cat-02",
+      "category_name": "Toán",
+      "id": "c19f"
+    },
+    {
+      "category_id": "cat-03",
+      "category_name": "Văn",
+      "id": "c8aa"
+    },
+    {
+      "category_id": "cat-04",
+      "category_name": "Anh",
+      "id": "8ffa"
+    },
+    {
+      "category_id": "cat-05",
+      "category_name": "Lý",
+      "id": "5988"
+    },
+    {
+      "category_id": "cat-06",
+      "category_name": "Hóa",
+      "id": "5b2a"
+    },
+    {
+      "category_id": "cat-07",
+      "category_name": "Sinh",
+      "id": "fee6"
+    }
   ],
-
   "users": [
     {
       "user_id": "u-01",
-      "email": "duong.nguyen@aurateach.id",
-      "password": "hashed_password_1",
-      "full_name": "Nguyễn Tùng Dương",
+      "email": "thien@gmail.com",
+      "password": "thien123",
+      "full_name": "Thiện đây nè ",
       "phone": "0912345678",
-      "avatar": "/img/tutors/duong.png",
+      "avatar": "/img/avt/thien.jpg",
       "role": "tutor",
       "status": "active",
-      "created_at": "2026-01-15T08:00:00Z"
+      "created_at": "2026-01-15T08:00:00Z",
+      "id": "411d"
     },
     {
       "user_id": "u-02",
@@ -30,7 +53,8 @@
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
       "role": "tutor",
       "status": "active",
-      "created_at": "2026-02-10T09:30:00Z"
+      "created_at": "2026-02-10T09:30:00Z",
+      "id": "0563"
     },
     {
       "user_id": "u-03",
@@ -41,7 +65,8 @@
       "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
       "role": "tutor",
       "status": "active",
-      "created_at": "2026-02-12T14:15:00Z"
+      "created_at": "2026-02-12T14:15:00Z",
+      "id": "90ae"
     },
     {
       "user_id": "u-04",
@@ -52,7 +77,8 @@
       "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200",
       "role": "tutor",
       "status": "active",
-      "created_at": "2026-03-01T10:00:00Z"
+      "created_at": "2026-03-01T10:00:00Z",
+      "id": "4733"
     },
     {
       "user_id": "u-student-1",
@@ -65,7 +91,10 @@
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
-      "updated_at": "2023-12-12T10:30:00Z"
+
+      "updated_at": "2023-12-12T10:30:00Z",
+
+      "id": "08aa"
     },
     {
       "user_id": "u-student-2",
@@ -76,28 +105,30 @@
       "avatar": "",
       "role": "student",
       "status": "active",
-      "created_at": "2026-01-22T15:20:00Z"
+      "created_at": "2026-01-22T15:20:00Z",
+      "id": "c9e9"
     }
   ],
-
   "tutors": [
     {
       "tutor_id": "tutor_01",
       "user_id": "u-01",
-      "bio": "Xin chào, mình là Dương – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+      "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
       "qualification": "Đại học - CNTT",
       "rating": 4.8,
       "verification_status": "Đã xác minh",
-      "Experience": "Dưới 1 năm"
+      "Experience": "Dưới 1 năm",
+      "id": "1f17"
     },
     {
       "tutor_id": "tutor_02",
       "user_id": "u-02",
       "bio": "Cựu sinh viên chuyên ngành Sư phạm Toán học ĐH Sư Phạm. Chuyên trị các học sinh mất gốc hình học không gian và luyện thi vào các trường chuyên cấp 3.",
       "qualification": "Cử nhân - Sư phạm Toán",
-      "rating": 5.0,
+      "rating": 5,
       "verification_status": "Đã xác minh",
-      "Experience": "5 năm kinh nghiệm"
+      "Experience": "5 năm kinh nghiệm",
+      "id": "c95a"
     },
     {
       "tutor_id": "tutor_03",
@@ -106,7 +137,8 @@
       "qualification": "Thạc sĩ - Ngữ Văn",
       "rating": 4.9,
       "verification_status": "Đã xác minh",
-      "Experience": "6 năm kinh nghiệm"
+      "Experience": "6 năm kinh nghiệm",
+      "id": "12c3"
     },
     {
       "tutor_id": "tutor_04",
@@ -115,186 +147,313 @@
       "qualification": "Đại học - Ngôn ngữ Anh",
       "rating": 4.7,
       "verification_status": "Chưa cập nhật",
-      "Experience": "4 năm kinh nghiệm"
+      "Experience": "4 năm kinh nghiệm",
+      "id": "e73f"
     }
   ],
-
   "students": [
-    { "student_id": "st-01", "user_id": "u-student-1", "grade": "Lớp 9", "school_name": "THPT Chuyên Hà Nội - Amsterdam" },
-    { "student_id": "st-02", "user_id": "u-student-2", "grade": "Lớp 12", "school_name": "THPT Nguyễn Thượng Hiền" }
+    {
+      "student_id": "st-01",
+      "user_id": "u-student-1",
+      "grade": "Lớp 9",
+      "school_name": "THPT Chuyên Hà Nội - Amsterdam",
+      "id": "0fca"
+    },
+    {
+      "student_id": "st-02",
+      "user_id": "u-student-2",
+      "grade": "Lớp 12",
+      "school_name": "THPT Nguyễn Thượng Hiền",
+      "id": "d9f7"
+    }
   ],
-
   "courses": [
     {
+      "id": "4cf2",
       "course_id": "c-01",
       "category_id": "cat-02",
       "tutor_id": "tutor_01",
+      "class_name": "Gia sư môn Toán học",
       "title": "Gia sư môn Toán học",
+      "category": "Toán",
+      "level": "Cấp 2",
       "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán học bền vững cấp 1, 2, 3.",
       "max_students": 1,
-      "current_students": 1,
-      "price_per_session": "150.000đ/giờ",
+      "hourly_rate": 150000,
+      "start_date": "2026-07-01",
+      "end_date": "2026-09-23",
+      "total_weeks": 12,
+      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
-      "flow": "Cấp 1, 2, 3 • Lấy lại gốc & Nâng cao" 
+      "students": []
     },
     {
+      "id": "8ab5",
       "course_id": "c-02",
       "category_id": "cat-03",
       "tutor_id": "tutor_01",
+      "class_name": "Gia sư môn Ngữ văn",
       "title": "Gia sư môn Ngữ văn",
+      "category": "Văn",
+      "level": "Cấp 3",
       "description": "Hướng dẫn phương pháp làm văn, phân tích tác phẩm trọng tâm ôn thi vào 10 và THPT Quốc gia.",
       "max_students": 1,
-      "current_students": 0,
-      "price_per_session": "120.000đ/giờ",
+      "hourly_rate": 120000,
+      "start_date": "2026-07-05",
+      "end_date": "2026-10-27",
+      "total_weeks": 16,
+      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "time_slot": "19:30-21:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Zoom",
       "permanent_room_url": "https://zoom.us/j/123456789",
-      "flow": "Cấp 2, 3 • Ôn luyện thi vào 10 & ĐH"
+      "students": []
     },
     {
+      "id": "fad2",
       "course_id": "c-03",
       "category_id": "cat-04",
       "tutor_id": "tutor_01",
+      "class_name": "Gia sư Tiếng Anh chuẩn quốc tế",
       "title": "Gia sư Tiếng Anh chuẩn quốc tế",
+      "category": "Anh",
+      "level": "Cấp 3",
       "description": "Học tiếng Anh chuẩn quốc tế, nâng cao kỹ năng giao tiếp và luyện thi chứng chỉ.",
       "max_students": 2,
-      "current_students": 1,
-      "price_per_session": "200.000đ/giờ",
+      "hourly_rate": 200000,
+      "start_date": "2026-07-10",
+      "end_date": "2026-09-04",
+      "total_weeks": 8,
+      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "time_slot": "17:00-19:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/eng-tutor-room",
-      "flow": "Giao tiếp • IELTS • Lấy gốc cấp tốc"
+      "students": []
     },
     {
+      "id": "1493",
       "course_id": "c-04",
       "category_id": "cat-02",
       "tutor_id": "tutor_02",
+      "class_name": "Toán hình học không gian nâng cao",
       "title": "Toán hình học không gian nâng cao",
+      "category": "Toán",
+      "level": "Cấp 3",
       "description": "Khóa bứt phá điểm 8+, 9+ thi THPT Quốc Gia môn Toán phần hình học không gian phẳng.",
       "max_students": 5,
-      "current_students": 3,
-      "price_per_session": "180.000đ/giờ",
+      "hourly_rate": 180000,
+      "start_date": "2026-07-01",
+      "end_date": "2026-09-23",
+      "total_weeks": 12,
+      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Zoom",
       "permanent_room_url": "https://zoom.us/j/999888777",
-      "flow": "Ôn thi Đại học khối A, A1"
+      "students": []
     },
     {
+      "id": "54d2",
       "course_id": "c-05",
       "category_id": "cat-05",
       "tutor_id": "tutor_02",
+      "class_name": "Vật Lý Đại Cương & Ôn Thi Vào 10",
       "title": "Vật Lý Đại Cương & Ôn Thi Vào 10",
+      "category": "Lý",
+      "level": "Cấp 2",
       "description": "Hệ thống toàn bộ kiến thức chuyển động cơ học, điện học khó mạch phức tạp cho học sinh lớp 9 ôn chuyên.",
       "max_students": 3,
-      "current_students": 1,
-      "price_per_session": "160.000đ/giờ",
+      "hourly_rate": 160000,
+      "start_date": "2026-07-05",
+      "end_date": "2026-10-27",
+      "total_weeks": 16,
+      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "time_slot": "19:30-21:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/phy-tutor-01",
-      "flow": "Cấp 2, 3 • Đột phá điểm số Lý"
+      "students": []
     },
     {
+      "id": "1cab",
       "course_id": "c-06",
       "category_id": "cat-06",
       "tutor_id": "tutor_03",
+      "class_name": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
       "title": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
+      "category": "Hóa",
+      "level": "Cấp 3",
       "description": "Lấy lại kiến thức căn bản hóa trị, cân bằng phương trình hóa học và phương pháp giải bài tập đồ thị vô cơ nhanh.",
       "max_students": 1,
-      "current_students": 0,
-      "price_per_session": "140.000đ/giờ",
+      "hourly_rate": 140000,
+      "start_date": "2026-07-10",
+      "end_date": "2026-09-04",
+      "total_weeks": 8,
+      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "time_slot": "17:00-19:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Zoom",
       "permanent_room_url": "https://zoom.us/j/che-tutor-01",
-      "flow": "Lớp 10, 11 • Lấy lại gốc cấp tốc"
+      "students": []
     },
     {
+      "id": "2b7e",
       "course_id": "c-07",
       "category_id": "cat-07",
       "tutor_id": "tutor_03",
+      "class_name": "Sinh Học Luyện Thi Khối B Cấp Tốc",
       "title": "Sinh Học Luyện Thi Khối B Cấp Tốc",
+      "category": "Sinh",
+      "level": "Cấp 3",
       "description": "Khóa học tập trung giải các bài toán di truyền biến dị phức tạp cấu trúc ADN, cam kết ôn thi đại học đạt điểm cao.",
       "max_students": 4,
-      "current_students": 2,
-      "price_per_session": "170.000đ/giờ",
+      "hourly_rate": 170000,
+      "start_date": "2026-07-01",
+      "end_date": "2026-09-23",
+      "total_weeks": 12,
+      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/bio-tutor-99",
-      "flow": "Lớp 12 • Luyện thi Khối B đại học"
+      "students": []
     },
     {
+      "id": "a6d5",
       "course_id": "c-08",
       "category_id": "cat-02",
       "tutor_id": "tutor_02",
+      "class_name": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
       "title": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
+      "category": "Toán",
+      "level": "Cấp 1",
       "description": "Phát triển tư duy logic toán học cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
       "max_students": 2,
-      "current_students": 1,
-      "price_per_session": "130.000đ/giờ",
+      "hourly_rate": 130000,
+      "start_date": "2026-07-05",
+      "end_date": "2026-10-27",
+      "total_weeks": 16,
+      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "time_slot": "19:30-21:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/math-kid-01",
-      "flow": "Cấp 1 • Kích thích tư duy logic"
+      "students": []
     },
     {
+      "id": "84c9",
       "course_id": "c-09",
       "category_id": "cat-03",
       "tutor_id": "tutor_03",
+      "class_name": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
       "title": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
+      "category": "Văn",
+      "level": "Cấp 3",
       "description": "Phân tích chuyên sâu 9 tác phẩm văn học trọng tâm lớp 12, cách viết mở bài kết bài tạo ấn tượng thu hút người chấm thi.",
       "max_students": 6,
-      "current_students": 4,
-      "price_per_session": "150.000đ/giờ",
+      "hourly_rate": 150000,
+      "start_date": "2026-07-10",
+      "end_date": "2026-09-04",
+      "total_weeks": 8,
+      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "time_slot": "17:00-19:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Zoom",
       "permanent_room_url": "https://zoom.us/j/van-12-vip",
-      "flow": "Lớp 12 • Chiến thuật thi THPT Quốc Gia"
+      "students": []
     },
     {
+      "id": "7494",
       "course_id": "c-10",
       "category_id": "cat-04",
       "tutor_id": "tutor_04",
+      "class_name": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
       "title": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
+      "category": "Anh",
+      "level": "Cấp 2",
       "description": "Tổng hợp 12 thì tiếng Anh cơ bản, các cấu trúc câu điều kiện, câu bị động phục vụ kỳ thi chuyển cấp lớp 9 lên 10.",
       "max_students": 2,
-      "current_students": 0,
-      "price_per_session": "140.000đ/giờ",
+      "hourly_rate": 140000,
+      "start_date": "2026-07-01",
+      "end_date": "2026-09-23",
+      "total_weeks": 12,
+      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/eng-grammar-02",
-      "flow": "Cấp 2 • Ngữ pháp chuyên sâu"
+      "students": []
     },
     {
+      "id": "84b4",
       "course_id": "c-11",
       "category_id": "cat-05",
       "tutor_id": "tutor_04",
+      "class_name": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
       "title": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
+      "category": "Lý",
+      "level": "Cấp 3",
       "description": "Chuyên đề dao động cơ học, sóng cơ và dòng điện xoay chiều lớp 12 giúp học sinh nắm chắc điểm 8 trong tay.",
       "max_students": 5,
-      "current_students": 2,
-      "price_per_session": "160.000đ/giờ",
+      "hourly_rate": 160000,
+      "start_date": "2026-07-05",
+      "end_date": "2026-10-27",
+      "total_weeks": 16,
+      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "time_slot": "19:30-21:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Zoom",
       "permanent_room_url": "https://zoom.us/j/phy-12-room",
-      "flow": "Lớp 12 • Ôn thi tốt nghiệp & Đại học"
+      "students": []
     },
     {
+      "id": "649d",
       "course_id": "c-12",
       "category_id": "cat-06",
       "tutor_id": "tutor_01",
+      "class_name": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
       "title": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
+      "category": "Hóa",
+      "level": "Cấp 3",
       "description": "Làm chủ chuỗi phản ứng Ankan, Anken, Đơn chức, Đa chức Este Lipit và phương pháp dồn chất giải toán cực khó.",
       "max_students": 3,
-      "current_students": 1,
-      "price_per_session": "150.000đ/giờ",
+      "hourly_rate": 150000,
+      "start_date": "2026-07-10",
+      "end_date": "2026-09-04",
+      "total_weeks": 8,
+      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "time_slot": "17:00-19:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "meeting_platform": "Google Meet",
       "permanent_room_url": "https://meet.google.com/che-organic-02",
-      "flow": "Lớp 11, 12 • Đạt điểm 9+ tổ hợp tự nhiên"
+      "students": []
+    },
+    {
+      "id": "fbf7",
+      "course_id": "course-1782228975646",
+      "tutor_id": "u-01",
+      "class_name": "Ôn toán cấp tốc",
+      "title": "Ôn toán cấp tốc",
+      "category": "Toán",
+      "level": "Cấp 3",
+      "description": "ôn tập luyện thi chất lượng cao",
+      "max_students": 5,
+      "hourly_rate": 250000,
+      "start_date": "2026-06-25",
+      "end_date": "2026-08-20",
+      "total_weeks": 8,
+      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "time_slot": "19:00-01:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
     }
   ],
-
   "reviews": [
     {
       "review_id": "rev-01",
@@ -302,7 +461,8 @@
       "course_id": "c-01",
       "rating": 5,
       "comment": "Dương dạy rất nhiệt tình và dễ hiểu. Mình đã nắm vững được tư duy giải đề chỉ sau một khóa học.",
-      "created_at": "2026-05-10T12:00:00Z"
+      "created_at": "2026-05-10T12:00:00Z",
+      "id": "6914"
     },
     {
       "review_id": "rev-02",
@@ -310,7 +470,8 @@
       "course_id": "c-01",
       "rating": 5,
       "comment": "Kiến thức của gia sư rất chắc chắn, đặc biệt là phần tư duy thuật toán nâng cao. Rất recommend mọi người học cùng Dương!",
-      "created_at": "2026-05-12T16:30:00Z"
+      "created_at": "2026-05-12T16:30:00Z",
+      "id": "062e"
     },
     {
       "review_id": "rev-03",
@@ -318,10 +479,10 @@
       "course_id": "c-02",
       "rating": 4,
       "comment": "Thầy giảng bài rất cuốn hút, tài liệu học tập chi tiết giúp em cải thiện điểm Văn nghị luận.",
-      "created_at": "2026-05-15T09:15:00Z"
+      "created_at": "2026-05-15T09:15:00Z",
+      "id": "2d76"
     }
   ],
-
   "honored_members": {
     "sectionTitle": "Gương Mặt Vàng AuraTeach",
     "studentSpotlight": {
@@ -339,5 +500,201 @@
       "role": "Phụ huynh bé Gia Bảo (Lớp 8)",
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
     }
-  }
+  },
+  "classByIdTutor": [
+    {
+      "class_id": "cls-01",
+      "class_name": "Toán nâng cao - Ôn thi vào 10",
+      "start_date": "2026-05-01",
+      "end_date": "2026-08-01",
+      "total_weeks": 12,
+      "status": "active",
+      "meet_link": "https://meet.google.com/abc-defg-hij",
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "students": [
+        {
+          "student_id": "st-01",
+          "full_name": "Lê Văn Hùng",
+          "email": "hung@gmail.com"
+        },
+        {
+          "student_id": "st-02",
+          "full_name": "Lê Minh Anh",
+          "email": "minhanh@gmail.com"
+        }
+      ],
+      "id": "fa1c"
+    },
+    {
+      "class_id": "cls-02",
+      "class_name": "Ngữ văn lớp 7 - Bồi dưỡng học sinh giỏi",
+      "start_date": "2026-04-10",
+      "end_date": "2026-06-10",
+      "total_weeks": 8,
+      "status": "completed",
+      "meet_link": "https://meet.google.com/xyz-ouwi-pql",
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5"
+      ],
+      "students": [
+        {
+          "student_id": "st-03",
+          "full_name": "Trần Quốc Huy",
+          "email": "huy@gmail.com"
+        }
+      ],
+      "id": "c455"
+    },
+    {
+      "class_id": "cls-03",
+      "class_name": "Tiếng Anh giao tiếp tiểu học",
+      "start_date": "2026-06-01",
+      "end_date": "2026-09-01",
+      "total_weeks": 12,
+      "status": "active",
+      "meet_link": "https://meet.google.com/mnp-rqst-uvw",
+      "schedule_days": [
+        "Thứ 7",
+        "Chủ Nhật"
+      ],
+      "students": [
+        {
+          "student_id": "st-04",
+          "full_name": "Nguyễn Hoàng Nam",
+          "email": "nam@gmail.com"
+        }
+      ],
+      "id": "7e46"
+    },
+    {
+      "class_id": "cls-04",
+      "class_name": "Hóa học lớp 9 - Lấy lại gốc cấp tốc",
+      "start_date": "2026-03-01",
+      "end_date": "2026-05-01",
+      "total_weeks": 8,
+      "status": "closed",
+      "meet_link": "https://meet.google.com/vgh-jkiu-mno",
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 5"
+      ],
+      "students": [
+        {
+          "student_id": "st-01",
+          "full_name": "Lê Văn Hùng",
+          "email": "hung@gmail.com"
+        }
+      ],
+      "id": "c53b"
+    },
+    {
+      "class_id": "cls-05",
+      "class_name": "Vật Lý 11 - Cơ bản đến nâng cao",
+      "start_date": "2026-06-15",
+      "end_date": "2026-09-15",
+      "total_weeks": 12,
+      "status": "active",
+      "meet_link": "https://meet.google.com/lkj-hgfd-hsa",
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 6"
+      ],
+      "students": [
+        {
+          "student_id": "st-01",
+          "full_name": "Lê Văn Hùng",
+          "email": "hung@gmail.com"
+        }
+      ],
+      "id": "685d"
+    },
+    {
+      "class_id": "cls-06",
+      "class_name": "Lập trình Scratch cho thiếu nhi",
+      "start_date": "2026-01-10",
+      "end_date": "2026-04-10",
+      "total_weeks": 12,
+      "status": "completed",
+      "meet_link": "https://meet.google.com/poi-lkjh-mnb",
+      "schedule_days": [
+        "Thứ 7"
+      ],
+      "students": [
+        {
+          "student_id": "st-02",
+          "full_name": "Lê Minh Anh",
+          "email": "minhanh@gmail.com"
+        }
+      ],
+      "id": "cebf"
+    },
+    {
+      "class_id": "cls-07",
+      "class_name": "Toán hình học không gian lớp 11",
+      "start_date": "2026-07-01",
+      "end_date": "2026-10-01",
+      "total_weeks": 12,
+      "status": "active",
+      "meet_link": "https://meet.google.com/qwe-rtyu-iop",
+      "schedule_days": [
+        "Thứ 4",
+        "Chủ Nhật"
+      ],
+      "students": [],
+      "id": "6831"
+    },
+    {
+      "id": "6d08",
+      "course_id": "course-1782226896990",
+      "tutor_id": "tutor_01",
+      "title": "Ôn toán",
+      "category": "Toán",
+      "level": "Cấp 2",
+      "description": "dạy từ căn bản",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-06-27",
+      "end_date": "2026-08-08",
+      "total_weeks": 6,
+      "schedule_days": [
+        "Thứ 4",
+        "Thứ 3",
+        "Thứ 5"
+      ],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
+    },
+    {
+      "id": "abdf",
+      "course_id": "course-1782228975646",
+      "tutor_id": "u-01",
+      "title": "Ôn toán cấp tốc",
+      "category": "Toán",
+      "level": "Cấp 3",
+      "description": "ôn tập luyện thi chất lượng cao",
+      "max_students": 5,
+      "hourly_rate": 250000,
+      "start_date": "2026-06-25",
+      "end_date": "2026-08-20",
+      "total_weeks": 8,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "19:00-01:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
+    }
+  ]
 }

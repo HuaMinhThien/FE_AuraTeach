@@ -1,0 +1,36 @@
+header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+    padding: 10px 40px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    height: 60px;
+    box-sizing: border-box;
+    position: fixed;
+    font-family: 'Figtree', sans-serif;
+    z-index: 100;
+    justify-self: right;
+}
+
+hr {
+    border: none;               
+    width: 1px;                 
+    height: 24px;               
+    background-color: #b9b9b9;  
+    margin: 0 10px;             
+    align-self: center;         
+}
+
+.user-info {
+    display: flex;
+    align-items: center;        
+    gap: 12px;                  
+}
+
+.icons {
+    display: flex;
+    align-items: center;        
+    cursor: pointer;
+}

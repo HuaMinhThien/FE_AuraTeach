@@ -2,19 +2,19 @@
   margin-top: 80px;
   font-family: system-ui, sans-serif;
   background-color: #f8fafc;
+  min-height: 100vh;
+  padding-bottom: 40px;
 }
 
 .mainLayout {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 30px;
-
-
-    width: 100%;            
-    max-width: 1550px;       
-    margin: 0 auto;    
-    padding: 0 100px;  
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 0 100px;
+  box-sizing: border-box;
 }
 
 /* ================= CỘT BÊN TRÁI ================= */
@@ -40,6 +40,7 @@
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
+  border: 3px solid #e2e8f0;
 }
 
 .nameRow {
@@ -49,7 +50,7 @@
 }
 
 .tutorName {
-  fontSize: 24px;
+  font-size: 24px;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
@@ -95,7 +96,7 @@
   color: #64748b;
 }
 
-/* Các khối nội dung bọc chung (Giới thiệu, Thành tích, Lớp học, Review) */
+/* Các khối nội dung bọc chung */
 .sectionBlock {
   background-color: #fff;
   border: 1px solid #e2e8f0;
@@ -186,6 +187,11 @@
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.registerBtn:hover {
+  background-color: #001a4a;
 }
 
 /* Đồ thị Review */
@@ -233,6 +239,7 @@
   height: 6px;
   background-color: #e2e8f0;
   border-radius: 3px;
+  overflow: hidden;
 }
 
 .progressBarFill5 {
@@ -258,6 +265,10 @@
 .commentItem {
   padding-bottom: 16px;
   border-bottom: 1px dashed #e2e8f0;
+}
+
+.commentItem:last-child {
+  border-bottom: none;
 }
 
 .studentName {
@@ -307,6 +318,12 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
+  transition: all 0.3s;
+}
+
+.callBtn:hover {
+  background-color: #00236F;
+  color: #fff;
 }
 
 .infoBox {
@@ -332,6 +349,7 @@
 
 .infoList span {
   color: #64748b;
+  margin-right: 8px;
 }
 
 .infoList strong {
@@ -375,6 +393,13 @@
   font-size: 12px;
   margin-top: 20px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.reportBtn:hover {
+  background-color: #fef2f2;
 }
 
 /* Khối liên quan */
@@ -408,6 +433,11 @@
   align-items: center;
   padding-bottom: 12px;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.relatedItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .relatedAvatar {
@@ -444,6 +474,82 @@
   background-color: #f1f5f9;
   color: #475569;
   text-decoration: none;
-  padding: 4px 8px;
+  padding: 4px 12px;
   border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.viewBtn:hover {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1320px) {
+  .mainLayout {
+    padding: 0 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainLayout {
+    grid-template-columns: 1fr;
+    padding: 0 20px;
+  }
+
+  .rightColumn {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .coursesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .statsContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .statBox {
+    width: 100%;
+  }
+
+  .rightColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .ratingSummary {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .nameRow {
+    justify-content: center;
+  }
+
+  .tutorName {
+    font-size: 20px;
+  }
+
+  .tutorProfilePage {
+    margin-top: 60px;
+  }
+
+  .mainLayout {
+    padding: 0 12px;
+  }
+
+  .sectionBlock {
+    padding: 20px;
+  }
 }
