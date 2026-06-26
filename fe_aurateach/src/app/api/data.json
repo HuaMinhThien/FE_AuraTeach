@@ -60,10 +60,12 @@
       "password": "123123",
       "full_name": "Liêm Tran",
       "phone": "0909123123",
+      "birth_date": "2000-05-15",
       "avatar": "https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/315029133_1785762405134483_8108987902970419629_n.jpg?stp=dst-jpg_tt6&cstp=mx953x960&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=1d2534&_nc_ohc=2GqyxAe2VJIQ7kNvwGdvvRl&_nc_oc=AdoK9ST2JjqtFD7RVSWU5eiImpc5qFvfe-p66yXAvvGmLCCBYl533Fd89tj6xEKKzBeXzMMpRFsa1JDR06OorzwP&_nc_zt=24&_nc_ht=scontent.fsgn5-5.fna&_nc_gid=lig8y2u9L_kehAXywuDdXA&_nc_ss=7b2a8&oh=00_Af-TFkOR6t1LAfSQ5Wksdsgz1iTxaIONqz72fadOACEudQ&oe=6A383AD5",
       "role": "student",
       "status": "active",
-      "created_at": "2026-01-20T11:00:00Z"
+      "created_at": "2026-01-20T11:00:00Z",
+      "updated_at": "2023-12-12T10:30:00Z"
     },
     {
       "user_id": "u-student-2",
