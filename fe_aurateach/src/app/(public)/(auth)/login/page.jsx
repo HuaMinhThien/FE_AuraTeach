@@ -53,11 +53,9 @@ export default function LoginPage() {
 
       // Lưu cookie
       const expires = rememberMe ? 30 : 1;
- HEAD
-      const cookieValue = encodeURIComponent(JSON.stringify(userInfo));
-      document.cookie = `user_info=${cookieValue}; path=/; max-age=${expires * 24 * 60 * 60}`;
+      // Chỉ giữ lại 1 dòng này, xóa dòng trùng lặp
       document.cookie = `user_info=${encodeURIComponent(
-        JSON.stringify(userInfo),
+        JSON.stringify(userInfo)
       )}; path=/; max-age=${expires * 24 * 60 * 60}`;
 
       document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
@@ -71,9 +69,6 @@ export default function LoginPage() {
           window.location.href = "/";
           break;
         case "tutor":
- HEAD
-          window.location.href = "/tutor";
-
           window.location.href = "/tutor-dashboard";
           break;
         case "admin":
