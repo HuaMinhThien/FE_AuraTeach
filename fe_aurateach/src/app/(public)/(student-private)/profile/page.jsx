@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Headers from "@/components/users/Headers";
+import Headers from "@/components/users/Header";
 import "./profile.css";
 
 export default function ProfilePage() {
@@ -83,7 +83,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <>
-        <Headers />
+        {/* <Headers /> */}
         <div className="profile-loading">
           <div className="loading-spinner"></div>
           <p>Đang tải thông tin...</p>
@@ -95,7 +95,7 @@ export default function ProfilePage() {
   if (error || !userData) {
     return (
       <>
-        <Headers />
+        {/* <Headers /> */}
         <div className="profile-error">
           <p>{error || "Không tìm thấy thông tin người dùng"}</p>
           <button onClick={() => router.push("/")}>Quay về trang chủ</button>
@@ -106,7 +106,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Headers />
+      {/* <Headers /> */}
       <div className="profile-page">
         <div className="profile-container">
           {/* Sidebar - Quản lý tài khoản */}
