@@ -181,15 +181,21 @@ export default function CreateClassPage() {
 
             <div className={styles.rowGrid}>
               <div className={styles.formGroup}>
-                <label>Danh mục</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} required>
-                  <option value="">Chọn môn học</option>
-                  {categoriesList.map((cat) => (
-                    // Đã sửa đổi: Sử dụng đúng key cat.category_id và trường dữ liệu cat.category_name từ API JSON Server
-                    <option key={cat.category_id || cat.id} value={cat.category_name}>
-                      {cat.category_name}
-                    </option>
-                  ))}
+                <label htmlFor="category">Môn học học phần <span className={styles.required}>*</span></label>
+                <select
+                  id="category"
+                  value={category} // Lúc này state category đang lưu trữ "cat-02", "cat-03", v.v.
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  <option value="">-- Chọn môn học dạy --</option>
+                  {categoriesList
+                    .filter(cat => cat.category_name !== "Tất cả") // Không hiển thị tab Tất cả khi tạo lớp
+                    .map((cat) => (
+                      <option key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
                 </select>
               </div>
 

@@ -44,13 +44,11 @@ function CoursesSection() {
   }, []);
 
   // --- SỬA LOGIC LỌC: So sánh dựa trên category_name và trường category của khóa học ---
-  const filteredCourses = activeTabId === 'All'
-    ? courses
-    : courses.filter(course => {
-        const currentCat = categories.find(c => (c.category_id || c.id) === activeTabId);
-        // Kiểm tra xem tên danh mục (category_name) có khớp với thuộc tính category của lớp học không
-        return currentCat && currentCat.category_name === course.category;
-    });
+  // Cập nhật logic lọc filteredCourses trong file CoursesSection.jsx:
+
+const filteredCourses = activeTabId === 'All'
+  ? courses
+  : courses.filter(course => course.category_id === activeTabId); 
 
   // Tính toán phân trang
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;

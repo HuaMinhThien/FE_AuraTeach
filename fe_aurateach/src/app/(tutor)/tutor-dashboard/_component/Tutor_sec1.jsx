@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import styles from "../_css/sec1.module.css";
 
 export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
@@ -24,7 +25,9 @@ export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.cardHeader}>
-            <span className={styles.icon}>💵</span>
+            <span className={styles.icon}>
+              <Image src="/img/icons/money1.png" alt="money" width={20} height={20} />
+            </span>
             <span className={`${styles.badge} ${styles.greenBg}`}>{data.incomeGrowth}</span>
           </div>
           <p className={styles.cardLabel}>Tổng thu nhập</p>
@@ -33,7 +36,9 @@ export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
 
         <div className={styles.statCard}>
           <div className={styles.cardHeader}>
-            <span className={styles.icon}>👥</span>
+            <span className={styles.icon}>
+              <Image src="/img/icons/group.png" alt="student" width={20} height={20} />
+            </span>
             <span className={`${styles.badge} ${styles.greenBg}`}>{data.studentsGrowth}</span>
           </div>
           <p className={styles.cardLabel}>Tổng học viên</p>
@@ -42,7 +47,9 @@ export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
 
         <div className={styles.statCard}>
           <div className={styles.cardHeader}>
-            <span className={styles.icon}>📶</span>
+            <span className={styles.icon}>
+              <Image src="/img/icons/online-meeting.png" alt="class" width={20} height={20} />
+            </span>
             <span className={`${styles.badge} ${styles.blueBg}`}>Đang chạy</span>
           </div>
           <p className={styles.cardLabel}>Lớp học đang mở</p>
@@ -51,7 +58,9 @@ export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
 
         <div className={styles.statCard}>
           <div className={styles.cardHeader}>
-            <span className={styles.icon}>⭐</span>
+            <span className={styles.icon}>
+              <Image src="/img/icons/star.png" alt="class" width={20} height={20} />
+            </span>
             <span className={`${styles.badge} ${styles.goldBg}`}>Top Rated</span>
           </div>
           <p className={styles.cardLabel}>Đánh giá trung bình</p>
