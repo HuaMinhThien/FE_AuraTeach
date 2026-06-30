@@ -1,6 +1,6 @@
-// src/app/(auth)/login/page.jsx
+// src/app/(public)/(auth)/login/page.jsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Headers from "@/components/users/Header";
@@ -13,31 +13,6 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Kiểm tra nếu đã đăng nhập thì redirect về trang chủ
-  useEffect(() => {
-    const checkAuth = () => {
-      const cookies = document.cookie.split(";");
-      let userInfo = null;
-      
-      cookies.forEach(cookie => {
-        const [key, value] = cookie.trim().split("=");
-        if (key === "user_info") {
-          try {
-            userInfo = JSON.parse(decodeURIComponent(value));
-          } catch (e) {
-            console.error("Error parsing user_info:", e);
-          }
-        }
-      });
-
-      if (userInfo) {
-        router.push("/");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,7 +40,7 @@ export default function LoginPage() {
         throw new Error("Dữ liệu đăng nhập không hợp lệ");
       }
 
-      // Tạo userInfo
+      // Tạo userInfo với đúng cấu trúc
       const userInfo = {
         id: data.user.user_id,
         name: data.user.full_name,
@@ -78,17 +53,30 @@ export default function LoginPage() {
 
       // Lưu cookie
       const expires = rememberMe ? 30 : 1;
+      // Chỉ giữ lại 1 dòng này, xóa dòng trùng lặp
       document.cookie = `user_info=${encodeURIComponent(
         JSON.stringify(userInfo)
       )}; path=/; max-age=${expires * 24 * 60 * 60}`;
 
       document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
 
-      console.log("✅ Cookies saved");
+      console.log("✅ Cookies saved:");
+      console.log("user_info:", document.cookie);
 
-      // 🏠 TẤT CẢ ĐỀU VỀ TRANG CHỦ
-      router.push("/");
-
+      // Chuyển hướng
+      switch (data.user.role) {
+        case "student":
+          window.location.href = "/";
+          break;
+        case "tutor":
+          window.location.href = "/tutor-dashboard";
+          break;
+        case "admin":
+          window.location.href = "/admin";
+          break;
+        default:
+          window.location.href = "/";
+      }
     } catch (error) {
       console.error("❌ Login error:", error);
       setError(error.message || "Đăng nhập thất bại");
@@ -124,7 +112,6 @@ export default function LoginPage() {
                     placeholder="name@company.com"
                     className="aurateach-form-input"
                     required
-                    disabled={isLoading}
                   />
                 </div>
 
@@ -138,7 +125,6 @@ export default function LoginPage() {
                     placeholder="••••••"
                     className="aurateach-form-input"
                     required
-                    disabled={isLoading}
                   />
                 </div>
 
@@ -148,7 +134,6 @@ export default function LoginPage() {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      disabled={isLoading}
                     />
                     <span>Ghi nhớ đăng nhập</span>
                   </label>
@@ -165,14 +150,7 @@ export default function LoginPage() {
                   className="aurateach-login-button"
                   disabled={isLoading}
                 >
-                  {isLoading ? (
-                    <>
-                      <span className="spinner"></span>
-                      Đang xử lý...
-                    </>
-                  ) : (
-                    "Đăng nhập"
-                  )}
+                  {isLoading ? "Đang xử lý..." : "Đăng nhập"}
                 </button>
 
                 <div className="aurateach-register-link">
@@ -226,24 +204,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-
-      {/* Thêm CSS cho spinner */}
-      <style jsx>{`
-        .spinner {
-          display: inline-block;
-          width: 16px;
-          height: 16px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          border-top-color: #fff;
-          animation: spin 0.8s linear infinite;
-          margin-right: 8px;
-        }
-        
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </>
   );
 }

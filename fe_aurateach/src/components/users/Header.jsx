@@ -148,7 +148,7 @@ export default function Headers() {
                                 ref={dropdownRef}
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
                             >
-                                {/* <Image 
+                                <Image 
                                     src={getValidAvatar(user.avatar)} 
                                     alt="Avatar" 
                                     width={35} 
@@ -157,7 +157,7 @@ export default function Headers() {
                                     onError={(e) => {
                                         e.target.src = "/img/default-avatar.png";
                                     }}
-                                /> */}
+                                />
                                 <span className="user-name">{user.name}</span>
                                 
                                 <svg className={`arrow-icon ${isDropdownOpen ? "rotate" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00236f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
