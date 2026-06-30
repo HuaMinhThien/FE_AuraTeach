@@ -80,7 +80,7 @@ export default function ClassDetailPage({ params }) {
             </div>
           </section>
 
-          {/* Topics / Flow Section */}
+          {/* Topics / Flow Section
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Nội dung hướng dẫn & Hỗ trợ</h2>
             <div className={styles.topicItem}>
@@ -88,7 +88,7 @@ export default function ClassDetailPage({ params }) {
                 <h3 className={styles.topicTitle}>{course.flow}</h3>
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* Reviews Section */}
           <section className={styles.section}>
