@@ -31,3 +31,16 @@
     }
 }
 
+/* Import tổng hợp cho Student Layout */
+@import './header.css';
+@import './footer.css';
+@import './home.css';
+@import './search.css';
+@import './coursesSection.css';
+@import './sec4.css';
+@import './sec5.css';
+@import './sec6.css';
+@import './sec7.css';
+@import './StatsSection.css';
+@import './bookingModal.css';
+@import './profile-sidebar.css';  

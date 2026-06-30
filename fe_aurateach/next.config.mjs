@@ -16,6 +16,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '*.fbcdn.net', // Cho phép tất cả các sub-domain của Facebook CDN
+      },
+      {
+        protocol: 'https',
         hostname: 'images.unsplash.com',
       },
       {

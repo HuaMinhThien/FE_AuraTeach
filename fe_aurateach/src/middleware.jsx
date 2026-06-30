@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl; // ✅ Đảm bảo pathname được khai báo ở đây
   const token = request.cookies.get("user_info")?.value;
   const role = request.cookies.get("role")?.value;
 
@@ -12,12 +12,23 @@ export function middleware(request) {
   console.log("Role:", role);
 
   // Route public (không cần đăng nhập)
-  const publicRoutes = ["/login", "/register", "/forgot-password", "/tutorList", "/class-search"];
-  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + "/"));
+  const publicRoutes = [
+    "/login", 
+    "/register", 
+    "/forgot-password", 
+    "/tutorList", 
+    "/class-search",
+    "/api/bookings"  // ✅ Thêm API bookings vào public
+  ];
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + "/")
+  );
 
   // Route đặc biệt: các route con dành riêng cho student
   const studentRoutes = ["/profile", "/lich-su-book", "/book-gia-su"];
-  const isStudentRoute = studentRoutes.some(route => pathname === route || pathname.startsWith(route + "/"));
+  const isStudentRoute = studentRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + "/")
+  );
 
   // =========================================================================
   // LOGIC ĐIỀU HƯỚNG GỐC (TRANG ĐẦU TIÊN KHI MỞ TRÌNH DUYỆT / TRANG CHỦ "/")
