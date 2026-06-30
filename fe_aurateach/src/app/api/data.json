@@ -125,6 +125,30 @@
       "status": "active",
       "created_at": "2026-01-22T15:20:00Z",
       "id": "c9e9"
+    },
+    {
+      "user_id": "user_1782855725159_tqroz6",
+      "email": "tuankudo1502@gmail.com",
+      "password": "123123",
+      "full_name": "MAI THÁI TUẤN",
+      "phone": "0345646979",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-06-30T21:42:05.159Z",
+      "id": "-vgybobIBlI"
+    },
+    {
+      "user_id": "user_1782855815606_98bynm",
+      "email": "lau@gmail.com",
+      "password": "123123",
+      "full_name": "lửa nè",
+      "phone": "0345646979",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-06-30T21:43:35.606Z",
+      "id": "XhFiYrPPWNs"
     }
   ],
   "tutors": [
@@ -175,6 +199,20 @@
       "id": "e73f",
       "pending_balance": 1222000,
       "available_balance": 44390000
+    },
+    {
+      "tutor_id": "tutor_1782855815613",
+      "user_id": "user_1782855815606_98bynm",
+      "bio": "",
+      "qualification": "Lịch sử",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-06-30T21:43:35.613Z",
+      "id": "xN0b0SJLAwE"
     }
   ],
   "students": [
@@ -191,6 +229,14 @@
       "grade": "Lớp 12",
       "school_name": "THPT Nguyễn Thượng Hiền",
       "id": "d9f7"
+    },
+    {
+      "student_id": "student_1782855725168",
+      "user_id": "user_1782855725159_tqroz6",
+      "grade": "1",
+      "school_name": "zSDFgAEDgv",
+      "created_at": "2026-06-30T21:42:05.168Z",
+      "id": "5TvfrP8xoXU"
     }
   ],
   "courses": [

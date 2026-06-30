@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
+import authService from "@/services/authService";
 import "./register.css";
 
 export default function RegisterPage() {
@@ -11,6 +12,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [grade, setGrade] = useState("");
+  const [schoolName, setSchoolName] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -41,11 +45,28 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      console.log("Đăng ký học viên:", { fullName, email, password });
+    try {
+      const result = await authService.register({
+        fullName: fullName,
+        email: email,
+        password: password,
+        phone: phone,
+        role: "student",
+        grade: grade,
+        schoolName: schoolName
+      });
+
+      if (result.success) {
+        alert(result.message);
+        router.push("/login");
+      } else {
+        setError(result.message || "Đăng ký thất bại, vui lòng thử lại");
+      }
+    } catch (error) {
+      setError(error.message || "Đã xảy ra lỗi khi đăng ký");
+    } finally {
       setIsLoading(false);
-      router.push("/login");
-    }, 1000);
+    }
   };
 
   return (
@@ -56,11 +77,11 @@ export default function RegisterPage() {
           {/* Phần bên trái - Hình ảnh minh họa */}
           <div className="aurateach-register-left">
             <div className="aurateach-register-hero">
-              <img
+              {/* <img
                 src="/images/register-hero.jpg"
                 alt="Đăng ký AuraTeach"
                 className="aurateach-register-hero-img"
-              />
+              /> */}
               <div className="aurateach-register-hero-overlay">
                 <div className="aurateach-hero-icon">📚✨</div>
                 <h2>AuraTeach</h2>
@@ -108,6 +129,42 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@aurateach.vn"
+                    className="aurateach-form-input"
+                  />
+                </div>
+
+                <div className="aurateach-form-group">
+                  <label htmlFor="phone">Số điện thoại</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="090 123 4567"
+                    className="aurateach-form-input"
+                  />
+                </div>
+
+                <div className="aurateach-form-group">
+                  <label htmlFor="grade">Lớp học</label>
+                  <input
+                    type="text"
+                    id="grade"
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    placeholder="Ví dụ: 10, 11, 12"
+                    className="aurateach-form-input"
+                  />
+                </div>
+
+                <div className="aurateach-form-group">
+                  <label htmlFor="schoolName">Tên trường</label>
+                  <input
+                    type="text"
+                    id="schoolName"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    placeholder="Trường THPT ABC"
                     className="aurateach-form-input"
                   />
                 </div>

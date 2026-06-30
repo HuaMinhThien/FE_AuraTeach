@@ -23,7 +23,6 @@ class AuthService {
   // 1. Login với JSON / Mock JSON Server (An toàn cho Client Browser)
   async loginWithJson(email, password) {
     try {
-      // Thay vì dùng fs để đọc file, ta fetch trực tiếp tới JSON Server đang chạy ở port 3007
       const response = await fetch(`${this.jsonServerUrl}/users?email=${encodeURIComponent(email)}`);
       
       if (!response.ok) {
@@ -32,7 +31,6 @@ class AuthService {
 
       const users = await response.json();
       
-      // Tìm user có mật khẩu trùng khớp
       const user = users.find((u) => u.password === password);
 
       if (!user) {
@@ -43,9 +41,7 @@ class AuthService {
         throw new Error("Tài khoản đã bị khóa hoặc chưa được kích hoạt");
       }
 
-      // Xóa password trước khi trả về để đảm bảo bảo mật công nghệ
       const { password: _, ...userInfo } = user;
-
       return {
         success: true,
         user: userInfo,
@@ -79,7 +75,7 @@ class AuthService {
     }
   }
 
-  // Các phương thức khác cho tương lai
+  // ✅ CẬP NHẬT: Đăng ký với JSON Server
   async register(userData) {
     if (this.useApi) {
       return this.registerWithApi(userData);
@@ -88,11 +84,30 @@ class AuthService {
     }
   }
 
+  // ✅ CẬP NHẬT: Register với JSON Server
   async registerWithJson(userData) {
-    // Tương lai phối hợp viết logic POST lên JSON Server tại đây nếu cần
-    return { success: true, message: "Đăng ký thành công" };
+    try {
+      const response = await fetch(`/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Đăng ký thất bại");
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
+  // 4. Register với API thật (tương lai)
   async registerWithApi(userData) {
     const response = await fetch(`${this.apiBaseUrl}/auth/register`, {
       method: "POST",
@@ -103,7 +118,6 @@ class AuthService {
   }
 
   async logout() {
-    // Xóa cookies ở client side
     if (typeof window !== "undefined") {
       document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -112,7 +126,6 @@ class AuthService {
   }
 
   async getCurrentUser() {
-    // Lấy user từ cookie trực tiếp ở trình duyệt
     if (typeof window === "undefined") return null;
     
     const getCookie = (name) => {
