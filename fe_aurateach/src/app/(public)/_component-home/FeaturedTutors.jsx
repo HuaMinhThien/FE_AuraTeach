@@ -12,9 +12,9 @@ function FeaturedTutors() {
       try {
         // Gọi đồng thời cả 3 API endpoint để lấy dữ liệu phục vụ cho việc map thuộc tính
         const [resUsers, resTutors, resCourses] = await Promise.all([
-          fetch('http://localhost:3007/users'),
-          fetch('http://localhost:3007/tutors'),
-          fetch('http://localhost:3007/courses')
+          fetch('http://localhost:8000/api/users'),
+          fetch('http://localhost:8000/api/tutors'),
+          fetch('http://localhost:8000/api/courses')
         ]);
 
         if (!resUsers.ok || !resTutors.ok || !resCourses.ok) {

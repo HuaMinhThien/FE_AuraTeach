@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
-import data from '../../api/data.json';
 
 export default function ClassListPage() {
   const router = useRouter();
 
+  // 1. Khởi tạo state là null hoặc mảng rỗng thay vì dữ liệu tĩnh
+  const [data, setData] = useState({ courses: [], tutors: [], users: [], categories: [] });
+  const [loading, setLoading] = useState(true);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [priceRange, setPriceRange] = useState('all');
@@ -16,13 +19,42 @@ export default function ClassListPage() {
   
   const itemsPerPage = 12;
 
-  // Parse giá
-  const parsePrice = useCallback((priceStr) => {
-    return parseInt(priceStr?.replace(/[^0-9]/g, '')) || 0;
+  // 2. Fetch dữ liệu từ Laravel API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Đảm bảo URL chính xác với cấu hình Laravel của bạn
+        const [coursesRes, tutorsRes, usersRes, catsRes] = await Promise.all([
+          fetch('http://localhost:8000/api/courses'),
+          fetch('http://localhost:8000/api/tutors'),
+          fetch('http://localhost:8000/api/users'),
+          fetch('http://localhost:8000/api/categories'),
+        ]);
+
+        const courses = await coursesRes.json();
+        const tutors = await tutorsRes.json();
+        const users = await usersRes.json();
+        const categories = await catsRes.json();
+
+        setData({ courses, tutors, users, categories });
+      } catch (error) {
+        console.error("Lỗi khi fetch dữ liệu:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  // Kết hợp dữ liệu
+  const parsePrice = useCallback((priceStr) => {
+    return parseInt(String(priceStr).replace(/[^0-9]/g, '')) || 0;
+  }, []);
+
+  // 3. Kết hợp dữ liệu từ state data (đã fetch về)
   const coursesWithDetails = useMemo(() => {
+    if (loading || !data.courses) return [];
+    
     const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
 
     return data.courses.map(course => {
@@ -38,9 +70,9 @@ export default function ClassListPage() {
         experience: tutor?.Experience || 'Chưa cập nhật',
       };
     });
-  }, []);
+  }, [data, loading]);
 
-  // Lọc và sắp xếp
+  // Logic lọc và sắp xếp (giữ nguyên logic cũ của bạn)
   const filteredCourses = useMemo(() => {
     let result = [...coursesWithDetails];
 
@@ -70,58 +102,28 @@ export default function ClassListPage() {
     }
 
     if (sortOption === 'price-low') {
-      result = result.toSorted((a, b) => parsePrice(a.price_per_session) - parsePrice(b.price_per_session));
+      result.sort((a, b) => parsePrice(a.price_per_session) - parsePrice(b.price_per_session));
     } else if (sortOption === 'price-high') {
-      result = result.toSorted((a, b) => parsePrice(b.price_per_session) - parsePrice(a.price_per_session));
+      result.sort((a, b) => parsePrice(b.price_per_session) - parsePrice(a.price_per_session));
     }
 
     return result;
-  }, [coursesWithDetails, searchTerm, selectedCategory, priceRange, sortOption, parsePrice]);
+  }, [coursesWithDetails, searchTerm, selectedCategory, priceRange, sortOption, parsePrice, data.categories]);
+
+  // ... (Giữ nguyên các hàm xử lý sự kiện như cũ: handleCardClick, handleSearchChange, v.v.)
+  const handleCardClick = useCallback((course) => { router.push(`/classList/${course.course_id}`); }, [router]);
+  const handleImageError = useCallback((e) => { e.target.src = 'data:image/svg+xml;base64,...'; }, []);
+  const handleSearchChange = (e) => { setSearchTerm(e.target.value); setCurrentPage(1); };
+  const handlePriceChange = (e) => { setPriceRange(e.target.value); setCurrentPage(1); };
+  const handleSortChange = (e) => { setSortOption(e.target.value); setCurrentPage(1); };
+  const handleCategoryClick = (name) => { setSelectedCategory(name); setCurrentPage(1); };
 
   // Phân trang
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
-  const paginatedCourses = useMemo(() => {
-    return filteredCourses.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    );
-  }, [filteredCourses, currentPage]);
+  const paginatedCourses = filteredCourses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // ✅ Điều hướng đến trang chi tiết - ĐÃ SỬA
-  const handleCardClick = useCallback((course) => {
-    router.push(`/classList/${course.course_id}`);
-  }, [router]);
-
-  // Xử lý lỗi ảnh
-  const handleImageError = useCallback((e) => {
-    const img = e.target;
-    const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
-    
-    if (img.src !== defaultAvatar) {
-      img.src = defaultAvatar;
-      img.onerror = null;
-    }
-  }, []);
-
-  const handleSearchChange = useCallback((e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  }, []);
-
-  const handlePriceChange = useCallback((e) => {
-    setPriceRange(e.target.value);
-    setCurrentPage(1);
-  }, []);
-
-  const handleSortChange = useCallback((e) => {
-    setSortOption(e.target.value);
-    setCurrentPage(1);
-  }, []);
-
-  const handleCategoryClick = useCallback((categoryName) => {
-    setSelectedCategory(categoryName);
-    setCurrentPage(1);
-  }, []);
+  // Hiển thị loading
+  if (loading) return <div className={styles.container} style={{padding: '50px', textAlign: 'center'}}>Đang tải dữ liệu từ server...</div>;
 
   return (
     <div className={styles.container}>

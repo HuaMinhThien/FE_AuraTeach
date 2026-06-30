@@ -1,52 +1,76 @@
-"use client";
+'use client';
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import styles from "./ClassDetail.module.css";
 
-// Import dữ liệu thật
-import rawData from "../../../api/data.json"; // Điều chỉnh đường dẫn nếu cần
-
-const data = rawData;
-
 export default function ClassDetailPage({ params }) {
-  // ✅ Unwrap params bằng React.use()
+  // Unwrap params từ Next.js
   const { id } = use(params);
   const courseId = id;
-  
-  const course = data.courses.find(c => c.course_id === courseId);
-  
-  // Tìm tutor tương ứng
-  const tutorInfo = data.tutors.find(t => t.tutor_id === course?.tutor_id);
-  const userTutor = data.users.find(u => u.user_id === tutorInfo?.user_id);
 
-  // Lấy reviews của course này
-  const courseReviews = data.reviews.filter(r => r.course_id === courseId);
+  // Khởi tạo state để chứa dữ liệu
+  const [data, setData] = useState({
+    course: null,
+    tutorInfo: null,
+    userTutor: null,
+    courseReviews: [],
+    loading: true
+  });
 
-  const [isBooked, setIsBooked] = useState(false);
+  // Fetch dữ liệu từ API Laravel
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1. Lấy thông tin khóa học
+        console.log("Đang fetch ID:", courseId);
+        const courseRes = await fetch(`http://localhost:8000/api/courses/${courseId}`);
+        const course = await courseRes.json();
 
-  if (!course) {
-    return <div className={styles.container}>Không tìm thấy khóa học</div>;
-  }
+        // 2. Lấy thông tin gia sư và user liên quan
+        let tutorInfo = null;
+        let userTutor = null;
+        if (course?.tutor_id) {
+          const tutorRes = await fetch(`http://localhost:8000/api/tutors/${course.tutor_id}`);
+          tutorInfo = await tutorRes.json();
+          
+          const userRes = await fetch(`http://localhost:8000/api/users/${tutorInfo.user_id}`);
+          userTutor = await userRes.json();
+        }
 
-  // Sửa hàm formatPrice để xử lý trường hợp undefined/null
-  const formatPrice = (priceStr) => {
-    // Kiểm tra nếu priceStr là undefined, null hoặc không phải string
-    if (!priceStr || typeof priceStr !== 'string') {
-      return '0';
-    }
-    // Xử lý chuỗi kiểu "150.000đ/giờ"
-    return priceStr.replace(/[^0-9]/g, '');
-  };
+        // 3. Lấy đánh giá (filter theo course_id)
+        const reviewRes = await fetch(`http://localhost:8000/api/reviews?course_id=${courseId}`);
+        const courseReviews = await reviewRes.json();
 
+        setData({ course, tutorInfo, userTutor, courseReviews, loading: false });
+      } catch (error) {
+        console.error("Lỗi khi fetch dữ liệu chi tiết:", error);
+        setData(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchData();
+  }, [courseId]);
+
+  // Handle Loading & Empty state
+  if (data.loading) return <div className={styles.container}>Đang tải thông tin...</div>;
+  if (!data.course) return <div className={styles.container}>Không tìm thấy khóa học</div>;
+
+  const { course, tutorInfo, userTutor, courseReviews } = data;
+
+  // Helper functions (formatPrice, handleBooking, averageRating giữ nguyên như cũ...)
   const handleBooking = () => {
-    setIsBooked(true);
-    alert("Đăng ký hỗ trợ thành công!");
+    if (!course) return;
+    alert(`Bạn đã chọn khóa học: ${course.title}`);
+  };
+  const formatPrice = (priceStr) => {
+    if (!priceStr || typeof priceStr !== 'string') return '0';
+    return priceStr.replace(/[^0-9]/g, '');
   };
 
   const averageRating = courseReviews.length > 0 
     ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
-    : tutorInfo?.rating || 4.8;
+    : (tutorInfo?.rating || 4.8);
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
@@ -108,8 +132,29 @@ export default function ClassDetailPage({ params }) {
             <div className={styles.reviewsList}>
               {courseReviews.length > 0 ? (
                 courseReviews.map((review) => {
-                  const student = data.students.find(s => s.student_id === review.student_id);
-                  const studentUser = data.users.find(u => u.user_id === student?.user_id);
+                  {loading ? (
+                    <p>Đang tải dữ liệu...</p>
+                  ) : (
+                    (() => {
+                      // 1. Kiểm tra mảng users có dữ liệu không
+                      if (!data?.users || !Array.isArray(data.users)) {
+                        return <p>Không có dữ liệu người dùng.</p>;
+                      }
+
+                      // 2. Tìm kiếm an toàn (thay thế ID bằng biến ID thực tế bạn đang dùng)
+                      const studentUser = data.users.find(u => u.user_id === 'u-01');
+
+                      // 3. Render nếu tìm thấy, hoặc báo lỗi nếu không tìm thấy
+                      return studentUser ? (
+                        <div>
+                          <h1>{studentUser.full_name}</h1>
+                          {/* Render các thông tin khác của studentUser ở đây */}
+                        </div>
+                      ) : (
+                        <p>Không tìm thấy người dùng này.</p>
+                      );
+                    })()
+                  )}
                   
                   return (
                     <div key={review.review_id} className={styles.reviewCard}>

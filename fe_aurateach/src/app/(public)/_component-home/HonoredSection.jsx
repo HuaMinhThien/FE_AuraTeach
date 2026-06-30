@@ -10,7 +10,7 @@ function HonoredSection() {
     const fetchHonoredData = async () => {
       try {
         // 🌟 1. SỬA ĐỔI: Thêm tham số ?section=honored vào URL để lấy đúng Object dữ liệu vinh danh
-        const response = await fetch('http://localhost:3007/honored_members');
+        const response = await fetch('http://localhost:8000/api/honored_members');
         if (!response.ok) {
           throw new Error('Không thể tải dữ liệu vinh danh');
         }

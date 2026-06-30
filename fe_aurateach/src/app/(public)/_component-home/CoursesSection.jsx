@@ -18,8 +18,8 @@ function CoursesSection() {
       const fetchSectionData = async () => {
           try {
               const [resCategories, resCourses] = await Promise.all([
-                  fetch('http://localhost:3007/categories'),
-                  fetch('http://localhost:3007/courses')
+                  fetch('http://localhost:8000/api/categories'),
+                  fetch('http://localhost:8000/api/courses')
               ]);
 
               if (!resCategories.ok || !resCourses.ok) {

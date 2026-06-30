@@ -1,7 +1,5 @@
 // src/app/api/auth/login/route.js
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 
 export async function POST(request) {
   try {
@@ -23,63 +21,26 @@ export async function POST(request) {
       );
     }
 
-    // === TÌM FILE DATA.JSON Ở NHIỀU VỊ TRÍ ===
-    const possiblePaths = [
-      path.join(process.cwd(), "src", "data.json"),              // src/data.json
-      path.join(process.cwd(), "data.json"),                    // data.json (root)
-      path.join(process.cwd(), "src", "app", "api", "data.json"), // src/app/api/data.json
-      path.join(process.cwd(), "public", "data.json"),          // public/data.json
-      path.join(process.cwd(), "src", "data", "data.json"),     // src/data/data.json
-    ];
-
-    let dataPath = null;
-    for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        dataPath = p;
-        console.log("✅ Tìm thấy data.json tại:", p);
-        break;
-      }
-    }
-
-    if (!dataPath) {
-      console.error("❌ Không tìm thấy file data.json ở bất kỳ vị trí nào!");
-      return NextResponse.json(
-        { 
-          success: false,
-          message: "Lỗi hệ thống: Không tìm thấy dữ liệu" 
-        },
-        { status: 500 }
-      );
-    }
-
-    // === ĐỌC FILE DATA.JSON ===
-    let jsonData;
-    try {
-      jsonData = fs.readFileSync(dataPath, "utf8");
-      console.log("✅ Đã đọc file data.json");
-    } catch (readError) {
-      console.error("❌ Lỗi đọc file:", readError);
-      return NextResponse.json(
-        { 
-          success: false,
-          message: "Không thể đọc file dữ liệu" 
-        },
-        { status: 500 }
-      );
-    }
-
-    // === PARSE JSON ===
     let data;
     try {
-      data = JSON.parse(jsonData);
-      console.log("✅ Đã parse JSON thành công");
+      // Gọi lên API lấy danh sách dữ liệu tổng hợp của Laravel (Laragon cổng 8000)
+      const laravelResponse = await fetch("http://localhost:8000/api/auth-data", {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+        },
+      });
+
+      // Gán dữ liệu trả về (chứa mảng users) vào biến data
+      data = await laravelResponse.json(); 
+      console.log("✅ Đã lấy dữ liệu thành công từ Laravel Backend");
       console.log("📊 Số lượng users:", data.users?.length || 0);
-    } catch (parseError) {
-      console.error("❌ Lỗi parse JSON:", parseError);
+    } catch (fetchError) {
+      console.error("❌ Lỗi lấy dữ liệu từ Backend:", fetchError);
       return NextResponse.json(
         { 
           success: false,
-          message: "File dữ liệu không đúng định dạng" 
+          message: "Lỗi hệ thống: Không thể kết nối tới Backend" 
         },
         { status: 500 }
       );

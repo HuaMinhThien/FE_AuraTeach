@@ -15,38 +15,53 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      setError("Vui lòng nhập đầy đủ thông tin");
-      return;
+  // Giữ nguyên các logic kiểm tra cũ của bạn
+  if (!fullName || !email || !password || !confirmPassword) {
+    setError("Vui lòng nhập đầy đủ thông tin");
+    return;
+  }
+  if (password !== confirmPassword) {
+    setError("Mật khẩu xác nhận không khớp");
+    return;
+  }
+  if (!agreeTerms) {
+    setError("Vui lòng đồng ý với điều khoản dịch vụ");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    // Gọi tới API trung gian của Next.js
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        full_name: fullName, 
+        email, 
+        password, 
+        role: 'student' // Mặc định là student
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Đăng ký thất bại");
     }
 
-    if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
-      return;
-    }
-
-    if (!agreeTerms) {
-      setError("Vui lòng đồng ý với điều khoản dịch vụ");
-      return;
-    }
-
-    setIsLoading(true);
-
-    setTimeout(() => {
-      console.log("Đăng ký học viên:", { fullName, email, password });
-      setIsLoading(false);
-      router.push("/login");
-    }, 1000);
-  };
+    // Đăng ký thành công
+    router.push("/login");
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <>

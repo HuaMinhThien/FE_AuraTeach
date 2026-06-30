@@ -11,10 +11,10 @@ function ReviewSection() {
       try {
         // Gọi đồng thời các API endpoint cần thiết để map thông tin quan hệ
         const [resReviews, resStudents, resUsers, resCourses] = await Promise.all([
-          fetch('http://localhost:3007/reviews'),
-          fetch('http://localhost:3007/students'),
-          fetch('http://localhost:3007/users'),
-          fetch('http://localhost:3007/courses')
+          fetch('http://localhost:8000/api/reviews'),
+          fetch('http://localhost:8000/api/students'),
+          fetch('http://localhost:8000/api/users'),
+          fetch('http://localhost:8000/api/courses')
         ]);
 
         if (!resReviews.ok || !resStudents.ok || !resUsers.ok || !resCourses.ok) {
