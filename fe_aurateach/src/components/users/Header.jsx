@@ -1,12 +1,13 @@
-// src/components/users/Headers.jsx
+// src/components/users/Header.jsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link"; 
 import { usePathname, useRouter } from "next/navigation"; 
 import SearchComponent from "./SearchInput";
+import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
 
-export default function Headers() {
+export default function Header() {
     const pathname = usePathname(); 
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -100,21 +101,7 @@ export default function Headers() {
         console.log("=== PROFILE CLICK ===");
         console.log("Current user:", user);
         setIsDropdownOpen(false);
-        // THÊM CODE CHUYỂN TRANG
-        window.location.href = "/profile";
-        // Hoặc dùng router.push
-        // router.push("/profile");
-    };
-
-    const getValidAvatar = (avatar) => {
-        if (!avatar) return "/img/default-avatar.png";
-        if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-            return avatar;
-        }
-        if (avatar.startsWith('/')) {
-            return avatar;
-        }
-        return "/img/default-avatar.png";
+        router.push("/profile");
     };
 
     return (
@@ -148,17 +135,15 @@ export default function Headers() {
                                 ref={dropdownRef}
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
                             >
-                                <Image 
-                                    src={getValidAvatar(user.avatar)} 
-                                    alt="Avatar" 
-                                    width={35} 
-                                    height={35} 
-                                    className="user-avatar"
-                                    onError={(e) => {
-                                        e.target.src = "/img/default-avatar.png";
-                                    }}
+                                {/* ✅ Sử dụng Avatar component đã fix */}
+                                <Avatar 
+                                    src={user.avatar}
+                                    alt={user.full_name || user.name}
+                                    size={35}
+                                    fallbackText={user.full_name?.charAt(0) || user.name?.charAt(0) || "U"}
                                 />
-                                <span className="user-name">{user.name}</span>
+                                
+                                <span className="user-name">{user.full_name || user.name}</span>
                                 
                                 <svg className={`arrow-icon ${isDropdownOpen ? "rotate" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00236f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>

@@ -2,17 +2,13 @@
 
 // === SERVICE LAYER - Dễ dàng thay thế backend ===
 
-// Hiện tại: Dùng JSON file
-// Tương lai: Chỉ cần thay đổi hàm này để gọi API thật
-
-import fs from "fs";
-import path from "path";
-
 class AuthService {
   constructor() {
     // Đọc từ environment variable
     this.useApi = process.env.NEXT_PUBLIC_USE_API === 'true'; 
     this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    // Thêm URL của JSON Server chạy mock data công khai
+    this.jsonServerUrl = "http://localhost:3007"; 
   }
 
   // Phương thức login - Đây là phương thức chính sẽ được gọi
@@ -24,23 +20,20 @@ class AuthService {
     }
   }
 
-  // 1. Login với JSON (hiện tại)
+  // 1. Login với JSON / Mock JSON Server (An toàn cho Client Browser)
   async loginWithJson(email, password) {
     try {
-      // Đọc data.json
-      const dataPath = path.join(process.cwd(), "src", "data.json");
+      // Thay vì dùng fs để đọc file, ta fetch trực tiếp tới JSON Server đang chạy ở port 3007
+      const response = await fetch(`${this.jsonServerUrl}/users?email=${encodeURIComponent(email)}`);
       
-      if (!fs.existsSync(dataPath)) {
-        throw new Error("Không tìm thấy dữ liệu");
+      if (!response.ok) {
+        throw new Error("Không thể kết nối đến cơ sở dữ liệu thử nghiệm (JSON Server)");
       }
 
-      const jsonData = fs.readFileSync(dataPath, "utf8");
-      const data = JSON.parse(jsonData);
-
-      // Tìm user
-      const user = data.users.find(
-        (u) => u.email === email && u.password === password
-      );
+      const users = await response.json();
+      
+      // Tìm user có mật khẩu trùng khớp
+      const user = users.find((u) => u.password === password);
 
       if (!user) {
         throw new Error("Email hoặc mật khẩu không đúng");
@@ -50,7 +43,7 @@ class AuthService {
         throw new Error("Tài khoản đã bị khóa hoặc chưa được kích hoạt");
       }
 
-      // Xóa password trước khi trả về
+      // Xóa password trước khi trả về để đảm bảo bảo mật công nghệ
       const { password: _, ...userInfo } = user;
 
       return {
@@ -96,12 +89,11 @@ class AuthService {
   }
 
   async registerWithJson(userData) {
-    // TODO: Implement register với JSON
+    // Tương lai phối hợp viết logic POST lên JSON Server tại đây nếu cần
     return { success: true, message: "Đăng ký thành công" };
   }
 
   async registerWithApi(userData) {
-    // TODO: Implement register với API thật
     const response = await fetch(`${this.apiBaseUrl}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -120,7 +112,7 @@ class AuthService {
   }
 
   async getCurrentUser() {
-    // Lấy user từ cookie
+    // Lấy user từ cookie trực tiếp ở trình duyệt
     if (typeof window === "undefined") return null;
     
     const getCookie = (name) => {

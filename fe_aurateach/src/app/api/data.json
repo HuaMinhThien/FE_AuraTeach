@@ -107,7 +107,7 @@
       "full_name": "Liêm Tran",
       "phone": "0909123123",
       "birth_date": "2000-05-15",
-      "avatar": "https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/315029133_1785762405134483_8108987902970419629_n.jpg?stp=dst-jpg_tt6&cstp=mx953x960&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=1d2534&_nc_ohc=2GqyxAe2VJIQ7kNvwGdvvRl&_nc_oc=AdoK9ST2JjqtFD7RVSWU5eiImpc5qFvfe-p66yXAvvGmLCCBYl533Fd89tj6xEKKzBeXzMMpRFsa1JDR06OorzwP&_nc_zt=24&_nc_ht=scontent.fsgn5-5.fna&_nc_gid=lig8y2u9L_kehAXywuDdXA&_nc_ss=7b2a8&oh=00_Af-TFkOR6t1LAfSQ5Wksdsgz1iTxaIONqz72fadOACEudQ&oe=6A383AD5",
+      "avatar": "",
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
@@ -241,7 +241,9 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/123456789",
-      "students": []
+      "students": [
+        "u-student-1"
+      ]
     },
     {
       "id": "fad2",
@@ -628,5 +630,40 @@
       "role": "Phụ huynh bé Gia Bảo (Lớp 8)",
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
     }
-  }
+  },
+  "bookings": [
+    {
+      "booking_id": "bk-001",
+      "student_id": "u-student-1",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "confirmed",
+      "booking_date": "2026-07-01T10:00:00Z",
+      "created_at": "2026-07-01T10:00:00Z",
+      "updated_at": "2026-07-01T10:00:00Z",
+      "notes": "Học viên đã đăng ký thành công",
+      "payment_status": "paid",
+      "payment_amount": 150000,
+      "payment_method": "wallet",
+      "transaction_id": "txn-001",
+      "id": "AkYlZ84PnfU"
+    },
+    {
+      "booking_id": "bk-1782852172004",
+      "student_id": "u-student-1",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-06-30T20:42:52.004Z",
+      "created_at": "2026-06-30T20:42:52.004Z",
+      "updated_at": "2026-06-30T20:42:52.004Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 120000,
+      "payment_method": null,
+      "transaction_id": null,
+      "id": "TVt4v5vvMxM"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

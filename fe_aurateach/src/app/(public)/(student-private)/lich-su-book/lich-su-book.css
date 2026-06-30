@@ -1,0 +1,246 @@
+/* Lịch sử đăng ký - Custom styles */
+.booking-history-container {
+  margin-top: 20px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.booking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.booking-table thead {
+  background: #f8f9fa;
+}
+
+.booking-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a2e;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.booking-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.booking-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.text-bold {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.class-title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.class-name-text {
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.class-flow-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.tutor-name-cell {
+  color: #4b5563;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-confirmed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-completed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Payment Badges */
+.payment-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.payment-unpaid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.payment-paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-refunded {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.payment-na {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.view-detail-btn {
+  display: inline-block;
+  padding: 6px 16px;
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.view-detail-btn:hover {
+  background: #4338ca;
+  transform: translateY(-1px);
+}
+
+/* Empty state */
+.empty-booking {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.empty-booking p {
+  color: #6b7280;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.find-class-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.find-class-btn:hover {
+  background: #4338ca;
+  transform: translateY(-2px);
+}
+
+/* Loading */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .booking-table th,
+  .booking-table td {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .booking-table td {
+    display: block;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .booking-table thead {
+    display: none;
+  }
+  
+  .booking-table tbody tr {
+    display: block;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 12px;
+  }
+  
+  .booking-table tbody tr:hover {
+    background: transparent;
+  }
+  
+  .status-badge,
+  .payment-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-table td {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .class-name-text {
+    font-size: 14px;
+  }
+}

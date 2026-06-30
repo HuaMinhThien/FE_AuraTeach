@@ -1,90 +1,66 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import Headers from "@/components/users/Headers";
+import Header from "@/components/users/Header.jsx";
+import StudentSidebar from "@/components/users/StudentSidebar.jsx";
+import Avatar from "@/components/common/Avatar.jsx";
+import authService from "@/services/authService";
 import "./profile.css";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [studentInfo, setStudentInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // Lấy cookie
-  const getCookie = (name) => {
-    if (typeof window === "undefined") return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  };
+  const API_BASE = "http://localhost:3007";
 
   useEffect(() => {
-    // Kiểm tra đăng nhập
-    const userCookie = getCookie("user_info");
-    const role = getCookie("role");
+    const initPage = async () => {
+      try {
+        setLoading(true);
+        const currentUser = await authService.getCurrentUser();
+        
+        // Kiểm tra cookie dự phòng
+        const getCookie = (name) => {
+          if (typeof window === "undefined") return null;
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return null;
+        };
+        const role = getCookie("role");
 
-    if (!userCookie || role !== "student") {
-      router.push("/login");
-      return;
-    }
+        if (!currentUser || role !== "student") {
+          router.push("/login");
+          return;
+        }
 
-    try {
-      const userInfo = JSON.parse(decodeURIComponent(userCookie));
-      setUser(userInfo);
-      fetchUserData(userInfo.id);
-    } catch (error) {
-      console.error("Error parsing user info:", error);
-      router.push("/login");
-    }
-  }, [router]);
+        setUser(currentUser);
 
-  // Fetch dữ liệu user từ API
-  const fetchUserData = async (userId) => {
-    try {
-      const response = await fetch(`/api/users/${userId}`);
-      if (!response.ok) {
-        throw new Error("Không thể lấy thông tin người dùng");
+        // Lấy thông tin student
+        const studentRes = await fetch(`${API_BASE}/students?user_id=${currentUser.user_id}`);
+        const students = await studentRes.json();
+        if (students.length > 0) {
+          setStudentInfo(students[0]);
+        }
+
+      } catch (error) {
+        console.error("Lỗi tải thông tin profile:", error);
+      } finally {
+        setLoading(false);
       }
-      const data = await response.json();
-      setUserData(data.user);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      setError("Không thể tải thông tin người dùng");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "Chưa cập nhật";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  // Format role
-  const formatRole = (role) => {
-    const roleMap = {
-      student: "Học viên",
-      tutor: "Gia sư",
-      admin: "Quản trị viên",
     };
-    return roleMap[role] || role;
-  };
+
+    initPage();
+  }, [router]);
 
   if (loading) {
     return (
       <>
-        <Headers />
-        <div className="profile-loading">
+        <Header />
+        <div className="profile-loading" style={{ marginTop: "100px", textAlign: "center" }}>
           <div className="loading-spinner"></div>
           <p>Đang tải thông tin...</p>
         </div>
@@ -92,125 +68,70 @@ export default function ProfilePage() {
     );
   }
 
-  if (error || !userData) {
-    return (
-      <>
-        <Headers />
-        <div className="profile-error">
-          <p>{error || "Không tìm thấy thông tin người dùng"}</p>
-          <button onClick={() => router.push("/")}>Quay về trang chủ</button>
-        </div>
-      </>
-    );
-  }
+  if (!user) return null;
 
   return (
     <>
-      <Headers />
-      <div className="profile-page">
+      <Header />
+      <div className="profile-page" style={{ marginTop: "80px" }}>
         <div className="profile-container">
-          {/* Sidebar - Quản lý tài khoản */}
-          <div className="profile-sidebar">
-            <div className="sidebar-title">
-              <h2>QUẢN LÝ TÀI KHOẢN</h2>
-            </div>
-            <nav className="sidebar-nav">
-              <Link href="/profile" className="sidebar-link active">
-                <span className="sidebar-icon">👤</span>
-                Thông tin cá nhân
-              </Link>
-              <Link href="/lich-su-book" className="sidebar-link">
-                <span className="sidebar-icon">📚</span>
-                Lịch sử đăng ký lớp học
-              </Link>
-              <Link href="/lich-su-giao-dich" className="sidebar-link">
-                <span className="sidebar-icon">💰</span>
-                Lịch sử giao dịch
-              </Link>
-              <Link href="/messenger" className="sidebar-link">
-                <span className="sidebar-icon">💬</span>
-                Messenger
-              </Link>
-              <button onClick={() => {
-                document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                router.push("/login");
-              }} className="sidebar-link logout">
-                <span className="sidebar-icon">🚪</span>
-                Đăng xuất
-              </button>
-            </nav>
-          </div>
+          
+          {/* Student Sidebar */}
+          <StudentSidebar />
 
-          {/* Main Content - Thông tin cá nhân */}
+          {/* Profile Content */}
           <div className="profile-content">
             <div className="profile-header">
               <h2>Thông tin cá nhân</h2>
-              <p>Cập nhật thông tin tài khoản của bạn tại đây để nhận được hỗ trợ tốt nhất.</p>
+              <p>Quản lý thông tin tài khoản của bạn</p>
             </div>
 
-            <div className="profile-info-grid">
-              {/* Avatar */}
+            <div className="profile-card">
               <div className="profile-avatar-section">
-                <div className="profile-avatar">
-                  <Image
-                    src={userData.avatar || "/img/default-avatar.png"}
-                    alt="Avatar"
-                    width={120}
-                    height={120}
-                    className="avatar-image"
+                <div className="profile-avatar-wrapper">
+                  <Avatar 
+                    src={user.avatar}
+                    alt={user.full_name}
+                    size={100}
+                    fallbackText={user.full_name?.charAt(0) || "U"}
                   />
                 </div>
-                <div className="profile-status">
-                  <span className={`status-badge ${userData.status === "active" ? "active" : "inactive"}`}>
-                    {userData.status === "active" ? "✅ Hoạt động" : "❌ Không hoạt động"}
-                  </span>
+                <div className="profile-name-section">
+                  <h3>{user.full_name}</h3>
+                  <span className="profile-role-badge">🎓 Học viên</span>
                 </div>
               </div>
 
-              {/* Thông tin chi tiết */}
-              <div className="profile-details">
-                <div className="detail-item">
-                  <label>Họ và tên</label>
-                  <div className="detail-value">{userData.full_name || "Chưa cập nhật"}</div>
-                </div>
-
-                <div className="detail-item">
-                  <label>Số điện thoại</label>
-                  <div className="detail-value">{userData.phone || "Chưa cập nhật"}</div>
-                </div>
-
-                <div className="detail-item">
-                  <label>Ngày sinh</label>
-                  <div className="detail-value">{formatDate(userData.birth_date) || "Chưa cập nhật"}</div>
-                </div>
-
-                <div className="detail-item">
+              <div className="profile-info-grid">
+                <div className="profile-info-item">
                   <label>Email</label>
-                  <div className="detail-value">{userData.email || "Chưa cập nhật"}</div>
+                  <p>{user.email}</p>
                 </div>
-
-                <div className="detail-item">
-                  <label>VAI TRÒ</label>
-                  <div className="detail-value role-badge">{formatRole(userData.role)}</div>
+                <div className="profile-info-item">
+                  <label>Số điện thoại</label>
+                  <p>{user.phone || "Chưa cập nhật"}</p>
                 </div>
-
-                <div className="detail-item">
-                  <label>THAM GIA TỪ</label>
-                  <div className="detail-value">{formatDate(userData.created_at)}</div>
+                <div className="profile-info-item">
+                  <label>Lớp</label>
+                  <p>{studentInfo?.grade || "Chưa cập nhật"}</p>
                 </div>
-
-                <div className="detail-item">
-                  <label>Lần cuối thay đổi thông tin</label>
-                  <div className="detail-value">{formatDate(userData.updated_at) || "Chưa cập nhật"}</div>
+                <div className="profile-info-item">
+                  <label>Trường</label>
+                  <p>{studentInfo?.school_name || "Chưa cập nhật"}</p>
+                </div>
+                <div className="profile-info-item">
+                  <label>Ngày tạo</label>
+                  <p>{user.created_at ? new Date(user.created_at).toLocaleDateString("vi-VN") : "Chưa cập nhật"}</p>
+                </div>
+                <div className="profile-info-item">
+                  <label>Trạng thái</label>
+                  <p>
+                    <span className={user.status === "active" ? "status-active" : "status-inactive"}>
+                      {user.status === "active" ? "✅ Hoạt động" : "⛔ Đã khóa"}
+                    </span>
+                  </p>
                 </div>
               </div>
-            </div>
-
-            <div className="profile-actions">
-              <button className="edit-profile-btn">
-                ✏️ Sửa thông tin
-              </button>
             </div>
           </div>
         </div>
