@@ -25,22 +25,78 @@
 }
 
 .profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid #f3f4f6;
 }
 
-.profile-header h2 {
+.profile-header-left h2 {
   font-size: 24px;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0 0 4px 0;
 }
 
-.profile-header p {
+.profile-header-left p {
   color: #6b7280;
   font-size: 14px;
   margin: 0;
+}
+
+/* Button Edit */
+.btn-edit {
+  padding: 8px 20px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-edit:hover {
+  background: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* Alert Messages */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
 }
 
 /* Profile Card */
@@ -79,6 +135,10 @@
   background: #e5e7eb;
 }
 
+.profile-name-section {
+  flex: 1;
+}
+
 .profile-name-section h3 {
   font-size: 22px;
   font-weight: 700;
@@ -94,6 +154,28 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
+}
+
+/* Input fields in edit mode */
+.input-name-edit {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  padding: 4px 12px;
+  border: 2px solid #4f46e5;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.input-name-edit:focus {
+  outline: none;
+  border-color: #4338ca;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background: #fff;
 }
 
 /* Profile Info Grid */
@@ -122,8 +204,96 @@
   margin: 0;
 }
 
+.info-disabled {
+  color: #9ca3af !important;
+  cursor: not-allowed;
+}
+
+/* Input edit */
+.input-edit {
+  padding: 8px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a2e;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.input-edit:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background: #fff;
+}
+
+.input-edit::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
 .status-active {
   color: #16a34a;
+}
+
+/* Profile Actions - Edit/Save buttons */
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+  justify-content: flex-end;
+}
+
+.btn-save {
+  padding: 10px 28px;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  padding: 10px 28px;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Loading */
@@ -169,8 +339,33 @@
     text-align: center;
   }
 
+  .profile-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-edit {
+    width: 100%;
+    text-align: center;
+  }
+
+  .profile-actions {
+    flex-direction: column;
+  }
+
+  .btn-save,
+  .btn-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+
   .profile-header h2 {
     font-size: 20px;
+  }
+
+  .input-name-edit {
+    max-width: 100%;
+    font-size: 18px;
   }
 }
 
@@ -186,5 +381,9 @@
 
   .profile-name-section h3 {
     font-size: 18px;
+  }
+
+  .input-name-edit {
+    font-size: 16px;
   }
 }

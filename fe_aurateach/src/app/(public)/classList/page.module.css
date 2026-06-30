@@ -12,8 +12,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 60px 0;
-  gap: 40px;
+  padding: 80px 0 60px;
+  gap: 60px;
   flex-wrap: wrap;
 }
 
@@ -25,7 +25,7 @@
 .heroTitle {
   font-size: 42px;
   font-weight: 700;
-  color: #0b2b6d; /* Màu xanh đậm */
+  color: #0b2b6d;
   line-height: 1.2;
   margin-bottom: 20px;
 }
@@ -36,6 +36,21 @@
   line-height: 1.6;
   margin-bottom: 30px;
   max-width: 450px;
+}
+
+.heroTags {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.tag {
+  background: #f0f4ff;
+  color: #2c5bf2;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .heroButtons {
@@ -65,39 +80,30 @@
 }
 
 .heroImageWrapper {
+  position: relative;
   flex: 1;
-  min-width: 300px;
-  display: flex;
-  justify-content: flex-end;
+  min-width: 400px;
 }
 
-.heroImagePlaceholder {
+.heroImage {
   width: 100%;
-  max-width: 500px;
-  height: 280px;
-  background: #dbeafe;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  font-weight: 600;
-  color: #666;
+  max-width: 520px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 .badge {
   position: absolute;
-  bottom: -20px;
-  left: -20px;
-  background: #0070f3;
+  bottom: -25px;
+  left: -25px;
+  background: #2c5bf2;
   color: white;
-  padding: 15px 20px;
+  padding: 14px 22px;
   border-radius: 12px;
-  text-align: center;
-  font-size: 14px;
   font-weight: 700;
+  box-shadow: 0 10px 20px rgba(44, 91, 242, 0.3);
+  text-align: center;
   line-height: 1.2;
-  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
 }
 
 /* --- FILTER SECTION --- */
@@ -116,11 +122,22 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
-.filterLabel {
-  font-weight: 500;
-  color: #555;
+.searchInput {
+  padding: 10px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  width: 280px;
+  font-size: 15px;
+  background: white;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #2c5bf2;
+  box-shadow: 0 0 0 3px rgba(44, 91, 242, 0.1);
 }
 
 .filterDropdown {
@@ -179,82 +196,135 @@
   color: #888;
 }
 
-.seeMoreLink {
-  color: #888;
-  text-decoration: none;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
+/* TUTOR GRID - 4 cột */
 .tutorGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
 }
 
+/* TUTOR CARD */
 .tutorCard {
   background: white;
   border: 1px solid #f0f0f0;
   border-radius: 16px;
-  padding: 20px;
-  transition: box-shadow 0.3s ease;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
 }
 
 .tutorCard:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  border-color: #2c5bf2;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  transform: translateY(-4px);
+}
+
+.cardImage {
+  position: relative;
+  width: 100%;
+  padding-top: 60%;
+  overflow: hidden;
+}
+
+.cardThumbnail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .tutorSubject {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #111;
-  margin-bottom: 16px;
-  min-height: 48px; /* Cố định chiều cao dòng tiêu đề */
+  padding: 16px 16px 12px 16px;
+  margin: 0;
+  min-height: 46px;
+  line-height: 1.4;
 }
 
 .tutorInfo {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  padding: 0 16px 12px 16px;
 }
 
 .tutorAvatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #eef2f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tutorAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .tutorDetails {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .tutorName {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tutorStats {
-  font-size: 12px;
+  font-size: 11px;
   color: #777;
-  margin: 4px 0 0 0;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardDescription {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  padding: 0 16px 12px 16px;
+  margin: 0;
+  min-height: 38px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tutorFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px 16px 16px 16px;
   border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
+  margin-top: auto;
 }
 
 .tutorPrice {
@@ -263,11 +333,11 @@
 }
 
 .priceLabel {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
   color: #aaa;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .priceValue {
@@ -276,24 +346,10 @@
   font-size: 15px;
 }
 
-.viewDetailBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: #eef2f6;
-  color: #2c5bf2;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.viewDetailBtn:hover {
-  background: #2c5bf2;
-  color: white;
+.studentCount {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
 }
 
 /* --- PAGINATION --- */
@@ -319,7 +375,7 @@
   transition: all 0.2s;
 }
 
-.pageBtn:hover {
+.pageBtn:hover:not(:disabled):not(.active) {
   background: #f5f5f5;
 }
 
@@ -329,23 +385,19 @@
   border-color: #0b2b6d;
 }
 
-.pageDots {
-  padding: 0 8px;
-  color: #888;
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.pageArrow {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  border-radius: 8px;
-  cursor: pointer;
+.pageDots {
+  padding: 0 4px;
+  color: #888;
 }
 
 /* --- CTA SECTION --- */
 .ctaSection {
-  background: #0b2b6d; /* Màu xanh đậm của hình */
+  background: #0b2b6d;
   border-radius: 20px;
   padding: 60px 40px;
   margin: 40px 0;
@@ -393,136 +445,94 @@
   cursor: pointer;
 }
 
-/* Responsive Mobile */
+/* --- RESPONSIVE --- */
+@media (max-width: 1200px) {
+  .tutorGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .tutorGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .heroImageWrapper {
+    min-width: 300px;
+  }
+}
+
 @media (max-width: 768px) {
   .heroTitle { font-size: 32px; }
-  .heroSection { flex-direction: column; text-align: center; }
+  .heroSection { 
+    flex-direction: column; 
+    text-align: center;
+    padding: 40px 0;
+  }
   .heroButtons { justify-content: center; }
-  .heroImageWrapper { justify-content: center; }
-  .filterSection { flex-direction: column; align-items: flex-start; }
-  .filterRight { width: 100%; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 10px;}
-  .listHeader { flex-direction: column; align-items: flex-start; gap: 10px; }
-}
-
-.tutorAvatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.tutorAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Thêm vào cuối file hoặc thay thế các class liên quan */
-
-.heroSection {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 80px 0 60px;
-  gap: 60px;
-  flex-wrap: wrap;
-}
-
-.heroImageWrapper {
-  position: relative;
-  flex: 1;
-  min-width: 400px;
-}
-
-.heroImage {
-  width: 100%;
-  max-width: 520px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-.badge {
-  position: absolute;
-  bottom: -25px;
-  left: -25px;
-  background: #2c5bf2;
-  color: white;
-  padding: 14px 22px;
-  border-radius: 12px;
-  font-weight: 700;
-  box-shadow: 0 10px 20px rgba(44, 91, 242, 0.3);
-  text-align: center;
-  line-height: 1.2;
-}
-
-/* Tags trong hero */
-.heroTags {
-  display: flex;
-  gap: 12px;
-  margin: 20px 0;
-}
-
-.tag {
-  background: #f0f4ff;
-  color: #2c5bf2;
-  padding: 6px 16px;
-  border-radius: 30px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Tutor Card */
-.tutorCard {
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 24px;
-  background: white;
-  transition: all 0.3s;
-}
-
-.tutorCard:hover {
-  border-color: #2c5bf2;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-
-.tutorMeta {
-  margin: 16px 0;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.6;
-}
-
-.tutorFooter {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f1f1;
-}
-
-.searchInput {
-  padding: 10px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  width: 280px;
-  font-size: 15px;
-  background: white;
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: #2c5bf2;
-  box-shadow: 0 0 0 3px rgba(44, 91, 242, 0.1);
-}
-
-.tutorGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-/* Trên màn hình lớn hiển thị rõ 4 cột */
-@media (min-width: 1200px) {
+  .heroImageWrapper { 
+    justify-content: center; 
+    min-width: auto;
+    width: 100%;
+  }
+  .heroImage {
+    max-width: 100%;
+  }
+  .badge {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -20px;
+  }
+  .filterSection { 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  .filterLeft {
+    width: 100%;
+    flex-direction: column;
+  }
+  .searchInput {
+    width: 100%;
+  }
+  .filterDropdown {
+    width: 100%;
+  }
+  .filterRight { 
+    width: 100%; 
+    justify-content: flex-start; 
+    overflow-x: auto; 
+    flex-wrap: nowrap; 
+    padding-bottom: 10px;
+  }
+  .listHeader { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 10px; 
+  }
   .tutorGrid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr;
+  }
+  .ctaSection {
+    padding: 40px 20px;
+  }
+  .ctaTitle {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  .heroTitle {
+    font-size: 26px;
+  }
+  .heroTags {
+    flex-direction: column;
+    align-items: center;
+  }
+  .badge {
+    font-size: 12px;
+    padding: 10px 16px;
   }
 }
