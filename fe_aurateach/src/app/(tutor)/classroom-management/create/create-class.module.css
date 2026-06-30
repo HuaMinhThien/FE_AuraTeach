@@ -87,6 +87,8 @@
 
 .formGroup input[type="text"],
 .formGroup input[type="number"],
+.formGroup input[type="url"],
+.formGroup input[type="date"],
 .formGroup select,
 .formGroup textarea {
   width: 100%;
@@ -162,6 +164,7 @@
 .defaultGrid {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .imgWrapper {
@@ -260,30 +263,76 @@
   font-weight: 500;
 }
 
+/* Container bọc ngoài vùng chọn giờ */
+.timePickerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.subLabel {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Hàng chứa 2 ô chọn giờ */
 .timePickerRow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: #f1f5f9;
-  padding: 12px 16px;
-  border-radius: 8px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.timePickerRow input[type="time"] {
+/* Khối bọc từng ô input time để hiển thị chữ "Từ:" hoặc "Đến:" */
+.timeInputWrapper {
+  display: flex;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.timeInputWrapper:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Chữ tiêu đề nhỏ đứng trước ô nhập */
+.timeInputIcon {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  margin-right: 8px;
+  user-select: none;
+}
+
+/* Ô input time nguyên bản */
+.timeInput {
   border: none;
   background: transparent;
+  outline: none;
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
-  outline: none;
+  padding: 12px 0;
   cursor: pointer;
+  font-family: inherit;
 }
 
-.durationLabel {
-  margin-left: auto;
-  font-size: 14px;
-  color: #64748b;
+/* Mũi tên kết nối ở giữa */
+.timeArrowDivider {
+  font-size: 18px;
+  color: #94a3b8;
+  user-select: none;
 }
+
+
+
+
 
 .errorAlert {
   background-color: #fef2f2;
@@ -430,3 +479,4 @@
   border: 1px solid #cbd5e1;
   padding: 12px 16px;
 }
+

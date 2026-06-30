@@ -214,7 +214,7 @@
         "Thứ 6"
       ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
       "students": []
@@ -238,7 +238,7 @@
         "Thứ 5"
       ],
       "time_slot": "19:30-21:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/123456789",
       "students": []
@@ -262,7 +262,7 @@
         "Chủ Nhật"
       ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/eng-tutor-room",
       "students": []
@@ -287,7 +287,7 @@
         "Thứ 6"
       ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/999888777",
       "students": []
@@ -311,7 +311,7 @@
         "Thứ 5"
       ],
       "time_slot": "19:30-21:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/phy-tutor-01",
       "students": []
@@ -335,7 +335,7 @@
         "Chủ Nhật"
       ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-6.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/che-tutor-01",
       "students": []
@@ -360,7 +360,7 @@
         "Thứ 6"
       ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-5.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/bio-tutor-99",
       "students": []
@@ -384,7 +384,7 @@
         "Thứ 5"
       ],
       "time_slot": "19:30-21:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/math-kid-01",
       "students": []
@@ -408,7 +408,7 @@
         "Chủ Nhật"
       ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/van-12-vip",
       "students": []
@@ -433,7 +433,7 @@
         "Thứ 6"
       ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/eng-grammar-02",
       "students": []
@@ -481,7 +481,7 @@
         "Chủ Nhật"
       ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/che-organic-02",
       "students": []
@@ -505,7 +505,7 @@
         "Thứ 6"
       ],
       "time_slot": "19:00-01:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
       "students": []
@@ -528,7 +528,7 @@
         "Thứ 3"
       ],
       "time_slot": "21:00-23:00",
-      "thumbnail": "blob:http://localhost:3000/73c463f7-1616-44f4-a194-5a2f84c98ff7",
+      "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
       "students": []
@@ -552,9 +552,33 @@
         "Thứ 5"
       ],
       "time_slot": "19:00-20:00",
-      "thumbnail": "blob:http://localhost:3000/17f64f73-b797-4a83-abc5-67690e15ac0e",
+      "thumbnail": "/img/class/default-class-10.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
+    },
+    {
+      "id": "c3c6",
+      "course_id": "course-1782825797683",
+      "tutor_id": "u-01",
+      "title": "sinh hoc",
+      "category_id": "cat-06",
+      "level": "Cấp 1",
+      "description": "aaaas",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-06",
+      "end_date": "2026-09-14",
+      "total_weeks": 10,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-5.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/phz-fbyt-ftj",
       "students": []
     }
   ],
@@ -605,5 +629,4 @@
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
     }
   }
-  
 }

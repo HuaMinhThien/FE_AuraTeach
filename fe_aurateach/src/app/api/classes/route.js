@@ -132,16 +132,10 @@ export async function POST(request) {
       time_slot: body.time_slot,
       thumbnail: body.thumbnail || "/img/default-class-1.jpg",
       status: "active",
-      permanent_room_url: "https://meet.google.com/abc-xyz-def",
+      permanent_room_url: body.permanent_room_url || "https://meet.google.com/abc-xyz-def",
       students: []
     };
 
-    // Đồng bộ ghi nhận vào cả 2 bảng quản lý của json-server
-    await fetch("http://localhost:3007/classByIdTutor", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newClassData),
-    });
 
     const resFromJsonServer = await fetch("http://localhost:3007/courses", {
       method: "POST",

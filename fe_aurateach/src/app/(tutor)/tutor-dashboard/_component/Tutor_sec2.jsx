@@ -35,20 +35,21 @@ export default function Tutor_sec2({ classesData }) {
   ];
 
   const list = classesData || defaultClasses;
+  console.log(list);
+  
 
   return (
     <div className={styles.container}>
       <div className={styles.sectionHeader}>
         <h3>Lớp học sắp diễn ra</h3>
-        <a href="#" className={styles.viewAll}>Xem tất cả</a>
+        <a href="/classroom-management" className={styles.viewAll}>Xem tất cả</a>
       </div>
 
       <div className={styles.list}>
         {list.map((item) => (
           <div key={item.id} className={styles.classCard}>
             <div className={styles.imageWrapper}>
-              {/* Fallback ảnh nếu không tìm thấy link */}
-              <div className={styles.placeholderImg}>📚</div>
+              <Image src={item.thumbnail} width={64} height={64} alt="" />
             </div>
             
             <div className={styles.info}>

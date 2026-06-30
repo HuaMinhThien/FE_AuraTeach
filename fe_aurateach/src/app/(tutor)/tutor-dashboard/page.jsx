@@ -161,7 +161,8 @@ export default function TutorDashboardPage() {
                 time: timeSlot,
                 students: `${course.students?.length || 0} học viên`,
                 sortTimestamp: nextClassDate.getTime(), // Dùng timestamp chính xác làm trọng số sắp xếp
-                isUrgent: false
+                isUrgent: false,
+                thumbnail: course.thumbnail
               };
             })
             .filter(Boolean); // Loại bỏ các lớp đã kết thúc (null)
