@@ -287,9 +287,7 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/123456789",
-      "students": [
-        "u-student-1"
-      ]
+      "students": []
     },
     {
       "id": "fad2",
@@ -338,7 +336,9 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/999888777",
-      "students": []
+      "students": [
+        "u-student-1"
+      ]
     },
     {
       "id": "54d2",
@@ -683,7 +683,7 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "confirmed",
+      "status": "cancelled",
       "booking_date": "2026-07-01T10:00:00Z",
       "created_at": "2026-07-01T10:00:00Z",
       "updated_at": "2026-07-01T10:00:00Z",
@@ -699,7 +699,7 @@
       "student_id": "u-student-1",
       "course_id": "c-02",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "cancelled",
       "booking_date": "2026-06-30T20:42:52.004Z",
       "created_at": "2026-06-30T20:42:52.004Z",
       "updated_at": "2026-06-30T20:42:52.004Z",
@@ -709,6 +709,38 @@
       "payment_method": null,
       "transaction_id": null,
       "id": "TVt4v5vvMxM"
+    },
+    {
+      "booking_id": "bk-1782861649566",
+      "student_id": "u-student-1",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "cancelled",
+      "booking_date": "2026-06-30T23:20:49.566Z",
+      "created_at": "2026-06-30T23:20:49.566Z",
+      "updated_at": "2026-06-30T23:20:49.566Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": null,
+      "transaction_id": null,
+      "id": "rA_YHb4Z_lU"
+    },
+    {
+      "booking_id": "bk-1782862229275",
+      "student_id": "u-student-1",
+      "course_id": "c-04",
+      "tutor_id": "tutor_02",
+      "status": "pending",
+      "booking_date": "2026-06-30T23:30:29.275Z",
+      "created_at": "2026-06-30T23:30:29.275Z",
+      "updated_at": "2026-06-30T23:30:29.275Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 180000,
+      "payment_method": null,
+      "transaction_id": null,
+      "id": "KVlWv2aShoo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

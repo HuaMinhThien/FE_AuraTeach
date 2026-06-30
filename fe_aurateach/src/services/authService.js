@@ -117,6 +117,39 @@ class AuthService {
     return response.json();
   }
 
+  // ✅ THÊM MỚI: Cập nhật thông tin user
+  async updateProfile(userId, userData) {
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Cập nhật thất bại");
+      }
+
+      // Cập nhật cookie với thông tin mới
+      if (result.success && result.user) {
+        // Cập nhật cookie user_info
+        const { password, ...userInfo } = result.user;
+        if (typeof window !== "undefined") {
+          document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=86400`;
+          document.cookie = `role=${userInfo.role}; path=/; max-age=86400`;
+        }
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async logout() {
     if (typeof window !== "undefined") {
       document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
