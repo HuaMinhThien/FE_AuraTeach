@@ -15,6 +15,7 @@ export default function ClassDetailPage({ params }) {
     tutorInfo: null,
     userTutor: null,
     courseReviews: [],
+    users: [],
     loading: true
   });
 
@@ -26,6 +27,9 @@ export default function ClassDetailPage({ params }) {
         console.log("Đang fetch ID:", courseId);
         const courseRes = await fetch(`http://localhost:8000/api/courses/${courseId}`);
         const course = await courseRes.json();
+
+        const usersRes = await fetch(`http://localhost:8000/api/users`);
+        const users = await usersRes.json();
 
         // 2. Lấy thông tin gia sư và user liên quan
         let tutorInfo = null;
@@ -42,7 +46,7 @@ export default function ClassDetailPage({ params }) {
         const reviewRes = await fetch(`http://localhost:8000/api/reviews?course_id=${courseId}`);
         const courseReviews = await reviewRes.json();
 
-        setData({ course, tutorInfo, userTutor, courseReviews, loading: false });
+        setData({ course, tutorInfo, userTutor, courseReviews, users, loading: false });
       } catch (error) {
         console.error("Lỗi khi fetch dữ liệu chi tiết:", error);
         setData(prev => ({ ...prev, loading: false }));
@@ -132,35 +136,14 @@ export default function ClassDetailPage({ params }) {
             <div className={styles.reviewsList}>
               {courseReviews.length > 0 ? (
                 courseReviews.map((review) => {
-                  {loading ? (
-                    <p>Đang tải dữ liệu...</p>
-                  ) : (
-                    (() => {
-                      // 1. Kiểm tra mảng users có dữ liệu không
-                      if (!data?.users || !Array.isArray(data.users)) {
-                        return <p>Không có dữ liệu người dùng.</p>;
-                      }
-
-                      // 2. Tìm kiếm an toàn (thay thế ID bằng biến ID thực tế bạn đang dùng)
-                      const studentUser = data.users.find(u => u.user_id === 'u-01');
-
-                      // 3. Render nếu tìm thấy, hoặc báo lỗi nếu không tìm thấy
-                      return studentUser ? (
-                        <div>
-                          <h1>{studentUser.full_name}</h1>
-                          {/* Render các thông tin khác của studentUser ở đây */}
-                        </div>
-                      ) : (
-                        <p>Không tìm thấy người dùng này.</p>
-                      );
-                    })()
-                  )}
+                  // Tìm thông tin người đánh giá từ mảng users
+                  const author = data.users.find(u => u.user_id === review.user_id);
                   
                   return (
                     <div key={review.review_id} className={styles.reviewCard}>
                       <div className={styles.reviewAuthor}>
                         <span className={styles.reviewName}>
-                          {studentUser?.full_name || "Học viên"}
+                          {author?.full_name || "Học viên"}
                         </span>
                         <span className={styles.reviewRating}>
                           {'⭐'.repeat(review.rating)}
