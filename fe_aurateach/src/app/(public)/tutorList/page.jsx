@@ -1,45 +1,10 @@
-// src/app/(public)/tutorList/page.jsx
 "use client";
 
 import styles from "./page.module.css";
 import Link from "next/link";
-import { useState, useMemo } from "react";
-import data from "../../api/data.json";
+import { useState, useMemo, useEffect } from "react";
 
 const quickFilters = ["Tất cả", "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh"];
-
-// Thêm hàm helper để tạo dữ liệu ngẫu nhiên cho tutor
-const getRandomDate = (start, end) => {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-};
-
-const allTutors = data.tutors.map((tutor) => {
-  const user = data.users.find(u => u.user_id === tutor.user_id);
-  
-  let avatar = user?.avatar || "";
-  if (!avatar || avatar === "") {
-    avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
-  }
-
-  // Tạo ngày tạo ngẫu nhiên cho tutor (trong vòng 1 năm qua)
-  const createdAt = getRandomDate(
-    new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-    new Date()
-  );
-
-  return {
-    id: tutor.tutor_id,
-    name: user?.full_name || "Gia sư AuraTeach",
-    rating: tutor.rating || 4.8,
-    reviews: Math.floor(Math.random() * 120) + 45,
-    location: "Hà Nội",
-    desc: tutor.bio.length > 135 ? tutor.bio.substring(0, 132) + "..." : tutor.bio,
-    tags: ["Gia sư", tutor.qualification?.split(" - ")[1] || "Chuyên môn"].filter(Boolean),
-    avatar: avatar,
-    qualification: tutor.qualification || "",
-    createdAt: createdAt, // Thêm ngày tạo
-  };
-});
 
 function StarIcon() {
   return (
@@ -50,16 +15,56 @@ function StarIcon() {
 }
 
 export default function TeacherListPage() {
+  const [allTutors, setAllTutors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOption, setSortOption] = useState("newest"); // Thêm state cho sort
-  const [isSortOpen, setIsSortOpen] = useState(false); // State cho dropdown
+  const [sortOption, setSortOption] = useState("newest");
+  const [isSortOpen, setIsSortOpen] = useState(false);
   const tutorsPerPage = 8;
 
-  // Lọc và sắp xếp tutor
+  // Fetch dữ liệu từ API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tutorsRes, usersRes] = await Promise.all([
+          fetch('http://localhost:8000/api/tutors'),
+          fetch('http://localhost:8000/api/users')
+        ]);
+        
+        const tutorsData = await tutorsRes.json();
+        const usersData = await usersRes.json();
+
+        const formattedTutors = tutorsData.map((tutor) => {
+          const user = usersData.find(u => u.user_id === tutor.user_id);
+          return {
+            id: tutor.tutor_id,
+            name: user?.full_name || "Gia sư AuraTeach",
+            rating: parseFloat(tutor.rating) || 4.8,
+            reviews: Math.floor(Math.random() * 120) + 45,
+            location: "Hà Nội",
+            desc: tutor.bio || "Gia sư giàu kinh nghiệm.",
+            tags: ["Gia sư", tutor.qualification?.split(" - ")[0] || "Chuyên môn"],
+            avatar: user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+            qualification: tutor.qualification || "",
+            createdAt: new Date(tutor.created_at || Date.now())
+          };
+        });
+
+        setAllTutors(formattedTutors);
+      } catch (error) {
+        console.error("Lỗi khi fetch dữ liệu:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Lọc và sắp xếp
   const filteredAndSortedTutors = useMemo(() => {
-    // Lọc trước
     let filtered = allTutors.filter((tutor) => {
       const matchesSearch = 
         tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -74,58 +79,35 @@ export default function TeacherListPage() {
       return matchesSearch && matchesFilter;
     });
 
-    // Sắp xếp sau
     if (sortOption === "newest") {
       filtered = filtered.sort((a, b) => b.createdAt - a.createdAt);
     } else if (sortOption === "oldest") {
       filtered = filtered.sort((a, b) => a.createdAt - b.createdAt);
     }
-
     return filtered;
-  }, [searchTerm, activeFilter, sortOption]);
+  }, [allTutors, searchTerm, activeFilter, sortOption]);
 
-  // Phân trang
   const totalPages = Math.ceil(filteredAndSortedTutors.length / tutorsPerPage);
   const currentTutors = filteredAndSortedTutors.slice(
     (currentPage - 1) * tutorsPerPage,
     currentPage * tutorsPerPage
   );
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-  };
-
-  // Hàm xử lý sort
-  const handleSortChange = (option) => {
-    setSortOption(option);
-    setIsSortOpen(false);
-    setCurrentPage(1);
-  };
+  if (loading) return <div className={styles.teacherListPage} style={{padding: "100px", textAlign: "center"}}>Đang tải danh sách gia sư...</div>;
 
   return (
     <main className={styles.teacherListPage}>
+      {/* Search Section */}
       <section className={`container-center ${styles.searchSection}`}>
         <div className={styles.searchCard}>
           <h1>Khám phá Gia sư tài năng</h1>
-          <p>
-            Tìm kiếm người đồng hành hoàn hảo cho hành trình học tập của bạn. 
-            Hàng ngàn gia sư chất lượng cao đã sẵn sàng hỗ trợ bạn.
-          </p>
-
-          <form className={styles.searchForm} onSubmit={handleSearch}>
-            <div className={styles.inputWrap}>
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M21 21l-4.35-4.35m1.35-5.15a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
+          <form className={styles.searchForm} onSubmit={(e) => e.preventDefault()}>
+            <div className={styles.inputWrap}> {/* Đảm bảo class này vẫn tồn tại trong CSS */}
               <input
                 type="text"
                 placeholder="Tên gia sư, môn học..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                aria-label="Tìm kiếm gia sư"
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
               />
             </div>
             <button type="submit">Tìm kiếm</button>
@@ -136,13 +118,9 @@ export default function TeacherListPage() {
             <div>
               {quickFilters.map((item) => (
                 <button
-                  type="button"
                   key={item}
                   className={activeFilter === item ? styles.activeFilter : ""}
-                  onClick={() => {
-                    setActiveFilter(item);
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => { setActiveFilter(item); setCurrentPage(1); }}
                 >
                   {item}
                 </button>
@@ -152,35 +130,18 @@ export default function TeacherListPage() {
         </div>
       </section>
 
+      {/* List Section */}
       <section className={`container-center ${styles.listSection}`}>
         <div className={styles.listHead}>
           <h2>{filteredAndSortedTutors.length} gia sư phù hợp</h2>
-          
-          {/* Dropdown Sort */}
           <div className={styles.sortWrapper}>
-            <button 
-              type="button" 
-              className={styles.sortBtn}
-              onClick={() => setIsSortOpen(!isSortOpen)}
-            >
-              {sortOption === "newest" ? "Mới nhất" : "Cũ nhất"} 
-              <span className={isSortOpen ? styles.arrowUp : styles.arrowDown}>▾</span>
+            <button className={styles.sortBtn} onClick={() => setIsSortOpen(!isSortOpen)}>
+              {sortOption === "newest" ? "Mới nhất" : "Cũ nhất"} <span>▾</span>
             </button>
-            
             {isSortOpen && (
               <div className={styles.sortDropdown}>
-                <button 
-                  className={sortOption === "newest" ? styles.activeSort : ""}
-                  onClick={() => handleSortChange("newest")}
-                >
-                  Mới nhất
-                </button>
-                <button 
-                  className={sortOption === "oldest" ? styles.activeSort : ""}
-                  onClick={() => handleSortChange("oldest")}
-                >
-                  Cũ nhất
-                </button>
+                <button onClick={() => { setSortOption("newest"); setIsSortOpen(false); }}>Mới nhất</button>
+                <button onClick={() => { setSortOption("oldest"); setIsSortOpen(false); }}>Cũ nhất</button>
               </div>
             )}
           </div>
@@ -191,78 +152,24 @@ export default function TeacherListPage() {
             currentTutors.map((tutor) => (
               <article className={styles.card} key={tutor.id}>
                 <div className={styles.cardTop}>
-                  <img 
-                    src={tutor.avatar} 
-                    alt={tutor.name}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
-                    }}
-                  />
+                  <img src={tutor.avatar} alt={tutor.name} onError={(e) => e.target.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"} />
                   <div className={styles.rating}>
                     <span className={styles.star}><StarIcon /></span>
                     <span>{tutor.rating.toFixed(1)}</span>
-                    <small>({tutor.reviews})</small>
                   </div>
                 </div>
-
                 <h3>{tutor.name}</h3>
-                <p className={styles.meta}>Gia sư tại {tutor.location}</p>
                 <p className={styles.desc}>{tutor.desc}</p>
-
-                <div className={styles.tags}>
-                  {tutor.tags.map((tag, index) => (
-                    <span key={index}>{tag}</span>
-                  ))}
-                </div>
-
+                <div className={styles.tags}>{tutor.tags.map((tag, i) => <span key={i}>{tag}</span>)}</div>
                 <Link href={`/tutorList/${tutor.id}`} className={styles.detailLink}>
-                  <button type="button" className={styles.detailBtn}>
-                    Xem chi tiết
-                  </button>
+                  <button className={styles.detailBtn}>Xem chi tiết</button>
                 </Link>
               </article>
             ))
           ) : (
-            <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#666' }}>
-              Không tìm thấy gia sư nào phù hợp với từ khóa của bạn.
-            </p>
+            <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>Không tìm thấy gia sư phù hợp.</p>
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className={styles.pagination}>
-            <button 
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-            >
-              Trước
-            </button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  className={currentPage === pageNum ? styles.activePage : ""}
-                  onClick={() => setCurrentPage(pageNum)}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-
-            {totalPages > 5 && <span>...</span>}
-
-            <button 
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Sau
-            </button>
-          </div>
-        )}
       </section>
     </main>
   );
