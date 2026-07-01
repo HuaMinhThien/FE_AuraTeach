@@ -39,7 +39,7 @@ export default function TutorDashboardPage() {
         setUserName(userData.full_name || userData.name || "Gia Sư");
 
         // 1. Fetch thông tin ví từ tutors
-        const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${tutorId}`);
+        const tutorRes = await fetch(`http://localhost:8000/api/tutors?user_id=${tutorId}`);
         let tutorDetail = null;
         if (tutorRes.ok) {
           const tutorData = await tutorRes.json();
@@ -47,24 +47,32 @@ export default function TutorDashboardPage() {
         }
 
         // 2. Fetch danh sách lớp từ courses
-        const coursesRes = await fetch(`http://localhost:3007/courses?tutor_id=${tutorId}`);
+        const coursesRes = await fetch(`http://localhost:8000/api/courses?tutor_id=${tutorId}`);
         if (coursesRes.ok) {
           const coursesData = await coursesRes.json();
 
           const activeClasses = coursesData.filter(c => c.status === "active");
           const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
-          const availableWallet = tutorDetail?.available_balance || 0;
-          const pendingWallet = tutorDetail?.pending_balance || 0;
+          const availableWallet = parseFloat(tutorDetail?.available_balance) || 0;
+          const pendingWallet = parseFloat(tutorDetail?.pending_balance) || 0;
           const calculatedTotalIncome = availableWallet + pendingWallet;
-          const rating = tutorDetail?.rating;
-
+          const ratingValue = tutorDetail?.rating ? tutorDetail.rating : "0.0";
+          const safeTotal = calculatedTotalIncome > 0 ? calculatedTotalIncome : 1; // Tránh chia cho 0
+          const growthPercentage = pendingWallet > 0 
+            ? Math.round((pendingWallet / safeTotal) * 100) 
+            : 0;
+          console.log("Dữ liệu ví:", {availableWallet, pendingWallet})
           setStats({
-            totalIncome: `${calculatedTotalIncome.toLocaleString("vi-VN")}đ`,
-            incomeGrowth: pendingWallet > 0 ? `+${((pendingWallet / (calculatedTotalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` : "Ổn định",
+            // Dùng Math.round để xóa phần thập phân, sau đó mới format tiền tệ
+            totalIncome: `${Math.round(calculatedTotalIncome).toLocaleString("vi-VN")}đ`,
+            
+            // Logic hiển thị an toàn
+            incomeGrowth: pendingWallet > 0 ? `+${growthPercentage}% chờ duyệt` : "Ổn định",
+            
             totalStudents: totalStudents,
             studentsGrowth: `+${activeClasses.length} lớp`,
             openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
-            rating: `${rating}/5.0`
+            rating: `${ratingValue}/5.0`
           });
 
           // --- THUẬT TOÁN TÌM CHÍNH XÁC NGÀY HỌC TIẾP THEO ---

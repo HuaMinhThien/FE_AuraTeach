@@ -27,19 +27,15 @@ export default function Header() {
             if (userCookie) {
                 try {
                     const userData = JSON.parse(decodeURIComponent(userCookie));
-                    // Đảm bảo không set lại liên tục nếu dữ liệu không đổi để tránh re-render thừa
-                    setUser((prev) => JSON.stringify(prev) === JSON.stringify(userData) ? prev : userData);
+                    console.log("Dữ liệu User từ Cookie:", userData); // <--- KIỂM TRA DÒNG NÀY TRONG CONSOLE
+                    setUser(userData);
                 } catch (error) {
+                    console.error("Lỗi parse cookie:", error);
                     setUser(null);
                 }
-            } else {
-                setUser(null);
             }
         };
-
         checkUser();
-        const interval = setInterval(checkUser, 1000);
-        return () => clearInterval(interval);
     }, []);
 
     // 2. Fetch dữ liệu ví từ API khi đã có thông tin User ID từ cookie
@@ -54,7 +50,7 @@ export default function Header() {
                 if (!tutorId) return;
 
                 // Gọi endpoint tutors kèm query parameter filter theo user_id
-                const res = await fetch(`http://localhost:3007/tutors?user_id=${tutorId}`);                
+                const res = await fetch(`http://localhost:8000/api/tutors?user_id=${tutorId}`);                
                 
                 if (res.ok) {
                     const currentTutorData = await res.json();
@@ -89,13 +85,13 @@ export default function Header() {
 
     const getValidAvatar = (avatar) => {
         if (!avatar) return "/img/default-avatar.png";
-        if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-            return avatar;
-        }
-        if (avatar.startsWith('/')) {
-            return avatar;
-        }
-        return "/img/default-avatar.png";
+        
+        // Nếu là đường dẫn đầy đủ
+        if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar;
+        
+        // Nếu là đường dẫn lưu trong storage (thường có dạng 'uploads/...')
+        // Đảm bảo thêm dấu / ở đầu để Next.js hiểu là từ public folder
+        return avatar.startsWith('/') ? avatar : `/${avatar}`;
     };
 
     return (

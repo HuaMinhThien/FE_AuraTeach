@@ -9,7 +9,7 @@ export async function GET(request) {
     const [newStart, newEnd] = (searchParams.get("slot") || "").split("-");
 
     // Lấy dữ liệu từ JSON Server để đối chiếu chéo
-    const res = await fetch("http://localhost:3007/classByIdTutor", { cache: "no-store" });
+    const res = await fetch("http://localhost:8000//api/classByIdTutor", { cache: "no-store" });
     if (!res.ok) return NextResponse.json({ success: true, isConflict: false });
 
     const jsonServerData = await res.json();

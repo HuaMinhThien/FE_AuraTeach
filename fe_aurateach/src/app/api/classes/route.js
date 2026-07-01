@@ -27,7 +27,7 @@ export async function GET(request) {
     }
 
     // Thực hiện fetch kèm query parameter lọc chính xác theo gia sư đăng nhập
-    const resFromJsonServer = await fetch(`http://localhost:3007/courses?tutor_id=${tutorId}`, {
+    const resFromJsonServer = await fetch(`http://localhost:8000/api/courses?tutor_id=${tutorId}`, {
       cache: "no-store" 
     });
 
@@ -137,7 +137,7 @@ export async function POST(request) {
     };
 
 
-    const resFromJsonServer = await fetch("http://localhost:3007/courses", {
+    const resFromJsonServer = await fetch("http://localhost:8000/api/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newClassData),

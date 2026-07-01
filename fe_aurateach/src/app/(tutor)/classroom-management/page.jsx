@@ -16,33 +16,49 @@ export default function ClassroomManagementPage() {
   const [pagination, setPagination] = useState({ totalPages: 1 });
   const [selectedClass, setSelectedClass] = useState(null);
 
+  const getCookie = (name) => {
+    if (typeof window === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
+
   useEffect(() => {
     let isMounted = true;
-
+    const userCookie = getCookie("user_info");
+    
+    // Nếu không có cookie user_info thì không tải
+    if (!userCookie) return; 
+    const userData = JSON.parse(decodeURIComponent(userCookie));
+    const tutorId = userData.user_id || userData.id;
+    console.log("DEBUG: Tutor ID đang gửi lên là:", tutorId);
     const loadData = async () => {
       setLoading(true);
       try {
+        // GỌI API VỚI tutor_id
         const res = await fetch(
-          `/api/classes?page=${currentPage}&limit=6&status=${statusFilter}&search=${search}`
+          `http://localhost:8000/api/courses?tutor_id=${tutorId}&page=${currentPage}&status=${statusFilter}&search=${search}`
         );
         const resData = await res.json();
+        console.log("Dữ liệu nhận từ API:", resData);
         
-        if (isMounted && resData.success) {
-          setClasses(resData.data);
-          setPagination(resData.pagination);
+        // Lưu ý: Nếu Laravel trả về mảng trực tiếp không có {success, data}, 
+        // bạn chỉ cần setClasses(resData)
+        if (isMounted) {
+          const data = resData.data || resData; 
+          // Dùng toán tử điều kiện để đảm bảo data luôn là mảng
+          setClasses(Array.isArray(data) ? data : []); 
         }
       } catch (error) {
-        console.error("Lỗi tải danh sách lớp học từ JSON Server:", error);
+        console.error("Lỗi tải lớp học:", error);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
     loadData();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [currentPage, statusFilter, search]);
 
   const handleFilterChange = (status) => {

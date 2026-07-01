@@ -7,15 +7,17 @@ export default function ClassGrid({ classes, loading, pagination, currentPage, s
     return <div className={styles.loadingText}>Đang tải danh sách lớp học...</div>;
   }
 
-  if (classes.length === 0) {
+  const safeClasses = Array.isArray(classes) ? classes : [];
+
+  if (safeClasses.length === 0) {
     return <div className={styles.emptyText}>Không tìm thấy lớp học nào phù hợp.</div>;
   }
 
   return (
     <>
       <div className={styles.classGrid}>
-        {classes.map((cls) => (
-          <div key={cls.class_id} className={styles.classCard}>
+        {safeClasses.map((cls) => (
+          <div key={cls.course_id} className={styles.classCard}>
             <div>
               <div className={styles.cardHeader}>
                 {getStatusBadge(cls.status)}
@@ -23,7 +25,7 @@ export default function ClassGrid({ classes, loading, pagination, currentPage, s
               </div>
               <h3 className={styles.className}>{cls.class_name}</h3>
               <p className={styles.cardInfo}>🗓️ Ngày mở: {cls.start_date}</p>
-              <p className={styles.cardInfo}>👥 Học viên đã tham gia: {cls.students.length} người</p>
+              <p className={styles.cardInfo}>👥 Học viên đã tham gia: {(cls.students || []).length} người</p>
             </div>
             
             <div className={styles.cardAction}>
@@ -31,7 +33,7 @@ export default function ClassGrid({ classes, loading, pagination, currentPage, s
                 Xem chi tiết
               </button>
               {cls.status === "active" && (
-                <button className={styles.closeActionBtn} onClick={() => onCloseClass(cls.class_id)}>
+                <button className={styles.closeActionBtn} onClick={() => onCloseClass(cls.course_id)}>
                   Khóa lớp
                 </button>
               )}

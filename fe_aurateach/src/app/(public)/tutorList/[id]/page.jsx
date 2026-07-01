@@ -88,7 +88,7 @@ export default function TutorDetailPage({ params }) {
                 <span className={styles.verifiedCheck}>✓</span>
               </div>
               <div className={styles.ratingMeta}>
-                ⭐ {tutorDetails.rating ? tutorDetails.rating.toFixed(1) : '4.5'} 
+                ⭐ {tutorDetails.rating ? Number(tutorDetails.rating).toFixed(1) : '4.5'} 
                 <span>({tutorReviews.length} đánh giá)</span>
               </div>
               <div className={styles.statsContainer}>
@@ -158,7 +158,7 @@ export default function TutorDetailPage({ params }) {
             <div className={styles.ratingSummary}>
               <div style={{ textAlign: 'center' }}>
                 <div className={styles.bigScore}>
-                  {tutorDetails.rating ? tutorDetails.rating.toFixed(1) : '4.5'}
+                  {tutorDetails.rating ? Number(tutorDetails.rating).toFixed(1) : '4.5'}
                 </div>
                 <div className={styles.starsRow}>⭐⭐⭐⭐⭐</div>
                 <div className={styles.voteCount}>{tutorReviews.length} bình chọn</div>
@@ -238,7 +238,7 @@ export default function TutorDetailPage({ params }) {
                     <div className={styles.relatedInfo}>
                       <h4 className={styles.relatedName}>{relatedTutor.name}</h4>
                       <p className={styles.relatedSub}>{relatedTutor.subject}</p>
-                      <span className={styles.relatedStars}>⭐ {relatedTutor.rating ? relatedTutor.rating.toFixed(1) : '4.5'}</span>
+                      <span className={styles.relatedStars}>⭐ {relatedTutor.rating ? Number(relatedTutor.rating).toFixed(1) : '4.5'}</span>
                     </div>
                     <Link href={`/tutorList/${relatedTutor.id}`} className={styles.viewBtn}>Xem</Link>
                   </div>

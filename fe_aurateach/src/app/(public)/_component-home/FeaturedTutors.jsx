@@ -26,24 +26,21 @@ function FeaturedTutors() {
         const coursesData = await resCourses.json();
 
         const mergedTutors = tutorsData.map((tutor) => {
-          const matchedUser = usersData.find(u => u.user_id === tutor.user_id) || {};
-          
-          //  Tìm khóa học tương ứng của gia sư này để lấy môn học và học phí
-          const matchedCourse = coursesData.find(c => c.tutor_id === tutor.tutor_id) || {};
+  const matchedUser = usersData.find(u => String(u.user_id) === String(tutor.user_id)) || {};
+    const matchedCourse = coursesData.find(c => String(c.tutor_id) === String(tutor.tutor_id)) || {};
 
-          return {
-            id: tutor.tutor_id,
-            name: matchedUser.full_name || "Gia sư AuraTeach",
-            avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
-            subject: matchedCourse.title || "Gia sư tự do",
-            rating: tutor.rating || 5.0,
-            experience: tutor.Experience || "Chưa cập nhật", // Khớp với chữ "Experience" viết hoa trong JSON
-            bio: tutor.bio || "",
-            price: matchedCourse.price_per_session || "Đang cập nhật", // Khớp với price_per_session trong JSON
-            // Vì file json chưa có trường số lượng đánh giá cụ thể (reviews), ta có thể linh động render text hoặc để mặc định
-            reviews: tutor.tutor_id === "tutor_01" ? 120 : 45 
-          };
-        });
+    return {
+      id: tutor.tutor_id,
+      name: matchedUser.full_name || "Gia sư AuraTeach",
+      avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
+      subject: matchedCourse.course_name || matchedCourse.title || "Gia sư tự do", // Kiểm tra cả 2 trường
+      rating: parseFloat(tutor.rating) || 5.0, // Ép kiểu số
+      experience: tutor.Experience || "Chưa cập nhật",
+      bio: tutor.bio || "",
+      price: matchedCourse.price_per_session ? `${parseInt(matchedCourse.price_per_session).toLocaleString()}đ` : "Liên hệ",
+      reviews: tutor.reviews || 0 // Nếu API không có trường này, hãy để 0
+    };
+  });
 
         setTutorsList(mergedTutors);
       } catch (error) {
