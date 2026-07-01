@@ -165,13 +165,13 @@ export default function LoginPage() {
 
           <div className="aurateach-hero-right">
             <div className="aurateach-hero-image">
-              <div className="aurateach-hero-content">
+              <div className="aurateach-hero-content"> 
                 <div className="aurateach-hero-icon">📚✨</div>
                 <h2>AuraTeach</h2>
                 <p>
                   Nền tảng kết nối gia sư và học viên
                   <br />
-                  tự tin hàng đầu Việt Nam.
+                   hàng đầu Việt Nam.
                 </p>
               </div>
 

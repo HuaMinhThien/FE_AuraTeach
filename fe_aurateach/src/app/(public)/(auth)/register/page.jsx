@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
@@ -13,11 +13,21 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [grade, setGrade] = useState("");
-  const [schoolName, setSchoolName] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const termsRef = useRef(null);
+
+  const handleTermsScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      setHasScrolledToBottom(true);
+    } else {
+      setHasScrolledToBottom(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,6 +48,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!hasScrolledToBottom) {
+      setError("Vui lòng đọc hết điều khoản trước khi đăng ký");
+      setIsTermsOpen(true);
+      return;
+    }
+
     if (!agreeTerms) {
       setError("Vui lòng đồng ý với điều khoản dịch vụ");
       return;
@@ -52,8 +68,8 @@ export default function RegisterPage() {
         password: password,
         phone: phone,
         role: "student",
-        grade: grade,
-        schoolName: schoolName
+        grade: "",
+        schoolName: ""
       });
 
       if (result.success) {
@@ -74,14 +90,14 @@ export default function RegisterPage() {
       <Headers />
       <div className="aurateach-register-page">
         <div className="aurateach-register-container">
-          {/* Phần bên trái - Hình ảnh minh họa */}
+          {/* Phần bên trái - Hình ảnh minh họa (sticky) */}
           <div className="aurateach-register-left">
             <div className="aurateach-register-hero">
-              {/* <img
+              <img
                 src="/images/register-hero.jpg"
                 alt="Đăng ký AuraTeach"
                 className="aurateach-register-hero-img"
-              /> */}
+              />
               <div className="aurateach-register-hero-overlay">
                 <div className="aurateach-hero-icon">📚✨</div>
                 <h2>AuraTeach</h2>
@@ -90,6 +106,9 @@ export default function RegisterPage() {
                   <br />
                   uy tín hàng đầu Việt Nam.
                 </p>
+                <div className="aurateach-hero-quote">
+                  "Kiến tạo tương lai - Bắt đầu từ hôm nay"
+                </div>
               </div>
             </div>
           </div>
@@ -118,6 +137,7 @@ export default function RegisterPage() {
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Nguyễn Văn A"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -130,6 +150,7 @@ export default function RegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@aurateach.vn"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -146,30 +167,6 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="grade">Lớp học</label>
-                  <input
-                    type="text"
-                    id="grade"
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    placeholder="Ví dụ: 10, 11, 12"
-                    className="aurateach-form-input"
-                  />
-                </div>
-
-                <div className="aurateach-form-group">
-                  <label htmlFor="schoolName">Tên trường</label>
-                  <input
-                    type="text"
-                    id="schoolName"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                    placeholder="Trường THPT ABC"
-                    className="aurateach-form-input"
-                  />
-                </div>
-
-                <div className="aurateach-form-group">
                   <label htmlFor="password">Mật khẩu</label>
                   <input
                     type="password"
@@ -178,6 +175,7 @@ export default function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="********"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -190,28 +188,86 @@ export default function RegisterPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="********"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
-                <div className="aurateach-form-options">
-                  <label className="aurateach-checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms}
-                      onChange={(e) => setAgreeTerms(e.target.checked)}
-                    />
-                    <span>
-                      Tôi đồng ý với{" "}
-                      <Link href="/terms" className="aurateach-link">
-                        Điều khoản Dịch vụ
-                      </Link>{" "}
-                      và{" "}
-                      <Link href="/privacy" className="aurateach-link">
-                        Chính sách Bảo mật
-                      </Link>{" "}
-                      của AuraTeach.
+                {/* Điều khoản dịch vụ */}
+                <div className="aurateach-terms-section">
+                  <button
+                    type="button"
+                    className="aurateach-terms-toggle"
+                    onClick={() => setIsTermsOpen(!isTermsOpen)}
+                  >
+                    <span>📋 Điều khoản dịch vụ</span>
+                    <span className="aurateach-terms-arrow">
+                      {isTermsOpen ? "▲" : "▼"}
                     </span>
-                  </label>
+                  </button>
+
+                  {isTermsOpen && (
+                    <div 
+                      className="aurateach-terms-content"
+                      ref={termsRef}
+                      onScroll={handleTermsScroll}
+                    >
+                      <div className="aurateach-terms-text">
+                        <h4>⚠️ QUY ĐỊNH QUAN TRỌNG</h4>
+                        <p>
+                          <strong>Để bảo vệ uy tín nền tảng, chống thất thoát doanh thu và đảm bảo an toàn cho cả hai bên, hệ thống áp dụng các biện pháp nghiêm ngặt:</strong>
+                        </p>
+                        <p>
+                          <strong>Ràng buộc pháp lý:</strong>
+                        </p>
+                        <p>
+                          <strong>Đối với học viên:</strong> Khi đăng ký, bắt buộc phải xác nhận điều khoản: 
+                          <span className="aurateach-terms-highlight">
+                            "Website nghiêm cấm mọi hình thức tự ý giao dịch hoặc học ngoài nền tảng. Nếu cố tình vi phạm, website sẽ KHÔNG chịu trách nhiệm hoàn tiền, không giải quyết khiếu nại khi xảy ra lừa đảo và tài khoản sẽ bị khóa vĩnh viễn".
+                          </span>
+                        </p>
+                        <p className="aurateach-terms-warning">
+                          ⚠️ Vi phạm sẽ bị khóa tài khoản vĩnh viễn và chịu hoàn toàn trách nhiệm trước pháp luật.
+                        </p>
+                      </div>
+                      {!hasScrolledToBottom && (
+                        <div className="aurateach-terms-scroll-hint">
+                          ⬇️ Vui lòng kéo xuống hết để xác nhận đã đọc ⬇️
+                        </div>
+                      )}
+                      {hasScrolledToBottom && (
+                        <div className="aurateach-terms-scroll-complete">
+                          ✅ Đã đọc hết điều khoản
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="aurateach-form-options">
+                    <label className="aurateach-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={agreeTerms}
+                        onChange={(e) => setAgreeTerms(e.target.checked)}
+                        disabled={!hasScrolledToBottom}
+                      />
+                      <span>
+                        Tôi đã đọc và đồng ý với{" "}
+                        <span className="aurateach-link" onClick={() => setIsTermsOpen(true)}>
+                          Điều khoản Dịch vụ
+                        </span>{" "}
+                        và{" "}
+                        <span className="aurateach-link" onClick={() => setIsTermsOpen(true)}>
+                          Chính sách Bảo mật
+                        </span>{" "}
+                        của AuraTeach.
+                      </span>
+                    </label>
+                  </div>
+                  {!hasScrolledToBottom && isTermsOpen && (
+                    <p className="aurateach-terms-hint">
+                      ⚠️ Vui lòng kéo xuống hết nội dung điều khoản để có thể đồng ý
+                    </p>
+                  )}
                 </div>
 
                 <button
