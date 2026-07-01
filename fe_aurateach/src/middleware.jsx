@@ -66,19 +66,34 @@ export function middleware(request) {
   }
 
   // 3. Bảo vệ và phân quyền nghiêm ngặt không cho Tutor/Admin vào nhầm luồng hoặc quay lại trang Home ngầm
-  if (token) {
-    // Nếu là Tutor nhưng đi lạc vào các Route của Admin hoặc Student
-    if (role === "tutor" && (pathname.startsWith("/admin") || isStudentRoute)) {
-      return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
-    }
-    // Nếu là Admin nhưng đi lạc vào các Route của Tutor hoặc Student
-    if (role === "admin" && (pathname.startsWith("/tutor") || pathname.startsWith("/classroom-management") || pathname.startsWith("/schedule") || pathname.startsWith("/income") || isStudentRoute)) {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
-  }
+  // 3. Bảo vệ và phân quyền nghiêm ngặt không cho Tutor/Admin/Student vào nhầm luồng
+    if (token) {
+      // 🔥 BỔ SUNG: Nếu là Student nhưng cố tình truy cập vào các trang của Tutor hoặc Admin
+      if (role === "student") {
+        const isTutorRoute = (pathname.startsWith("/tutor") && !pathname.startsWith("/tutorList")) || 
+                            pathname.startsWith("/classroom-management") || 
+                            pathname.startsWith("/schedule") || 
+                            pathname.startsWith("/income");
+                            
+        if (isTutorRoute || pathname.startsWith("/admin")) {
+          // Đá học viên quay trở lại trang chủ của student
+          return NextResponse.redirect(new URL("/", request.url));
+        }
+      }
 
-  return NextResponse.next();
-}
+      // Nếu là Tutor nhưng đi lạc vào các Route của Admin hoặc Student
+      if (role === "tutor" && (pathname.startsWith("/admin") || isStudentRoute)) {
+        return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
+      }
+      
+      // Nếu là Admin nhưng đi lạc vào các Route của Tutor hoặc Student
+      if (role === "admin" && (pathname.startsWith("/tutor") || pathname.startsWith("/classroom-management") || pathname.startsWith("/schedule") || pathname.startsWith("/income") || isStudentRoute)) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+    }
+
+    return NextResponse.next();
+  }
 
 // Cấu hình matcher để định tuyến chạy qua Middleware hiệu quả
 export const config = {

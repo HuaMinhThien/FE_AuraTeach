@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import styles from "../management.module.css";
+import Image from "next/image";
 
 export default function FilterControl({ search, setSearch, statusFilter, onFilterChange }) {
   return (
     <>
       <div className={styles.topControl}>
         <div className={styles.searchBox}>
-          <span className={styles.searchIcon}>🔍</span>
+          <span className={styles.searchIcon}>
+            <Image src="/img/icons/search.png" alt="Search" width={20} height={20} />
+          </span>
           <input
             type="text"
             placeholder="Tìm theo tên lớp hoặc tên học viên..."

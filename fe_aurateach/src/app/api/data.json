@@ -149,6 +149,18 @@
       "status": "active",
       "created_at": "2026-06-30T21:43:35.606Z",
       "id": "XhFiYrPPWNs"
+    },
+    {
+      "id": "a534",
+      "user_id": "user_1782893584178_y2sif7",
+      "email": "liemnguyen@gmail.com",
+      "password": "123123",
+      "full_name": "Nguyễn Văn Liêm",
+      "phone": "0909123123",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-01T08:13:04.178Z"
     }
   ],
   "tutors": [
@@ -237,6 +249,14 @@
       "school_name": "zSDFgAEDgv",
       "created_at": "2026-06-30T21:42:05.168Z",
       "id": "5TvfrP8xoXU"
+    },
+    {
+      "id": "c421",
+      "student_id": "student_1782893584219",
+      "user_id": "user_1782893584178_y2sif7",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-01T08:13:04.219Z"
     }
   ],
   "courses": [
@@ -245,7 +265,6 @@
       "course_id": "c-01",
       "category_id": "cat-02",
       "tutor_id": "tutor_01",
-      "class_name": "Gia sư môn Toán học",
       "title": "Gia sư môn Toán học",
       "level": "Cấp 2",
       "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán học bền vững cấp 1, 2, 3.",
@@ -270,7 +289,6 @@
       "course_id": "c-02",
       "category_id": "cat-03",
       "tutor_id": "tutor_01",
-      "class_name": "Gia sư môn Ngữ văn",
       "title": "Gia sư môn Ngữ văn",
       "level": "Cấp 3",
       "description": "Hướng dẫn phương pháp làm văn, phân tích tác phẩm trọng tâm ôn thi vào 10 và THPT Quốc gia.",
@@ -294,7 +312,6 @@
       "course_id": "c-03",
       "category_id": "cat-04",
       "tutor_id": "tutor_01",
-      "class_name": "Gia sư Tiếng Anh chuẩn quốc tế",
       "title": "Gia sư Tiếng Anh chuẩn quốc tế",
       "level": "Cấp 3",
       "description": "Học tiếng Anh chuẩn quốc tế, nâng cao kỹ năng giao tiếp và luyện thi chứng chỉ.",
@@ -318,7 +335,6 @@
       "course_id": "c-04",
       "category_id": "cat-02",
       "tutor_id": "tutor_02",
-      "class_name": "Toán hình học không gian nâng cao",
       "title": "Toán hình học không gian nâng cao",
       "level": "Cấp 3",
       "description": "Khóa bứt phá điểm 8+, 9+ thi THPT Quốc Gia môn Toán phần hình học không gian phẳng.",
@@ -345,7 +361,6 @@
       "course_id": "c-05",
       "category_id": "cat-05",
       "tutor_id": "tutor_02",
-      "class_name": "Vật Lý Đại Cương & Ôn Thi Vào 10",
       "title": "Vật Lý Đại Cương & Ôn Thi Vào 10",
       "level": "Cấp 2",
       "description": "Hệ thống toàn bộ kiến thức chuyển động cơ học, điện học khó mạch phức tạp cho học sinh lớp 9 ôn chuyên.",
@@ -369,7 +384,6 @@
       "course_id": "c-06",
       "category_id": "cat-06",
       "tutor_id": "tutor_03",
-      "class_name": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
       "title": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
       "level": "Cấp 3",
       "description": "Lấy lại kiến thức căn bản hóa trị, cân bằng phương trình hóa học và phương pháp giải bài tập đồ thị vô cơ nhanh.",
@@ -393,7 +407,6 @@
       "course_id": "c-07",
       "category_id": "cat-07",
       "tutor_id": "tutor_03",
-      "class_name": "Sinh Học Luyện Thi Khối B Cấp Tốc",
       "title": "Sinh Học Luyện Thi Khối B Cấp Tốc",
       "level": "Cấp 3",
       "description": "Khóa học tập trung giải các bài toán di truyền biến dị phức tạp cấu trúc ADN, cam kết ôn thi đại học đạt điểm cao.",
@@ -418,7 +431,6 @@
       "course_id": "c-08",
       "category_id": "cat-02",
       "tutor_id": "tutor_02",
-      "class_name": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
       "title": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
       "level": "Cấp 1",
       "description": "Phát triển tư duy logic toán học cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
@@ -435,14 +447,15 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/math-kid-01",
-      "students": []
+      "students": [
+        "u-student-1"
+      ]
     },
     {
       "id": "84c9",
       "course_id": "c-09",
       "category_id": "cat-03",
       "tutor_id": "tutor_03",
-      "class_name": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
       "title": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
       "level": "Cấp 3",
       "description": "Phân tích chuyên sâu 9 tác phẩm văn học trọng tâm lớp 12, cách viết mở bài kết bài tạo ấn tượng thu hút người chấm thi.",
@@ -466,7 +479,6 @@
       "course_id": "c-10",
       "category_id": "cat-04",
       "tutor_id": "tutor_04",
-      "class_name": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
       "title": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
       "level": "Cấp 2",
       "description": "Tổng hợp 12 thì tiếng Anh cơ bản, các cấu trúc câu điều kiện, câu bị động phục vụ kỳ thi chuyển cấp lớp 9 lên 10.",
@@ -491,7 +503,6 @@
       "course_id": "c-11",
       "category_id": "cat-05",
       "tutor_id": "tutor_04",
-      "class_name": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
       "title": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
       "level": "Cấp 3",
       "description": "Chuyên đề dao động cơ học, sóng cơ và dòng điện xoay chiều lớp 12 giúp học sinh nắm chắc điểm 8 trong tay.",
@@ -515,7 +526,6 @@
       "course_id": "c-12",
       "category_id": "cat-06",
       "tutor_id": "tutor_01",
-      "class_name": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
       "title": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
       "level": "Cấp 3",
       "description": "Làm chủ chuỗi phản ứng Ankan, Anken, Đơn chức, Đa chức Este Lipit và phương pháp dồn chất giải toán cực khó.",
@@ -538,7 +548,6 @@
       "id": "fbf7",
       "course_id": "course-1782228975646",
       "tutor_id": "u-01",
-      "class_name": "Ôn toán cấp tốc",
       "title": "Ôn toán cấp tốc",
       "level": "Cấp 3",
       "description": "ôn tập luyện thi chất lượng cao",
@@ -625,8 +634,31 @@
       ],
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-5.png",
-      "status": "active",
+      "status": "closed",
       "permanent_room_url": "https://meet.google.com/phz-fbyt-ftj",
+      "students": []
+    },
+    {
+      "id": "course-1782895610088",
+      "course_id": "course-1782895610088",
+      "tutor_id": "u-01",
+      "title": "anh văn",
+      "category_id": "cat-02",
+      "level": "Cấp 3",
+      "description": "âsdads",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-24",
+      "end_date": "2026-09-25",
+      "total_weeks": 9,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 6"
+      ],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "blob:http://localhost:3000/f31cf9f2-869c-438d-8758-9aa82c2daa9b",
+      "status": "closed",
+      "permanent_room_url": "https://meet.google.com/abc-xxxx-def",
       "students": []
     }
   ],
@@ -741,6 +773,22 @@
       "payment_method": null,
       "transaction_id": null,
       "id": "KVlWv2aShoo"
+    },
+    {
+      "id": "10d2",
+      "booking_id": "bk-1782885000460",
+      "student_id": "u-student-1",
+      "course_id": "c-08",
+      "tutor_id": "tutor_02",
+      "status": "pending",
+      "booking_date": "2026-07-01T05:50:00.460Z",
+      "created_at": "2026-07-01T05:50:00.460Z",
+      "updated_at": "2026-07-01T05:50:00.460Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 130000,
+      "payment_method": null,
+      "transaction_id": null
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
