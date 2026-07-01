@@ -74,7 +74,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
 
         <div className={styles.modalFooter}>
           {selectedClass.status === "active" && (
-            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.class_id)}>
+            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.id)}>
                Khóa lớp (Dừng nhận thêm)
             </button>
           )}

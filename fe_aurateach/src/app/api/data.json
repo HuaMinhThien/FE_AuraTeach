@@ -634,8 +634,31 @@
       ],
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-5.png",
-      "status": "active",
+      "status": "closed",
       "permanent_room_url": "https://meet.google.com/phz-fbyt-ftj",
+      "students": []
+    },
+    {
+      "id": "course-1782895610088",
+      "course_id": "course-1782895610088",
+      "tutor_id": "u-01",
+      "title": "anh văn",
+      "category_id": "cat-02",
+      "level": "Cấp 3",
+      "description": "âsdads",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-24",
+      "end_date": "2026-09-25",
+      "total_weeks": 9,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 6"
+      ],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "blob:http://localhost:3000/f31cf9f2-869c-438d-8758-9aa82c2daa9b",
+      "status": "closed",
+      "permanent_room_url": "https://meet.google.com/abc-xxxx-def",
       "students": []
     }
   ],
