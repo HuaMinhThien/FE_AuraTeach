@@ -39,19 +39,21 @@ export default function TutorDetailPage({ params }) {
         setTutorDetails(tutorData);
         setAccountUser(userData);
         setTutorCourses(coursesData);
-      
+      console.log("Dữ liệu review thô:", reviewsData);
         setTutorReviews(reviewsData.map(r => ({ 
           ...r, 
           studentName: r.student_name || "Học viên ẩn danh" 
         })));
 
         // Xử lý dữ liệu related nhận về từ API
+        console.log("Dữ liệu reviews đang có:", tutorReviews);
+        const uniqueRelated = Array.from(new Map(relatedData.map(t => [t.tutor_id, t])).values());
         setRelatedTutorsList(
-          relatedData.map(t => ({
+          uniqueRelated.map(t => ({
             id: t.tutor_id,
             name: t.full_name,
             avatar: t.avatar,
-            subject: t.category_name,
+            subject: t.category_name || "Chưa có môn",
             rating: t.rating
           }))
         );

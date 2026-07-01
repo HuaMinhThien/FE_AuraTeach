@@ -43,7 +43,7 @@ export default function CreateClassPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:3007/categories");
+        const res = await fetch("http://localhost:8000/api/categories");
         if (res.ok) {
           const data = await res.json();
           setCategoriesList(data);
@@ -121,36 +121,44 @@ export default function CreateClassPage() {
     }
 
     setIsSubmitting(true);
+    
+    // Lưu ý: category ở đây nên là category_id nếu DB yêu cầu
     const payload = {
       class_name: className,
-      category,
-      level,
-      description,
+      category_id: category, // Đảm bảo trùng với cột trong DB
+      description: description,
       max_students: parseInt(maxStudents),
       hourly_rate: parseInt(hourlyRate),
       start_date: startDate,
       end_date: endDate,
-      total_weeks: parseInt(totalWeeks),
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
     };
 
     try {
-      const response = await fetch("/api/classes", {
+      const response = await fetch("http://localhost:8000/api/courses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      if (data.success) {
-        alert("🎉 Tạo lớp học thành công! Hệ thống đã hiển thị công khai để học sinh tuyển sinh.");
+      
+      if (response.ok) {
+        alert("🎉 Tạo lớp học thành công!");
+        // Reset form sau khi thành công
+        setClassName("");
+        setDescription("");
       } else {
-        alert(`Lỗi: ${data.message}`);
+        alert(`Lỗi: ${data.message || "Không thể tạo lớp"}`);
       }
     } catch (error) {
-      console.error("Lỗi gửi dữ liệu lên server:", error);
+      console.error("Lỗi gửi dữ liệu:", error);
+      alert("Có lỗi kết nối tới server.");
     } finally {
       setIsSubmitting(false);
     }
