@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
+import authService from "@/services/authService";
 import "./teacher.css";
 
 export default function TeacherRegisterPage() {
@@ -75,18 +76,28 @@ export default function TeacherRegisterPage() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      console.log("Đăng ký giảng viên:", {
-        fullName,
-        email,
-        phone,
-        expertise,
-        cvLink,
-        password,
+    try {
+      const result = await authService.register({
+        fullName: fullName,
+        email: email,
+        password: password,
+        phone: phone,
+        role: "tutor",
+        expertise: expertise,
+        cvLink: cvLink
       });
+
+      if (result.success) {
+        alert(result.message);
+        router.push("/login");
+      } else {
+        setError(result.message || "Đăng ký thất bại, vui lòng thử lại");
+      }
+    } catch (error) {
+      setError(error.message || "Đã xảy ra lỗi khi đăng ký");
+    } finally {
       setIsLoading(false);
-      router.push("/login");
-    }, 1000);
+    }
   };
 
   return (

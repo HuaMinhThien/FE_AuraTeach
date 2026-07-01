@@ -17,9 +17,9 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
           />
         </div>
         
-        <Link href="/classroom-management/create" className={styles.createBtn}>
+        <a href="/classroom-management/create" className={styles.createBtn}>
           ➕ Tạo lớp học mới
-        </Link>
+        </a>
       </div>
 
       {/* Các tab lọc trạng thái lớp học */}

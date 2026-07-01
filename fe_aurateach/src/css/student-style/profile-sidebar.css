@@ -1,0 +1,135 @@
+/* Student Sidebar Styles */
+.profile-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px 0;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.sidebar-title {
+  padding: 0 20px 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sidebar-title h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.sidebar-link:hover {
+  background: #f8f9fa;
+  color: #1a1a2e;
+}
+
+.sidebar-link.active {
+  background: #eef2ff;
+  color: #4f46e5;
+  border-right: 3px solid #4f46e5;
+}
+
+.sidebar-link .sidebar-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-link.logout {
+  margin-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 16px;
+  color: #ef4444;
+}
+
+.sidebar-link.logout:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-sidebar {
+    width: 100%;
+    position: static;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .sidebar-link {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: 8px;
+    flex: 1 1 auto;
+    min-width: fit-content;
+  }
+
+  .sidebar-link.active {
+    border-right: none;
+    border-bottom: 3px solid #4f46e5;
+  }
+
+  .sidebar-link.logout {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 10px;
+    color: #ef4444;
+  }
+
+  .sidebar-title {
+    padding: 0 16px 12px 16px;
+  }
+
+  .sidebar-title h2 {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-link {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .sidebar-link .sidebar-icon {
+    font-size: 16px;
+    width: 20px;
+  }
+}

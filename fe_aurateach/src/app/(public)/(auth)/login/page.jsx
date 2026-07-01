@@ -20,22 +20,27 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Gọi API route (không import service)
+      console.log("=== LOGIN SUBMIT ===");
+      console.log("Email:", email);
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Đăng nhập thất bại");
       }
 
-      // Lưu cookie và redirect...
+      if (!data.success || !data.user) {
+        throw new Error("Dữ liệu đăng nhập không hợp lệ");
+      }
+
+      // Tạo userInfo với đúng cấu trúc
       const userInfo = {
         id: data.user.user_id,
         name: data.user.full_name,
@@ -44,27 +49,36 @@ export default function LoginPage() {
         avatar: data.user.avatar || "/img/default-avatar.png",
       };
 
+      console.log("✅ UserInfo to save:", userInfo);
+
+      // Lưu cookie
       const expires = rememberMe ? 30 : 1;
+      // Chỉ giữ lại 1 dòng này, xóa dòng trùng lặp
       document.cookie = `user_info=${encodeURIComponent(
-        JSON.stringify(userInfo),
+        JSON.stringify(userInfo)
       )}; path=/; max-age=${expires * 24 * 60 * 60}`;
+
       document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
 
-      // Redirect
+      console.log("✅ Cookies saved:");
+      console.log("user_info:", document.cookie);
+
+      // Chuyển hướng
       switch (data.user.role) {
         case "student":
-          router.push("/");
+          window.location.href = "/";
           break;
         case "tutor":
           window.location.href = "/tutor-dashboard";
           break;
         case "admin":
-          router.push("/admin");
+          window.location.href = "/admin";
           break;
         default:
-          router.push("/");
+          window.location.href = "/";
       }
     } catch (error) {
+      console.error("❌ Login error:", error);
       setError(error.message || "Đăng nhập thất bại");
     } finally {
       setIsLoading(false);

@@ -12,23 +12,43 @@
     },
     {
       "category_id": "cat-04",
-      "category_name": "Anh",
-      "id": "8ffa"
-    },
-    {
-      "category_id": "cat-05",
       "category_name": "Lý",
       "id": "5988"
     },
     {
-      "category_id": "cat-06",
+      "category_id": "cat-05",
       "category_name": "Hóa",
       "id": "5b2a"
     },
     {
-      "category_id": "cat-07",
+      "category_id": "cat-06",
       "category_name": "Sinh",
       "id": "fee6"
+    },
+    {
+      "category_id": "cat-07",
+      "category_name": "Sử",
+      "id": "d3e4"
+    },
+    {
+      "category_id": "cat-08",
+      "category_name": "Địa",
+      "id": "f5g6"
+    },
+    {
+      "category_id": "cat-09",
+      "category_name": "Ngoại ngữ",
+      "id": "8ffa"
+    },
+    {
+      "category_id": "cat-10",
+      "category_name": "Tin học & Lập trình",
+      "id": "h7i8"
+    },
+    {
+      "category_id": "cat-11",
+      "category_name": "Năng khiếu",
+      "id": "p5q6"
     }
   ],
   "users": [
@@ -86,10 +106,12 @@
       "password": "123123",
       "full_name": "Liêm Tran",
       "phone": "0909123123",
-      "avatar": "https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/315029133_1785762405134483_8108987902970419629_n.jpg?stp=dst-jpg_tt6&cstp=mx953x960&ctp=s480x480&_nc_cat=100&ccb=1-7&_nc_sid=1d2534&_nc_ohc=2GqyxAe2VJIQ7kNvwGdvvRl&_nc_oc=AdoK9ST2JjqtFD7RVSWU5eiImpc5qFvfe-p66yXAvvGmLCCBYl533Fd89tj6xEKKzBeXzMMpRFsa1JDR06OorzwP&_nc_zt=24&_nc_ht=scontent.fsgn5-5.fna&_nc_gid=lig8y2u9L_kehAXywuDdXA&_nc_ss=7b2a8&oh=00_Af-TFkOR6t1LAfSQ5Wksdsgz1iTxaIONqz72fadOACEudQ&oe=6A383AD5",
+      "birth_date": "2000-05-15",
+      "avatar": "",
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
+      "updated_at": "2023-12-12T10:30:00Z",
       "id": "08aa"
     },
     {
@@ -103,6 +125,30 @@
       "status": "active",
       "created_at": "2026-01-22T15:20:00Z",
       "id": "c9e9"
+    },
+    {
+      "user_id": "user_1782855725159_tqroz6",
+      "email": "tuankudo1502@gmail.com",
+      "password": "123123",
+      "full_name": "MAI THÁI TUẤN",
+      "phone": "0345646979",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-06-30T21:42:05.159Z",
+      "id": "-vgybobIBlI"
+    },
+    {
+      "user_id": "user_1782855815606_98bynm",
+      "email": "lau@gmail.com",
+      "password": "123123",
+      "full_name": "lửa nè",
+      "phone": "0345646979",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-06-30T21:43:35.606Z",
+      "id": "XhFiYrPPWNs"
     }
   ],
   "tutors": [
@@ -111,10 +157,12 @@
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
       "qualification": "Đại học - CNTT",
-      "rating": 4.8,
+      "rating": 0,
       "verification_status": "Đã xác minh",
       "Experience": "Dưới 1 năm",
-      "id": "1f17"
+      "id": "1f17",
+      "pending_balance": 1200000,
+      "available_balance": 53390000
     },
     {
       "tutor_id": "tutor_02",
@@ -124,7 +172,9 @@
       "rating": 5,
       "verification_status": "Đã xác minh",
       "Experience": "5 năm kinh nghiệm",
-      "id": "c95a"
+      "id": "c95a",
+      "pending_balance": 100000,
+      "available_balance": 3390000
     },
     {
       "tutor_id": "tutor_03",
@@ -134,7 +184,9 @@
       "rating": 4.9,
       "verification_status": "Đã xác minh",
       "Experience": "6 năm kinh nghiệm",
-      "id": "12c3"
+      "id": "12c3",
+      "pending_balance": 2200000,
+      "available_balance": 533900
     },
     {
       "tutor_id": "tutor_04",
@@ -144,7 +196,23 @@
       "rating": 4.7,
       "verification_status": "Chưa cập nhật",
       "Experience": "4 năm kinh nghiệm",
-      "id": "e73f"
+      "id": "e73f",
+      "pending_balance": 1222000,
+      "available_balance": 44390000
+    },
+    {
+      "tutor_id": "tutor_1782855815613",
+      "user_id": "user_1782855815606_98bynm",
+      "bio": "",
+      "qualification": "Lịch sử",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-06-30T21:43:35.613Z",
+      "id": "xN0b0SJLAwE"
     }
   ],
   "students": [
@@ -161,6 +229,14 @@
       "grade": "Lớp 12",
       "school_name": "THPT Nguyễn Thượng Hiền",
       "id": "d9f7"
+    },
+    {
+      "student_id": "student_1782855725168",
+      "user_id": "user_1782855725159_tqroz6",
+      "grade": "1",
+      "school_name": "zSDFgAEDgv",
+      "created_at": "2026-06-30T21:42:05.168Z",
+      "id": "5TvfrP8xoXU"
     }
   ],
   "courses": [
@@ -171,7 +247,6 @@
       "tutor_id": "tutor_01",
       "class_name": "Gia sư môn Toán học",
       "title": "Gia sư môn Toán học",
-      "category": "Toán",
       "level": "Cấp 2",
       "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán học bền vững cấp 1, 2, 3.",
       "max_students": 1,
@@ -179,9 +254,13 @@
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
       "total_weeks": 12,
-      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
       "students": []
@@ -193,7 +272,6 @@
       "tutor_id": "tutor_01",
       "class_name": "Gia sư môn Ngữ văn",
       "title": "Gia sư môn Ngữ văn",
-      "category": "Văn",
       "level": "Cấp 3",
       "description": "Hướng dẫn phương pháp làm văn, phân tích tác phẩm trọng tâm ôn thi vào 10 và THPT Quốc gia.",
       "max_students": 1,
@@ -201,9 +279,12 @@
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
       "total_weeks": 16,
-      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5"
+      ],
       "time_slot": "19:30-21:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/123456789",
       "students": []
@@ -215,7 +296,6 @@
       "tutor_id": "tutor_01",
       "class_name": "Gia sư Tiếng Anh chuẩn quốc tế",
       "title": "Gia sư Tiếng Anh chuẩn quốc tế",
-      "category": "Anh",
       "level": "Cấp 3",
       "description": "Học tiếng Anh chuẩn quốc tế, nâng cao kỹ năng giao tiếp và luyện thi chứng chỉ.",
       "max_students": 2,
@@ -223,9 +303,12 @@
       "start_date": "2026-07-10",
       "end_date": "2026-09-04",
       "total_weeks": 8,
-      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "schedule_days": [
+        "Thứ 4",
+        "Chủ Nhật"
+      ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/eng-tutor-room",
       "students": []
@@ -237,7 +320,6 @@
       "tutor_id": "tutor_02",
       "class_name": "Toán hình học không gian nâng cao",
       "title": "Toán hình học không gian nâng cao",
-      "category": "Toán",
       "level": "Cấp 3",
       "description": "Khóa bứt phá điểm 8+, 9+ thi THPT Quốc Gia môn Toán phần hình học không gian phẳng.",
       "max_students": 5,
@@ -245,12 +327,18 @@
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
       "total_weeks": 12,
-      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/999888777",
-      "students": []
+      "students": [
+        "u-student-1"
+      ]
     },
     {
       "id": "54d2",
@@ -259,7 +347,6 @@
       "tutor_id": "tutor_02",
       "class_name": "Vật Lý Đại Cương & Ôn Thi Vào 10",
       "title": "Vật Lý Đại Cương & Ôn Thi Vào 10",
-      "category": "Lý",
       "level": "Cấp 2",
       "description": "Hệ thống toàn bộ kiến thức chuyển động cơ học, điện học khó mạch phức tạp cho học sinh lớp 9 ôn chuyên.",
       "max_students": 3,
@@ -267,9 +354,12 @@
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
       "total_weeks": 16,
-      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5"
+      ],
       "time_slot": "19:30-21:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/phy-tutor-01",
       "students": []
@@ -281,7 +371,6 @@
       "tutor_id": "tutor_03",
       "class_name": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
       "title": "Hóa Học Vô Cơ Mất Gốc Lớp 10-11",
-      "category": "Hóa",
       "level": "Cấp 3",
       "description": "Lấy lại kiến thức căn bản hóa trị, cân bằng phương trình hóa học và phương pháp giải bài tập đồ thị vô cơ nhanh.",
       "max_students": 1,
@@ -289,9 +378,12 @@
       "start_date": "2026-07-10",
       "end_date": "2026-09-04",
       "total_weeks": 8,
-      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "schedule_days": [
+        "Thứ 4",
+        "Chủ Nhật"
+      ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-6.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/che-tutor-01",
       "students": []
@@ -303,7 +395,6 @@
       "tutor_id": "tutor_03",
       "class_name": "Sinh Học Luyện Thi Khối B Cấp Tốc",
       "title": "Sinh Học Luyện Thi Khối B Cấp Tốc",
-      "category": "Sinh",
       "level": "Cấp 3",
       "description": "Khóa học tập trung giải các bài toán di truyền biến dị phức tạp cấu trúc ADN, cam kết ôn thi đại học đạt điểm cao.",
       "max_students": 4,
@@ -311,9 +402,13 @@
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
       "total_weeks": 12,
-      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-5.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/bio-tutor-99",
       "students": []
@@ -325,7 +420,6 @@
       "tutor_id": "tutor_02",
       "class_name": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
       "title": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
-      "category": "Toán",
       "level": "Cấp 1",
       "description": "Phát triển tư duy logic toán học cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
       "max_students": 2,
@@ -333,9 +427,12 @@
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
       "total_weeks": 16,
-      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5"
+      ],
       "time_slot": "19:30-21:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/math-kid-01",
       "students": []
@@ -347,7 +444,6 @@
       "tutor_id": "tutor_03",
       "class_name": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
       "title": "Nghị Luận Văn Học Đỉnh Cao Lớp 12",
-      "category": "Văn",
       "level": "Cấp 3",
       "description": "Phân tích chuyên sâu 9 tác phẩm văn học trọng tâm lớp 12, cách viết mở bài kết bài tạo ấn tượng thu hút người chấm thi.",
       "max_students": 6,
@@ -355,9 +451,12 @@
       "start_date": "2026-07-10",
       "end_date": "2026-09-04",
       "total_weeks": 8,
-      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "schedule_days": [
+        "Thứ 4",
+        "Chủ Nhật"
+      ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://zoom.us/j/van-12-vip",
       "students": []
@@ -369,7 +468,6 @@
       "tutor_id": "tutor_04",
       "class_name": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
       "title": "Ngữ Pháp Tiếng Anh Toàn Diện Cấp 2",
-      "category": "Anh",
       "level": "Cấp 2",
       "description": "Tổng hợp 12 thì tiếng Anh cơ bản, các cấu trúc câu điều kiện, câu bị động phục vụ kỳ thi chuyển cấp lớp 9 lên 10.",
       "max_students": 2,
@@ -377,9 +475,13 @@
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
       "total_weeks": 12,
-      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
       "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/eng-grammar-02",
       "students": []
@@ -391,7 +493,6 @@
       "tutor_id": "tutor_04",
       "class_name": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
       "title": "Vật Lý 12 - Ôn Thi Tốt Nghiệp",
-      "category": "Lý",
       "level": "Cấp 3",
       "description": "Chuyên đề dao động cơ học, sóng cơ và dòng điện xoay chiều lớp 12 giúp học sinh nắm chắc điểm 8 trong tay.",
       "max_students": 5,
@@ -399,7 +500,10 @@
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
       "total_weeks": 16,
-      "schedule_days": ["Thứ 3", "Thứ 5"],
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5"
+      ],
       "time_slot": "19:30-21:30",
       "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
@@ -413,7 +517,6 @@
       "tutor_id": "tutor_01",
       "class_name": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
       "title": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
-      "category": "Hóa",
       "level": "Cấp 3",
       "description": "Làm chủ chuỗi phản ứng Ankan, Anken, Đơn chức, Đa chức Este Lipit và phương pháp dồn chất giải toán cực khó.",
       "max_students": 3,
@@ -421,9 +524,12 @@
       "start_date": "2026-07-10",
       "end_date": "2026-09-04",
       "total_weeks": 8,
-      "schedule_days": ["Thứ 4", "Chủ Nhật"],
+      "schedule_days": [
+        "Thứ 4",
+        "Chủ Nhật"
+      ],
       "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/che-organic-02",
       "students": []
@@ -434,7 +540,6 @@
       "tutor_id": "u-01",
       "class_name": "Ôn toán cấp tốc",
       "title": "Ôn toán cấp tốc",
-      "category": "Toán",
       "level": "Cấp 3",
       "description": "ôn tập luyện thi chất lượng cao",
       "max_students": 5,
@@ -442,11 +547,86 @@
       "start_date": "2026-06-25",
       "end_date": "2026-08-20",
       "total_weeks": 8,
-      "schedule_days": ["Thứ 2", "Thứ 4", "Thứ 6"],
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
       "time_slot": "19:00-01:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
+      "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
+    },
+    {
+      "id": "718f",
+      "course_id": "course-1782717829149",
+      "tutor_id": "u-01",
+      "title": "học văn ",
+      "category_id": "cat-03",
+      "level": "Cấp 2",
+      "description": "sssss",
+      "max_students": 2,
+      "hourly_rate": 120000,
+      "start_date": "2026-06-30",
+      "end_date": "2026-07-14",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 5",
+        "Thứ 3"
+      ],
+      "time_slot": "21:00-23:00",
+      "thumbnail": "/img/class/default-class-8.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
+    },
+    {
+      "id": "067c",
+      "course_id": "course-1782737175419",
+      "tutor_id": "u-01",
+      "title": "Dạy vẽ cơ bản",
+      "category_id": "cat-11",
+      "level": "Cấp 1",
+      "description": "Dạy vẽ cơ bản",
+      "max_students": 3,
+      "hourly_rate": 120000,
+      "start_date": "2026-07-05",
+      "end_date": "2026-07-26",
+      "total_weeks": 3,
+      "schedule_days": [
+        "Thứ 7",
+        "Chủ Nhật",
+        "Thứ 5"
+      ],
+      "time_slot": "19:00-20:00",
+      "thumbnail": "/img/class/default-class-10.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "students": []
+    },
+    {
+      "id": "c3c6",
+      "course_id": "course-1782825797683",
+      "tutor_id": "u-01",
+      "title": "sinh hoc",
+      "category_id": "cat-06",
+      "level": "Cấp 1",
+      "description": "aaaas",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-06",
+      "end_date": "2026-09-14",
+      "total_weeks": 10,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-5.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/phz-fbyt-ftj",
       "students": []
     }
   ],
@@ -497,200 +677,71 @@
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
     }
   },
-  "classByIdTutor": [
+  "bookings": [
     {
-      "class_id": "cls-01",
-      "class_name": "Toán nâng cao - Ôn thi vào 10",
-      "start_date": "2026-05-01",
-      "end_date": "2026-08-01",
-      "total_weeks": 12,
-      "status": "active",
-      "meet_link": "https://meet.google.com/abc-defg-hij",
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 4",
-        "Thứ 6"
-      ],
-      "students": [
-        {
-          "student_id": "st-01",
-          "full_name": "Lê Văn Hùng",
-          "email": "hung@gmail.com"
-        },
-        {
-          "student_id": "st-02",
-          "full_name": "Lê Minh Anh",
-          "email": "minhanh@gmail.com"
-        }
-      ],
-      "id": "fa1c"
-    },
-    {
-      "class_id": "cls-02",
-      "class_name": "Ngữ văn lớp 7 - Bồi dưỡng học sinh giỏi",
-      "start_date": "2026-04-10",
-      "end_date": "2026-06-10",
-      "total_weeks": 8,
-      "status": "completed",
-      "meet_link": "https://meet.google.com/xyz-ouwi-pql",
-      "schedule_days": [
-        "Thứ 3",
-        "Thứ 5"
-      ],
-      "students": [
-        {
-          "student_id": "st-03",
-          "full_name": "Trần Quốc Huy",
-          "email": "huy@gmail.com"
-        }
-      ],
-      "id": "c455"
-    },
-    {
-      "class_id": "cls-03",
-      "class_name": "Tiếng Anh giao tiếp tiểu học",
-      "start_date": "2026-06-01",
-      "end_date": "2026-09-01",
-      "total_weeks": 12,
-      "status": "active",
-      "meet_link": "https://meet.google.com/mnp-rqst-uvw",
-      "schedule_days": [
-        "Thứ 7",
-        "Chủ Nhật"
-      ],
-      "students": [
-        {
-          "student_id": "st-04",
-          "full_name": "Nguyễn Hoàng Nam",
-          "email": "nam@gmail.com"
-        }
-      ],
-      "id": "7e46"
-    },
-    {
-      "class_id": "cls-04",
-      "class_name": "Hóa học lớp 9 - Lấy lại gốc cấp tốc",
-      "start_date": "2026-03-01",
-      "end_date": "2026-05-01",
-      "total_weeks": 8,
-      "status": "closed",
-      "meet_link": "https://meet.google.com/vgh-jkiu-mno",
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 5"
-      ],
-      "students": [
-        {
-          "student_id": "st-01",
-          "full_name": "Lê Văn Hùng",
-          "email": "hung@gmail.com"
-        }
-      ],
-      "id": "c53b"
-    },
-    {
-      "class_id": "cls-05",
-      "class_name": "Vật Lý 11 - Cơ bản đến nâng cao",
-      "start_date": "2026-06-15",
-      "end_date": "2026-09-15",
-      "total_weeks": 12,
-      "status": "active",
-      "meet_link": "https://meet.google.com/lkj-hgfd-hsa",
-      "schedule_days": [
-        "Thứ 3",
-        "Thứ 6"
-      ],
-      "students": [
-        {
-          "student_id": "st-01",
-          "full_name": "Lê Văn Hùng",
-          "email": "hung@gmail.com"
-        }
-      ],
-      "id": "685d"
-    },
-    {
-      "class_id": "cls-06",
-      "class_name": "Lập trình Scratch cho thiếu nhi",
-      "start_date": "2026-01-10",
-      "end_date": "2026-04-10",
-      "total_weeks": 12,
-      "status": "completed",
-      "meet_link": "https://meet.google.com/poi-lkjh-mnb",
-      "schedule_days": [
-        "Thứ 7"
-      ],
-      "students": [
-        {
-          "student_id": "st-02",
-          "full_name": "Lê Minh Anh",
-          "email": "minhanh@gmail.com"
-        }
-      ],
-      "id": "cebf"
-    },
-    {
-      "class_id": "cls-07",
-      "class_name": "Toán hình học không gian lớp 11",
-      "start_date": "2026-07-01",
-      "end_date": "2026-10-01",
-      "total_weeks": 12,
-      "status": "active",
-      "meet_link": "https://meet.google.com/qwe-rtyu-iop",
-      "schedule_days": [
-        "Thứ 4",
-        "Chủ Nhật"
-      ],
-      "students": [],
-      "id": "6831"
-    },
-    {
-      "id": "6d08",
-      "course_id": "course-1782226896990",
+      "booking_id": "bk-001",
+      "student_id": "u-student-1",
+      "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "title": "Ôn toán",
-      "category": "Toán",
-      "level": "Cấp 2",
-      "description": "dạy từ căn bản",
-      "max_students": 15,
-      "hourly_rate": 150000,
-      "start_date": "2026-06-27",
-      "end_date": "2026-08-08",
-      "total_weeks": 6,
-      "schedule_days": [
-        "Thứ 4",
-        "Thứ 3",
-        "Thứ 5"
-      ],
-      "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
-      "students": []
+      "status": "cancelled",
+      "booking_date": "2026-07-01T10:00:00Z",
+      "created_at": "2026-07-01T10:00:00Z",
+      "updated_at": "2026-07-01T10:00:00Z",
+      "notes": "Học viên đã đăng ký thành công",
+      "payment_status": "paid",
+      "payment_amount": 150000,
+      "payment_method": "wallet",
+      "transaction_id": "txn-001",
+      "id": "AkYlZ84PnfU"
     },
     {
-      "id": "abdf",
-      "course_id": "course-1782228975646",
-      "tutor_id": "u-01",
-      "title": "Ôn toán cấp tốc",
-      "category": "Toán",
-      "level": "Cấp 3",
-      "description": "ôn tập luyện thi chất lượng cao",
-      "max_students": 5,
-      "hourly_rate": 250000,
-      "start_date": "2026-06-25",
-      "end_date": "2026-08-20",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 4",
-        "Thứ 6"
-      ],
-      "time_slot": "19:00-01:00",
-      "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
-      "students": []
+      "booking_id": "bk-1782852172004",
+      "student_id": "u-student-1",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "status": "cancelled",
+      "booking_date": "2026-06-30T20:42:52.004Z",
+      "created_at": "2026-06-30T20:42:52.004Z",
+      "updated_at": "2026-06-30T20:42:52.004Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 120000,
+      "payment_method": null,
+      "transaction_id": null,
+      "id": "TVt4v5vvMxM"
+    },
+    {
+      "booking_id": "bk-1782861649566",
+      "student_id": "u-student-1",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "cancelled",
+      "booking_date": "2026-06-30T23:20:49.566Z",
+      "created_at": "2026-06-30T23:20:49.566Z",
+      "updated_at": "2026-06-30T23:20:49.566Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": null,
+      "transaction_id": null,
+      "id": "rA_YHb4Z_lU"
+    },
+    {
+      "booking_id": "bk-1782862229275",
+      "student_id": "u-student-1",
+      "course_id": "c-04",
+      "tutor_id": "tutor_02",
+      "status": "pending",
+      "booking_date": "2026-06-30T23:30:29.275Z",
+      "created_at": "2026-06-30T23:30:29.275Z",
+      "updated_at": "2026-06-30T23:30:29.275Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 180000,
+      "payment_method": null,
+      "transaction_id": null,
+      "id": "KVlWv2aShoo"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

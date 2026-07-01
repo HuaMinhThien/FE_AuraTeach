@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers"; // Thêm để đọc thông tin đăng nhập từ Cookie trên Server side
+import { cookies } from "next/headers"; // Đọc thông tin đăng nhập từ Cookie trên Server side
 
-// 1. LẤY DANH SÁCH LỚP HỌC (logic phân trang, tìm kiếm)
+// 1. LẤY DANH SÁCH LỚP HỌC THEO ID GIA SƯ ĐĂNG NHẬP
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,7 +10,24 @@ export async function GET(request) {
     const status = searchParams.get("status") || "all";
     const search = searchParams.get("search") || "";
 
-    const resFromJsonServer = await fetch("http://localhost:3007/classByIdTutor", {
+    // Đọc thông tin gia sư từ Cookie để làm bộ lọc động
+    const cookieStore = await cookies();
+    const userInfoCookie = cookieStore.get("user_info")?.value;
+    
+    let tutorId = "u-01"; // Giá trị dự phòng (fallback) nếu không có cookie
+
+    if (userInfoCookie) {
+      try {
+        const decodedUser = JSON.parse(decodeURIComponent(userInfoCookie));
+        // Lấy đúng trường ID dựa trên data.json thực tế (user_id hoặc tutor_id)
+        tutorId = decodedUser.user_id || decodedUser.tutor_id || decodedUser.id || "u-01";
+      } catch (e) {
+        console.error("Lỗi parse cookie gia sư trong hàm GET:", e);
+      }
+    }
+
+    // Thực hiện fetch kèm query parameter lọc chính xác theo gia sư đăng nhập
+    const resFromJsonServer = await fetch(`http://localhost:3007/courses?tutor_id=${tutorId}`, {
       cache: "no-store" 
     });
 
@@ -31,6 +48,7 @@ export async function GET(request) {
       rawCourses = jsonServerData.classByIdTutor;
     }
 
+    // Chuẩn hóa dữ liệu tương thích với UI FrontEnd
     let standardizedClasses = rawCourses.map(course => ({
       class_id: course.course_id || course.class_id || `cls-${Math.random()}`,
       class_name: course.title || course.class_name || "Lớp học chưa đặt tên",
@@ -43,10 +61,12 @@ export async function GET(request) {
       students: course.students || []
     }));
 
+    // Bộ lọc Trạng thái (status)
     if (status !== "all") {
       standardizedClasses = standardizedClasses.filter(c => c.status === status);
     }
 
+    // Bộ lọc Tìm kiếm (search)
     if (search && search.trim() !== "") {
       const searchLower = search.toLowerCase().trim();
       standardizedClasses = standardizedClasses.filter(c => 
@@ -55,6 +75,7 @@ export async function GET(request) {
       );
     }
 
+    // Xử lý phân trang phía Server Route
     const totalItems = standardizedClasses.length;
     const totalPages = Math.ceil(totalItems / limit) || 1;
     const startIndex = (page - 1) * limit;
@@ -81,18 +102,15 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // Đọc Cookie từ trình duyệt gửi lên Server
     const cookieStore = await cookies();
     const userInfoCookie = cookieStore.get("user_info")?.value;
     
-    let dynamicTutorId = "tutor_01"; // Giá trị dự phòng nếu không tìm thấy cookie
+    let dynamicTutorId = "u-01"; 
     
     if (userInfoCookie) {
       try {
         const decodedUser = JSON.parse(decodeURIComponent(userInfoCookie));
-        // Lấy trường ID của gia sư trong cookie. 
-        // Hãy đổi lại thành decodedUser.tutor_id hoặc decodedUser.user_id nếu cấu trúc cookie của bạn khác trường .id
-        dynamicTutorId = decodedUser.id || decodedUser.tutor_id || "tutor_01"; 
+        dynamicTutorId = decodedUser.user_id || decodedUser.tutor_id || decodedUser.id || "u-01"; 
       } catch (e) {
         console.error("Lỗi parse thông tin cookie gia sư:", e);
       }
@@ -102,7 +120,7 @@ export async function POST(request) {
       course_id: `course-${Date.now()}`, 
       tutor_id: dynamicTutorId, 
       title: body.class_name,
-      category: body.category || "Chưa phân loại",
+      category_id: body.category || "Chưa phân loại",
       level: body.level,
       description: body.description || "",
       max_students: parseInt(body.max_students || 15),
@@ -114,18 +132,11 @@ export async function POST(request) {
       time_slot: body.time_slot,
       thumbnail: body.thumbnail || "/img/default-class-1.jpg",
       status: "active",
-      permanent_room_url: "https://meet.google.com/abc-xyz-def",
+      permanent_room_url: body.permanent_room_url || "https://meet.google.com/abc-xyz-def",
       students: []
     };
 
-    // MINH ơi cái này để vào danh sách quản lý riêng của Tutor thôi không cần làm API này
-    await fetch("http://localhost:3007/classByIdTutor", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newClassData),
-    });
 
-    // Lưu vào danh sách các khóa học hiển thị tổng thể
     const resFromJsonServer = await fetch("http://localhost:3007/courses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

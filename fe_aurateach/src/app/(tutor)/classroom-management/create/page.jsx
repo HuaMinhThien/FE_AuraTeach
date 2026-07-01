@@ -6,10 +6,15 @@ import styles from "./create-class.module.css";
 
 const DEFAULT_IMAGES = [
   "/img/class/default-class-1.jpg",
-  "/img/class/default-class-2.jpg",
-  "/img/class/default-class-3.jpg",
-  "/img/class/default-class-4.jpg",
-  "/img/class/default-class-5.jpg",
+  "/img/class/default-class-2.png",
+  "/img/class/default-class-3.png",
+  "/img/class/default-class-4.png",
+  "/img/class/default-class-5.png",
+  "/img/class/default-class-6.png",
+  "/img/class/default-class-7.png",
+  "/img/class/default-class-8.png",
+  "/img/class/default-class-9.png",
+  "/img/class/default-class-10.png",
 ];
 
 export default function CreateClassPage() {
@@ -20,6 +25,10 @@ export default function CreateClassPage() {
   const [description, setDescription] = useState("");
   const [maxStudents, setMaxStudents] = useState(15);
   const [hourlyRate, setHourlyRate] = useState(150000);
+  
+  // 🔥 Thêm State quản lý link Google Meet do gia sư nhập
+  const [meetLink, setMeetLink] = useState("");
+  const [meetError, setMeetError] = useState("");
 
   // --- State danh mục động nạp từ API ---
   const [categoriesList, setCategoriesList] = useState([]);
@@ -98,6 +107,29 @@ export default function CreateClassPage() {
     checkScheduleConflict();
   }, [startDate, endDate, selectedDays, startTime, endTime]);
 
+  // 🔥 Hàm kiểm tra định dạng đường dẫn Google Meet hợp lệ
+  const validateGoogleMeet = (url) => {
+    if (!url.trim()) {
+      setMeetError("Vui lòng nhập đường liên kết lớp học Google Meet.");
+      return false;
+    }
+    // Regex kiểm tra cấu trúc định dạng chuẩn: meet.google.com/xxx-yyyy-zzz
+    const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+    if (!meetRegex.test(url.trim())) {
+      setMeetError("Đường liên kết không hợp lệ. Định dạng chuẩn phải là: https://meet.google.com/abc-xxxx-def");
+      return false;
+    }
+    setMeetError("");
+    return true;
+  };
+
+  // Xử lý thay đổi dữ liệu ô nhập link Meet
+  const handleMeetChange = (e) => {
+    const value = e.target.value;
+    setMeetLink(value);
+    if (value) validateGoogleMeet(value);
+  };
+
   const toggleDay = (day) => {
     setSelectedDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
@@ -115,6 +147,11 @@ export default function CreateClassPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Kiểm tra lại link Meet trước khi gửi dữ liệu
+    const isMeetValid = validateGoogleMeet(meetLink);
+    if (!isMeetValid) return;
+
     if (conflictMessage) {
       alert("Vui lòng xử lý trùng lịch trước khi tạo lớp học!");
       return;
@@ -134,6 +171,7 @@ export default function CreateClassPage() {
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
+      permanent_room_url: meetLink.trim(), // 🔥 Truyền link Meet thực tế do gia sư nhập
     };
 
     try {
@@ -187,17 +225,35 @@ export default function CreateClassPage() {
               />
             </div>
 
+            <div className={styles.formGroup}>
+              <label>Đường liên kết phòng học Google Meet <span className={styles.required}>*</span></label>
+              <input 
+                type="url" 
+                placeholder="Ví dụ: https://meet.google.com/abc-xxxx-def" 
+                value={meetLink}
+                onChange={handleMeetChange}
+                required
+              />
+              {meetError && <p className={styles.errorAlert} style={{marginTop: "8px", fontSize: "14px"}}>{meetError}</p>}
+            </div>
+
             <div className={styles.rowGrid}>
               <div className={styles.formGroup}>
-                <label>Danh mục</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} required>
-                  <option value="">Chọn môn học</option>
-                  {categoriesList.map((cat) => (
-                    // Đã sửa đổi: Sử dụng đúng key cat.category_id và trường dữ liệu cat.category_name từ API JSON Server
-                    <option key={cat.category_id || cat.id} value={cat.category_name}>
-                      {cat.category_name}
-                    </option>
-                  ))}
+                <label htmlFor="category">Môn học học phần <span className={styles.required}>*</span></label>
+                <select
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  <option value="">-- Chọn môn học dạy --</option>
+                  {categoriesList
+                    .filter(cat => cat.category_name !== "Tất cả")
+                    .map((cat) => (
+                      <option key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -294,7 +350,7 @@ export default function CreateClassPage() {
             <div className={styles.rowGrid} style={{ marginBottom: "20px" }}>
               <div className={styles.formGroup}>
                 <label>📅 Ngày bắt đầu dạy (Khai giảng)</label>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required style={{padding: "12px 16px;", border: "1px solid #cbd5e1", borderRadius: "8px;"}} />
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required  />
               </div>
               <div className={styles.formGroup}>
                 <label>⏳ Số tuần dự kiến hoàn thành</label>
@@ -321,11 +377,32 @@ export default function CreateClassPage() {
               ))}
             </div>
 
-            <div className={styles.timePickerRow}>
-              <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-              <span>—</span>
-              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-              <span className={styles.durationLabel}>Lớp tối (2 tiếng)</span>
+            <div className={styles.timePickerContainer}>
+              <label className={styles.subLabel}>Chọn mốc thời gian bắt đầu và kết thúc (Tối thiểu 2 tiếng / buổi)</label>
+              
+              <div className={styles.timePickerRow}>
+                <div className={styles.timeInputWrapper}>
+                  <span className={styles.timeInputIcon}>Từ:</span>
+                  <input 
+                    type="time" 
+                    value={startTime} 
+                    onChange={(e) => setStartTime(e.target.value)} 
+                    className={styles.timeInput}
+                  />
+                </div>
+
+                <span className={styles.timeArrowDivider}>➔</span>
+
+                <div className={styles.timeInputWrapper}>
+                  <span className={styles.timeInputIcon}>Đến:</span>
+                  <input 
+                    type="time" 
+                    value={endTime} 
+                    onChange={(e) => setEndTime(e.target.value)} 
+                    className={styles.timeInput}
+                  />
+                </div>
+              </div>
             </div>
 
             {conflictMessage && <div className={styles.errorAlert}>{conflictMessage}</div>}
@@ -352,7 +429,7 @@ export default function CreateClassPage() {
               </ul>
             </div>
 
-            <button type="submit" className={styles.submitBtn} disabled={isSubmitting || !!conflictMessage}>
+            <button type="submit" className={styles.submitBtn} disabled={isSubmitting || !!conflictMessage || !!meetError}>
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tiếp tục ➔"}
             </button>
           </div>

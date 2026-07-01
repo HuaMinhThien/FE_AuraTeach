@@ -33,4 +33,10 @@ hr {
     display: flex;
     align-items: center;        
     cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+.icons:hover{
+    
 }

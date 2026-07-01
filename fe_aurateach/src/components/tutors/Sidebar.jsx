@@ -12,34 +12,29 @@ export default function Sidebar() {
     const handleLogout = () => {
         document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        router.push("/login");
+        window.location.href = "/login";
     };
 
     // Định nghĩa danh sách menu khớp cấu trúc thư mục của bạn
     const menuItems = [
         {
             path: "/tutor-dashboard",
-            icon: "📊",
             text: "Bảng điều khiển"
         },
         {
             path: "/classroom-management",
-            icon: "🎓",
             text: "Lớp học của tôi"
         },
         {
             path: "/schedule",
-            icon: "📅",
             text: "Lịch trình"
         },
         {
             path: "/income",
-            icon: "💵",
             text: "Thu nhập"
         },
         {
             path: "/profile",
-            icon: "👤",
             text: "Hồ sơ"
         }
     ];
