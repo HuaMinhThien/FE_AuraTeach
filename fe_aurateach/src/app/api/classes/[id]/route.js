@@ -9,7 +9,7 @@ export async function PATCH(request, { params }) {
     const body = await request.json(); // Nhận dữ liệu { status: "closed" } từ Client
 
     // 2. Gửi lệnh cập nhật tới JSON Server
-    const resFromJsonServer = await fetch(`http://localhost:3007/courses/${classId}`, {
+    const resFromJsonServer = await fetch(`http://localhost:8000/api/courses/${classId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: body.status }),

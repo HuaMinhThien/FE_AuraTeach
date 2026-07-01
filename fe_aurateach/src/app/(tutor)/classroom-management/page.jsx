@@ -67,38 +67,38 @@ export default function ClassroomManagementPage() {
   };
 
   // Thay thế hàm cũ trong src/app/.../page.jsx (hoặc đường dẫn quản lý lớp học của bạn)
-  const handleCloseClass = async (classId) => {
+  const handleCloseClass = async (courseId) => {
     const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này (Dừng nhận thêm học viên) không?");
-    if (!confirmClose) return;
+    if (confirmClose) {
+      try {
+        // GỌI API tới Next.js Route Handler
+        const res = await fetch(`/api/classes/${courseId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "closed" }),
+        });
 
-    try {
-      // 1. Gọi tới API Route động xử lý PATCH dữ liệu
-      const response = await fetch(`/api/classes/${classId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "closed" }),
-      });
-
-      const result = await response.json();
-
+      const result = await res.json();
       if (result.success) {
         // 2. Cập nhật State danh sách lớp học ở client ngay lập tức để UI render lại mượt mà
-        setClasses(prev => 
-          prev.map(c => c.class_id === classId ? { ...c, status: "closed" } : c)
+        setClasses(prevClasses => 
+          prevClasses.map(c => 
+            c.course_id === courseId ? { ...c, status: "closed" } : c
+          )
         );
 
         // 3. Nếu người dùng đang mở xem Modal chi tiết của chính lớp này, cập nhật trạng thái hiển thị trong Modal luôn
-        if (selectedClass && selectedClass.class_id === classId) {
+        if (selectedClass && selectedClass.course_id === courseId) {
           setSelectedClass(prev => ({ ...prev, status: "closed" }));
         }
-
-        alert("🔒 Đã khóa tuyển sinh lớp học thành công và lưu vào hệ thống!");
-      } else {
-        alert(`Khóa lớp thất bại: ${result.message}`);
+          alert("Đã khóa tuyển sinh lớp học thành công!");
+        } else {
+          alert("Lỗi: " + result.message);
+        }
+      } catch (error) {
+        console.error("Lỗi kết nối:", error);
+        alert("Không thể kết nối đến server.");
       }
-    } catch (error) {
-      console.error("Lỗi khi thực hiện khóa lớp phía Client:", error);
-      alert("Đã xảy ra lỗi kết nối mạng, không thể khóa lớp học lúc này.");
     }
   };
 
