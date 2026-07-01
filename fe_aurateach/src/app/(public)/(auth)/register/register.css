@@ -10,20 +10,21 @@
 }
 
 .aurateach-register-container {
-  max-width: 1200px;
+  max-width: 1300px;
   width: 100%;
   margin: 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 3rem;
 }
 
-/* ========= PHẦN BÊN TRÁI - HÌNH ẢNH ========= */
+/* ========= PHẦN BÊN TRÁI - HÌNH ẢNH (STICKY) ========= */
 .aurateach-register-left {
   flex: 1;
-  max-width: 450px;
-  top: 0;
+  max-width: 400px;
+  position: sticky;
+  top: 100px;
 }
 
 .aurateach-register-hero {
@@ -46,7 +47,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0, 35, 111, 0.9), rgba(0, 35, 111, 0.5), transparent);
+  background: linear-gradient(to top, rgba(0, 35, 111, 0.95), rgba(0, 35, 111, 0.6), transparent);
   padding: 2rem 1.5rem 1.5rem;
   text-align: center;
   color: white;
@@ -67,12 +68,22 @@
   font-size: 0.8rem;
   line-height: 1.4;
   opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.aurateach-hero-quote {
+  font-size: 0.75rem;
+  font-style: italic;
+  opacity: 0.8;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 0.8rem;
+  margin-top: 0.5rem;
 }
 
 /* ========= PHẦN BÊN PHẢI - FORM ĐĂNG KÝ ========= */
 .aurateach-register-right {
-  flex: 1;
-  max-width: 500px;
+  flex: 2;
+  max-width: 650px;
 }
 
 .aurateach-register-card {
@@ -133,6 +144,137 @@
   color: #9ca3af;
 }
 
+/* ========= ĐIỀU KHOẢN DỊCH VỤ ========= */
+.aurateach-terms-section {
+  margin: 0.5rem 0;
+}
+
+.aurateach-terms-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: #f8fafc;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #00236F;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.aurateach-terms-toggle:hover {
+  background: #f1f5f9;
+  border-color: #1565c0;
+}
+
+.aurateach-terms-arrow {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.aurateach-terms-content {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.aurateach-terms-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.aurateach-terms-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.aurateach-terms-content::-webkit-scrollbar-thumb {
+  background: #c1c7cd;
+  border-radius: 10px;
+}
+
+.aurateach-terms-content::-webkit-scrollbar-thumb:hover {
+  background: #a0a8b0;
+}
+
+.aurateach-terms-text {
+  font-size: 0.8rem;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.aurateach-terms-text h4 {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #fee2e2;
+}
+
+.aurateach-terms-text p {
+  margin-bottom: 0.8rem;
+}
+
+.aurateach-terms-highlight {
+  display: block;
+  background: #fef3c7;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  color: #92400e;
+}
+
+.aurateach-terms-warning {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  background: #fee2e2;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.aurateach-terms-scroll-hint {
+  text-align: center;
+  color: #f59e0b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.aurateach-terms-scroll-complete {
+  text-align: center;
+  color: #16a34a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  background: #dcfce7;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.aurateach-terms-hint {
+  color: #dc2626;
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
 .aurateach-form-options {
   margin: 0.25rem 0;
 }
@@ -155,9 +297,15 @@
   accent-color: #1565c0;
 }
 
+.aurateach-checkbox-label input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .aurateach-link {
   color: #1565c0;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .aurateach-link:hover {
@@ -256,19 +404,21 @@
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .aurateach-register-container {
     flex-direction: column;
+    align-items: center;
     gap: 2rem;
   }
 
   .aurateach-register-left {
+    position: static;
     max-width: 400px;
     width: 100%;
   }
 
   .aurateach-register-right {
-    max-width: 500px;
+    max-width: 100%;
     width: 100%;
   }
 }
@@ -284,5 +434,9 @@
 
   .aurateach-register-title {
     font-size: 1.2rem;
+  }
+
+  .aurateach-terms-content {
+    max-height: 200px;
   }
 }

@@ -149,6 +149,18 @@
       "status": "active",
       "created_at": "2026-06-30T21:43:35.606Z",
       "id": "XhFiYrPPWNs"
+    },
+    {
+      "id": "a534",
+      "user_id": "user_1782893584178_y2sif7",
+      "email": "liemnguyen@gmail.com",
+      "password": "123123",
+      "full_name": "Nguyễn Văn Liêm",
+      "phone": "0909123123",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-01T08:13:04.178Z"
     }
   ],
   "tutors": [
@@ -237,6 +249,14 @@
       "school_name": "zSDFgAEDgv",
       "created_at": "2026-06-30T21:42:05.168Z",
       "id": "5TvfrP8xoXU"
+    },
+    {
+      "id": "c421",
+      "student_id": "student_1782893584219",
+      "user_id": "user_1782893584178_y2sif7",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-01T08:13:04.219Z"
     }
   ],
   "courses": [
