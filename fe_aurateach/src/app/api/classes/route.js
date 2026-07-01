@@ -50,6 +50,7 @@ export async function GET(request) {
 
     // Chuẩn hóa dữ liệu tương thích với UI FrontEnd
     let standardizedClasses = rawCourses.map(course => ({
+      id: course.id,
       class_id: course.course_id || course.class_id || `cls-${Math.random()}`,
       class_name: course.title || course.class_name || "Lớp học chưa đặt tên",
       start_date: course.start_date || "15/06/2024",
@@ -97,7 +98,7 @@ export async function GET(request) {
   }
 }
 
-// 2. TẠO LỚP HỌC MỚI ĐỘNG THEO ID GIA SƯ ĐĂNG NHẬP
+// 2. TẠO LỚP HỌC MỚI 
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -117,6 +118,7 @@ export async function POST(request) {
     }
     
     const newClassData = {
+      id: `course-${Date.now()}`,
       course_id: `course-${Date.now()}`, 
       tutor_id: dynamicTutorId, 
       title: body.class_name,
