@@ -136,51 +136,52 @@ export default function ClassDetailPage({ params }) {
     setShowBookingModal(true);
   };
 
-  const confirmBooking = async (notes, paymentMethod) => {
-    setBookingLoading(true);
-    const studentId = currentUser.user_id || currentUser.id;
+  // src/app/(public)/classList/[id]/page.jsx - Cập nhật phần confirmBooking
+      const confirmBooking = async (notes, paymentMethod) => {
+        setBookingLoading(true);
+        const studentId = currentUser.user_id || currentUser.id;
 
-    try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId: course.course_id,
-          studentId: studentId,
-          tutorId: course.tutor_id,
-          notes: notes,
-          paymentMethod: paymentMethod
-        }),
-      });
+        try {
+          const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              courseId: course.course_id,
+              studentId: studentId,
+              tutorId: course.tutor_id,
+              notes: notes,
+              paymentMethod: paymentMethod
+            }),
+          });
 
-      const result = await response.json();
+          const result = await response.json();
 
-      if (response.ok) {
-        setIsBooked(true);
-        setCourse(prev => ({
-          ...prev,
-          students: [...(prev.students || []), studentId]
-        }));
-        setShowBookingModal(false);
-        
-        const paymentMsg = paymentMethod === 'wallet' 
-          ? 'Thanh toán qua ví AuraTeach thành công!' 
-          : 'Vui lòng hoàn tất chuyển khoản theo hướng dẫn trong email.';
-        
-        alert(`${result.message || "Đăng ký khóa học thành công!"}\n${paymentMsg}`);
-        router.push('/lich-su-book');
-      } else {
-        alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
-      }
-    } catch (error) {
-      console.error("Lỗi liên kết API Booking:", error);
-      alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
-    } finally {
-      setBookingLoading(false);
-    }
-  };
+          if (response.ok) {
+            // Trả về data để tiếp tục xử lý thanh toán
+            return {
+              success: true,
+              data: result.data
+            };
+          } else {
+            alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
+            return {
+              success: false,
+              message: result.message
+            };
+          }
+        } catch (error) {
+          console.error("Lỗi liên kết API Booking:", error);
+          alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
+          return {
+            success: false,
+            message: error.message
+          };
+        } finally {
+          setBookingLoading(false);
+        }
+      };
 
   const handleJoinClass = () => {
     if (course?.permanent_room_url) {
@@ -243,8 +244,11 @@ export default function ClassDetailPage({ params }) {
   if (!course) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
+  
 
   const currentStudentsCount = course.students ? course.students.length : 0;
+
+  
   const isFull = currentStudentsCount >= course.max_students;
 
   return (

@@ -684,6 +684,52 @@
       "students": [
         "u-student-1"
       ]
+    },
+    {
+      "id": "sjOefPzcfm0",
+      "course_id": "course-1783032321908",
+      "tutor_id": "tutor_01",
+      "title": "thể dục nâng cao",
+      "category_id": "cat-11",
+      "level": "Cấp 3",
+      "description": "thể dục thôi mà ",
+      "max_students": 3,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-03",
+      "end_date": "2026-09-25",
+      "total_weeks": 12,
+      "schedule_days": [
+        "Thứ 2"
+      ],
+      "time_slot": "23:00-23:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": [
+        "u-student-1"
+      ]
+    },
+    {
+      "id": "Y6A2_TOIZcI",
+      "course_id": "course-1783032386448",
+      "tutor_id": "tutor_01",
+      "title": "thể dục siêu nâng cao",
+      "category_id": "cat-11",
+      "level": "Cấp 3",
+      "description": "thể dục siêu nâng cao",
+      "max_students": 3,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-03",
+      "end_date": "2026-07-10",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 2"
+      ],
+      "time_slot": "12:02-12:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
     }
   ],
   "reviews": [
@@ -829,6 +875,22 @@
       "payment_method": "banking",
       "transaction_id": null,
       "id": "qHXI-guKoK8"
+    },
+    {
+      "booking_id": "bk-1783032419478",
+      "student_id": "u-student-1",
+      "course_id": "course-1783032321908",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-02T22:46:59.478Z",
+      "created_at": "2026-07-02T22:46:59.478Z",
+      "updated_at": "2026-07-02T22:46:59.478Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "W4jEzMa5lek"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
