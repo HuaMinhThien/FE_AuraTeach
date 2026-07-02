@@ -6,6 +6,7 @@ export default function RootLayout({ children }) {
   return (
     <>
       <Header />
+      <div>test</div>
 
       {children}
 
