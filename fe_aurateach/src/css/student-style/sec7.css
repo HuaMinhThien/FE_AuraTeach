@@ -109,3 +109,289 @@
     max-width: none;
   }
 }
+
+/* Section 7 - Đánh giá từ học viên */
+.aurateach-sec7 {
+  width: 100%;
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.aurateach-sec7__header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.aurateach-sec7__title {
+  color: #0d2757;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.aurateach-sec7__desc {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Grid - Cố định 4 cột cho 1 hàng */
+.aurateach-sec7__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+/* Card đánh giá */
+.aurateach-sec7__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.aurateach-sec7__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.aurateach-sec7__author {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.aurateach-sec7__role {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0 0 12px 0;
+}
+
+.aurateach-sec7__rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.aurateach-sec7__stars {
+  display: flex;
+  gap: 2px;
+}
+
+.aurateach-sec7__star-icon {
+  color: #eab308;
+  fill: #eab308;
+  width: 16px;
+  height: 16px;
+}
+
+.aurateach-sec7__score {
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aurateach-sec7__content {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .aurateach-sec7__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .aurateach-sec7 {
+    padding: 40px 15px;
+  }
+  
+  .aurateach-sec7__title {
+    font-size: 24px;
+  }
+  
+  .aurateach-sec7__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .aurateach-sec7__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section 7 - Đánh giá từ học viên */
+.aurateach-sec7 {
+  width: 100%;
+  max-width: 1550px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.aurateach-sec7__header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.aurateach-sec7__title {
+  color: #0d2757;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.aurateach-sec7__desc {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Grid - Cố định 4 cột và canh giữa khi ít hơn 4 item */
+.aurateach-sec7__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  justify-content: center;
+}
+
+/* Khi số lượng item ít hơn 4, tự động canh giữa */
+.aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(1):first-child),
+.aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(2):first-child),
+.aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(3):first-child) {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+  justify-content: center;
+}
+
+/* Card đánh giá */
+.aurateach-sec7__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  height: 100%;
+  max-width: 100%;
+}
+
+.aurateach-sec7__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.aurateach-sec7__author {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.aurateach-sec7__role {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0 0 12px 0;
+}
+
+.aurateach-sec7__rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.aurateach-sec7__stars {
+  display: flex;
+  gap: 2px;
+}
+
+.aurateach-sec7__star-icon {
+  color: #eab308;
+  fill: #eab308;
+  width: 16px;
+  height: 16px;
+}
+
+.aurateach-sec7__score {
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aurateach-sec7__content {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .aurateach-sec7__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(1):first-child),
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(2):first-child),
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(3):first-child) {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+  }
+}
+
+@media (max-width: 768px) {
+  .aurateach-sec7 {
+    padding: 40px 15px;
+  }
+  
+  .aurateach-sec7__title {
+    font-size: 24px;
+  }
+  
+  .aurateach-sec7__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(1):first-child),
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(2):first-child),
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(3):first-child) {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 300px));
+  }
+}
+
+@media (max-width: 480px) {
+  .aurateach-sec7__grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(1):first-child),
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(2):first-child),
+  .aurateach-sec7__grid:has(.aurateach-sec7__card:nth-last-child(3):first-child) {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}

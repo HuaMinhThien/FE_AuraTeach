@@ -18,28 +18,24 @@ export default function StudentSidebar() {
     {
       id: "profile",
       label: "Thông tin cá nhân",
-      icon: "👤",
       href: "/profile",
       active: pathname === "/profile"
     },
     {
       id: "lich-su-book",
       label: "Lịch sử đăng ký lớp học",
-      icon: "📚",
       href: "/lich-su-book",
       active: pathname === "/lich-su-book"
     },
     {
       id: "lich-su-giao-dich",
       label: "Lịch sử giao dịch",
-      icon: "💰",
       href: "/lich-su-giao-dich",
       active: pathname === "/lich-su-giao-dich"
     },
     {
       id: "messenger",
       label: "Messenger",
-      icon: "💬",
       href: "/messenger",
       active: pathname === "/messenger"
     }

@@ -13,8 +13,7 @@
   gap: 8px;
   font-size: 14px;
   color: #666;
-  margin-bottom: 24px;
-  margin-top: 70px;
+  margin-bottom: 20px;
 }
 
 .breadcrumb a {
@@ -36,6 +35,24 @@
 .current {
   color: #1a1a2e;
   font-weight: 500;
+}
+
+/* Thumbnail */
+.thumbnailWrapper {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  background: #f3f4f6;
+  max-height: 400px;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
 }
 
 /* Header */
@@ -95,11 +112,22 @@
   font-weight: 500;
 }
 
+.statusActive {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.statusClosed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 /* Content Layout */
 .content {
   display: grid;
   grid-template-columns: 1fr 360px;
   gap: 40px;
+  align-items: start; /* Thêm align-items: start để tránh kéo giãn */
 }
 
 .mainContent {
@@ -125,86 +153,69 @@
   margin-bottom: 16px;
 }
 
-.description p {
-  margin-bottom: 12px;
+/* Details Grid */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
 }
 
-.featuresList {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0 0;
-}
-
-.featureItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 0;
-  color: #4b5563;
-  font-size: 15px;
-}
-
-.checkIcon {
-  color: #16a34a;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-/* Topics */
-.topicsList {
+.detailItem {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
 }
 
-.topicItem {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px 20px;
-  transition: border-color 0.2s;
+.detailItem.fullWidth {
+  grid-column: 1 / -1;
 }
 
-.topicItem:hover {
-  border-color: #93c5fd;
+.detailLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
-.topicHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.topicId {
-  font-weight: 700;
-  color: #2563eb;
-  font-size: 18px;
-  min-width: 32px;
-}
-
-.topicTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a2e;
-  margin: 0;
-}
-
-.subtopicsList {
-  list-style: none;
-  padding: 0;
-  margin: 12px 0 0 44px;
-}
-
-.subtopicItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  color: #4b5563;
+.detailValue {
   font-size: 14px;
+  color: #1a1a2e;
+  font-weight: 500;
 }
 
-.subtopicCheck {
-  color: #16a34a;
+.detailValue.priceValue {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.detailValue.statusActive {
+  color: #065f46;
+}
+
+.detailValue.statusClosed {
+  color: #991b1b;
+}
+
+.meetLink {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.meetLink:hover {
+  text-decoration: underline;
+}
+
+.meetLocked {
+  color: #6b7280;
+  font-size: 13px;
+  font-style: italic;
 }
 
 /* Reviews */
@@ -277,12 +288,17 @@
   margin: 0;
 }
 
+.noReviews {
+  color: #6b7280;
+  text-align: center;
+  padding: 20px;
+}
+
 /* Sidebar */
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  
 }
 
 /* Price Card */
@@ -294,6 +310,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 94px;
+  z-index: 10; /* Thêm z-index để giữ trên cùng */
 }
 
 .priceHeader {
@@ -337,6 +354,18 @@
   text-align: center;
 }
 
+.detailRow .meetLink {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.detailRow .meetLink:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
+
 .bookButton {
   width: 100%;
   padding: 14px;
@@ -355,6 +384,45 @@
 }
 
 .bookButton:active {
+  transform: scale(0.98);
+}
+
+.bookedButton {
+  width: 100%;
+  padding: 14px;
+  background: #6c757d;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+.joinButton {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.joinButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.joinButton:active {
   transform: scale(0.98);
 }
 
@@ -382,6 +450,8 @@
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   padding: 24px;
+  position: relative; /* Thêm position relative */
+  z-index: 5; /* Thêm z-index thấp hơn price card */
 }
 
 .tutorCardTitle {
@@ -399,6 +469,8 @@
 
 .tutorAvatar {
   flex-shrink: 0;
+  position: relative; /* Thêm position relative */
+  z-index: 1; /* Đảm bảo avatar không vượt ra ngoài card */
 }
 
 .avatarPlaceholder {
@@ -437,6 +509,23 @@
   color: #4b5563;
   line-height: 1.5;
   margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tutorExtra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.tutorDivider {
+  color: #d1d5db;
 }
 
 .tutorProfileLink {
@@ -450,6 +539,15 @@
 .tutorProfileLink:hover {
   color: #1d4ed8;
   text-decoration: underline;
+}
+
+/* Override Avatar component style - đảm bảo avatar không bị tràn */
+.tutorAvatar :global(img) {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Responsive */
@@ -468,6 +566,7 @@
 
   .priceCard {
     position: static;
+    z-index: auto;
   }
 
   .title {
@@ -492,12 +591,16 @@
     order: -1;
   }
 
-  .topicHeader {
-    flex-wrap: wrap;
+  .detailsGrid {
+    grid-template-columns: 1fr;
   }
 
-  .subtopicsList {
-    margin-left: 0;
+  .thumbnailWrapper {
+    max-height: 250px;
+  }
+
+  .tutorCard {
+    z-index: auto;
   }
 }
 
@@ -527,5 +630,18 @@
   .reviewAuthor {
     flex-direction: column;
     gap: 4px;
+  }
+
+  .meta {
+    gap: 8px;
+  }
+
+  .tagBadge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+
+  .tutorCard {
+    z-index: auto;
   }
 }

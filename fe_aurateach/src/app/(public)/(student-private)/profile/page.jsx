@@ -167,7 +167,7 @@ export default function ProfilePage() {
       const result = await authService.updateProfile(user.user_id, updateData);
 
       if (result.success) {
-        setSuccess("✅ Cập nhật thông tin thành công!");
+        setSuccess("Cập nhật thông tin thành công!");
         
         // Cập nhật state user
         setUser(result.user);
@@ -231,7 +231,7 @@ export default function ProfilePage() {
               </div>
               {!isEditing && (
                 <button className="btn-edit" onClick={handleEdit}>
-                  ✏️ Chỉnh sửa
+                  Chỉnh sửa
                 </button>
               )}
             </div>
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                   <label>Trạng thái</label>
                   <p>
                     <span className={user.status === "active" ? "status-active" : "status-inactive"}>
-                      {user.status === "active" ? "✅ Hoạt động" : "⛔ Đã khóa"}
+                      {user.status === "active" ? "Hoạt động" : "Đã khóa"}
                     </span>
                   </p>
                 </div>
@@ -367,14 +367,14 @@ export default function ProfilePage() {
                     onClick={handleSave}
                     disabled={isSaving}
                   >
-                    {isSaving ? "🔄 Đang lưu..." : "💾 Lưu thay đổi"}
+                    {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
                   </button>
                   <button 
                     className="btn-cancel" 
                     onClick={handleCancel}
                     disabled={isSaving}
                   >
-                    ❌ Hủy
+                    Hủy
                   </button>
                 </div>
               )}
