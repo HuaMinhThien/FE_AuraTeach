@@ -1,13 +1,12 @@
 // src/app/(public)/(auth)/login/page.jsx
 "use client";
+import authService from "@/services/authService";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Headers from "@/components/users/Header";
 import "./login.css";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -20,51 +19,9 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("=== LOGIN SUBMIT ===");
-      console.log("Email:", email);
-
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      console.log("Response data:", data);
-
-      if (!response.ok) {
-        throw new Error(data.message || "Đăng nhập thất bại");
-      }
-
-      if (!data.success || !data.user) {
-        throw new Error("Dữ liệu đăng nhập không hợp lệ");
-      }
-
-      // Tạo userInfo với đúng cấu trúc
-      const userInfo = {
-        id: data.user.user_id,
-        name: data.user.full_name,
-        email: data.user.email,
-        role: data.user.role,
-        avatar: data.user.avatar || "/img/default-avatar.png",
-      };
-
-      console.log("✅ UserInfo to save:", userInfo);
-
-      // Lưu cookie
-      const expires = rememberMe ? 30 : 1;
-      // Chỉ giữ lại 1 dòng này, xóa dòng trùng lặp
-      document.cookie = `user_info=${encodeURIComponent(
-        JSON.stringify(userInfo)
-      )}; path=/; max-age=${expires * 24 * 60 * 60}`;
-
-      document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
-
-      console.log("✅ Cookies saved:");
-      console.log("user_info:", document.cookie);
-
-      // Chuyển hướng
-      switch (data.user.role) {
+      const data = await authService.login(email, password);
+      const role = data.user.role;
+      switch (role) {
         case "student":
           window.location.href = "/";
           break;
