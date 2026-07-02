@@ -66,11 +66,23 @@ export default function ClassListPage() {
     fetchData();
   }, []);
 
-  // Parse giá
+  // Parse giá - FIX: Xử lý an toàn cho mọi loại dữ liệu
   const parsePrice = useCallback((priceStr) => {
-    if (!priceStr) return 0;
-    return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+    if (priceStr === undefined || priceStr === null || priceStr === '') {
+      return 0;
+    }
+    // Nếu là number, chuyển thành string
+    const str = String(priceStr);
+    // Lấy tất cả số từ string
+    const numbers = str.replace(/[^0-9]/g, '');
+    return parseInt(numbers) || 0;
   }, []);
+
+  // Lấy giá trị an toàn
+  const getSafePrice = useCallback((course) => {
+    const price = course?.hourly_rate || course?.price_per_session || 0;
+    return typeof price === 'number' ? price : parsePrice(price);
+  }, [parsePrice]);
 
   // Kết hợp dữ liệu
   const coursesWithDetails = useMemo(() => {
@@ -89,9 +101,11 @@ export default function ClassListPage() {
         experience: tutor?.Experience || 'Chưa cập nhật',
         students_count: course.current_students || course.students_count || 0,
         category_name: categories.find(c => c.category_id === course.category_id)?.category_name || 'Chưa phân loại',
+        // Thêm trường price_number để sử dụng cho filter
+        price_number: getSafePrice(course),
       };
     });
-  }, [courses, tutors, users, categories]);
+  }, [courses, tutors, users, categories, getSafePrice]);
 
   // Lọc và sắp xếp
   const filteredCourses = useMemo(() => {
@@ -115,10 +129,10 @@ export default function ClassListPage() {
       }
     }
 
-    // Lọc theo giá
+    // Lọc theo giá - SỬ DỤNG price_number đã được tính sẵn
     if (priceRange !== 'all') {
       result = result.filter(course => {
-        const priceNum = parsePrice(course.price_per_session || course.hourly_rate);
+        const priceNum = course.price_number || 0;
         if (priceRange === 'under200') return priceNum < 200000;
         if (priceRange === '200-300') return priceNum >= 200000 && priceNum <= 300000;
         if (priceRange === 'over300') return priceNum > 300000;
@@ -126,19 +140,19 @@ export default function ClassListPage() {
       });
     }
 
-    // Sắp xếp
+    // Sắp xếp - SỬ DỤNG price_number đã được tính sẵn
     if (sortOption === 'students-asc') {
-      result = result.toSorted((a, b) => (a.students_count || 0) - (b.students_count || 0));
+      result = [...result].sort((a, b) => (a.students_count || 0) - (b.students_count || 0));
     } else if (sortOption === 'students-desc') {
-      result = result.toSorted((a, b) => (b.students_count || 0) - (a.students_count || 0));
+      result = [...result].sort((a, b) => (b.students_count || 0) - (a.students_count || 0));
     } else if (sortOption === 'price-low') {
-      result = result.toSorted((a, b) => parsePrice(a.price_per_session || a.hourly_rate) - parsePrice(b.price_per_session || b.hourly_rate));
+      result = [...result].sort((a, b) => (a.price_number || 0) - (b.price_number || 0));
     } else if (sortOption === 'price-high') {
-      result = result.toSorted((a, b) => parsePrice(b.price_per_session || b.hourly_rate) - parsePrice(a.price_per_session || a.hourly_rate));
+      result = [...result].sort((a, b) => (b.price_number || 0) - (a.price_number || 0));
     }
 
     return result;
-  }, [coursesWithDetails, searchTerm, selectedCategory, priceRange, sortOption, parsePrice, categories]);
+  }, [coursesWithDetails, searchTerm, selectedCategory, priceRange, sortOption, categories]);
 
   // Phân trang
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;
@@ -185,6 +199,13 @@ export default function ClassListPage() {
     setSelectedCategory(categoryName);
     setCurrentPage(1);
   }, []);
+
+  // Format giá an toàn
+  const formatPrice = useCallback((price) => {
+    if (price === undefined || price === null || price === '') return '0';
+    const num = typeof price === 'number' ? price : parsePrice(price);
+    return num.toLocaleString('vi-VN');
+  }, [parsePrice]);
 
   // Hiển thị loading
   if (loading) {
@@ -372,7 +393,7 @@ export default function ClassListPage() {
                   <div className={styles.tutorPrice}>
                     <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
                     <span className={styles.priceValue}>
-                      {parseInt(course.hourly_rate || course.price_per_session || 0).toLocaleString('vi-VN')} đ/h
+                      {formatPrice(course.hourly_rate || course.price_per_session)} đ/h
                     </span>
                   </div>
                   <div className={styles.studentCount}>
