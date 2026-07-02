@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import Avatar from "@/components/common/Avatar.jsx";
+import userService from "@/services/userService";
 import authService from "@/services/authService";
 import "./profile.css";
+
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -29,72 +31,66 @@ export default function ProfilePage() {
   // Lấy thông tin student
   const fetchStudentInfo = async (userId) => {
     try {
-      const studentRes = await fetch(`http://localhost:8000/api/students?user_id=${userId}`);
-      const students = await studentRes.json();
-      
-      console.log("Dữ liệu API trả về:", students); // THÊM DÒNG NÀY ĐỂ CHECK F12
+        console.log("Giá trị userId truyền vào hàm fetch:", userId);
+        const studentRes = await fetch(`http://localhost:8000/api/students?user_id=${userId}`);
+        const data = await studentRes.json();
+        
+        console.log("Dữ liệu nhận từ API:", data); // LOG ĐỂ KIỂM TRA
 
-      // Kiểm tra xem có tìm thấy student nào khớp với userId không
-      const myStudent = Array.isArray(students) 
-        ? students.find(s => String(s.user_id) === String(userId)) 
-        : (students.user_id === userId ? students : null);
-
-      if (myStudent) {
-        setStudentInfo(myStudent);
-        setFormData(prev => ({
-          ...prev,
-          grade: myStudent.grade || "",
-          school_name: myStudent.school_name || "",
-        }));
-      } else {
-        console.warn("Không tìm thấy thông tin student cho user này");
+        // Nếu API trả về mảng, thử tìm kiểu lỏng lẻo hơn
+        if (Array.isArray(data)) {
+            // Thử log từng phần tử xem s.user_id trông như thế nào
+            const myStudent = data.find(s => {
+                console.log(`So sánh: ${s.user_id} với ${userId}`);
+                return String(s.user_id) === String(userId);
+            });
+            setStudentInfo(myStudent || null);
+            return myStudent;
+        } 
+        // Nếu API trả về trực tiếp object
+        else if (data && data.user_id) {
+            setStudentInfo(data);
+            return data;
+        }
+        
+        return null;
+      } catch (error) {
+          console.error("Lỗi tải thông tin student:", error);
+          return null;
       }
-    } catch (error) {
-      console.error("Lỗi tải thông tin student:", error);
-    }
   };
 
   useEffect(() => {
     const initPage = async () => {
-      try {
-        setLoading(true);
-        const currentUser = await authService.getCurrentUser();
-        
-        // Kiểm tra cookie dự phòng
-        const getCookie = (name) => {
-          if (typeof window === "undefined") return null;
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(';').shift();
-          return null;
-        };
-        const role = getCookie("role");
+        try {
+            setLoading(true);
+            const currentUser = await authService.getCurrentUser();
+            if (!currentUser || !currentUser.id) {
+                router.push("/login");
+                return;
+            }
 
-        if (!currentUser || role !== "student") {
-          router.push("/login");
-          return;
+            // Dùng userService để lấy dữ liệu full
+            const fullUser = await userService.getUserDetails(currentUser.id);
+            const studentData = await fetchStudentInfo(currentUser.id);
+            
+            setUser(fullUser); 
+            setStudentInfo(studentData);
+            
+            setFormData({
+                full_name: fullUser.full_name || fullUser.name || "",
+                phone: fullUser.phone || "",
+                avatar: fullUser.avatar || "",
+                birth_date: fullUser.birth_date || "",
+                grade: studentData?.grade || "",        
+                school_name: studentData?.school_name || "", 
+            });
+        } catch (error) {
+            console.error("Lỗi:", error);
+        } finally {
+            setLoading(false);
         }
-
-        setUser(currentUser);
-        setFormData({
-          full_name: currentUser.full_name || "",
-          phone: currentUser.phone || "",
-          avatar: currentUser.avatar || "",
-          birth_date: currentUser.birth_date || "",
-          grade: "",
-          school_name: "",
-        });
-
-        // Lấy thông tin student
-        await fetchStudentInfo(currentUser.user_id);
-
-      } catch (error) {
-        console.error("Lỗi tải thông tin profile:", error);
-      } finally {
-        setLoading(false);
-      }
     };
-
     initPage();
   }, [router]);
 
@@ -135,56 +131,28 @@ export default function ProfilePage() {
 
   // Lưu thay đổi
   const handleSave = async () => {
+    const uid = user?.id || user?.user_id;
+    if (!uid) {
+        setError("Không tìm thấy thông tin người dùng.");
+        return;
+    }
+
       try {
           setError("");
           setSuccess("");
           setIsSaving(true);
 
-          console.log("Dữ liệu gửi lên:", { formData, studentId: studentInfo?.student_id });
-
-          // 1. Validate
-          if (!formData.full_name.trim()) throw new Error("Họ và tên không được để trống");
-          if (!formData.phone.trim()) throw new Error("Số điện thoại không được để trống");
-
-          // 2. Cập nhật User
-          const userUpdateData = {
-              full_name: formData.full_name.trim(),
-              phone: formData.phone.trim(),
-              avatar: formData.avatar.trim() || "/img/default-avatar.svg",
-              birth_date: formData.birth_date || "",
-          };
-          const uid = user?.user_id || user?.id; // Kiểm tra xem ID nằm ở user_id hay id
-          if (!uid) {
-            console.error("User object hiện tại:", user);
-            throw new Error("Không xác định được ID người dùng (user_id hoặc id bị trống)");
-          }
-          const userResult = await authService.updateProfile(uid, userUpdateData);
-          console.log("Dữ liệu user hiện tại:", user);
-          // 3. Cập nhật Student
-          const studentUpdateData = {
-              grade: formData.grade.trim(),
-              school_name: formData.school_name.trim(),
-          };
-
-          const studentRes = await fetch(`http://localhost:8000/api/students/${studentInfo.student_id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(studentUpdateData)
-          });
-
-          const studentData = await studentRes.json();
-          console.log("Kết quả update Student:", studentData);
-
-          if (userResult.success && studentRes.ok) {
+          const result = await userService.updateProfile(uid, formData);
+          
+          if (result.success) {
               setSuccess("✅ Cập nhật thành công!");
-              setUser(userResult.user);
-              await fetchStudentInfo(user.user_id);
+              // Sửa lại: Dùng uid (id của user) để reload
+              await fetchStudentInfo(uid); 
               setTimeout(() => { setIsEditing(false); setSuccess(""); }, 1500);
           } else {
-              throw new Error(studentData.message || "Lỗi khi lưu thông tin học viên");
+              throw new Error("Lỗi khi lưu thông tin");
           }
       } catch (error) {
-          console.error("Lỗi chi tiết:", error);
           setError(error.message);
       } finally {
           setIsSaving(false);

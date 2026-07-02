@@ -1,14 +1,14 @@
-// src/services/userService.js
 import apiClient from "./apiClient";
 import authService from "./authService";
 
 const userService = {
-  // Lấy thông tin user (thay thế GET /api/users/[id])
-  getUserById: async (userId) => {
+  // Lấy chi tiết user từ server
+  getUserDetails: async (userId) => {
+    // Gọi API qua apiClient (tự động đính kèm base URL)
     return await apiClient(`/users/${userId}`);
   },
 
-  // Cập nhật thông tin (thay thế PATCH /api/users/[id])
+  // Cập nhật thông tin user
   updateProfile: async (userId, userData) => {
     const result = await apiClient(`/users/${userId}`, {
       method: "PATCH",

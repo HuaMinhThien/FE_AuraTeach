@@ -41,16 +41,11 @@ class AuthService {
 
   setAuthCookies(user) {
     if (typeof window !== "undefined") {
-      // Đảm bảo object lưu vào cookie có đủ các trường bạn cần
       const userInfo = {
         id: user.user_id || user.id,
-        name: user.full_name || user.name,
-        email: user.email,
         role: user.role,
-        avatar: user.avatar || "/img/default-avatar.png",
       };
       document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=86400`;
-      document.cookie = `role=${userInfo.role}; path=/; max-age=86400`;
     }
   }
 }
