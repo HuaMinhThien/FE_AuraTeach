@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/users/Header.jsx";
-import StudentSidebar from "@/components/users/StudentSidebar.jsx";  // ✅ Import Sidebar
+import StudentSidebar from "@/components/users/StudentSidebar.jsx";
+import BookingDetailModal from "@/components/users/BookingDetailModal.jsx";
 import authService from "@/services/authService";
 import "../profile/profile.css";
 import "./lich-su-book.css";
@@ -15,7 +16,11 @@ export default function StudentBookingHistoryPage() {
   const [bookings, setBookings] = useState([]);
   const [allTutors, setAllTutors] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedTutor, setSelectedTutor] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const API_BASE = "http://localhost:3007";
 
@@ -48,18 +53,19 @@ export default function StudentBookingHistoryPage() {
           fetch(`${API_BASE}/bookings?studentId=${studentId}`)
         ]);
 
-        const allCourses = await coursesRes.json();
+        const allCoursesData = await coursesRes.json();
         const tutorsData = await tutorsRes.json();
         const usersData = await usersRes.json();
         const bookingsData = await bookingsRes.json();
 
+        setAllCourses(allCoursesData);
         setAllTutors(tutorsData);
         setAllUsers(usersData);
 
         const bookingList = bookingsData.data || [];
         setBookings(bookingList);
 
-        const filteredClasses = allCourses.filter(course => 
+        const filteredClasses = allCoursesData.filter(course => 
           course.students && course.students.includes(studentId)
         );
         setBookedClasses(filteredClasses);
@@ -79,6 +85,16 @@ export default function StudentBookingHistoryPage() {
     if (!tutor) return "Đang cập nhật";
     const user = allUsers.find(u => u.user_id === tutor.user_id);
     return user ? user.full_name : "Gia sư AuraTeach";
+  };
+
+  const getTutorInfo = (tutorId) => {
+    const tutor = allTutors.find(t => t.tutor_id === tutorId);
+    if (!tutor) return null;
+    const user = allUsers.find(u => u.user_id === tutor.user_id);
+    return {
+      ...tutor,
+      full_name: user ? user.full_name : "Gia sư AuraTeach"
+    };
   };
 
   const getBookingStatus = (courseId) => {
@@ -116,6 +132,28 @@ export default function StudentBookingHistoryPage() {
     return cleanStr.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
   };
 
+  const handleViewDetail = (courseId) => {
+    const course = allCourses.find(c => c.course_id === courseId || c.id === courseId);
+    if (course) {
+      setSelectedCourse(course);
+      const tutorInfo = getTutorInfo(course.tutor_id);
+      setSelectedTutor(tutorInfo);
+      setShowDetailModal(true);
+    }
+  };
+
+  const handleJoinClass = (meetUrl) => {
+    if (meetUrl) {
+      window.open(meetUrl, '_blank');
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowDetailModal(false);
+    setSelectedCourse(null);
+    setSelectedTutor(null);
+  };
+
   if (loading) {
     return (
       <>
@@ -134,7 +172,6 @@ export default function StudentBookingHistoryPage() {
       <div className="profile-page" style={{ marginTop: "80px" }}>
         <div className="profile-container">
           
-          {/* ✅ Sử dụng StudentSidebar component */}
           <StudentSidebar />
 
           <div className="profile-content">
@@ -176,11 +213,11 @@ export default function StudentBookingHistoryPage() {
                             <td>
                               <div className="class-title-cell">
                                 <span className="class-name-text">{item.title}</span>
-                                <span className="class-flow-badge">{item.flow || "Tiêu chuẩn"}</span>
+                                <span className="class-flow-badge">{item.level || "Tiêu chuẩn"}</span>
                               </div>
                             </td>
                             <td className="tutor-name-cell">👨‍🏫 {getTutorName(item.tutor_id)}</td>
-                            <td className="price-cell">{formatPrice(item.price_per_session || item.hourly_rate)}</td>
+                            <td className="price-cell">{formatPrice(item.hourly_rate)}</td>
                             <td>
                               <span className={`status-badge ${status.className}`}>
                                 {status.label}
@@ -196,9 +233,12 @@ export default function StudentBookingHistoryPage() {
                               )}
                             </td>
                             <td>
-                              <Link href={`/classList/${item.course_id || item.id}`} className="view-detail-btn">
+                              <button 
+                                className="view-detail-btn"
+                                onClick={() => handleViewDetail(item.course_id || item.id)}
+                              >
                                 Chi tiết ➜
-                              </Link>
+                              </button>
                             </td>
                           </tr>
                         );
@@ -211,6 +251,17 @@ export default function StudentBookingHistoryPage() {
           </div>
         </div>
       </div>
+
+      {/* Booking Detail Modal */}
+      {showDetailModal && selectedCourse && (
+        <BookingDetailModal
+          course={selectedCourse}
+          tutorName={selectedTutor?.full_name || getTutorName(selectedCourse.tutor_id)}
+          tutorInfo={selectedTutor}
+          onClose={handleCloseModal}
+          onJoinClass={handleJoinClass}
+        />
+      )}
     </>
   );
 }
