@@ -20,7 +20,7 @@ const DEFAULT_IMAGES = [
 
 export default function CreateClassPage() {
   // --- Các State quản lý dữ liệu Form ---
-  const [className, setClassName] = useState("");
+  const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("Cấp 2");
   const [description, setDescription] = useState("");
@@ -197,7 +197,7 @@ export default function CreateClassPage() {
         
         // 2. Gom dữ liệu từ các State đã có trong component
         const payload = {
-            title: className,            // Dùng state className bạn đã định nghĩa
+            title: title,            // Dùng state className bạn đã định nghĩa
             description: description,
             max_students: maxStudents,
             hourly_rate: hourlyRate, // Đổi tên cho khớp với backend
@@ -209,7 +209,7 @@ export default function CreateClassPage() {
             category_id: category,        // Dùng state category
             level: level,
             thumbnail: selectedImage,     // Dùng state selectedImage
-            total_week: totalWeeks,
+            total_weeks: totalWeeks,
             status: 'active',
         };
 
@@ -252,8 +252,8 @@ export default function CreateClassPage() {
               <input 
                 type="text" 
                 placeholder="Ví dụ: Ôn tập Toán lớp 9 thi vào 10" 
-                value={className}
-                onChange={(e) => setClassName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
