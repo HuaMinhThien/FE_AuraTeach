@@ -1,5 +1,6 @@
 "use client";
 
+import courseService from "@/services/courseService";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./create-class.module.css"; 
@@ -49,36 +50,15 @@ export default function CreateClassPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
 
-  const validateSchedule = async () => {
-    // Thay thế form.startDate, form.endDate, v.v. bằng các biến state của bạn
-    const query = new URLSearchParams({
-      start: startDate,            // Tên state của bạn
-      end: endDate,                // Tên state của bạn
-      days: (selectedDays || []).join(','), // Dùng (|| []) để tránh lỗi nếu selectedDays rỗng
-      slot: `${startTime}-${endTime}`       // Hoặc biến timeSlot của bạn
-    }).toString();
-
-    const response = await fetch(`/api/classes/check-conflict?${query}`);
-    const result = await response.json();
-
-    if (result.isConflict) {
-      alert(result.message);
-      return false;
-    }
-    return true;
-  };
-
   // Tự động gọi API lấy danh mục động khi màn hình load thành công
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/categories");
-        if (res.ok) {
-          const data = await res.json();
-          setCategoriesList(data);
-        }
+        const data = await courseService.getCategories();
+        // Kiểm tra nếu API trả về mảng trực tiếp hoặc nằm trong object { data: [...] }
+        setCategoriesList(Array.isArray(data) ? data : (data.data || []));
       } catch (error) {
-        console.error("Lỗi lấy danh mục môn học từ JSON Server:", error);
+        console.error("Lỗi lấy danh mục môn học từ Laravel:", error);
       }
     };
     fetchCategories();
@@ -137,18 +117,16 @@ export default function CreateClassPage() {
       try {
         const timeSlot = `${startTime}-${endTime}`;
         const queryParams = new URLSearchParams({
-          tutorId: "tutor_01", // BẮT BUỘC: Thay ID này bằng ID gia sư đang đăng nhập
           start: startDate,
           end: endDate,
           days: selectedDays.join(","),
           slot: timeSlot,
         });
 
-        const res = await fetch(`/api/classes/check-conflict?${queryParams}`);
-        const result = await res.json();
+        const result = await courseService.checkConflict(queryParams);
 
-        if (!result.success && result.isConflict) {
-          setConflictMessage(`⚠️ ${result.message}`);
+        if (result.isConflict) {
+          setConflictMessage(result.message || "⚠️ Lịch này đã bị trùng, vui lòng chọn lại!");
         } else {
           setConflictMessage("");
         }
@@ -200,67 +178,54 @@ export default function CreateClassPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const isAvailable = await validateSchedule();
-    if (!isAvailable) return;
     
-    // 🔥 Kiểm tra ngày bắt đầu trước khi submit
+    // 1. Validate
     if (!validateStartDate(startDate)) {
-      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (từ hôm nay trở đi)!");
+      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ!");
       return;
     }
 
-    // Kiểm tra lại link Meet trước khi gửi dữ liệu
-    const isMeetValid = validateGoogleMeet(meetLink);
-    if (!isMeetValid) return;
+    if (!validateGoogleMeet(meetLink)) return;
 
     if (conflictMessage) {
       alert("Vui lòng xử lý trùng lịch trước khi tạo lớp học!");
       return;
     }
 
-    setIsSubmitting(true);
-    
-    // Lưu ý: category ở đây nên là category_id nếu DB yêu cầu
-    const payload = {
-      class_name: className,
-      category_id: category, // Đảm bảo trùng với cột trong DB
-      description: description,
-      max_students: parseInt(maxStudents),
-      hourly_rate: parseInt(hourlyRate),
-      start_date: startDate,
-      end_date: endDate,
-      schedule_days: selectedDays,
-      time_slot: `${startTime}-${endTime}`,
-      thumbnail: selectedImage,
-      permanent_room_url: meetLink.trim(),
-    };
-
     try {
-      const response = await fetch("http://localhost:8000/api/courses", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(payload),
-      });
+        setIsSubmitting(true);
+        
+        // 2. Gom dữ liệu từ các State đã có trong component
+        const payload = {
+            title: className,            // Dùng state className bạn đã định nghĩa
+            description: description,
+            max_students: maxStudents,
+            hourly_rate: hourlyRate, // Đổi tên cho khớp với backend
+            start_date: startDate,
+            end_date: endDate,
+            schedule_days: JSON.stringify(selectedDays), // Chuyển mảng thành chuỗi JSON
+            time_slot: `${startTime}-${endTime}`,
+            permanent_room_url: meetLink, // Dùng meetLink thay cho biến chưa khai báo
+            category_id: category,        // Dùng state category
+            level: level,
+            thumbnail: selectedImage,     // Dùng state selectedImage
+            total_week: totalWeeks,
+            status: 'active',
+        };
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert("🎉 Tạo lớp học thành công!");
-        // Reset form sau khi thành công
-        setClassName("");
-        setDescription("");
-      } else {
-        alert(`Lỗi: ${data.message || "Không thể tạo lớp"}`);
-      }
+        // 3. Gọi service
+        const data = await courseService.createCourse(payload);
+
+        if (data.success) {
+            alert("🎉 Tạo khóa học thành công!");
+        } else {
+            alert(`Lỗi: ${data.message || "Có lỗi xảy ra"}`);
+        }
     } catch (error) {
-      console.error("Lỗi gửi dữ liệu:", error);
-      alert("Có lỗi kết nối tới server.");
+        console.error("Lỗi khi gọi API course:", error);
+        alert("Có lỗi hệ thống xảy ra.");
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
   };
 

@@ -28,8 +28,11 @@ const courseService = {
   
   // Kiểm tra trùng lịch
   checkConflict: async (params) => {
-    const query = new URLSearchParams(params);
-    return await apiClient(`/courses/check-conflict?${query.toString()}`);
+    return await apiClient(`/courses/check-conflict?${params.toString()}`);
+  },
+
+  getCategories: async () => {
+    return await apiClient("/categories");
   },
 };
 
