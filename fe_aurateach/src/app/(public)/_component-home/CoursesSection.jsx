@@ -76,7 +76,7 @@ function CoursesSection() {
       <div className="teacher-container">
         <div className="teacher-sec3__wrap">
           <div className="teacher-sec3__heading">
-            <h2 className="teacher-sec3__title">Danh Sách Lớp Học Gần Đây</h2>
+            <h2 className="teacher-sec3__title">Danh Sách Lớp Học Đề Cử</h2>
           </div>
 
           {/* THANH TAB DANH MỤC */}
