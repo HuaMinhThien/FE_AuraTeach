@@ -3,15 +3,20 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import "../../css/tutor-style/header.css"; 
+import userService from "@/services/userService";
 
 export default function Header() {
     const [user, setUser] = useState(null);
-    // Quản lý trạng thái 2 ví động từ API
-    const [balances, setBalances] = useState({
-        pending: 0,
-        available: 0
-    });
+    const [balances, setBalances] = useState({ pending: 0, available: 0 });
 
+    // 1. Thêm lại hàm này ở đây
+    const getValidAvatar = (avatar) => {
+        if (!avatar) return "/img/default-avatar.png";
+        if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar;
+        return avatar.startsWith('/') ? avatar : `/${avatar}`;
+    };
+
+    // 2. Hàm lấy cookie cũng cần được định nghĩa lại nếu nó không nằm trong import
     const getCookie = (name) => {
         if (typeof window === "undefined") return null;
         const value = `; ${document.cookie}`;
@@ -20,79 +25,43 @@ export default function Header() {
         return null;
     };
 
-    // 1. Kiểm tra thông tin User từ Cookie
     useEffect(() => {
-        const checkUser = () => {
+        const initDashboard = async () => {
             const userCookie = getCookie("user_info");
-            if (userCookie) {
-                try {
-                    const userData = JSON.parse(decodeURIComponent(userCookie));
-                    console.log("Dữ liệu User từ Cookie:", userData); // <--- KIỂM TRA DÒNG NÀY TRONG CONSOLE
-                    setUser(userData);
-                } catch (error) {
-                    console.error("Lỗi parse cookie:", error);
-                    setUser(null);
-                }
-            }
-        };
-        checkUser();
-    }, []);
+            if (!userCookie) return;
 
-    // 2. Fetch dữ liệu ví từ API khi đã có thông tin User ID từ cookie
-    useEffect(() => {
-        if (!user) return;
-
-        const fetchTutorWallet = async () => {
             try {
-                // Lấy mã định danh (u-01) từ cookie của bạn
-                const tutorId = user.user_id || user.tutor_id || user.id; 
-                
-                if (!tutorId) return;
+                const userDataFromCookie = JSON.parse(decodeURIComponent(userCookie));
+                const userId = userDataFromCookie.user_id || userDataFromCookie.id;
 
-                // Gọi endpoint tutors kèm query parameter filter theo user_id
-                const res = await fetch(`http://localhost:8000/api/tutors?user_id=${tutorId}`);                
-                
-                if (res.ok) {
-                    const currentTutorData = await res.json();
-                    console.log("Dữ liệu log thực tế:", currentTutorData); // Bạn sẽ thấy nó bọc trong dấu ngoặc vuông [ ]
-                    
-                    // SỬA TẠI ĐÂY: Vì json-server trả về một MẢNG, cần lấy phần tử đầu tiên [0]
-                    if (Array.isArray(currentTutorData) && currentTutorData.length > 0) {
-                        const tutorInfo = currentTutorData[0]; 
-                        
-                        setBalances({
-                            pending: tutorInfo.pending_balance || 0,
-                            available: tutorInfo.available_balance || 0
-                        });
-                    } else if (!Array.isArray(currentTutorData) && currentTutorData) {
-                        // Phòng trường hợp sau này bạn đổi API về dạng trả thẳng Object trực tiếp
-                        setBalances({
-                            pending: currentTutorData.pending_balance || 0,
-                            available: currentTutorData.available_balance || 0
-                        });
-                    }
+                // GỌI SONG SONG CẢ 2 API
+                const [userData, walletData] = await Promise.all([
+                    userService.getUserDetails(userId),
+                    userService.getTutorDetails(userId)
+                ]);
+
+                // Set User
+                setUser(userData);
+
+                // Set Wallet
+                const wallet = Array.isArray(walletData) ? walletData[0] : walletData;
+                if (wallet) {
+                    setBalances({
+                        pending: wallet.pending_balance || 0,
+                        available: wallet.available_balance || 0
+                    });
                 }
             } catch (error) {
-                console.error("Lỗi khi fetch ví tiền từ bảng tutors:", error);
+                console.error("Lỗi khởi tạo dashboard:", error);
             }
         };
 
-        fetchTutorWallet();
-        // Cập nhật lại số dư mỗi 10 giây
-        const intervalWallet = setInterval(fetchTutorWallet, 10000);
-        return () => clearInterval(intervalWallet);
-    }, [user]);
-
-    const getValidAvatar = (avatar) => {
-        if (!avatar) return "/img/default-avatar.png";
+        initDashboard();
         
-        // Nếu là đường dẫn đầy đủ
-        if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar;
-        
-        // Nếu là đường dẫn lưu trong storage (thường có dạng 'uploads/...')
-        // Đảm bảo thêm dấu / ở đầu để Next.js hiểu là từ public folder
-        return avatar.startsWith('/') ? avatar : `/${avatar}`;
-    };
+        // Vẫn giữ interval để cập nhật ví tiền mỗi 10s
+        const interval = setInterval(initDashboard, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <>

@@ -8,6 +8,10 @@ const userService = {
     return await apiClient(`/users/${userId}`);
   },
 
+  getTutorDetails: async (userId) => {
+    return await apiClient(`/tutors?user_id=${userId}`)
+  },
+
   // Cập nhật thông tin user
   updateProfile: async (userId, userData) => {
     const result = await apiClient(`/users/${userId}`, {
