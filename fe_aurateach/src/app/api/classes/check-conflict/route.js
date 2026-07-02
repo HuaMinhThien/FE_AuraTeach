@@ -3,61 +3,63 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+    const tutorId = searchParams.get("tutorId");
     const startDate = searchParams.get("start");
     const endDate = searchParams.get("end");
-    const days = searchParams.get("days")?.split(",") || [];
+    // Trim dữ liệu để tránh dấu cách thừa làm sai lệch so sánh
+    const days = searchParams.get("days")?.split(",").map(d => d.trim()) || [];
     const [newStart, newEnd] = (searchParams.get("slot") || "").split("-");
 
-    // Lấy dữ liệu từ JSON Server để đối chiếu chéo
-    const res = await fetch("http://localhost:8000/api/classByIdTutor", { cache: "no-store" });
-    if (!res.ok) return NextResponse.json({ success: true, isConflict: false });
+    const res = await fetch("http://localhost:8000/api/courses", { cache: "no-store" });
+    if (!res.ok) throw new Error("Không thể kết nối Backend");
 
-    const jsonServerData = await res.json();
-    let rawCourses = Array.isArray(jsonServerData) ? jsonServerData : (jsonServerData.courses || []);
+    const allCourses = await res.json();
+    const myCourses = allCourses.filter(c => String(c.tutor_id) === String(tutorId));
 
     const toMinutes = (timeStr) => {
       if (!timeStr) return 0;
-      const [h, m] = timeStr.split(":").map(Number);
+      const [h, m] = timeStr.trim().split(":").map(Number);
       return h * 60 + m;
     };
 
     const minNewStart = toMinutes(newStart);
     const minNewEnd = toMinutes(newEnd);
 
-    for (const oldClass of rawCourses) {
-      const oldStartClass = oldClass.start_date;
-      const oldEndClass = oldClass.end_date;
+    for (const oldClass of myCourses) {
+      // Bỏ qua nếu dữ liệu trống
+      if (!oldClass.start_date || !oldClass.end_date || !oldClass.time_slot) continue;
 
-      // 1. Kiểm tra giao thoa khoảng ngày thực chạy
-      const isDateOverlap = startDate <= oldEndClass && endDate >= oldStartClass;
+      let oldDays = [];
+      try {
+        oldDays = typeof oldClass.schedule_days === 'string' 
+          ? JSON.parse(oldClass.schedule_days) 
+          : oldClass.schedule_days;
+      } catch (e) { oldDays = []; }
+
+      // So sánh ngày
+      const isDateOverlap = new Date(startDate) <= new Date(oldClass.end_date) && 
+                            new Date(endDate) >= new Date(oldClass.start_date);
       
-      if (isDateOverlap) {
-        // 2. Kiểm tra xem có chung Thứ học không
-        const oldDays = oldClass.schedule_days || [];
-        const hasCommonDay = oldDays.some(d => days.includes(d));
-        
-        if (hasCommonDay) {
-          // 3. Kiểm tra va chạm khung giờ học
-          const [oldStart, oldEnd] = (oldClass.time_slot || "").split("-");
-          if (oldStart && oldEnd) {
-            const minOldStart = toMinutes(oldStart);
-            const minOldEnd = toMinutes(oldEnd);
+      // So sánh Thứ (trim() cả mảng cũ để đảm bảo khớp)
+      const hasCommonDay = oldDays.some(d => days.includes(d.trim()));
+      
+      if (isDateOverlap && hasCommonDay) {
+        const [oldStart, oldEnd] = oldClass.time_slot.split("-");
+        const minOldStart = toMinutes(oldStart);
+        const minOldEnd = toMinutes(oldEnd);
 
-            if (minNewStart < minOldEnd && minNewEnd > minOldStart) {
-              return NextResponse.json({
-                success: false,
-                isConflict: true,
-                message: `Khung giờ này bạn đã bị trùng lịch với lớp: "${oldClass.title || oldClass.class_name}" (${oldClass.time_slot})`
-              });
-            }
-          }
+        // So sánh giờ
+        if (minNewStart < minOldEnd && minNewEnd > minOldStart) {
+          return NextResponse.json({
+            isConflict: true,
+            message: `Trùng lịch với lớp: "${oldClass.class_name}" (${oldClass.time_slot})`
+          });
         }
       }
     }
 
-    return NextResponse.json({ success: true, isConflict: false });
+    return NextResponse.json({ isConflict: false });
   } catch (error) {
-    console.error("Lỗi hệ thống API Check Conflict:", error);
-    return NextResponse.json({ success: false, message: "Lỗi xử lý kiểm định." }, { status: 500 });
+    return NextResponse.json({ isConflict: false, error: error.message }, { status: 500 });
   }
 }

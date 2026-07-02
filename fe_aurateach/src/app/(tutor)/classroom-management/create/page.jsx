@@ -48,6 +48,25 @@ export default function CreateClassPage() {
   const [conflictMessage, setConflictMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validateSchedule = async () => {
+    // Thay thế form.startDate, form.endDate, v.v. bằng các biến state của bạn
+    const query = new URLSearchParams({
+      start: startDate,            // Tên state của bạn
+      end: endDate,                // Tên state của bạn
+      days: (selectedDays || []).join(','), // Dùng (|| []) để tránh lỗi nếu selectedDays rỗng
+      slot: `${startTime}-${endTime}`       // Hoặc biến timeSlot của bạn
+    }).toString();
+
+    const response = await fetch(`/api/classes/check-conflict?${query}`);
+    const result = await response.json();
+
+    if (result.isConflict) {
+      alert(result.message);
+      return false;
+    }
+    return true;
+  };
+
   // Tự động gọi API lấy danh mục động khi màn hình load thành công
   useEffect(() => {
     const fetchCategories = async () => {
@@ -85,6 +104,7 @@ export default function CreateClassPage() {
       try {
         const timeSlot = `${startTime}-${endTime}`;
         const queryParams = new URLSearchParams({
+          tutorId: "tutor_01", // BẮT BUỘC: Thay ID này bằng ID gia sư đang đăng nhập
           start: startDate,
           end: endDate,
           days: selectedDays.join(","),
@@ -147,6 +167,9 @@ export default function CreateClassPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isAvailable = await validateSchedule();
+    if (!isAvailable) return;
     
     // Kiểm tra lại link Meet trước khi gửi dữ liệu
     const isMeetValid = validateGoogleMeet(meetLink);

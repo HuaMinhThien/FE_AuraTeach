@@ -5,6 +5,7 @@ import { cookies } from "next/headers"; // Đọc thông tin đăng nhập từ 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+    console.log("Params nhận được:", Object.fromEntries(searchParams.entries()));
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 6;
     const status = searchParams.get("status") || "all";
