@@ -9,7 +9,6 @@ function ReviewSection() {
   useEffect(() => {
     const fetchReviewsData = async () => {
       try {
-        // Gọi đồng thời các API endpoint cần thiết để map thông tin quan hệ
         const [resReviews, resStudents, resUsers, resCourses] = await Promise.all([
           fetch('http://localhost:3007/reviews'),
           fetch('http://localhost:3007/students'),
@@ -27,15 +26,14 @@ function ReviewSection() {
         const coursesData = await resCourses.json();
         
         if (Array.isArray(reviewsData)) {
-          const highRatingReviews = reviewsData.filter(item => Number(item.rating) >= 4.5).sort(() => 0.5 - Math.random()).slice(0, 4);
+          const highRatingReviews = reviewsData
+            .filter(item => Number(item.rating) >= 4.5)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 4);
 
-          // Hợp nhất dữ liệu để lấy Tên học viên và Tên khóa học làm nhãn hiển thị
           const mergedReviews = highRatingReviews.map((review) => {
-            // 1. Tìm thông tin student trong mảng students
             const matchedStudent = studentsData.find(s => s.student_id === review.student_id) || {};
-            // 2. Từ user_id của student, tìm thông tin cá nhân (full_name) trong mảng users
             const matchedUser = usersData.find(u => u.user_id === matchedStudent.user_id) || {};
-            // 3. Tìm thông tin khóa học (title) để hiển thị thay cho vai trò/lớp học
             const matchedCourse = coursesData.find(c => c.course_id === review.course_id) || {};
 
             return {
@@ -43,7 +41,7 @@ function ReviewSection() {
               author: matchedUser.full_name || "Học viên ẩn danh",
               role: matchedCourse.title ? `Học viên lớp: ${matchedCourse.title}` : "Học viên AuraTeach",
               rating: review.rating,
-              comment: review.comment // Đổi từ comment trong JSON thành content để giữ nguyên cấu trúc JSX
+              comment: review.comment
             };
           });
 
@@ -87,13 +85,12 @@ function ReviewSection() {
               
               <div className="aurateach-sec7__rating">
                 <div className="aurateach-sec7__stars">
-                  {/* Render số ngôi sao động dựa trên số điểm rating thực tế */}
                   {[...Array(5)].map((_, index) => (
                     <svg 
                       key={index} 
                       className="aurateach-sec7__star-icon" 
                       stroke="currentColor" 
-                      fill={index < item.rating ? "currentColor" : "none"} // Tô màu sao dựa trên rating thực tế
+                      fill={index < item.rating ? "currentColor" : "none"}
                       strokeWidth="2" 
                       viewBox="0 0 24 24" 
                       height="14" 
@@ -107,7 +104,6 @@ function ReviewSection() {
                 <span className="aurateach-sec7__score">{Number(item.rating).toFixed(1)}</span>
               </div>
 
-              {/* Nội dung đoạn nhận xét */}
               <p className="aurateach-sec7__content">“{item.comment}”</p>
             </div>
           ))}

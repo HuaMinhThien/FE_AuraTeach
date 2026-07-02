@@ -5,26 +5,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./ClassDetail.module.css";
-import authService from "../../../../services/authService";
+import authService from "@/services/authService";
 import BookingModal from "@/components/users/BookingModal";
 import Avatar from "@/components/common/Avatar";
 
 export default function ClassDetailPage({ params }) {
   const router = useRouter();
   
-  // ✅ Unwrap params bằng React.use() theo chuẩn Next.js App Router
   const { id } = use(params);
   const courseId = id;
 
-  // --- Các State quản lý dữ liệu lấy từ API ---
   const [course, setCourse] = useState(null);
   const [tutorInfo, setTutorInfo] = useState(null);
   const [userTutor, setUserTutor] = useState(null);
   const [courseReviews, setCourseReviews] = useState([]);
   const [allUsers, setAllUsers] = useState([]); 
   const [allStudents, setAllStudents] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
 
-  // --- Các State quản lý trạng thái UI ---
   const [isBooked, setIsBooked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
@@ -33,15 +31,13 @@ export default function ClassDetailPage({ params }) {
 
   const API_BASE = "http://localhost:3007";
 
-  // 📥 Fetch toàn bộ dữ liệu của lớp học từ API
   useEffect(() => {
-    let isMounted = true; 
+    let isMounted = true;
 
     const fetchClassData = async () => {
       try {
         setPageLoading(true);
 
-        // 1. Lấy chi tiết Khóa học từ API
         const courseRes = await fetch(`${API_BASE}/courses?course_id=${courseId}`);
         const coursesData = await courseRes.json();
         
@@ -55,7 +51,10 @@ export default function ClassDetailPage({ params }) {
         const currentCourse = coursesData[0];
         setCourse(currentCourse);
 
-        // 2. Lấy thông tin Gia sư dạy lớp này và thông tin User tương ứng
+        const categoriesRes = await fetch(`${API_BASE}/categories`);
+        const categoriesData = await categoriesRes.json();
+        if (isMounted) setAllCategories(categoriesData);
+
         if (currentCourse.tutor_id) {
           const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${currentCourse.tutor_id}`);
           const tutorsData = await tutorRes.json();
@@ -72,12 +71,10 @@ export default function ClassDetailPage({ params }) {
           }
         }
 
-        // 3. Lấy danh sách đánh giá (Reviews) của khóa học này
         const reviewsRes = await fetch(`${API_BASE}/reviews?course_id=${courseId}`);
         const reviewsData = await reviewsRes.json();
         if (isMounted) setCourseReviews(reviewsData);
 
-        // 4. Tải danh mục users và students bổ trợ để hiển thị tên người đánh giá
         const [usersRes, studentsRes] = await Promise.all([
           fetch(`${API_BASE}/users`),
           fetch(`${API_BASE}/students`)
@@ -87,7 +84,6 @@ export default function ClassDetailPage({ params }) {
           setAllUsers(await usersRes.json());
           setAllStudents(await studentsRes.json());
 
-          // 5. Kiểm tra trạng thái Đăng nhập 
           const user = await authService.getCurrentUser();
           setCurrentUser(user);
           
@@ -113,7 +109,6 @@ export default function ClassDetailPage({ params }) {
     };
   }, [courseId]);
 
-  // 🚀 Mở Modal xác nhận booking
   const handleBooking = async () => {
     if (!currentUser) {
       alert("Vui lòng đăng nhập để đăng ký học!");
@@ -126,25 +121,21 @@ export default function ClassDetailPage({ params }) {
       return;
     }
 
-    // Kiểm tra lớp đã đủ học viên chưa
     const currentStudents = course.students || [];
     if (currentStudents.length >= course.max_students) {
       alert("Lớp học đã đủ số lượng học viên!");
       return;
     }
 
-    // Kiểm tra đã đăng ký chưa
     const studentId = currentUser.user_id || currentUser.id;
     if (currentStudents.includes(studentId)) {
       alert("Bạn đã đăng ký lớp học này rồi!");
       return;
     }
 
-    // Hiển thị modal xác nhận
     setShowBookingModal(true);
   };
 
-  // ✅ Xác nhận booking từ Modal
   const confirmBooking = async (notes, paymentMethod) => {
     setBookingLoading(true);
     const studentId = currentUser.user_id || currentUser.id;
@@ -191,6 +182,60 @@ export default function ClassDetailPage({ params }) {
     }
   };
 
+  const handleJoinClass = () => {
+    if (course?.permanent_room_url) {
+      window.open(course.permanent_room_url, '_blank');
+    } else {
+      alert("Lớp học chưa có link phòng học. Vui lòng liên hệ gia sư để được hỗ trợ.");
+    }
+  };
+
+  const getCategoryName = (categoryId) => {
+    const category = allCategories.find(c => c.category_id === categoryId);
+    return category ? category.category_name : "Chưa phân loại";
+  };
+
+  const formatPrice = (priceStr) => {
+    if (!priceStr) return '0';
+    const cleanStr = typeof priceStr === 'string' ? priceStr : String(priceStr);
+    return cleanStr.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "Chưa cập nhật";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const averageRating = courseReviews.length > 0 
+    ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
+    : tutorInfo?.rating || 4.8;
+
+  // Kiểm tra quyền xem link Google Meet
+  const canViewMeetLink = () => {
+    // Nếu chưa đăng nhập
+    if (!currentUser) return false;
+    
+    // Nếu là tutor (gia sư) - có quyền xem link
+    if (currentUser.role === 'tutor') return true;
+    
+    // Nếu là student - chỉ xem được khi đã đăng ký lớp này
+    if (currentUser.role === 'student') {
+      const studentId = currentUser.user_id || currentUser.id;
+      return isBooked || (course?.students && course.students.includes(studentId));
+    }
+    
+    return false;
+  };
+
+  // Kiểm tra có link meet hợp lệ không
+  const hasMeetLink = course?.permanent_room_url && course.permanent_room_url.trim() !== "";
+  const showMeetLink = canViewMeetLink() && hasMeetLink;
+
   if (pageLoading) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Đang tải thông tin lớp học từ Server...</div>;
   }
@@ -199,18 +244,29 @@ export default function ClassDetailPage({ params }) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
 
-  const formatPrice = (priceStr) => {
-    if (!priceStr) return '0';
-    const cleanStr = typeof priceStr === 'string' ? priceStr : String(priceStr);
-    return cleanStr.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
-
-  const averageRating = courseReviews.length > 0 
-    ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
-    : tutorInfo?.rating || 4.8;
+  const currentStudentsCount = course.students ? course.students.length : 0;
+  const isFull = currentStudentsCount >= course.max_students;
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
+
+      {/* Breadcrumb */}
+      <nav className={styles.breadcrumb}>
+        <Link href="/">Trang chủ</Link>
+        <span className={styles.separator}>›</span>
+        <Link href="/classList">Danh sách lớp học</Link>
+        <span className={styles.separator}>›</span>
+        <span className={styles.current}>{course.title}</span>
+      </nav>
+
+      {/* Thumbnail */}
+      <div className={styles.thumbnailWrapper}>
+        <img 
+          src={course.thumbnail || "/img/default-class-1.jpg"} 
+          alt={course.title}
+          className={styles.thumbnail}
+        />
+      </div>
 
       {/* Header */}
       <div className={styles.header}>
@@ -222,10 +278,15 @@ export default function ClassDetailPage({ params }) {
             <span className={styles.reviews}>({courseReviews.length} đánh giá)</span>
           </div>
           <div className={styles.students}>
-            <span>{course.students ? course.students.length : course.current_students || 0}/{course.max_students} học viên</span>
+            <span>👥 {currentStudentsCount}/{course.max_students} học viên</span>
           </div>
           <div className={styles.tag}>
-            <span className={styles.tagBadge}>✓ {course.flow || "Khóa học tiêu chuẩn"}</span>
+            <span className={styles.tagBadge}>📚 {getCategoryName(course.category_id)}</span>
+          </div>
+          <div className={styles.tag}>
+            <span className={`${styles.tagBadge} ${course.status === 'active' ? styles.statusActive : styles.statusClosed}`}>
+              {course.status === 'active' ? '🟢 Đang mở' : '🔴 Đã đóng'}
+            </span>
           </div>
         </div>
       </div>
@@ -235,16 +296,90 @@ export default function ClassDetailPage({ params }) {
         <div className={styles.mainContent}>
           {/* Introduction Section */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Giới thiệu chương trình hỗ trợ</h2>
+            <h2 className={styles.sectionTitle}>📖 Giới thiệu chương trình</h2>
             <div className={styles.description}>
               <p>{course.description}</p>
+            </div>
+          </section>
+
+          {/* Course Details Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>📋 Thông tin chi tiết</h2>
+            <div className={styles.detailsGrid}>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Mã lớp</span>
+                <span className={styles.detailValue}>{course.course_id}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Trình độ</span>
+                <span className={styles.detailValue}>{course.level || "Chưa cập nhật"}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Danh mục</span>
+                <span className={styles.detailValue}>{getCategoryName(course.category_id)}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Học phí</span>
+                <span className={`${styles.detailValue} ${styles.priceValue}`}>
+                  {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ/giờ` : 'Liên hệ'}
+                </span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Số buổi</span>
+                <span className={styles.detailValue}>{course.total_weeks || 0} buổi</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Thời gian học</span>
+                <span className={styles.detailValue}>{course.time_slot || "Chưa cập nhật"}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Lịch học</span>
+                <span className={styles.detailValue}>{course.schedule_days?.join(", ") || "Chưa cập nhật"}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Ngày bắt đầu</span>
+                <span className={styles.detailValue}>{formatDate(course.start_date)}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Ngày kết thúc</span>
+                <span className={styles.detailValue}>{formatDate(course.end_date)}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Sĩ số</span>
+                <span className={styles.detailValue}>{currentStudentsCount}/{course.max_students} học viên</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Phòng học</span>
+                <span className={styles.detailValue}>
+                  {showMeetLink ? (
+                    <a 
+                      href={course.permanent_room_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={styles.meetLink}
+                    >
+                      🔗 Google Meet
+                    </a>
+                  ) : hasMeetLink ? (
+                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký mới xem được link</span>
+                  ) : (
+                    "Chưa cập nhật"
+                  )}
+                </span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Trạng thái</span>
+                <span className={`${styles.detailValue} ${course.status === 'active' ? styles.statusActive : styles.statusClosed}`}>
+                  {course.status === 'active' ? 'Đang mở' : 'Đã đóng'}
+                </span>
+              </div>
             </div>
           </section>
 
           {/* Reviews Section */}
           <section className={styles.section}>
             <div className={styles.reviewsHeader}>
-              <h2 className={styles.sectionTitle}>Đánh giá từ phụ huynh & Học sinh</h2>
+              <h2 className={styles.sectionTitle}>⭐ Đánh giá từ học viên</h2>
               <div className={styles.reviewsSummary}>
                 <span className={styles.summaryRating}>{averageRating}</span>
                 <span className={styles.summaryStars}>⭐⭐⭐⭐⭐</span>
@@ -273,7 +408,7 @@ export default function ClassDetailPage({ params }) {
                   );
                 })
               ) : (
-                <p>Chưa có đánh giá nào cho khóa học này.</p>
+                <p className={styles.noReviews}>Chưa có đánh giá nào cho khóa học này.</p>
               )}
             </div>
           </section>
@@ -284,9 +419,9 @@ export default function ClassDetailPage({ params }) {
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
               <span className={styles.price}>
-                {course.price_per_session || course.hourly_rate ? `${formatPrice(course.price_per_session || course.hourly_rate)}đ` : 'Liên hệ'}
+                {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ` : 'Liên hệ'}
               </span>
-              {(course.price_per_session || course.hourly_rate) && (
+              {course.hourly_rate && (
                 <span className={styles.priceUnit}>/giờ</span>
               )}
             </div>
@@ -294,32 +429,69 @@ export default function ClassDetailPage({ params }) {
             <div className={styles.priceDetails}>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>👥</span>
-                <span>Sĩ số: {course.students ? course.students.length : course.current_students || 0}/{course.max_students} học viên</span>
+                <span>Sĩ số: {currentStudentsCount}/{course.max_students} học viên</span>
               </div>
               <div className={styles.detailRow}>
-                <span className={styles.detailIcon}>💻</span>
-                <span>Nền tảng: {course.meeting_platform || "Google Meet"}</span>
+                <span className={styles.detailIcon}>📅</span>
+                <span>{course.schedule_days?.join(", ")}</span>
+              </div>
+              <div className={styles.detailRow}>
+                <span className={styles.detailIcon}>⏰</span>
+                <span>{course.time_slot}</span>
+              </div>
+              <div className={styles.detailRow}>
+                <span className={styles.detailIcon}>📚</span>
+                <span>{course.total_weeks || 0} buổi học</span>
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>🔗</span>
-                <span>Phòng học cố định</span>
+                <span>
+                  {showMeetLink ? (
+                    <a 
+                      href={course.permanent_room_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={styles.meetLink}
+                    >
+                      Phòng học Google Meet
+                    </a>
+                  ) : hasMeetLink ? (
+                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký</span>
+                  ) : (
+                    "Chưa có link"
+                  )}
+                </span>
               </div>
             </div>
 
+            {/* Nút tham gia lớp học - chỉ hiển thị khi đã đăng ký và có link meet */}
+            {showMeetLink && course.status === 'active' && (
+              <button 
+                onClick={handleJoinClass} 
+                className={styles.joinButton}
+              >
+                🎯 Tham gia lớp học
+              </button>
+            )}
+
+            {/* Nút đăng ký */}
             <button 
               onClick={handleBooking} 
-              className={isBooked ? styles.bookedButton : styles.bookButton}
-              disabled={bookingLoading || isBooked}
-              style={isBooked ? { backgroundColor: '#6c757d', cursor: 'not-allowed' } : {}}
+              className={isBooked || isFull || course.status !== 'active' ? styles.bookedButton : styles.bookButton}
+              disabled={bookingLoading || isBooked || isFull || course.status !== 'active'}
             >
-              {bookingLoading ? "Đang xử lý..." : isBooked ? "Bạn đã đăng ký lớp này" : "Đăng ký học ngay"}
+              {bookingLoading ? "Đang xử lý..." : 
+               isBooked ? "✅ Bạn đã đăng ký" : 
+               isFull ? "🔴 Lớp đã đủ học viên" :
+               course.status !== 'active' ? "🔴 Lớp đã đóng" : 
+               "📝 Đăng ký học ngay"}
             </button>
-            <button className={styles.consultButton}>Đặt lịch tư vấn miễn phí</button>
+            <button className={styles.consultButton}>💬 Đặt lịch tư vấn</button>
           </div>
 
           {/* Tutor Card */}
           <div className={styles.tutorCard}>
-            <h3 className={styles.tutorCardTitle}>GIA SƯ HƯỚNG DẪN</h3>
+            <h3 className={styles.tutorCardTitle}>👨‍🏫 GIA SƯ HƯỚNG DẪN</h3>
             <div className={styles.tutorInfo}>
               <div className={styles.tutorAvatar}>
                 <Avatar 
@@ -335,6 +507,11 @@ export default function ClassDetailPage({ params }) {
                 <p className={styles.tutorDescription}>
                   {tutorInfo?.bio || "Gia sư giàu kinh nghiệm."}
                 </p>
+                <div className={styles.tutorExtra}>
+                  <span>⭐ {tutorInfo?.rating || 0}/5</span>
+                  <span className={styles.tutorDivider}>•</span>
+                  <span>{tutorInfo?.Experience || "Chưa cập nhật"}</span>
+                </div>
                 <Link 
                   href={`/tutorList/${tutorInfo?.tutor_id}`} 
                   className={styles.tutorProfileLink}

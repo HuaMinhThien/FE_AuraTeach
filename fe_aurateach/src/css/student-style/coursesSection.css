@@ -172,3 +172,15 @@
     padding: 20px 15px;
   }
 }
+
+/* Thêm vào cuối file */
+.course-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.course-card-link:hover .course-card {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
