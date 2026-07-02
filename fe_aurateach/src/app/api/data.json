@@ -281,7 +281,7 @@
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -304,7 +304,7 @@
       "time_slot": "19:30-21:30",
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
-      "permanent_room_url": "https://zoom.us/j/123456789",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -327,7 +327,7 @@
       "time_slot": "17:00-19:00",
       "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/eng-tutor-room",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -351,7 +351,7 @@
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
-      "permanent_room_url": "https://zoom.us/j/999888777",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1"
       ]
@@ -376,7 +376,7 @@
       "time_slot": "19:30-21:30",
       "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/phy-tutor-01",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -399,7 +399,7 @@
       "time_slot": "17:00-19:00",
       "thumbnail": "/img/class/default-class-6.png",
       "status": "active",
-      "permanent_room_url": "https://zoom.us/j/che-tutor-01",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -423,7 +423,7 @@
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-5.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/bio-tutor-99",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -446,7 +446,7 @@
       "time_slot": "19:30-21:30",
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/math-kid-01",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1"
       ]
@@ -471,7 +471,7 @@
       "time_slot": "17:00-19:00",
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
-      "permanent_room_url": "https://zoom.us/j/van-12-vip",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -495,7 +495,7 @@
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/eng-grammar-02",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -518,7 +518,7 @@
       "time_slot": "19:30-21:30",
       "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "permanent_room_url": "https://zoom.us/j/phy-12-room",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -541,7 +541,7 @@
       "time_slot": "17:00-19:00",
       "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/che-organic-02",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -564,7 +564,7 @@
       "time_slot": "19:00-01:00",
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -587,7 +587,7 @@
       "time_slot": "21:00-23:00",
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -611,7 +611,7 @@
       "time_slot": "19:00-20:00",
       "thumbnail": "/img/class/default-class-10.png",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/abc-xyz-def",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -635,7 +635,7 @@
       "time_slot": "18:00-20:00",
       "thumbnail": "/img/class/default-class-5.png",
       "status": "closed",
-      "permanent_room_url": "https://meet.google.com/phz-fbyt-ftj",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     },
     {
@@ -658,7 +658,7 @@
       "time_slot": "18:00-20:00",
       "thumbnail": "blob:http://localhost:3000/f31cf9f2-869c-438d-8758-9aa82c2daa9b",
       "status": "closed",
-      "permanent_room_url": "https://meet.google.com/abc-xxxx-def",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
     }
   ],
