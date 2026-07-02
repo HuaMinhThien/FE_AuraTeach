@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "./management.module.css";
-
+import courseService from "@/services/courseService";
 import FilterControl from "./_components/Sec1";
 import ClassGrid from "./_components/Sec2";
 import ClassDetailModal from "./_components/Sec3";
@@ -68,37 +68,30 @@ export default function ClassroomManagementPage() {
 
   // Thay thế hàm cũ trong src/app/.../page.jsx (hoặc đường dẫn quản lý lớp học của bạn)
   const handleCloseClass = async (courseId) => {
-    const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này (Dừng nhận thêm học viên) không?");
-    if (confirmClose) {
-      try {
-        // GỌI API tới Next.js Route Handler
-        const res = await fetch(`/api/classes/${courseId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "closed" }),
-        });
+    const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này?");
+    if (!confirmClose) return;
 
-      const result = await res.json();
-      if (result.success) {
-        // 2. Cập nhật State danh sách lớp học ở client ngay lập tức để UI render lại mượt mà
-        setClasses(prevClasses => 
-          prevClasses.map(c => 
-            c.course_id === courseId ? { ...c, status: "closed" } : c
-          )
-        );
+    try {
+        // Gọi service đã định nghĩa ở trên
+        const result = await courseService.updateStatus(courseId, "closed");
 
-        // 3. Nếu người dùng đang mở xem Modal chi tiết của chính lớp này, cập nhật trạng thái hiển thị trong Modal luôn
-        if (selectedClass && selectedClass.course_id === courseId) {
-          setSelectedClass(prev => ({ ...prev, status: "closed" }));
-        }
-          alert("Đã khóa tuyển sinh lớp học thành công!");
+        if (result.success) {
+            // Cập nhật UI
+            setClasses(prevClasses => 
+                prevClasses.map(c => 
+                    c.course_id === courseId ? { ...c, status: "closed" } : c
+                )
+            );
+            if (selectedClass?.course_id === courseId) {
+                setSelectedClass(prev => ({ ...prev, status: "closed" }));
+            }
+            alert("Đã khóa tuyển sinh lớp học thành công!");
         } else {
-          alert("Lỗi: " + result.message);
+            alert("Lỗi: " + (result.message || "Không thể cập nhật"));
         }
-      } catch (error) {
-        console.error("Lỗi kết nối:", error);
+    } catch (error) {
+        console.error("Lỗi:", error);
         alert("Không thể kết nối đến server.");
-      }
     }
   };
 

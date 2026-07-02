@@ -23,7 +23,7 @@ export default function ClassGrid({ classes, loading, pagination, currentPage, s
                 {getStatusBadge(cls.status)}
                 <span className={styles.weeksText}>⏳ {cls.total_weeks} tuần</span>
               </div>
-              <h3 className={styles.className}>{cls.class_name}</h3>
+              <h3 className={styles.className}>{cls.title}</h3>
               <p className={styles.cardInfo}>🗓️ Ngày mở: {cls.start_date}</p>
               <p className={styles.cardInfo}>👥 Học viên đã tham gia: {(cls.students || []).length} người</p>
             </div>
