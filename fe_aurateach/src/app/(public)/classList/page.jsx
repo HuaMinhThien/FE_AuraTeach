@@ -10,6 +10,7 @@ export default function ClassListPage() {
   // 1. Khởi tạo state là null hoặc mảng rỗng thay vì dữ liệu tĩnh
   const [data, setData] = useState({ courses: [], tutors: [], users: [], categories: [] });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
@@ -31,6 +32,8 @@ export default function ClassListPage() {
           fetch('http://localhost:8000/api/categories'),
         ]);
 
+        if (!coursesRes.ok) throw new Error("Không thể tải danh sách lớp học");
+
         const courses = await coursesRes.json();
         const tutors = await tutorsRes.json();
         const users = await usersRes.json();
@@ -39,6 +42,7 @@ export default function ClassListPage() {
         setData({ courses, tutors, users, categories });
       } catch (error) {
         console.error("Lỗi khi fetch dữ liệu:", error);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -123,7 +127,45 @@ export default function ClassListPage() {
   const paginatedCourses = filteredCourses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Hiển thị loading
-  if (loading) return <div className={styles.container} style={{padding: '50px', textAlign: 'center'}}>Đang tải dữ liệu từ server...</div>;
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+          <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
+          <div style={{ fontSize: '18px', color: '#666' }}>Đang tải danh sách lớp học...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Hiển thị lỗi
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>😅</div>
+          <div style={{ fontSize: '20px', fontWeight: '600', color: '#333', marginBottom: '12px' }}>
+            Không thể tải dữ liệu
+          </div>
+          <div style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>{error}</div>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: '#2c5bf2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              cursor: 'pointer'
+            }}
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -185,14 +227,21 @@ export default function ClassListPage() {
             onChange={handleSortChange}
             className={styles.filterDropdown}
           >
-            <option value="newest">Mới nhất</option>
+            <option value="students-asc">Học viên tăng dần</option>
+            <option value="students-desc">Học viên giảm dần</option>
             <option value="price-low">Giá tăng dần</option>
             <option value="price-high">Giá giảm dần</option>
           </select>
         </div>
 
         <div className={styles.filterRight}>
-          {data.categories?.map(cat => (
+          <button
+            className={`${styles.filterTag} ${selectedCategory === 'Tất cả' ? styles.active : ''}`}
+            onClick={() => handleCategoryClick('Tất cả')}
+          >
+            Tất cả
+          </button>
+          {data.categories.map(cat => (
             <button
               key={cat.category_id}
               className={`${styles.filterTag} ${selectedCategory === cat.category_name ? styles.active : ''}`}
@@ -208,7 +257,7 @@ export default function ClassListPage() {
       <section className={styles.listSection}>
         <div className={styles.listHeader}>
           <div>
-            <h2 className={styles.listTitle}>Gia sư tiêu biểu</h2>
+            <h2 className={styles.listTitle}>Danh Sách Lớp Học</h2>
             <p className={styles.listCount}>
               Tìm thấy <strong>{filteredCourses.length}</strong> lớp học phù hợp
             </p>
@@ -222,8 +271,21 @@ export default function ClassListPage() {
                 key={course.course_id} 
                 className={styles.tutorCard}
                 onClick={() => handleCardClick(course)}
-                style={{ cursor: 'pointer' }}
               >
+                <div className={styles.cardImage}>
+                  <img 
+                    src={course.thumbnail || "/img/default-class-1.jpg"} 
+                    alt={course.title}
+                    className={styles.cardThumbnail}
+                    onError={(e) => {
+                      e.target.src = "/img/default-class-1.jpg";
+                    }}
+                  />
+                  <span className={styles.cardBadge}>
+                    {course.category_name} - {course.level || 'N/A'}
+                  </span>
+                </div>
+
                 <h3 className={styles.tutorSubject}>{course.title}</h3>
 
                 <div className={styles.tutorInfo}>
@@ -231,37 +293,41 @@ export default function ClassListPage() {
                     <img 
                       src={course.tutor_avatar} 
                       alt={course.tutor_name}
-                      width={48}
-                      height={48}
+                      width={40}
+                      height={40}
                       onError={handleImageError}
                     />
                   </div>
                   <div className={styles.tutorDetails}>
                     <p className={styles.tutorName}>{course.tutor_name}</p>
                     <p className={styles.tutorStats}>
-                      {course.flow} • {course.experience}
+                      {course.experience}
                     </p>
                   </div>
                 </div>
 
-                <div className={styles.tutorMeta}>
-                  <div>📅 12 buổi - Tối T2, T4, T6</div>
-                  <div>👥 {course.current_students}/{course.max_students} học viên đã đăng ký</div>
-                </div>
+                <p className={styles.cardDescription}>{course.description}</p>
 
                 <div className={styles.tutorFooter}>
                   <div className={styles.tutorPrice}>
                     <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
-                    <span className={styles.priceValue}>{course.price_per_session}</span>
+                    <span className={styles.priceValue}>
+                      {parseInt(course.hourly_rate || course.price_per_session || 0).toLocaleString('vi-VN')} đ/h
+                    </span>
                   </div>
-                  <button className={styles.viewDetailBtn}>→</button>
+                  <div className={styles.studentCount}>
+                    <span>👥 {course.current_students || 0}/{course.max_students || 0} HS</span>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
-            <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', fontSize: '18px' }}>
-              Không tìm thấy lớp học nào phù hợp.
-            </p>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
+              <div style={{ fontSize: '18px', color: '#666' }}>
+                Không tìm thấy lớp học nào phù hợp với tiêu chí tìm kiếm.
+              </div>
+            </div>
           )}
         </div>
 
@@ -275,15 +341,40 @@ export default function ClassListPage() {
               ‹
             </button>
             
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  className={`${styles.pageBtn} ${currentPage === pageNum ? styles.active : ''}`}
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            {totalPages > 5 && currentPage < totalPages - 2 && (
+              <span className={styles.pageDots}>...</span>
+            )}
+
+            {totalPages > 5 && currentPage < totalPages - 2 && (
               <button
-                key={page}
-                className={`${styles.pageBtn} ${currentPage === page ? styles.active : ''}`}
-                onClick={() => setCurrentPage(page)}
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(totalPages)}
               >
-                {page}
+                {totalPages}
               </button>
-            ))}
+            )}
 
             <button 
               className={styles.pageBtn}

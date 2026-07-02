@@ -26,20 +26,28 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const API_BASE = "http://localhost:3007";
-
   // Lấy thông tin student
   const fetchStudentInfo = async (userId) => {
     try {
-      const studentRes = await fetch(`${API_BASE}/students?user_id=${userId}`);
+      const studentRes = await fetch(`http://localhost:8000/api/students?user_id=${userId}`);
       const students = await studentRes.json();
-      if (students.length > 0) {
-        setStudentInfo(students[0]);
+      
+      console.log("Dữ liệu API trả về:", students); // THÊM DÒNG NÀY ĐỂ CHECK F12
+
+      // Kiểm tra xem có tìm thấy student nào khớp với userId không
+      const myStudent = Array.isArray(students) 
+        ? students.find(s => String(s.user_id) === String(userId)) 
+        : (students.user_id === userId ? students : null);
+
+      if (myStudent) {
+        setStudentInfo(myStudent);
         setFormData(prev => ({
           ...prev,
-          grade: students[0].grade || "",
-          school_name: students[0].school_name || "",
+          grade: myStudent.grade || "",
+          school_name: myStudent.school_name || "",
         }));
+      } else {
+        console.warn("Không tìm thấy thông tin student cho user này");
       }
     } catch (error) {
       console.error("Lỗi tải thông tin student:", error);
@@ -127,76 +135,60 @@ export default function ProfilePage() {
 
   // Lưu thay đổi
   const handleSave = async () => {
-    try {
-      setError("");
-      setSuccess("");
-      setIsSaving(true);
-
-      // Validate
-      if (!formData.full_name.trim()) {
-        setError("Họ và tên không được để trống");
-        setIsSaving(false);
-        return;
-      }
-
-      if (!formData.phone.trim()) {
-        setError("Số điện thoại không được để trống");
-        setIsSaving(false);
-        return;
-      }
-
-      // Validate phone (10 số)
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(formData.phone.trim())) {
-        setError("Số điện thoại phải có 10 chữ số");
-        setIsSaving(false);
-        return;
-      }
-
-      // Chuẩn bị dữ liệu gửi lên
-      const updateData = {
-        full_name: formData.full_name.trim(),
-        phone: formData.phone.trim(),
-        avatar: formData.avatar.trim() || "/img/default-avatar.svg",
-        birth_date: formData.birth_date || "",
-        grade: formData.grade.trim(),
-        school_name: formData.school_name.trim(),
-      };
-
-      // Gọi API cập nhật
-      const result = await authService.updateProfile(user.user_id, updateData);
-
-      if (result.success) {
-        setSuccess("✅ Cập nhật thông tin thành công!");
-        
-        // Cập nhật state user
-        setUser(result.user);
-        setFormData({
-          full_name: result.user.full_name || "",
-          phone: result.user.phone || "",
-          avatar: result.user.avatar || "",
-          birth_date: result.user.birth_date || "",
-          grade: formData.grade.trim(),
-          school_name: formData.school_name.trim(),
-        });
-
-        // Cập nhật lại studentInfo
-        if (result.user.user_id) {
-          await fetchStudentInfo(result.user.user_id);
-        }
-
-        // Tắt chế độ chỉnh sửa sau 1.5 giây
-        setTimeout(() => {
-          setIsEditing(false);
+      try {
+          setError("");
           setSuccess("");
-        }, 1500);
+          setIsSaving(true);
+
+          console.log("Dữ liệu gửi lên:", { formData, studentId: studentInfo?.student_id });
+
+          // 1. Validate
+          if (!formData.full_name.trim()) throw new Error("Họ và tên không được để trống");
+          if (!formData.phone.trim()) throw new Error("Số điện thoại không được để trống");
+
+          // 2. Cập nhật User
+          const userUpdateData = {
+              full_name: formData.full_name.trim(),
+              phone: formData.phone.trim(),
+              avatar: formData.avatar.trim() || "/img/default-avatar.svg",
+              birth_date: formData.birth_date || "",
+          };
+          const uid = user?.user_id || user?.id; // Kiểm tra xem ID nằm ở user_id hay id
+          if (!uid) {
+            console.error("User object hiện tại:", user);
+            throw new Error("Không xác định được ID người dùng (user_id hoặc id bị trống)");
+          }
+          const userResult = await authService.updateProfile(uid, userUpdateData);
+          console.log("Dữ liệu user hiện tại:", user);
+          // 3. Cập nhật Student
+          const studentUpdateData = {
+              grade: formData.grade.trim(),
+              school_name: formData.school_name.trim(),
+          };
+
+          const studentRes = await fetch(`http://localhost:8000/api/students/${studentInfo.student_id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(studentUpdateData)
+          });
+
+          const studentData = await studentRes.json();
+          console.log("Kết quả update Student:", studentData);
+
+          if (userResult.success && studentRes.ok) {
+              setSuccess("✅ Cập nhật thành công!");
+              setUser(userResult.user);
+              await fetchStudentInfo(user.user_id);
+              setTimeout(() => { setIsEditing(false); setSuccess(""); }, 1500);
+          } else {
+              throw new Error(studentData.message || "Lỗi khi lưu thông tin học viên");
+          }
+      } catch (error) {
+          console.error("Lỗi chi tiết:", error);
+          setError(error.message);
+      } finally {
+          setIsSaving(false);
       }
-    } catch (error) {
-      console.error("Lỗi cập nhật:", error);
-      setError(error.message || "Có lỗi xảy ra khi cập nhật thông tin");
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   if (loading) {

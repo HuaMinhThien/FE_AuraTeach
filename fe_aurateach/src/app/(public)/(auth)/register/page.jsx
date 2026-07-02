@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -54,8 +55,13 @@ const handleSubmit = async (e) => {
       throw new Error(data.message || "Đăng ký thất bại");
     }
 
-    // Đăng ký thành công
-    router.push("/login");
+    setSuccess("Đăng ký tài khoản thành công!");
+    setIsLoading(false);
+
+    setTimeout(() => {
+      setSuccess("");
+      router.push("/login");
+    }, 2000);
   } catch (err) {
     setError(err.message);
   } finally {
@@ -66,6 +72,14 @@ const handleSubmit = async (e) => {
   return (
     <>
       <Headers />
+      {success && (
+        <>
+          <div className="aurateach-overlay"></div>
+          <div className="aurateach-success-popup">
+            {success}
+          </div>
+        </>
+      )}
       <div className="aurateach-register-page">
         <div className="aurateach-register-container">
           {/* Phần bên trái - Hình ảnh minh họa */}
@@ -97,7 +111,6 @@ const handleSubmit = async (e) => {
               <p className="aurateach-register-subtitle">
                 Kiến tạo tương lai của bạn ngay hôm nay.
               </p>
-
               <form onSubmit={handleSubmit} className="aurateach-register-form">
                 {error && (
                   <div className="aurateach-error-message">{error}</div>
