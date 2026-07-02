@@ -47,6 +47,7 @@ export default function CreateClassPage() {
   // --- State trạng thái hệ thống ---
   const [conflictMessage, setConflictMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dateErrorMessage, setDateErrorMessage] = useState("");
 
   // Tự động gọi API lấy danh mục động khi màn hình load thành công
   useEffect(() => {
@@ -64,6 +65,33 @@ export default function CreateClassPage() {
     fetchCategories();
   }, []);
 
+  // 🔥 Hàm kiểm tra ngày bắt đầu có hợp lệ không (phải từ ngày hiện tại trở đi)
+  const validateStartDate = (dateString) => {
+    if (!dateString) return true; // Chưa chọn ngày thì chưa validate
+    
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    // Reset giờ về 0 để so sánh chính xác ngày
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      const todayStr = today.toLocaleDateString("vi-VN");
+      setDateErrorMessage(`⚠️ Ngày bắt đầu phải từ hôm nay (${todayStr}) trở đi. Không thể tạo lớp trong quá khứ.`);
+      return false;
+    }
+    
+    setDateErrorMessage("");
+    return true;
+  };
+
+  // Xử lý khi thay đổi ngày bắt đầu
+  const handleStartDateChange = (e) => {
+    const value = e.target.value;
+    setStartDate(value);
+    validateStartDate(value);
+  };
+
   // Tính toán Ngày kết thúc (Derived State)
   let endDate = "";
   if (startDate && totalWeeks) {
@@ -79,6 +107,11 @@ export default function CreateClassPage() {
     const checkScheduleConflict = async () => {
       if (!startDate || !endDate || selectedDays.length === 0 || !startTime || !endTime) {
         setConflictMessage("");
+        return;
+      }
+
+      // 🔥 Chỉ kiểm tra trùng lịch nếu ngày bắt đầu hợp lệ
+      if (!validateStartDate(startDate)) {
         return;
       }
 
@@ -148,6 +181,12 @@ export default function CreateClassPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // 🔥 Kiểm tra ngày bắt đầu trước khi submit
+    if (!validateStartDate(startDate)) {
+      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (từ hôm nay trở đi)!");
+      return;
+    }
+
     // Kiểm tra lại link Meet trước khi gửi dữ liệu
     const isMeetValid = validateGoogleMeet(meetLink);
     if (!isMeetValid) return;
@@ -171,7 +210,7 @@ export default function CreateClassPage() {
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
-      permanent_room_url: meetLink.trim(), // 🔥 Truyền link Meet thực tế do gia sư nhập
+      permanent_room_url: meetLink.trim(),
     };
 
     try {
@@ -192,6 +231,12 @@ export default function CreateClassPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // 🔥 Lấy ngày hiện tại để set min cho input date
+  const getTodayString = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
   };
 
   return (
@@ -341,8 +386,19 @@ export default function CreateClassPage() {
 
             <div className={styles.rowGrid} style={{ marginBottom: "20px" }}>
               <div className={styles.formGroup}>
-                <label>📅 Ngày bắt đầu dạy (Khai giảng)</label>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required  />
+                <label>📅 Ngày bắt đầu dạy (Khai giảng) <span className={styles.required}>*</span></label>
+                <input 
+                  type="date" 
+                  value={startDate} 
+                  onChange={handleStartDateChange}
+                  min={getTodayString()} // 🔥 Chỉ cho phép chọn từ ngày hiện tại trở đi
+                  required 
+                />
+                {dateErrorMessage && (
+                  <p className={styles.errorAlert} style={{marginTop: "8px", fontSize: "14px"}}>
+                    {dateErrorMessage}
+                  </p>
+                )}
               </div>
               <div className={styles.formGroup}>
                 <label>⏳ Số tuần dự kiến hoàn thành</label>
@@ -350,7 +406,7 @@ export default function CreateClassPage() {
               </div>
             </div>
 
-            {endDate && (
+            {endDate && !dateErrorMessage && (
               <div className={styles.endDateNotification}>
                 🗓️ Lớp học sẽ tự động kết thúc tuyển sinh và bế giảng vào ngày: <strong>{new Date(endDate).toLocaleDateString("vi-VN")}</strong>
               </div>
@@ -421,7 +477,11 @@ export default function CreateClassPage() {
               </ul>
             </div>
 
-            <button type="submit" className={styles.submitBtn} disabled={isSubmitting || !!conflictMessage || !!meetError}>
+            <button 
+              type="submit" 
+              className={styles.submitBtn} 
+              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage}
+            >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tiếp tục ➔"}
             </button>
           </div>
