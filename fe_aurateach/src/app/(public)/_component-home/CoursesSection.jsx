@@ -49,10 +49,9 @@ function CoursesSection() {
 
   // --- SẮP XẾP: Từ ít học viên nhất đến nhiều học viên nhất ---
   const sortedCourses = [...filteredCourses].sort((a, b) => {
-      // Lấy số lượng học viên hiện tại (giả định có trường current_students hoặc students_count)
       const studentsA = a.current_students || a.students_count || 0;
       const studentsB = b.current_students || b.students_count || 0;
-      return studentsA - studentsB; // Tăng dần (ít -> nhiều)
+      return studentsA - studentsB;
   });
 
   // Tính toán phân trang
@@ -76,7 +75,7 @@ function CoursesSection() {
       <div className="teacher-container">
         <div className="teacher-sec3__wrap">
           <div className="teacher-sec3__heading">
-            <h2 className="teacher-sec3__title">Danh Sách Lớp Học Gần Đây</h2>
+            <h2 className="teacher-sec3__title">Danh Sách Lớp Học Đề Cử</h2>
           </div>
 
           {/* THANH TAB DANH MỤC */}
@@ -123,27 +122,33 @@ function CoursesSection() {
           ) : (
             <div className="teacher-sec3__grid">
               {currentItems.map((course) => (
-                <div key={course.id || course.course_id} className="course-card">
-                  <img 
-                    src={course.thumbnail || "/img/default-class-1.jpg"} 
-                    alt={course.title} 
-                  />
-                  <div className="course-card__content">
-                    <span className="course-card__tag">
-                      {course.category} - {course.level}
-                    </span>
-                    <h3 className="course-card__title">{course.title}</h3>
-                    <p className="course-card__description">{course.description}</p>
-                    <div className="course-card__footer">
-                      <div className="course-card__price">
-                        <span className="course-card__price-value">{parseInt(course.hourly_rate).toLocaleString('vi-VN')} đ/h</span>
-                      </div>
-                      <div className="course-card__students">
-                        <span>👨‍🎓 {course.current_students || course.students_count || 0}/{course.max_students} HS</span>
+                <Link 
+                  key={course.id || course.course_id} 
+                  href={`/classList/${course.course_id || course.id}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <div className="course-card">
+                    <img 
+                      src={course.thumbnail || "/img/default-class-1.jpg"} 
+                      alt={course.title} 
+                    />
+                    <div className="course-card__content">
+                      <span className="course-card__tag">
+                        {course.category} - {course.level}
+                      </span>
+                      <h3 className="course-card__title">{course.title}</h3>
+                      <p className="course-card__description">{course.description}</p>
+                      <div className="course-card__footer">
+                        <div className="course-card__price">
+                          <span className="course-card__price-value">{parseInt(course.hourly_rate).toLocaleString('vi-VN')} đ/h</span>
+                        </div>
+                        <div className="course-card__students">
+                          <span>👨‍🎓 {course.current_students || course.students_count || 0}/{course.max_students} HS</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
