@@ -1,3 +1,4 @@
+// src/app/(public)/classList/[id]/page.jsx
 "use client";
 
 import { useState, useEffect, use } from "react";
@@ -136,52 +137,62 @@ export default function ClassDetailPage({ params }) {
     setShowBookingModal(true);
   };
 
-  // src/app/(public)/classList/[id]/page.jsx - Cập nhật phần confirmBooking
-      const confirmBooking = async (notes, paymentMethod) => {
-        setBookingLoading(true);
-        const studentId = currentUser.user_id || currentUser.id;
+  const confirmBooking = async (notes, paymentMethod) => {
+    setBookingLoading(true);
+    const studentId = currentUser.user_id || currentUser.id;
 
-        try {
-          const response = await fetch('/api/bookings', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              courseId: course.course_id,
-              studentId: studentId,
-              tutorId: course.tutor_id,
-              notes: notes,
-              paymentMethod: paymentMethod
-            }),
-          });
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseId: course.course_id,
+          studentId: studentId,
+          tutorId: course.tutor_id,
+          notes: notes,
+          paymentMethod: paymentMethod
+        }),
+      });
 
-          const result = await response.json();
+      const result = await response.json();
 
-          if (response.ok) {
-            // Trả về data để tiếp tục xử lý thanh toán
-            return {
-              success: true,
-              data: result.data
-            };
-          } else {
-            alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
-            return {
-              success: false,
-              message: result.message
-            };
-          }
-        } catch (error) {
-          console.error("Lỗi liên kết API Booking:", error);
-          alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
-          return {
-            success: false,
-            message: error.message
-          };
-        } finally {
-          setBookingLoading(false);
-        }
+      if (response.ok) {
+        // ✅ Trả về data để tiếp tục xử lý thanh toán
+        return {
+          success: true,
+          data: result.data
+        };
+      } else {
+        // ✅ Hiển thị lỗi chi tiết
+        alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
+        return {
+          success: false,
+          message: result.message
+        };
+      }
+    } catch (error) {
+      console.error("Lỗi liên kết API Booking:", error);
+      alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
+      return {
+        success: false,
+        message: error.message
       };
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  // ✅ Xử lý khi booking thành công (sau khi thanh toán)
+  const handleBookingSuccess = () => {
+    setIsBooked(true);
+    setCourse(prev => ({
+      ...prev,
+      students: [...(prev.students || []), currentUser.user_id || currentUser.id]
+    }));
+    setShowBookingModal(false);
+  };
 
   const handleJoinClass = () => {
     if (course?.permanent_room_url) {
@@ -218,13 +229,10 @@ export default function ClassDetailPage({ params }) {
 
   // Kiểm tra quyền xem link Google Meet
   const canViewMeetLink = () => {
-    // Nếu chưa đăng nhập
     if (!currentUser) return false;
     
-    // Nếu là tutor (gia sư) - có quyền xem link
     if (currentUser.role === 'tutor') return true;
     
-    // Nếu là student - chỉ xem được khi đã đăng ký lớp này
     if (currentUser.role === 'student') {
       const studentId = currentUser.user_id || currentUser.id;
       return isBooked || (course?.students && course.students.includes(studentId));
@@ -244,11 +252,8 @@ export default function ClassDetailPage({ params }) {
   if (!course) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
-  
 
   const currentStudentsCount = course.students ? course.students.length : 0;
-
-  
   const isFull = currentStudentsCount >= course.max_students;
 
   return (
@@ -535,6 +540,7 @@ export default function ClassDetailPage({ params }) {
           tutorName={userTutor?.full_name || "Gia sư"}
           onClose={() => setShowBookingModal(false)}
           onConfirm={confirmBooking}
+          onSuccess={handleBookingSuccess}
           loading={bookingLoading}
         />
       )}

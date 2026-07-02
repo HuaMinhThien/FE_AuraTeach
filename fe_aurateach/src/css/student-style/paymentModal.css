@@ -1,5 +1,4 @@
 /* src/css/student-style/paymentModal.css */
-
 .payment-modal-overlay {
   position: fixed;
   top: 0;
@@ -10,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 10000;
   animation: fadeIn 0.3s ease;
 }
 
@@ -56,10 +55,16 @@
   cursor: pointer;
   color: #666;
   transition: color 0.2s;
+  padding: 0 8px;
 }
 
-.payment-modal-close:hover {
+.payment-modal-close:hover:not(:disabled) {
   color: #1a1a2e;
+}
+
+.payment-modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .payment-loading {
@@ -129,12 +134,18 @@
 .payment-amount {
   font-size: 16px;
   color: #666;
-  margin: 0;
+  margin: 4px 0;
 }
 
 .payment-amount strong {
   color: #dc3545;
   font-size: 20px;
+}
+
+.payment-booking-id {
+  font-size: 13px;
+  color: #888;
+  margin: 4px 0 0 0;
 }
 
 .payment-qr-container {
@@ -165,24 +176,26 @@
   border-radius: 8px;
   font-size: 16px;
   margin-bottom: 16px;
+  width: 100%;
+  justify-content: center;
 }
 
-.status-pending {
+.payment-status.pending {
   background: #fff3cd;
   color: #856404;
 }
 
-.status-success {
+.payment-status.success {
   background: #d4edda;
   color: #155724;
 }
 
-.status-expired {
+.payment-status.expired {
   background: #f8d7da;
   color: #721c24;
 }
 
-.status-loading {
+.payment-status.loading {
   background: #e2e3e5;
   color: #383d41;
 }
@@ -247,6 +260,40 @@
 
 .payment-done-btn:hover {
   background: #218838;
+}
+
+.payment-dev-actions {
+  margin-top: 16px;
+  width: 100%;
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px dashed #ddd;
+}
+
+.payment-test-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.payment-test-btn:hover:not(:disabled) {
+  background: #ee5a24;
+}
+
+.payment-test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-dev-note {
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
 }
 
 /* Responsive */
