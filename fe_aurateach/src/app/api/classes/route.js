@@ -61,8 +61,28 @@ export async function GET(request) {
     const usersRes = await fetch("http://localhost:3007/users", { cache: "no-store" });
     const allUsers = usersRes.ok ? await usersRes.json() : [];
 
-    // Chuẩn hóa dữ liệu
-    let standardizedClasses = rawCourses.map(course => {
+    // Bộ lọc Trạng thái
+    if (status !== "all") {
+      rawCourses = rawCourses.filter(c => c.status === status);
+    }
+
+    // Bộ lọc Tìm kiếm
+    if (search && search.trim() !== "") {
+      const searchLower = search.toLowerCase().trim();
+      rawCourses = rawCourses.filter(c => 
+        (c.title && c.title.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Xử lý phân trang
+    const totalItems = rawCourses.length;
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const activeCourses = rawCourses.slice(startIndex, endIndex);
+
+    // ✅ CHUẨN HÓA DỮ LIỆU TRẢ VỀ CHO CLIENT VÀ THÊM PERMANENT_ROOM_URL
+    const formattedClasses = activeCourses.map(course => {
       const studentIds = course.students || [];
       const studentDetails = studentIds.map(studentId => {
         const user = allUsers.find(u => u.user_id === studentId);
@@ -86,43 +106,22 @@ export async function GET(request) {
         end_date: course.end_date || "30/08/2024",
         total_weeks: course.total_weeks || 12,
         status: course.status || "active", 
-        meet_link: course.permanent_room_url || course.meet_link || "#",
         schedule_days: course.schedule_days || ["Thứ 2", "Thứ 4", "Thứ 6"],
         time_slot: course.time_slot || "18:00-20:00",
         hourly_rate: course.hourly_rate || 150000,
         max_students: course.max_students || 15,
         students: studentIds,
         student_details: studentDetails,
-        student_count: studentIds.length
+        student_count: studentIds.length,
+        permanent_room_url: course.permanent_room_url || "" 
       };
     });
-
-    // Bộ lọc Trạng thái
-    if (status !== "all") {
-      standardizedClasses = standardizedClasses.filter(c => c.status === status);
-    }
-
-    // Bộ lọc Tìm kiếm
-    if (search && search.trim() !== "") {
-      const searchLower = search.toLowerCase().trim();
-      standardizedClasses = standardizedClasses.filter(c => 
-        c.class_name.toLowerCase().includes(searchLower) ||
-        c.student_details.some(s => s.full_name && s.full_name.toLowerCase().includes(searchLower))
-      );
-    }
-
-    // Xử lý phân trang
-    const totalItems = standardizedClasses.length;
-    const totalPages = Math.ceil(totalItems / limit) || 1;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedData = standardizedClasses.slice(startIndex, endIndex);
 
     console.log(`📚 Tìm thấy ${totalItems} lớp học cho tutor ${tutorId}`);
 
     return NextResponse.json({
       success: true,
-      data: paginatedData,
+      data: formattedClasses, // Trả dữ liệu đã định dạng về Client
       pagination: { currentPage: page, limit, totalItems, totalPages }
     });
 
@@ -167,7 +166,7 @@ export async function POST(request) {
     const newClassData = {
       id: `course-${Date.now()}`,
       course_id: `course-${Date.now()}`, 
-      tutor_id: tutorId, // Sử dụng tutor_id, không phải user_id
+      tutor_id: tutorId, 
       title: body.class_name,
       category_id: body.category || "cat-02",
       level: body.level,

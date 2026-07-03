@@ -50,7 +50,6 @@ export default function ClassroomManagementPage() {
     setCurrentPage(1); // Trở về trang đầu khi đổi tab
   };
 
-  // Thay thế hàm cũ trong src/app/.../page.jsx (hoặc đường dẫn quản lý lớp học của bạn)
   const handleCloseClass = async (classId) => {
     const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này (Dừng nhận thêm học viên) không?");
     if (!confirmClose) return;
