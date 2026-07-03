@@ -6,23 +6,19 @@ import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import BookingDetailModal from "@/components/users/BookingDetailModal.jsx";
 import authService from "@/services/authService";
+import courseSubscriptionService from "@/services/courseSubscriptionService"; // Đã sửa import
 import "../profile/profile.css";
 import "./lich-su-book.css";
 
 export default function StudentBookingHistoryPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [bookedClasses, setBookedClasses] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [allTutors, setAllTutors] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
-  const [allCourses, setAllCourses] = useState([]);
+  const [bookedClasses, setBookedClasses] = useState([]);
+  // Giữ lại các state cần thiết để tránh lỗi render
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTutor, setSelectedTutor] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-
-  const API_BASE = "http://localhost:3007";
 
   useEffect(() => {
     const initPage = async () => {
@@ -30,55 +26,20 @@ export default function StudentBookingHistoryPage() {
         setLoading(true);
         const user = await authService.getCurrentUser();
         
-        const getCookie = (name) => {
-          if (typeof window === "undefined") return null;
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(';').shift();
-          return null;
-        };
-        const role = getCookie("role");
+        // Gọi qua Service (Backend Laravel)
+        const historyData = await courseSubscriptionService.getStudentHistory(user.user_id);
 
-        if (!user || role !== "student") {
-          router.push("/login");
-          return;
-        }
-        setCurrentUser(user);
-        const studentId = user.user_id || user.id;
-
-        const [coursesRes, tutorsRes, usersRes, bookingsRes] = await Promise.all([
-          fetch(`${API_BASE}/courses`),
-          fetch(`${API_BASE}/tutors`),
-          fetch(`${API_BASE}/users`),
-          fetch(`${API_BASE}/bookings?studentId=${studentId}`)
-        ]);
-
-        const allCoursesData = await coursesRes.json();
-        const tutorsData = await tutorsRes.json();
-        const usersData = await usersRes.json();
-        const bookingsData = await bookingsRes.json();
-
-        setAllCourses(allCoursesData);
-        setAllTutors(tutorsData);
-        setAllUsers(usersData);
-
-        const bookingList = bookingsData.data || [];
-        setBookings(bookingList);
-
-        const filteredClasses = allCoursesData.filter(course => 
-          course.students && course.students.includes(studentId)
-        );
-        setBookedClasses(filteredClasses);
-        
+        setBookings(historyData);
+        // Map ra danh sách course từ dữ liệu sub trả về
+        setBookedClasses(historyData.map(sub => sub.course));
       } catch (error) {
-        console.error("Lỗi khi tải lịch sử đăng ký lớp học:", error);
+        console.error("Lỗi khi tải lịch sử:", error);
       } finally {
         setLoading(false);
       }
     };
-
     initPage();
-  }, [router]);
+  }, []);
 
   const getTutorName = (tutorId) => {
     const tutor = allTutors.find(t => t.tutor_id === tutorId);
@@ -98,32 +59,27 @@ export default function StudentBookingHistoryPage() {
   };
 
   const getBookingStatus = (courseId) => {
-    const booking = bookings.find(b => b.course_id === courseId);
-    if (!booking) {
-      return { label: 'Đã xác nhận', className: 'status-confirmed' };
-    }
-    
+    const sub = bookings.find(b => b.course_id === courseId);
+    if (!sub) return { label: 'N/A', className: '' };
     const statusMap = {
       'pending': { label: '⏳ Chờ xác nhận', className: 'status-pending' },
       'confirmed': { label: '✅ Đã xác nhận', className: 'status-confirmed' },
       'completed': { label: '🎓 Đã hoàn thành', className: 'status-completed' },
       'cancelled': { label: '❌ Đã hủy', className: 'status-cancelled' }
     };
-    
-    return statusMap[booking.status] || { label: booking.status, className: '' };
+    return statusMap[sub.status] || { label: sub.status, className: '' };
   };
 
   const getPaymentStatus = (courseId) => {
-    const booking = bookings.find(b => b.course_id === courseId);
-    if (!booking) return null;
-    
+    const sub = bookings.find(b => b.course_id === courseId);
+    const payment = sub?.payment; 
+    if (!payment) return null;
     const statusMap = {
       'unpaid': { label: '⏳ Chưa thanh toán', className: 'payment-unpaid' },
       'paid': { label: '✅ Đã thanh toán', className: 'payment-paid' },
       'refunded': { label: '↩️ Đã hoàn tiền', className: 'payment-refunded' }
     };
-    
-    return statusMap[booking.payment_status] || null;
+    return statusMap[payment.payment_status] || null;
   };
 
   const formatPrice = (price) => {

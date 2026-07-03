@@ -3,10 +3,8 @@ import apiClient from "./apiClient";
 class AuthService {
   // Đăng nhập
   async login(email, password) {
-    const data = await apiClient("/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    // Sửa thành apiClient.post
+    const data = await apiClient.post("/login", { email, password });
     
     if (data.user) this.setAuthCookies(data.user);
     return data;
@@ -14,10 +12,8 @@ class AuthService {
 
   // Đăng ký
   async register(userData) {
-    return await apiClient("/register", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
+    // Sửa thành apiClient.post
+    return await apiClient.post("/register", userData);
   }
 
   // Đăng xuất
