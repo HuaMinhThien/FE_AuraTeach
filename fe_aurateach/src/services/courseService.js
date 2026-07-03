@@ -42,6 +42,10 @@ const courseService = {
   getDashboardData: async () => {
     return await apiClient.get("/courses-list-data"); 
   },
+
+  getDetailedCourse: async (courseId) => {
+    return await apiClient.get(`/courses/${courseId}`);
+  },
 };
 
 export default courseService;
