@@ -3,127 +3,125 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import styles from "./ClassDetail.module.css";
 import courseService from '@/services/courseService';
+import courseSubscriptionService from '@/services/courseSubscriptionService';
+import authService from "@/services/authService";
 import BookingModal from "@/components/users/BookingModal";
 import Avatar from "@/components/common/Avatar";
 
 export default function ClassDetailPage({ params }) {
   const router = useRouter();
-  
   const { id } = use(params);
   const courseId = id;
 
+  // Khởi tạo state an toàn
+  const [allCategories, setAllCategories] = useState([]);
+  const [isBooked, setIsBooked] = useState(false);
   const [course, setCourse] = useState(null);
-  const [tutorInfo, setTutorInfo] = useState(null);
+  const [tutorInfo, setTutorInfo] = useState({ qualification: '', bio: '', rating: 0, Experience: 'Chưa cập nhật' });
   const [userTutor, setUserTutor] = useState(null);
   const [courseReviews, setCourseReviews] = useState([]);
-  const [allUsers, setAllUsers] = useState([]); 
-  const [allStudents, setAllStudents] = useState([]);
-  const [allCategories, setAllCategories] = useState([]);
-
-  const [isBooked, setIsBooked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
-  useEffect(() => {
-  const fetchAllData = async () => {
-    try {
-      setPageLoading(true);
-      const data = await courseService.getDetailedCourse(courseId);
-      
-      // Data trả về đã có sẵn mọi thứ
-      setCourse(data.course);
-      setCourseReviews(data.reviews);
-      
-      // Các state còn lại (tutorInfo, userTutor) bạn có thể lấy trực tiếp 
-      // từ thông tin trong data.course (vì đã join sẵn ở backend)
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPageLoading(false);
-    }
+  // Hàm chuẩn hóa dữ liệu
+  const normalizeSchedule = (days) => {
+    if (Array.isArray(days)) return days;
+    if (typeof days === 'string') return days.split(',').map(d => d.trim());
+    return [];
   };
-  
-  if (courseId) fetchAllData();
-}, [courseId]);
 
-  const handleBooking = async () => {
+  useEffect(() => {
+    const initPage = async () => {
+      setPageLoading(true);
+      try {
+        // 1. Lấy thông tin user
+        const user = await authService.getCurrentUser();
+        setCurrentUser(user);
+
+        // 2. Lấy data khóa học
+        const data = await courseService.getDetailedCourse(courseId);
+        
+        if (data) {
+          if (data.categories) {
+            setAllCategories(data.categories);
+          }
+          const rawCourse = data.course || data;
+          if (user && rawCourse.students) {
+            const studentId = user.user_id || user.id;
+            // Kiểm tra xem ID của user có nằm trong mảng students không
+            setIsBooked(rawCourse.students.includes(studentId));
+          }
+          setCourse({
+            ...rawCourse,
+            students: Array.isArray(rawCourse.students) ? rawCourse.students : [],
+            schedule_days: normalizeSchedule(rawCourse.schedule_days)
+          });
+          
+          setCourseReviews(data.reviews || []);
+          if (data.tutor) setTutorInfo(data.tutor);
+          if (data.userTutor) setUserTutor(data.userTutor);
+        }
+      } catch (err) {
+        console.error("Lỗi khởi tạo:", err);
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    
+    if (courseId) initPage();
+  }, [courseId]);
+
+  const handleBooking = () => {
     if (!currentUser) {
       alert("Vui lòng đăng nhập để đăng ký học!");
       router.push('/login');
       return;
     }
-
     if (currentUser.role !== 'student') {
-      alert("Chỉ tài khoản Học viên mới có quyền đăng ký tham gia lớp học này.");
+      alert("Chỉ học viên mới có quyền đăng ký.");
       return;
     }
-
-    const currentStudents = course.students || [];
-    if (currentStudents.length >= course.max_students) {
-      alert("Lớp học đã đủ số lượng học viên!");
+    if (course.students.length >= course.max_students) {
+      alert("Lớp đã đủ học viên!");
       return;
     }
-
-    const studentId = currentUser.user_id || currentUser.id;
-    if (currentStudents.includes(studentId)) {
-      alert("Bạn đã đăng ký lớp học này rồi!");
-      return;
-    }
-
     setShowBookingModal(true);
   };
 
   // src/app/(public)/classList/[id]/page.jsx - Cập nhật phần confirmBooking
-      const confirmBooking = async (notes, paymentMethod) => {
-        setBookingLoading(true);
-        const studentId = currentUser.user_id || currentUser.id;
+  const confirmBooking = async (notes, paymentMethod) => {
+    setBookingLoading(true);
+    const studentId = currentUser?.user_id || currentUser?.id;
 
-        try {
-          const response = await fetch('/api/bookings', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              courseId: course.course_id,
-              studentId: studentId,
-              tutorId: course.tutor_id,
-              notes: notes,
-              paymentMethod: paymentMethod
-            }),
-          });
+    const requestData = {
+      subscription: {
+        course_id: course.course_id,
+        student_id: studentId,
+        tutor_id: course.tutor_id,
+        notes: notes,
+      },
+      payment: {
+        payment_method: paymentMethod,
+        amount: course.price, // Đảm bảo biến này tồn tại
+      }
+    };
 
-          const result = await response.json();
-
-          if (response.ok) {
-            // Trả về data để tiếp tục xử lý thanh toán
-            return {
-              success: true,
-              data: result.data
-            };
-          } else {
-            alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
-            return {
-              success: false,
-              message: result.message
-            };
-          }
-        } catch (error) {
-          console.error("Lỗi liên kết API Booking:", error);
-          alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
-          return {
-            success: false,
-            message: error.message
-          };
-        } finally {
-          setBookingLoading(false);
-        }
-      };
+    try {
+      await courseSubscriptionService.registerCourse(requestData);
+      alert("Đăng ký thành công!");
+      setShowBookingModal(false);
+      setIsBooked(true); // Cập nhật UI
+    } catch (error) {
+      console.error("Lỗi đăng ký:", error);
+      alert(error.response?.data?.message || "Đăng ký thất bại.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
 
   const handleJoinClass = () => {
     if (course?.permanent_room_url) {
@@ -156,7 +154,15 @@ export default function ClassDetailPage({ params }) {
 
   const averageRating = courseReviews.length > 0 
     ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
-    : tutorInfo?.rating || 4.8;
+    : (tutorInfo?.rating || 4.8);
+
+  if (pageLoading) {
+    return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Đang tải dữ liệu...</div>;
+  }
+
+  if (!course) {
+    return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
+  }
 
   // Kiểm tra quyền xem link Google Meet
   const canViewMeetLink = () => {
@@ -169,7 +175,7 @@ export default function ClassDetailPage({ params }) {
     // Nếu là student - chỉ xem được khi đã đăng ký lớp này
     if (currentUser.role === 'student') {
       const studentId = currentUser.user_id || currentUser.id;
-      return isBooked || (course?.students && course.students.includes(studentId));
+      return isBooked || (course?.students && course?.students.includes(studentId));
     }
     
     return false;
@@ -198,11 +204,10 @@ export default function ClassDetailPage({ params }) {
     }
   };
 
-  const currentStudentsCount = getStudentCount(course.students);
-
+  const currentStudentsCount = Array.isArray(course?.students) ? course.students.length : 0;
+  
   
   const isFull = currentStudentsCount >= course.max_students;
-
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
 
@@ -290,7 +295,11 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Lịch học</span>
-                <span className={styles.detailValue}>{course.schedule_days?.join(", ") || "Chưa cập nhật"}</span>
+                <span className={styles.detailValue}>
+                  {Array.isArray(course?.schedule_days) 
+                    ? course.schedule_days.join(", ") 
+                    : (course?.schedule_days || "Chưa cập nhật")}
+              </span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Ngày bắt đầu</span>
@@ -389,7 +398,11 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>📅</span>
-                <span>{course.schedule_days?.join(", ")}</span>
+                <span>
+                  {Array.isArray(course?.schedule_days) 
+                    ? course.schedule_days.join(", ") 
+                    : (course?.schedule_days || "Chưa cập nhật")}
+                </span>
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>⏰</span>

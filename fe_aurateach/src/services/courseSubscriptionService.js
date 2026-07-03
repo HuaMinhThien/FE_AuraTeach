@@ -31,6 +31,11 @@ const courseSubscriptionService = {
   // Hủy/Xóa đăng ký
   deleteSubscription: async (id) => {
     return await apiClient.delete(`/course-subscriptions/${id}`);
+  },
+
+  async registerCourse(data) {
+    // Gửi thẳng vào endpoint mới đã tạo
+    return await apiClient.post("/course-registration", data);
   }
 };
 

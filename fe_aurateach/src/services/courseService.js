@@ -46,6 +46,11 @@ const courseService = {
   getDetailedCourse: async (courseId) => {
     return await apiClient.get(`/courses/${courseId}`);
   },
+
+  async bookCourse(bookingData) {
+    // Giả sử bạn có apiClient dùng axios hoặc fetch được cấu hình sẵn
+    return await apiClient.post("/course", bookingData);
+    }
 };
 
 export default courseService;
