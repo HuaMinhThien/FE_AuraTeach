@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "./management.module.css";
-import courseService from "@/services/courseService";
+
 import FilterControl from "./_components/Sec1";
 import ClassGrid from "./_components/Sec2";
 import ClassDetailModal from "./_components/Sec3";
@@ -16,49 +16,33 @@ export default function ClassroomManagementPage() {
   const [pagination, setPagination] = useState({ totalPages: 1 });
   const [selectedClass, setSelectedClass] = useState(null);
 
-  const getCookie = (name) => {
-    if (typeof window === "undefined") return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  };
-
   useEffect(() => {
     let isMounted = true;
-    const userCookie = getCookie("user_info");
-    
-    // Nếu không có cookie user_info thì không tải
-    if (!userCookie) return; 
-    const userData = JSON.parse(decodeURIComponent(userCookie));
-    const tutorId = userData.user_id || userData.id;
-    console.log("DEBUG: Tutor ID đang gửi lên là:", tutorId);
+
     const loadData = async () => {
       setLoading(true);
       try {
-        // GỌI API VỚI tutor_id
         const res = await fetch(
-          `http://localhost:8000/api/courses?tutor_id=${tutorId}&page=${currentPage}&status=${statusFilter}&search=${search}`
+          `/api/classes?page=${currentPage}&limit=6&status=${statusFilter}&search=${search}`
         );
         const resData = await res.json();
-        console.log("Dữ liệu nhận từ API:", resData);
         
-        // Lưu ý: Nếu Laravel trả về mảng trực tiếp không có {success, data}, 
-        // bạn chỉ cần setClasses(resData)
-        if (isMounted) {
-          const data = resData.data || resData; 
-          // Dùng toán tử điều kiện để đảm bảo data luôn là mảng
-          setClasses(Array.isArray(data) ? data : []); 
+        if (isMounted && resData.success) {
+          setClasses(resData.data);
+          setPagination(resData.pagination);
         }
       } catch (error) {
-        console.error("Lỗi tải lớp học:", error);
+        console.error("Lỗi tải danh sách lớp học từ JSON Server:", error);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
     loadData();
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, [currentPage, statusFilter, search]);
 
   const handleFilterChange = (status) => {
@@ -66,32 +50,38 @@ export default function ClassroomManagementPage() {
     setCurrentPage(1); // Trở về trang đầu khi đổi tab
   };
 
-  // Thay thế hàm cũ trong src/app/.../page.jsx (hoặc đường dẫn quản lý lớp học của bạn)
-  const handleCloseClass = async (courseId) => {
-    const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này?");
+  const handleCloseClass = async (classId) => {
+    const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này (Dừng nhận thêm học viên) không?");
     if (!confirmClose) return;
 
     try {
-        // Gọi service đã định nghĩa ở trên
-        const result = await courseService.updateStatus(courseId, "closed");
+      // 1. Gọi tới API Route động xử lý PATCH dữ liệu
+      const response = await fetch(`/api/classes/${classId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "closed" }),
+      });
 
-        if (result.success) {
-            // Cập nhật UI
-            setClasses(prevClasses => 
-                prevClasses.map(c => 
-                    c.course_id === courseId ? { ...c, status: "closed" } : c
-                )
-            );
-            if (selectedClass?.course_id === courseId) {
-                setSelectedClass(prev => ({ ...prev, status: "closed" }));
-            }
-            alert("Đã khóa tuyển sinh lớp học thành công!");
-        } else {
-            alert("Lỗi: " + (result.message || "Không thể cập nhật"));
+      const result = await response.json();
+
+      if (result.success) {
+        // 2. Cập nhật State danh sách lớp học ở client ngay lập tức để UI render lại mượt mà
+        setClasses(prev => 
+          prev.map(c => c.class_id === classId ? { ...c, status: "closed" } : c)
+        );
+
+        // 3. Nếu người dùng đang mở xem Modal chi tiết của chính lớp này, cập nhật trạng thái hiển thị trong Modal luôn
+        if (selectedClass && selectedClass.class_id === classId) {
+          setSelectedClass(prev => ({ ...prev, status: "closed" }));
         }
+
+        alert("🔒 Đã khóa tuyển sinh lớp học thành công và lưu vào hệ thống!");
+      } else {
+        alert(`Khóa lớp thất bại: ${result.message}`);
+      }
     } catch (error) {
-        console.error("Lỗi:", error);
-        alert("Không thể kết nối đến server.");
+      console.error("Lỗi khi thực hiện khóa lớp phía Client:", error);
+      alert("Đã xảy ra lỗi kết nối mạng, không thể khóa lớp học lúc này.");
     }
   };
 

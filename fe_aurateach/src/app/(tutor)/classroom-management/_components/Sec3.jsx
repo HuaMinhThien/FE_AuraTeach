@@ -4,7 +4,19 @@ import styles from "../management.module.css";
 
 export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseClass, getStatusBadge }) {
   if (!selectedClass) return null;
-  console.log("Dữ liệu lớp chi tiết:", selectedClass);
+
+  const handleJoinRoom = () => {
+    const url = selectedClass.permanent_room_url;
+    
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học Google Meet!");
+    }
+  };
+  console.log(selectedClass.permanent_room_url);
+  
+
   return (
     <div className={styles.modalOverlay} onClick={onCloseModal}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -24,73 +36,72 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
             <p>📅 <strong>Ngày mở lớp:</strong> {selectedClass.start_date}</p>
             <p>📅 <strong>Ngày kết thúc:</strong> {selectedClass.end_date}</p>
           </div>
-          {console.log("DEBUG: schedule_days là:", selectedClass.schedule_days)}
+
+          <div>
+            {/* <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
+              🔗 <strong>Phòng học cố định:</strong> {selectedClass.permanent_room_url || "Chưa thiết lập"}
+            </p> */}
+            <button 
+              type="button"
+              onClick={handleJoinRoom}
+              style={{
+                backgroundColor: "#2563eb",
+                color: "#ffffff",
+                padding: "8px 16px",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+            >
+              Vào phòng học (Google Meet) ➔
+            </button>
+          </div>
+
           <div className={styles.scheduleSection}>
             <h4>📆 Lịch học định kỳ:</h4>
             <div className={styles.dayBadges}>
-              {(() => {
-                // Đặt đoạn xử lý logic vào đây
-                const days = typeof selectedClass.schedule_days === 'string' 
-                  ? JSON.parse(selectedClass.schedule_days) 
-                  : (selectedClass.schedule_days || []);
-                
-                // Kiểm tra nếu không phải mảng (để tránh lỗi .map is not a function)
-                const safeDays = Array.isArray(days) ? days : [];
-                
-                return safeDays.map((day, idx) => (
-                  <span key={idx} className={styles.dayBadge}>{day}</span>
-                ));
-              })()}
+              {selectedClass.schedule_days && selectedClass.schedule_days.map((day, idx) => (
+                <span key={idx} className={styles.dayBadge}>{day}</span>
+              ))}
             </div>
           </div>
 
-          {/* Đường dẫn học trực tuyến Google Meet */}
-          {(selectedClass.status === "active" || selectedClass.status === "closed") && (
-            <div className={styles.meetSection}>
-              <h4> Phòng học trực tuyến:</h4>
-              <a href={selectedClass.meet_link} target="_blank" rel="noreferrer" className={styles.meetLink}>
-                 Vào lớp học qua Google Meet
-              </a>
-            </div>
-          )}
-
           {/* Bảng danh sách học sinh tham gia */}
           <div className={styles.studentSection}>
-            {(() => {
-              let students = selectedClass.students;
-              if (typeof students === 'string') {
-                  try { students = JSON.parse(students); } catch (e) { students = []; }
-              }
-              const safeStudents = Array.isArray(students) ? students : [];
-
-              return (
-                <>
-                  <h4>👥 Thành viên lớp học ({safeStudents.length}):</h4>
-                  {safeStudents.length === 0 ? (
-                    <p className={styles.noStudent}>Chưa có học sinh nào đăng ký.</p>
-                  ) : (
-                    <table className={styles.studentTable}>
-                      {/* ... nội dung bảng ... */}
-                      <tbody>
-                        {safeStudents.map((st, index) => (
-                          <tr key={st.student_id || index}>
-                            <td>{index + 1}</td>
-                            <td><strong>{st.full_name}</strong></td>
-                            <td>{st.email}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </>
-              );
-            })()}
+            <h4>👥 Thành viên lớp học ({selectedClass.students ? selectedClass.students.length : 0}):</h4>
+            {!selectedClass.students || selectedClass.students.length === 0 ? (
+              <p className={styles.noStudent}>Chưa có học sinh nào đăng ký lớp học này.</p>
+            ) : (
+              <table className={styles.studentTable}>
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Họ và Tên</th>
+                    <th>Email Liên Hệ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedClass.students.map((st, index) => (
+                    <tr key={st.student_id}>
+                      <td>{index + 1}</td>
+                      <td><strong>{st.full_name}</strong></td>
+                      <td>{st.email}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
         <div className={styles.modalFooter}>
           {selectedClass.status === "active" && (
-            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.course_id)}>
+            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.class_id)}>
                Khóa lớp (Dừng nhận thêm)
             </button>
           )}
