@@ -2,11 +2,9 @@ import apiClient from "./apiClient";
 
 const courseService = {
   // 1. Lấy danh sách khóa học
-  getAllCourses: async (tutorId, params = {}) => {
+  getAll: async (tutorId, params = {}) => {
     const { page = 1, limit = 6, status = "all", search = "" } = params;
-    const query = new URLSearchParams({ tutor_id: tutorId, page, limit, status, search });
-    
-    // Đổi thành .get()
+    const query = new URLSearchParams({ tutor_id: tutorId || '', page, limit, status, search });
     return await apiClient.get(`/courses?${query.toString()}`);
   },
 
@@ -31,6 +29,18 @@ const courseService = {
   getCategories: async () => {
     // Đổi thành .get()
     return await apiClient.get("/categories");
+  },
+
+  getUsers: async () => {
+    return await apiClient.get("/users"); // Đảm bảo bạn có UserController ở Backend
+  },
+
+  getTutors: async () => {
+    return await apiClient.get("/tutors"); // Đảm bảo bạn có TutorsController ở Backend
+  },
+  
+  getDashboardData: async () => {
+    return await apiClient.get("/courses-list-data"); 
   },
 };
 
