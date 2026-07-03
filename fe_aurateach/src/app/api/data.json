@@ -305,7 +305,9 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "u-h5XH1XLc"
+      ]
     },
     {
       "id": "fad2",
@@ -829,6 +831,41 @@
       "payment_method": "banking",
       "transaction_id": null,
       "id": "qHXI-guKoK8"
+<<<<<<< Updated upstream
+=======
+    },
+    {
+      "booking_id": "bk-1783032419478",
+      "student_id": "u-student-1",
+      "course_id": "course-1783032321908",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-02T22:46:59.478Z",
+      "created_at": "2026-07-02T22:46:59.478Z",
+      "updated_at": "2026-07-02T22:46:59.478Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "W4jEzMa5lek"
+    },
+    {
+      "booking_id": "bk-1783050034912",
+      "student_id": "u-h5XH1XLc",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-03T03:40:34.912Z",
+      "created_at": "2026-07-03T03:40:34.913Z",
+      "updated_at": "2026-07-03T03:40:34.913Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 120000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "_JDl3JKZ1Bs"
+>>>>>>> Stashed changes
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -187,8 +187,18 @@ export default function ClassDetailPage({ params }) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
   
+  const getStudentCount = (studentsData) => {
+    if (!studentsData) return 0;
+    // Nếu là mảng thì lấy length, nếu là chuỗi thì có thể cần parse
+    if (Array.isArray(studentsData)) return studentsData.length;
+    try {
+      return JSON.parse(studentsData).length;
+    } catch {
+      return 0;
+    }
+  };
 
-  const currentStudentsCount = course.students ? course.students.length : 0;
+  const currentStudentsCount = getStudentCount(course.students);
 
   
   const isFull = currentStudentsCount >= course.max_students;
