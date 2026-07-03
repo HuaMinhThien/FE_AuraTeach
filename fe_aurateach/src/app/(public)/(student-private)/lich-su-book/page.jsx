@@ -26,11 +26,20 @@ export default function StudentBookingHistoryPage() {
         setLoading(true);
         const user = await authService.getCurrentUser();
         
-        // Gọi qua Service (Backend Laravel)
-        const historyData = await courseSubscriptionService.getStudentHistory(user.user_id);
+        // THÊM LOG ĐỂ KIỂM TRA
+        console.log("User hiện tại:", user);
+
+        if (!user || (!user.user_id && !user.id)) {
+          console.error("Không lấy được ID người dùng!");
+          return;
+        }
+
+        // Đảm bảo lấy đúng ID (thường là user_id hoặc id tùy theo backend trả về)
+        const currentStudentId = user.user_id || user.id; 
+        
+        const historyData = await courseSubscriptionService.getStudentHistory(currentStudentId);
 
         setBookings(historyData);
-        // Map ra danh sách course từ dữ liệu sub trả về
         setBookedClasses(historyData.map(sub => sub.course));
       } catch (error) {
         console.error("Lỗi khi tải lịch sử:", error);
@@ -160,7 +169,7 @@ export default function StudentBookingHistoryPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookedClasses.map((item) => {
+                      {bookedClasses.filter(item => item !== null && item !== undefined).map((item) => {
                         const status = getBookingStatus(item.course_id);
                         const payment = getPaymentStatus(item.course_id);
                         return (

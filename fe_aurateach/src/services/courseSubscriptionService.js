@@ -3,8 +3,9 @@ import apiClient from "./apiClient";
 const courseSubscriptionService = {
   // Lấy lịch sử đăng ký của học sinh
   getStudentHistory: async (studentId) => {
-    // apiClient.get đã trả về trực tiếp kết quả từ response.json()
-    return await apiClient.get(`/course-subscriptions/student/${studentId}`);
+      // Thay vì truyền ID trực tiếp vào URL (dạng show), 
+      // hãy truyền dưới dạng query parameter (dạng lọc/lấy danh sách)
+      return await apiClient.get(`/course-subscriptions?student_id=${studentId}`);
   },
 
   // Tạo mới đăng ký

@@ -97,6 +97,12 @@ export default function ClassDetailPage({ params }) {
     setBookingLoading(true);
     const studentId = currentUser?.user_id || currentUser?.id;
 
+    // 1. Tính toán totalAmount ở đây trước khi sử dụng
+    const rate = course?.hourly_rate || course?.price_per_session || 0;
+    const weeks = course?.total_weeks || 12;
+    const totalAmount = rate * weeks; 
+
+    // 2. Đóng gói dữ liệu
     const requestData = {
       subscription: {
         course_id: course.course_id,
@@ -106,18 +112,23 @@ export default function ClassDetailPage({ params }) {
       },
       payment: {
         payment_method: paymentMethod,
-        amount: course.price, // Đảm bảo biến này tồn tại
+        amount: totalAmount, // Sử dụng biến totalAmount đã định nghĩa ở trên
       }
     };
 
     try {
-      await courseSubscriptionService.registerCourse(requestData);
-      alert("Đăng ký thành công!");
-      setShowBookingModal(false);
-      setIsBooked(true); // Cập nhật UI
+      // 3. Gọi API
+      const result = await courseSubscriptionService.registerCourse(requestData);
+      
+      if (result) {
+        alert("Đăng ký thành công!");
+        setShowBookingModal(false);
+        return { success: true, data: result };
+      }
     } catch (error) {
-      console.error("Lỗi đăng ký:", error);
-      alert(error.response?.data?.message || "Đăng ký thất bại.");
+      console.error("Lỗi:", error);
+      alert("Đăng ký thất bại.");
+      return { success: false };
     } finally {
       setBookingLoading(false);
     }
