@@ -1,5 +1,4 @@
 .container {
-  
   margin: 80px auto 0 auto;
   font-family: system-ui, -apple-system, sans-serif;
   color: #1e293b;
@@ -110,30 +109,30 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* =========================================================================
-   🔥 KHU VỰC QUAN TRỌNG: CỐ ĐỊNH KÍCH THƯỚC VÀ TẠO THANH CUỘN (SCROLL)
-   ========================================================================= */
 .calendarOuterWrapper {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  overflow: hidden; /* Bo tròn viền không bị tràn */
+  overflow: hidden;
 }
 
-/* Khối bao bọc tạo cuộn dọc cho nội dung 24 giờ */
 .scrollContainer {
-  max-height: 500px; /* 📌 ĐỘ CAO CỐ ĐỊNH CỦA BẢNG: Quá 500px tự xuất hiện thanh cuộn lăn chuột */
-  overflow-y: auto;  /* Lăn chuột dọc */
-  overflow-x: auto;  /* Lăn chuột ngang nếu màn hình quá bé */
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
-.scheduleGrid {
+/* KHU VỰC THÂN LỊCH TRÌNH CHÍNH */
+.mainGridBody {
+  position: relative; /* Làm gốc tọa độ cho lớp thẻ nổi tuyệt đối */
+  min-width: 1000px;
+}
+
+.timetableGridBackground {
   display: grid;
-  grid-template-columns: 80px repeat(7, minmax(140px, 1fr)); /* Cố định chiều ngang tối thiểu cho mỗi cột */
-  min-width: 1000px; /* Đảm bảo bảng không bị bóp méo chữ trên màn hình nhỏ */
+  grid-template-columns: 80px repeat(7, minmax(140px, 1fr));
 }
 
-/* Thanh Header chứa Thứ/Ngày - Giữ cố định trên cùng khi cuộn */
 .stickyHeaderRow {
   display: grid;
   grid-template-columns: 80px repeat(7, minmax(140px, 1fr));
@@ -186,7 +185,6 @@
   color: #b91c1c;
 }
 
-/* Ô hiển thị mốc giờ ở cột trái */
 .timeColCell {
   padding: 10px 8px;
   font-size: 12px;
@@ -199,80 +197,102 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 75px; /* Giảm độ cao một chút để 24 tiếng nhìn gọn gàng */
+  height: 75px; /* Chiều cao cố định của mỗi ô mốc giờ */
+  box-sizing: border-box;
 }
 
-/* Ô lưới nội dung lịch trình */
 .gridCell {
   border-bottom: 1px solid #e2e8f0;
   border-right: 1px solid #e2e8f0;
-  padding: 4px;
   height: 75px;
   background: #ffffff;
-  position: relative;
+  box-sizing: border-box;
 }
 
-/* --- SLOT CARD STYLE --- */
+/* VÙNG CHỨA CÁC THẺ LỚP HỌC TUYỆT ĐỐI */
+.cardsOverlayArea {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 80px; /* Bỏ qua 80px của cột mốc thời gian để khớp chuẩn vào 7 ngày */
+  pointer-events: none; /* Tránh cản trở scroll nếu cần */
+}
+
+/* --- ĐỊNH DẠNG LẠI THẺ LỚP HỌC (GỘP ĐƯỢC NHIỀU TIẾNG) --- */
 .slotCard {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
-  padding: 6px 8px;
+  position: absolute;
+  pointer-events: auto; /* Kích hoạt lại click/hover cho thẻ */
+  border-radius: 8px;
+  padding: 10px 12px;
   box-sizing: border-box;
   font-size: 11px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 2;
+  transition: transform 0.15s ease;
 }
 
-.bookedClass1 {
-  background-color: #1e3a8a;
-  color: #ffffff;
+.slotCard:hover {
+  transform: scale(1.01);
+  z-index: 5;
 }
-.bookedClass2 {
-  background-color: #2563eb;
-  color: #ffffff;
+
+
+.cardHeaderFlex {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .classTitle {
   font-weight: 700;
-  font-size: 12px;
-  margin-bottom: 2px;
-  line-height: 1.2;
+  font-size: 13px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Giới hạn tối đa 2 dòng nếu tên lớp siêu dài */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.tutorName {
-  font-size: 10px;
-  opacity: 0.8;
-}
-
-.meetBtn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #ffffff;
+.timeBadge {
+  background: rgba(255, 255, 255, 0.15);
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 9px;
-  font-weight: 600;
-  cursor: pointer;
+  font-size: 10px;
   align-self: flex-start;
 }
 
-/* Trạng thái lịch trống */
-.emptySlot {
-  background-color: #ffedd5;
-  border: 1px dashed #f97316;
-  color: #c2410c;
+.cardFooterFlex {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 11px;
+  margin-top: 6px;
+}
+.cardFooterFlex>a{
+  color: #ffffff;
 }
 
-.emptySlot:hover {
-  background-color: #fed7aa;
+.tutorName {
+  font-size: 11px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.meetBtn {
+  background: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.meetBtn:hover {
+  background: #f8fafc;
 }
 
 /* --- BOTTOM STATS BAR --- */

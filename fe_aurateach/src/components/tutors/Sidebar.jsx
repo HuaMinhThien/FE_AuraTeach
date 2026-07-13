@@ -34,7 +34,7 @@ export default function Sidebar() {
             text: "Thu nhập"
         },
         {
-            path: "/profile",
+            path: "/profile-tutor",
             text: "Hồ sơ"
         }
     ];

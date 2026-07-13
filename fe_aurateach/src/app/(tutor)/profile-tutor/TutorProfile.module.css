@@ -1,0 +1,403 @@
+/* Container chính */
+.profileContainer {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 80px; /* Đồng bộ khoảng cách thụt lề từ thanh Topbar xuống */
+  
+  /* Nếu trang quản lý không có padding bọc ngoài, bạn có thể để 0 hoặc chỉnh theo ý muốn */
+  padding: 0px; 
+}
+
+
+
+/* Thẻ Header chính */
+.headerCard {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) {
+  .headerCard {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    padding: 2rem;
+  }
+}
+
+/* Khu vực Avatar */
+.avatarWrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 7rem;
+  height: 7rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 4px solid #eff6ff;
+  background-color: #f3f4f6;
+}
+
+@media (min-width: 768px) {
+  .avatar {
+    width: 8rem;
+    height: 8rem;
+  }
+}
+
+.statusBadge {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.statusActive {
+  background-color: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.statusLocked {
+  background-color: #f9fafb;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+/* Thông tin chữ trong Header */
+.infoWrapper {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tutorName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.tutorQual {
+  color: #2563eb;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Khối các Badge nhãn thông tin nhanh */
+.badgeGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .badgeGroup {
+    justify-content: flex-start;
+  }
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badgeRating { background-color: #eff6ff; color: #1d4ed8; }
+.badgeExp { background-color: #f3e8ff; color: #6b21a8; }
+.badgeVerifyVerified { background-color: #ecfdf5; color: #047857; }
+.badgeVerifyPending { background-color: #fffbeb; color: #b45309; }
+
+/* Grid thông tin số dư & liên hệ */
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .gridContainer {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Thẻ số dư */
+.balanceCardMain {
+  background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.balanceLabelMain {
+  color: #dbeafe;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.balanceAmountMain {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.balanceCardSub {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.balanceLabelSub {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.balanceAmountSub {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+/* Khối liên hệ */
+.contactCard {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.contactLabel {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.cvLink {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.cvLink:hover {
+  text-decoration: underline;
+}
+
+/* Khối tiểu sử Bio */
+.bioCard {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  border: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.bioTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.bioContent {
+  color: #4b5563;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Loading Spin */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 9999px;
+  height: 2.5rem;
+  width: 2.5rem;
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+  border-color: #3b82f6;
+  border-style: solid;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6b7280;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* --- CSS Bổ Sung Cho Các Chức Năng Quản Lý Cá Nhân --- */
+
+/* Khung chứa tiêu đề trang và cụm nút thao tác */
+.pageHeaderActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 12px;
+}
+
+.pageHeaderActions h2 {
+  font-size: 1.5rem;
+  color: #1a202c;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Nhóm nút Hủy và Lưu khi đang chỉnh sửa */
+.btnActionGroup {
+  display: flex;
+  gap: 10px;
+}
+
+/* Nút Chỉnh sửa cấu hình & Nút Lưu thay đổi */
+.btnEdit, .btnSave {
+  background-color: #0035a6; /* Màu xanh đồng bộ với sidebar của bạn */
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btnEdit:hover, .btnSave:hover {
+  background-color: #002575;
+}
+
+/* Nút Hủy bỏ trạng thái chỉnh sửa */
+.btnCancel {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btnCancel:hover {
+  background-color: #cbd5e1;
+}
+
+/* Hàng hiển thị Số dư khả dụng + Nút Rút tiền */
+.balanceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* Nút Rút tiền về ví */
+.btnPayout {
+  background-color: #ffffff;
+  color: #0035a6;
+  border: 1px solid #ffffff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnPayout:hover {
+  background-color: #f7fafc;
+  color: #002575;
+  transform: translateY(-1px);
+}
+
+/* --- Style cho các thành phần Form khi nhập liệu --- */
+
+.inputField {
+  width: 100%;
+  max-width: 350px;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  color: #334155;
+  outline: none;
+  margin-top: 4px;
+  transition: border-color 0.2s ease;
+}
+
+.inputField:focus {
+  border-color: #0035a6;
+  box-shadow: 0 0 0 2px rgba(0, 53, 166, 0.1);
+}
+
+.textareaField {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #334155;
+  outline: none;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.textareaField:focus {
+  border-color: #0035a6;
+  box-shadow: 0 0 0 2px rgba(0, 53, 166, 0.1);
+}

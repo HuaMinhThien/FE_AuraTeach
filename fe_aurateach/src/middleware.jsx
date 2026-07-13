@@ -18,7 +18,7 @@ export function middleware(request) {
     "/forgot-password", 
     "/tutorList", 
     "/class-search",
-    "/api/bookings"  // ✅ Thêm API bookings vào public
+    "/api/bookings" 
   ];
   const isPublicRoute = publicRoutes.some(route => 
     pathname === route || pathname.startsWith(route + "/")
