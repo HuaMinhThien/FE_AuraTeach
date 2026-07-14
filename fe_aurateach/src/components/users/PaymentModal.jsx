@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import '@/css/student-style/paymentModal.css';
 
 export default function PaymentModal({ 
@@ -21,8 +20,11 @@ export default function PaymentModal({
   const [countdown, setCountdown] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pollCount, setPollCount] = useState(0);
+  const [isManualPay, setIsManualPay] = useState(false);
   const pollIntervalRef = useRef(null);
   const countdownIntervalRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   const formatPrice = (price) => {
     if (!price) return '0đ';
@@ -40,11 +42,15 @@ export default function PaymentModal({
   };
 
   const handleCreateQR = async () => {
+    if (!isMountedRef.current) return;
+    
     setLoading(true);
     setError(null);
 
     try {
       const result = await paymentService.createQR(bookingId, studentId, amount);
+      
+      if (!isMountedRef.current) return;
       
       if (result.success) {
         const data = result.data;
@@ -60,21 +66,30 @@ export default function PaymentModal({
         setError(result.message || 'Không thể tạo mã QR');
       }
     } catch (err) {
+      if (!isMountedRef.current) return;
       setError(err.message || 'Có lỗi xảy ra');
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const startPolling = (paymentId) => {
-    // Poll mỗi 3 giây
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
     }
 
     pollIntervalRef.current = setInterval(async () => {
       try {
+        if (!isMountedRef.current) return;
+        
+        setPollCount(prev => prev + 1);
+        
         const result = await paymentService.checkStatus(paymentId);
+        
+        if (!isMountedRef.current) return;
+        
         if (result.success) {
           setStatus(result.status);
           
@@ -93,7 +108,7 @@ export default function PaymentModal({
       } catch (err) {
         console.error('Poll error:', err);
       }
-    }, 3000);
+    }, 5000);
   };
 
   // Cập nhật countdown mỗi giây
@@ -104,6 +119,8 @@ export default function PaymentModal({
       }
 
       countdownIntervalRef.current = setInterval(() => {
+        if (!isMountedRef.current) return;
+        
         const newCountdown = formatCountdown(expiryTime);
         setCountdown(newCountdown);
         
@@ -123,12 +140,40 @@ export default function PaymentModal({
 
   // Tạo QR khi mount
   useEffect(() => {
+    isMountedRef.current = true;
     handleCreateQR();
+    
     return () => {
+      isMountedRef.current = false;
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, []);
+
+  // Xử lý test payment (chỉ dùng dev)
+  const handleTestPayment = async () => {
+    if (!paymentId || isManualPay) return;
+    
+    setIsManualPay(true);
+    try {
+      const result = await paymentService.manualPay(paymentId);
+      if (result.success && result.status === 'paid') {
+        setStatus('paid');
+        clearInterval(pollIntervalRef.current);
+        clearInterval(countdownIntervalRef.current);
+        setTimeout(() => {
+          onSuccess();
+        }, 1000);
+      } else {
+        alert('Không thể mô phỏng thanh toán. Vui lòng thử lại.');
+        setIsManualPay(false);
+      }
+    } catch (error) {
+      console.error('Test payment error:', error);
+      alert('Có lỗi xảy ra khi test payment');
+      setIsManualPay(false);
+    }
+  };
 
   const handleRetry = () => {
     setError(null);
@@ -137,6 +182,8 @@ export default function PaymentModal({
     setPaymentId(null);
     setExpiryTime(null);
     setCountdown('');
+    setPollCount(0);
+    setIsManualPay(false);
     handleCreateQR();
   };
 
@@ -150,7 +197,7 @@ export default function PaymentModal({
     } else if (status === 'pending') {
       return {
         icon: '⏳',
-        text: 'Đang chờ thanh toán...',
+        text: `Đang chờ thanh toán...`,
         className: 'status-pending'
       };
     } else if (status === 'expired') {
@@ -175,7 +222,11 @@ export default function PaymentModal({
         {/* Header */}
         <div className="payment-modal-header">
           <h2 className="payment-modal-title">💳 Thanh toán QR Code</h2>
-          <button className="payment-modal-close" onClick={onClose} disabled={status === 'paid'}>
+          <button 
+            className="payment-modal-close" 
+            onClick={onClose} 
+            disabled={status === 'paid' || loading}
+          >
             ✕
           </button>
         </div>
@@ -205,6 +256,9 @@ export default function PaymentModal({
             <div className="payment-course-info">
               <h3 className="payment-course-title">{course?.title || 'Khóa học'}</h3>
               <p className="payment-amount">Số tiền: <strong>{formatPrice(amount)}</strong></p>
+              {bookingId && (
+                <p className="payment-booking-id">Mã đăng ký: <strong>{bookingId}</strong></p>
+              )}
             </div>
 
             <div className="payment-qr-container">
@@ -239,14 +293,30 @@ export default function PaymentModal({
                     <li>Chọn chức năng quét mã QR</li>
                     <li>Quét mã QR hiển thị bên trên</li>
                     <li>Xác nhận thanh toán số tiền <strong>{formatPrice(amount)}</strong></li>
-                    <li>Chờ hệ thống xác nhận (tự động)</li>
+                    <li>Hệ thống sẽ tự động xác nhận sau khi thanh toán</li>
+                    <li>⚠️ <em>Không đóng tab này cho đến khi thanh toán hoàn tất</em></li>
                   </ol>
+                </div>
+              )}
+
+              {status === 'pending' && process.env.NODE_ENV === 'development' && (
+                <div className="payment-dev-actions">
+                  <button 
+                    className="payment-test-btn"
+                    onClick={handleTestPayment}
+                    disabled={isManualPay}
+                  >
+                    {isManualPay ? '⏳ Đang xử lý...' : '🧪 Test: Mô phỏng thanh toán thành công'}
+                  </button>
+                  <p className="payment-dev-note">
+                    ⚠️ Chỉ dùng trong môi trường phát triển
+                  </p>
                 </div>
               )}
 
               {status === 'paid' && (
                 <div className="payment-success-actions">
-                  <button className="payment-done-btn" onClick={onClose}>
+                  <button className="payment-done-btn" onClick={onSuccess}>
                     ✅ Hoàn tất
                   </button>
                 </div>

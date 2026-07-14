@@ -1,10 +1,11 @@
-// src/components/users/BookingModal.jsx - Cập nhật
+// src/components/users/BookingModal.jsx
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import PaymentModal from "./PaymentModal";
 import paymentService from "@/services/paymentService";
+import "@/css/student-style/bookingModal.css";
 
 export default function BookingModal({ 
   course, 
@@ -14,40 +15,94 @@ export default function BookingModal({
   loading 
 }) {
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("qr");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [bookingData, setBookingData] = useState(null);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const formatPrice = (price) => {
     if (!price) return "0";
     return String(price).replace(/[^0-9]/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
   };
 
-  const handleConfirmBooking = async (notes, paymentMethod) => {
-    // Gọi API tạo booking trước
-    const result = await onConfirm(notes, paymentMethod);
-    if (result && result.success) {
-      setBookingData(result.data);
+  const handleConfirmBooking = async () => {
+    setError(null);
+    setIsBookingLoading(true);
+    
+    try {
+      // Gọi API tạo booking
+      const result = await onConfirm(notes, 'qr');
       
-      // Nếu chọn QR thanh toán, mở Payment Modal
-      if (paymentMethod === 'qr') {
+      if (result && result.success) {
+        setBookingData(result.data);
+        // Mở Payment Modal
         setShowPaymentModal(true);
       } else {
-        // Xử lý các phương thức thanh toán khác
-        alert('Đăng ký thành công!');
+        setError(result?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+    } finally {
+      setIsBookingLoading(false);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
+    // Booking đã được confirm sau khi thanh toán thành công
+    onClose();
+    // Hiển thị thông báo thành công
+    setTimeout(() => {
+      alert('🎉 Đăng ký thành công! Bạn đã được thêm vào lớp học.');
+    }, 300);
+  };
+
+  const handlePaymentClose = async () => {
+    setShowPaymentModal(false);
+    // Nếu thanh toán chưa thành công, hủy booking
+    if (bookingData && !showPaymentModal) {
+      try {
+        await paymentService.cancelBooking(bookingData.booking_id);
+      } catch (error) {
+        console.error('Cancel booking error:', error);
       }
     }
+    onClose();
+  };
+
+  const handleClose = () => {
+    if (isBookingLoading) return;
+    if (showPaymentModal) {
+      // Nếu đang ở Payment Modal, không cho đóng
+      return;
+    }
+    onClose();
   };
 
   return (
     <>
-      <div className="booking-modal-overlay" onClick={onClose}>
+      <div className="booking-modal-overlay" onClick={handleClose}>
         <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className="booking-modal-header">
             <h2 className="booking-modal-title">Xác nhận đăng ký học</h2>
-            <button className="booking-modal-close" onClick={onClose}>✕</button>
+            <button 
+              className="booking-modal-close" 
+              onClick={handleClose}
+              disabled={isBookingLoading || showPaymentModal}
+            >
+              ✕
+            </button>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="booking-error-message">
+              <span>❌</span>
+              <span>{error}</span>
+            </div>
+          )}
 
           {/* Course Info */}
           <div className="booking-course-info">
@@ -74,7 +129,7 @@ export default function BookingModal({
             </div>
           </div>
 
-          {/* Payment - Chỉ hiển thị QR */}
+          {/* Payment - QR Only */}
           <div className="booking-payment-section">
             <h4 className="booking-section-title">💳 Phương thức thanh toán</h4>
             <div className="booking-payment-options">
@@ -122,20 +177,25 @@ export default function BookingModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Nhập ghi chú của bạn..."
               rows={3}
+              disabled={isBookingLoading}
             />
           </div>
 
           {/* Actions */}
           <div className="booking-actions">
-            <button className="booking-cancel-btn" onClick={onClose} disabled={loading}>
+            <button 
+              className="booking-cancel-btn" 
+              onClick={handleClose}
+              disabled={isBookingLoading}
+            >
               Hủy
             </button>
             <button 
               className="booking-confirm-btn" 
-              onClick={() => handleConfirmBooking(notes, 'qr')}
-              disabled={loading}
+              onClick={handleConfirmBooking}
+              disabled={isBookingLoading || !course}
             >
-              {loading ? (
+              {isBookingLoading ? (
                 <>
                   <span className="booking-spinner"></span>
                   Đang xử lý...
@@ -145,6 +205,11 @@ export default function BookingModal({
               )}
             </button>
           </div>
+
+          {/* Note */}
+          <div className="booking-note">
+            <p>💡 <em>Sau khi xác nhận, bạn sẽ được chuyển đến trang thanh toán QR Code.</em></p>
+          </div>
         </div>
       </div>
 
@@ -153,17 +218,10 @@ export default function BookingModal({
         <PaymentModal
           course={course}
           bookingId={bookingData.booking_id}
-          studentId={bookingData.student_id || course.student_id}
-          amount={bookingData.amount || course.hourly_rate}
-          onClose={() => {
-            setShowPaymentModal(false);
-            onClose();
-          }}
-          onSuccess={() => {
-            setShowPaymentModal(false);
-            onClose();
-            alert('🎉 Đăng ký thành công! Bạn đã được thêm vào lớp học.');
-          }}
+          studentId={bookingData.student_id || course?.student_id}
+          amount={bookingData.amount || course?.hourly_rate}
+          onClose={handlePaymentClose}
+          onSuccess={handlePaymentSuccess}
           paymentService={paymentService}
         />
       )}
