@@ -1,0 +1,42 @@
+
+
+
+/* Container ngoài cùng giúp căn giữa toàn bộ trang trên các màn hình lớn */
+.outerContainer {
+  width: 100%;
+  background-color: #f8fafc; /* Màu nền xám nhạt nhẹ nhàng cho admin dashboard */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  font-family: 'Figtree', 'Figtree-fallback', 'Figtree-fallback-android', 'Noto Sans', 'NotoSans-fallback', 'NotoSans-fallback-android', sans-serif;
+
+}
+
+/* Khung giới hạn tối đa 1440px và tạo khoảng cách 32px ở 2 bên lề */
+.innerLayout {
+  width: 100%;
+  max-width: 1440px;
+  padding: 0 32px;
+  display: flex;
+  gap: 32px; /* Khoảng cách giữa Sidebar và phần Content bên phải */
+  box-sizing: border-box;
+  font-family: 'Figtree', 'Figtree-fallback', 'Figtree-fallback-android', 'Noto Sans', 'NotoSans-fallback', 'NotoSans-fallback-android', sans-serif;
+}
+
+/* Cố định Sidebar bên trái */
+.sidebarWrapper {
+  width: 260px; /* Chiều ngang vừa phải của Sidebar */
+  flex-shrink: 0;
+  position: sticky;
+  top: 32px; /* Cách mép trên màn hình 32px cho đồng bộ */
+  height: calc(100vh - 64px); /* Chiều cao chiếm trọn màn hình trừ đi lề trên lề dưới */
+  z-index: 100;
+}
+
+/* Phần nội dung chính có thể tự co giãn và cuộn */
+.mainContent {
+  flex: 1;
+  min-width: 0; /* Tránh vỡ layout khi nội dung con quá rộng */
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
