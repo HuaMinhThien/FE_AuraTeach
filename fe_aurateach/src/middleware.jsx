@@ -38,7 +38,7 @@ export function middleware(request) {
       return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
     }
     if (token && role === "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL("/admin-dashboard", request.url));
     }
     // Nếu là student hoặc khách vãng lai chưa đăng nhập -> Cho phép xem Trang chủ bình thường
     return NextResponse.next();
