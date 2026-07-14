@@ -43,13 +43,13 @@ export default function Sidebar() {
 
   // Danh sách các Router trong hệ thống Admin
   const menuItems = [
-    { name: "Bảng điều khiển", path: "/admin/dashboard", icon: "📊" },
-    { name: "Quản lý lớp học", path: "/admin/classes", icon: "🏫" },
-    { name: "Quản lý gia sư", path: "/admin/tutors", icon: "👨‍🏫" },
-    { name: "Quản lý học viên", path: "/admin/students", icon: "🎒" },
-    { name: "Lịch trình dạy", path: "/admin/schedule", icon: "📅" },
-    { name: "Thu nhập & Ví", path: "/admin/revenue", icon: "💳" },
-    { name: "Cấu hình hồ sơ", path: "/profile-tutor", icon: "👤" },
+    { name: "Bảng điều khiển", path: "/admin-dashboard"},
+    { name: "Quản lý lớp học", path: "/admin-classes"},
+    { name: "Quản lý gia sư", path: "/admin-tutors"},
+    { name: "Quản lý học viên", path: "/admin-students"},
+    { name: "Lịch trình dạy", path: "/admin-schedule"},
+    { name: "Thu nhập & Ví", path: "/admin-revenue"},
+    { name: "Cấu hình hồ sơ", path: "/admin-profile"},
   ];
 
   return (
@@ -76,7 +76,7 @@ export default function Sidebar() {
                   href={item.path}
                   className={`${styles.menuLink} ${isActive ? styles.active : ""}`}
                 >
-                  <span className={styles.icon}>{item.icon}</span>
+                  
                   <span className={styles.linkText}>{item.name}</span>
                 </Link>
               </li>
