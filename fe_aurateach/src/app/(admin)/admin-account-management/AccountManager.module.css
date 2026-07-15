@@ -1,0 +1,264 @@
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #333;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 28px;
+  margin-bottom: 6px;
+  color: #1a202c;
+}
+
+.header p {
+  color: #718096;
+}
+
+/* Thanh công cụ lọc */
+.filterBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 250px;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.selectInput {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: white;
+  min-width: 160px;
+  cursor: pointer;
+}
+
+/* Cấu trúc Bảng hiển thị */
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  background: #fff;
+}
+
+.table th {
+  background-color: #f8fafc;
+  padding: 14px 16px;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.tableRow {
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tableRow:hover {
+  background-color: #f8fafc;
+}
+
+.table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.avatarImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.boldText {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+/* Badges phân loại */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badgeTutor {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.badgeStudent {
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+}
+
+.statusActive {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.statusBanned {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Hệ thống Buttons */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btnDanger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btnSuccess {
+  background-color: #22c55e;
+  color: white;
+}
+
+.noData {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+
+/* Giao diện Overlay Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.closeBtn:hover {
+  color: #475569;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+}
+
+.largeAvatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.modalBody h3 {
+  font-size: 16px;
+  color: #1e293b;
+  margin-top: 16px;
+  margin-bottom: 10px;
+  border-left: 4px solid #3b82f6;
+  padding-left: 8px;
+}
+
+.gridInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.gridInfo p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.roleSpecificBox {
+  margin-top: 20px;
+}
+
+.financialBox {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 14px 0;
+}
+
+.incomeText {
+  color: #d97706;
+  font-weight: 700;
+}
+
+.textSuccess { color: #166534; font-weight: 600; }
+.textWarning { color: #9a3412; font-weight: 600; }
+.subText { color: #94a3b8; font-style: italic; font-size: 13px; }
