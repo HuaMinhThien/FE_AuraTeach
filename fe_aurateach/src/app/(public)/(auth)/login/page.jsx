@@ -72,7 +72,7 @@ export default function LoginPage() {
           window.location.href = "/tutor-dashboard";
           break;
         case "admin":
-          window.location.href = "/admin";
+          window.location.href = "/admin-dashboard";
           break;
         default:
           window.location.href = "/";

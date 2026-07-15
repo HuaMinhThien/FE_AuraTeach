@@ -174,14 +174,13 @@
       "status": "active",
       "created_at": "2026-01-15T08:00:00Z"
     }
-
   ],
   "admins": [
     {
       "admin_id": "admin_01",
-      "user_id": "u-admin-1"
+      "user_id": "u-admin-1",
+      "id": "949d"
     }
-    
   ],
   "tutors": [
     {
@@ -191,10 +190,13 @@
       "qualification": "Đại học - CNTT",
       "rating": 0,
       "verification_status": "Đã xác minh",
-      "Experience": "Dưới 1 năm",
+      "experience": "Dưới 1 năm",
       "id": "1f17",
       "pending_balance": 1200000,
-      "available_balance": 53390000
+      "available_balance": 53390000,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_01/profile",
+      "created_at": "2025-01-15T08:30:00.000Z"
     },
     {
       "tutor_id": "tutor_02",
@@ -203,10 +205,13 @@
       "qualification": "Cử nhân - Sư phạm Toán",
       "rating": 5,
       "verification_status": "Đã xác minh",
-      "Experience": "5 năm kinh nghiệm",
+      "experience": "5 năm kinh nghiệm",
       "id": "c95a",
       "pending_balance": 100000,
-      "available_balance": 3390000
+      "available_balance": 3390000,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_02/math-specialist",
+      "created_at": "2025-02-20T14:15:00.000Z"
     },
     {
       "tutor_id": "tutor_03",
@@ -215,10 +220,13 @@
       "qualification": "Thạc sĩ - Ngữ Văn",
       "rating": 4.9,
       "verification_status": "Đã xác minh",
-      "Experience": "6 năm kinh nghiệm",
+      "experience": "6 năm kinh nghiệm",
       "id": "12c3",
       "pending_balance": 2200000,
-      "available_balance": 533900
+      "available_balance": 533900,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_03/literature-teacher",
+      "created_at": "2025-03-10T09:45:00.000Z"
     },
     {
       "tutor_id": "tutor_04",
@@ -227,10 +235,13 @@
       "qualification": "Đại học - Ngôn ngữ Anh",
       "rating": 4.7,
       "verification_status": "Chưa cập nhật",
-      "Experience": "4 năm kinh nghiệm",
+      "experience": "4 năm kinh nghiệm",
       "id": "e73f",
       "pending_balance": 1222000,
-      "available_balance": 44390000
+      "available_balance": 44390000,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_04/ielts-expert",
+      "created_at": "2025-04-05T11:20:00.000Z"
     },
     {
       "tutor_id": "tutor_1782855815613",
@@ -242,9 +253,10 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
-      "cv_link": "http://localhost:3000/register/teacher",
-      "created_at": "2026-06-30T21:43:35.613Z",
-      "id": "xN0b0SJLAwE"
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_1782855815613/history",
+      "created_at": "2025-05-12T16:30:00.000Z",
+      "id": "d377"
     }
   ],
   "students": [
