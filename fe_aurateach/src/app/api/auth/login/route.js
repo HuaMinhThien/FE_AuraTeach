@@ -23,13 +23,14 @@ export async function POST(request) {
       );
     }
 
-    // === TÌM FILE DATA.JSON Ở NHIỀU VỊ TRÍ ===
+    // === TÌM FILE DATA.JSON - THÊM ĐƯỜNG DẪN src/api/data.json ===
     const possiblePaths = [
-      path.join(process.cwd(), "src", "data.json"),              // src/data.json
-      path.join(process.cwd(), "data.json"),                    // data.json (root)
-      path.join(process.cwd(), "src", "app", "api", "data.json"), // src/app/api/data.json
-      path.join(process.cwd(), "public", "data.json"),          // public/data.json
-      path.join(process.cwd(), "src", "data", "data.json"),     // src/data/data.json
+      path.join(process.cwd(), "src", "api", "data.json"),  // ← THÊM DÒNG NÀY
+      path.join(process.cwd(), "src", "data.json"),
+      path.join(process.cwd(), "data.json"),
+      path.join(process.cwd(), "src", "app", "api", "data.json"),
+      path.join(process.cwd(), "public", "data.json"),
+      path.join(process.cwd(), "src", "data", "data.json"),
     ];
 
     let dataPath = null;
@@ -43,6 +44,7 @@ export async function POST(request) {
 
     if (!dataPath) {
       console.error("❌ Không tìm thấy file data.json ở bất kỳ vị trí nào!");
+      console.log("📁 Các vị trí đã tìm:", possiblePaths);
       return NextResponse.json(
         { 
           success: false,
@@ -121,6 +123,68 @@ export async function POST(request) {
         },
         { status: 403 }
       );
+    }
+
+    // ===== QUAN TRỌNG: Kiểm tra verification_status nếu là tutor =====
+    if (user.role === "tutor") {
+      // Lấy thông tin tutor
+      const tutor = data.tutors.find(t => t.user_id === user.user_id);
+
+      if (!tutor) {
+        return NextResponse.json(
+          { 
+            success: false,
+            message: "Không tìm thấy hồ sơ giảng viên" 
+          },
+          { status: 404 }
+        );
+      }
+
+      console.log(`📋 Tutor verification_status: ${tutor.verification_status}`);
+
+      // Kiểm tra verification_status
+      if (tutor.verification_status === "pending") {
+        return NextResponse.json(
+          { 
+            success: false,
+            message: "Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo!" 
+          },
+          { status: 403 }
+        );
+      }
+
+      if (tutor.verification_status === "rejected") {
+        const rejectReason = tutor.rejection_reason || "Không có lý do cụ thể";
+        return NextResponse.json(
+          { 
+            success: false,
+            message: `Tài khoản của bạn không được duyệt. Lý do: ${rejectReason}` 
+          },
+          { status: 403 }
+        );
+      }
+
+      // Nếu verification_status là "approved" hoặc "Đã xác minh" thì cho phép đăng nhập
+      if (tutor.verification_status !== "approved" && tutor.verification_status !== "Đã xác minh") {
+        return NextResponse.json(
+          { 
+            success: false,
+            message: "Trạng thái tài khoản không hợp lệ. Vui lòng liên hệ hỗ trợ." 
+          },
+          { status: 403 }
+        );
+      }
+
+      console.log(`✅ Tutor ${user.full_name} đã được xác minh (${tutor.verification_status})`);
+    }
+
+    // ===== Nếu là student hoặc admin, không cần kiểm tra verification =====
+    if (user.role === "student") {
+      console.log(`✅ Student ${user.full_name} đăng nhập thành công`);
+    }
+
+    if (user.role === "admin") {
+      console.log(`✅ Admin ${user.full_name} đăng nhập thành công`);
     }
 
     // === XÓA PASSWORD TRƯỚC KHI TRẢ VỀ ===
