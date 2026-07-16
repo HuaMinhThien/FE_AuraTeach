@@ -135,16 +135,24 @@ export async function POST(request) {
     }
 
     // 6. Trả về kết quả thành công
-    const { password: _, ...userInfo } = newUser;
+      const { password: _, ...userInfo } = newUser;
 
-    return NextResponse.json({
-      success: true,
-      message: `Đăng ký tài khoản ${role === 'student' ? 'Học viên' : 'Gia sư'} thành công! Vui lòng đăng nhập.`,
-      data: {
-        user: userInfo,
-        profile: profileData
+    // Tạo message phù hợp với role
+      let successMessage = "";
+      if (role === "student") {
+        successMessage = "Đăng ký tài khoản Học viên thành công! Vui lòng đăng nhập.";
+      } else if (role === "tutor") {
+        successMessage = "Đăng ký tài khoản Giảng viên thành công! Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo.";
       }
-    });
+
+      return NextResponse.json({
+        success: true,
+        message: successMessage,
+        data: {
+          user: userInfo,
+          profile: profileData
+        }
+      });
 
   } catch (error) {
     console.error("Lỗi POST /api/auth/register:", error);

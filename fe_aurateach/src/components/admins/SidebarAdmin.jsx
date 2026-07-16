@@ -8,16 +8,14 @@ import Image from "next/image";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter(); // Khởi tạo router để điều hướng sau khi logout
+  const router = useRouter();
 
-  // Khởi tạo state với dữ liệu mặc định ban đầu
   const [adminData, setAdminData] = useState({
     name: "Admin",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80",
   });
 
   useEffect(() => {
-    // Đọc cookie trực tiếp tại client
     const cookies = document.cookie.split("; ");
     const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
 
@@ -28,7 +26,6 @@ export default function Sidebar() {
         const userInfo = JSON.parse(decodedValue);
 
         if (userInfo && userInfo.name) {
-          // Dùng setTimeout để tránh lỗi linter về hiệu năng render
           setTimeout(() => {
             setAdminData({
               name: userInfo.name,
@@ -42,30 +39,25 @@ export default function Sidebar() {
     }
   }, []);
 
-  // Hàm xử lý Đăng xuất
   const handleLogout = () => {
     if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
-      // 1. Xóa cookie user_info bằng cách set expires về quá khứ và max-age=0
       document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-      
-      // 2. Chuyển hướng người dùng về trang đăng nhập
       router.push("/login");
     }
   };
 
-  // Danh sách các Router trong hệ thống Admin
   const menuItems = [
-    { name: "Bảng điều khiển", path: "/admin-dashboard"},
-    { name: "Quản lý lớp học", path: "/admin-classes"},
-    { name: "Quản lý tài khoản người dùng", path: "/admin-account-management"},
-    { name: "Lịch trình dạy", path: "/admin-schedule"},
-    { name: "Thu nhập & Ví", path: "/admin-revenue"},
-    { name: "Cấu hình hồ sơ", path: "/admin-profile"},
-  ];
+  { name: "Bảng điều khiển", path: "/admin" },
+  { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },  // ← Bỏ /admin prefix
+  { name: "Quản lý lớp học", path: "/admin-classes" },
+  { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
+  { name: "Lịch trình dạy", path: "/admin-schedule" },
+  { name: "Thu nhập & Ví", path: "/admin-revenue" },
+  { name: "Cấu hình hồ sơ", path: "/admin-profile" },
+];
 
   return (
     <div className={styles.sidebar}>
-      {/* 1. Phần Logo đầu trang */}
       <div className={styles.logoSection}>
         <div className={styles.logoIcon}>
           <Image src="/img/logo-aurateach.png" alt="AuraTeach Logo" width={60} height={50} priority />
@@ -76,11 +68,10 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* 2. Phần Menu Navigation */}
       <nav className={styles.navigation}>
         <ul className={styles.menuList}>
           {menuItems.map((item, index) => {
-            const isActive = pathname === item.path;
+            const isActive = pathname === item.path || pathname?.startsWith(item.path + '/');
             return (
               <li key={index}>
                 <Link
@@ -95,7 +86,6 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* 3. Phần chân Sidebar */}
       <div className={styles.footerSection}>
         <div className={styles.adminMiniProfile}>
           <div className={styles.avatarWrapper}>

@@ -1,0 +1,77 @@
+import { NextResponse } from "next/server";
+
+const API_BASE = "http://localhost:3007";
+
+export async function POST(request) {
+  try {
+    const { userId, tutorId, reason } = await request.json();
+
+    if (!userId || !tutorId) {
+      return NextResponse.json(
+        { success: false, message: "Thiếu thông tin userId hoặc tutorId" },
+        { status: 400 }
+      );
+    }
+
+    if (!reason || !reason.trim()) {
+      return NextResponse.json(
+        { success: false, message: "Vui lòng nhập lý do từ chối" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`❌ Reject tutor: userId=${userId}, reason=${reason}`);
+
+    // Lấy tutor hiện tại
+    const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${tutorId}`);
+    const tutors = await tutorRes.json();
+    const tutor = tutors[0];
+
+    if (!tutor) {
+      return NextResponse.json(
+        { success: false, message: "Không tìm thấy hồ sơ giảng viên" },
+        { status: 404 }
+      );
+    }
+
+    if (tutor.verification_status === "approved") {
+      return NextResponse.json(
+        { success: false, message: "Hồ sơ này đã được duyệt, không thể từ chối" },
+        { status: 400 }
+      );
+    }
+
+    // Cập nhật tutor status thành rejected
+    const updateRes = await fetch(`${API_BASE}/tutors/${tutor.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        verification_status: "rejected",
+        rejection_reason: reason.trim()
+      })
+    });
+
+    if (!updateRes.ok) {
+      throw new Error("Không thể cập nhật trạng thái");
+    }
+
+    console.log(`❌ Tutor ${tutorId} đã bị từ chối với lý do: ${reason}`);
+
+    return NextResponse.json({
+      success: true,
+      message: "Đã từ chối hồ sơ giảng viên",
+      data: {
+        tutorId: tutorId,
+        status: "rejected",
+        reason: reason.trim()
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Lỗi server" },
+      { status: 500 }
+    );
+  }
+}
