@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './AccountManager.module.css';
+import api from '@/lib/api';  // ← Import api
 
 export default function AccountManager() {
   const [users, setUsers] = useState([]);
@@ -12,64 +13,52 @@ export default function AccountManager() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Hàm load dữ liệu ở ngoài (Phục vụ cho tính năng làm mới sau khi tương tác nút bấm)
   const loadDataFromServer = async () => {
     setIsLoading(true);
     try {
-      const [studentRes, tutorRes] = await Promise.all([
-        fetch('/api/admin-account-management/student-management'),
-        fetch('/api/admin-account-management/tutor-management')
-      ]);
-
-      const studentsJson = await studentRes.json();
-      const tutorsJson = await tutorRes.json();
-
-      if (studentsJson.success && tutorsJson.success) {
-        setUsers([...studentsJson.data, ...tutorsJson.data]);
+      const response = await api.get('/users');
+      let usersData = response.data.data || response.data || [];
+      if (!Array.isArray(usersData)) {
+        usersData = Object.values(usersData);
       }
+      setUsers(usersData);
     } catch (error) {
       console.error("Lỗi kết nối API:", error);
+      alert("Không thể tải dữ liệu người dùng!");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // CÁCH 2: Khởi tạo dữ liệu ban đầu an toàn thông qua biến cờ hiệu cô lập
   useEffect(() => {
-    let isMounted = true; // Cờ hiệu kiểm soát trạng thái tồn tại của component
+    let isMounted = true;
 
     const initializeData = async () => {
       try {
-        const [studentRes, tutorRes] = await Promise.all([
-          fetch('/api/admin-account-management/student-management'),
-          fetch('/api/admin-account-management/tutor-management')
-        ]);
-        
-        const studentsJson = await studentRes.json();
-        const tutorsJson = await tutorRes.json();
-
-        // Chỉ cập nhật state nếu component này vẫn đang được hiển thị trên màn hình
-        if (isMounted && studentsJson.success && tutorsJson.success) {
-          setUsers([...studentsJson.data, ...tutorsJson.data]);
+        const response = await api.get('/users');
+        if (isMounted) {
+          let usersData = response.data.data || response.data || [];
+          if (!Array.isArray(usersData)) {
+            usersData = Object.values(usersData);
+          }
+          setUsers(usersData);
         }
       } catch (error) {
         console.error("Lỗi tải dữ liệu khởi tạo:", error);
       } finally {
         if (isMounted) {
-          setIsLoading(false); // Dòng này chạy bất đồng bộ nên không gây lỗi render dây chuyền
+          setIsLoading(false);
         }
       }
     };
 
     initializeData();
 
-    // Hàm Cleanup dọn dẹp bộ nhớ khi người dùng đột ngột rời khỏi trang/chuyển menu
     return () => {
       isMounted = false;
     };
   }, []);
 
-  // Bộ lọc Client-side tìm kiếm
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       const matchSearch = 
@@ -84,51 +73,41 @@ export default function AccountManager() {
     });
   }, [users, searchTerm, roleFilter, statusFilter]);
 
-  // Kích hoạt cập nhật trạng thái Block qua API trung gian
   const handleToggleBlock = async (user) => {
     const nextStatus = user.status === 'active' ? 'banned' : 'active';
     if (!window.confirm(`Bạn muốn thay đổi trạng thái của ${user.full_name} thành ${nextStatus.toUpperCase()}?`)) return;
 
-    const endpoint = user.role === 'student' 
-      ? '/api/admin-account-management/student-management'
-      : '/api/admin-account-management/tutor-management';
-
     try {
-      const res = await fetch(endpoint, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.user_id, status: nextStatus })
+      const response = await api.patch(`/users/${user.user_id}`, {
+        status: nextStatus
       });
-      const result = await res.json();
 
-      if (result.success) {
-        alert(result.message);
-        loadDataFromServer(); // Tái sử dụng hàm load bên ngoài để cập nhật giao diện mới nhất
+      if (response.data) {
+        alert(`Đã ${nextStatus === 'active' ? 'mở khóa' : 'khóa'} tài khoản ${user.full_name}!`);
+        loadDataFromServer();
         if (selectedUser && selectedUser.user_id === user.user_id) {
           setSelectedUser(prev => ({ ...prev, status: nextStatus }));
         }
       }
     } catch (error) {
-      alert("Lỗi thực thi API!");
+      console.error("Lỗi cập nhật trạng thái:", error);
+      alert("Lỗi khi cập nhật trạng thái!");
     }
   };
 
-  // Kích hoạt Duyệt hồ sơ Gia sư lên API trung gian
   const handleVerifyTutor = async (tutor) => {
     try {
-      const res = await fetch('/api/admin-account-management/tutor-management', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tutorId: tutor.tutor_id, verificationStatus: 'Đã xác minh' })
+      const response = await api.patch(`/tutors/${tutor.tutor_id}`, {
+        verification_status: 'Đã xác minh'
       });
-      const result = await res.json();
 
-      if (result.success) {
+      if (response.data) {
         alert("Phê duyệt hồ sơ thành công!");
-        loadDataFromServer(); // Tải lại danh sách mới
+        loadDataFromServer();
         setSelectedUser(prev => ({ ...prev, verification_status: 'Đã xác minh' }));
       }
     } catch (error) {
+      console.error("Lỗi duyệt hồ sơ:", error);
       alert("Lỗi khi gửi yêu cầu duyệt!");
     }
   };
@@ -136,10 +115,9 @@ export default function AccountManager() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>Trang Quản Lý Tài Khoản </h1>
+        <h1>Trang Quản Lý Tài Khoản</h1>
       </header>
 
-      {/* Tìm kiếm & Lọc */}
       <div className={styles.filterBar}>
         <input 
           type="text" 
@@ -152,6 +130,7 @@ export default function AccountManager() {
           <option value="all">Tất cả vai trò</option>
           <option value="student">Học viên</option>
           <option value="tutor">Gia sư</option>
+          <option value="admin">Quản trị viên</option>
         </select>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={styles.selectInput}>
           <option value="all">Tất cả trạng thái</option>
@@ -160,9 +139,8 @@ export default function AccountManager() {
         </select>
       </div>
 
-      {/* Bảng kết quả */}
       {isLoading ? (
-        <div className={styles.noData}>Đang lấy dữ liệu thời gian thực từ JSON Server...</div>
+        <div className={styles.noData}>Đang tải dữ liệu...</div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
@@ -182,10 +160,10 @@ export default function AccountManager() {
                   <tr key={user.user_id} className={styles.tableRow} onClick={() => setSelectedUser(user)}>
                     <td className={styles.boldText}>{user.full_name}</td>
                     <td>{user.email}</td>
-                    <td>{user.phone}</td>
+                    <td>{user.phone || 'Chưa cập nhật'}</td>
                     <td>
-                      <span className={`${styles.badge} ${user.role === 'tutor' ? styles.badgeTutor : styles.badgeStudent}`}>
-                        {user.role.toUpperCase()}
+                      <span className={`${styles.badge} ${user.role === 'tutor' ? styles.badgeTutor : user.role === 'admin' ? styles.badgeAdmin : styles.badgeStudent}`}>
+                        {user.role === 'admin' ? 'ADMIN' : user.role.toUpperCase()}
                       </span>
                     </td>
                     <td>
@@ -205,7 +183,7 @@ export default function AccountManager() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className={styles.noData}>Không tìm thấy tài khoản thích hợp.</td>
+                  <td colSpan="6" className={styles.noData}>Không tìm thấy tài khoản phù hợp.</td>
                 </tr>
               )}
             </tbody>
@@ -220,7 +198,7 @@ export default function AccountManager() {
             <button className={styles.closeBtn} onClick={() => setSelectedUser(null)}>&times;</button>
             <div className={styles.modalHeader}>
               <h2>{selectedUser.full_name}</h2>
-              <span className={`${styles.badge} ${selectedUser.role === 'tutor' ? styles.badgeTutor : styles.badgeStudent}`}>
+              <span className={`${styles.badge} ${selectedUser.role === 'tutor' ? styles.badgeTutor : selectedUser.role === 'admin' ? styles.badgeAdmin : styles.badgeStudent}`}>
                 {selectedUser.role.toUpperCase()}
               </span>
             </div>
@@ -229,7 +207,7 @@ export default function AccountManager() {
               <div className={styles.gridInfo}>
                 <p><strong>Mã User:</strong> {selectedUser.user_id}</p>
                 <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Số điện thoại:</strong> {selectedUser.phone}</p>
+                <p><strong>Số điện thoại:</strong> {selectedUser.phone || 'Chưa cập nhật'}</p>
                 <p><strong>Trạng thái hệ thống:</strong> {selectedUser.status === 'active' ? 'Hoạt động' : 'Bị khóa'}</p>
               </div>
 
@@ -237,7 +215,7 @@ export default function AccountManager() {
                 <div className={styles.roleSpecificBox}>
                   <h3>Hồ Sơ Học Viên</h3>
                   <p><strong>Trường học:</strong> {selectedUser.school_name || 'Chưa cập nhật'}</p>
-                  <p><strong>Khối lớp:</strong> Khối {selectedUser.grade || 'Chưa cập nhật'}</p>
+                  <p><strong>Khối lớp:</strong> {selectedUser.grade || 'Chưa cập nhật'}</p>
                 </div>
               )}
 
@@ -245,12 +223,13 @@ export default function AccountManager() {
                 <div className={styles.roleSpecificBox}>
                   <h3>Hồ Sơ Gia Sư</h3>
                   <p><strong>Trình độ bằng cấp:</strong> {selectedUser.qualification || 'Chưa cập nhật'}</p>
-                  <p><strong>Kinh nghiệm giảng dạy:</strong> {selectedUser.experience || 'Chưa cập nhật'}</p>
-                  <p><strong>Tình trạng kiểm duyệt hồ sơ:</strong> {selectedUser.verification_status}</p>
+                  <p><strong>Tiểu sử:</strong> {selectedUser.bio || 'Chưa cập nhật'}</p>
+                  <p><strong>Đánh giá:</strong> {selectedUser.rating || 'Chưa có'}</p>
+                  <p><strong>Tình trạng kiểm duyệt:</strong> {selectedUser.verification_status || 'Chưa xác minh'}</p>
 
                   <div className={styles.financialBox}>
-                    <p>💰 <strong>Số dư khả dụng:</strong> {selectedUser.available_balance?.toLocaleString()} đ</p>
-                    <p>⏳ <strong>Đang đóng băng thanh toán:</strong> {selectedUser.pending_balance?.toLocaleString()} đ</p>
+                    <p>💰 <strong>Số dư khả dụng:</strong> {(selectedUser.available_balance || 0).toLocaleString()}đ</p>
+                    <p>⏳ <strong>Đang đóng băng:</strong> {(selectedUser.pending_balance || 0).toLocaleString()}đ</p>
                   </div>
 
                   {selectedUser.verification_status !== 'Đã xác minh' && (
