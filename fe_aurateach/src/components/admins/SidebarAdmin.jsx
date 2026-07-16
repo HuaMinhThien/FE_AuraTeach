@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import styles from "./Sidebar.module.css";
 import Image from "next/image";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter(); // Khởi tạo router để điều hướng sau khi logout
 
   // Khởi tạo state với dữ liệu mặc định ban đầu
   const [adminData, setAdminData] = useState({
@@ -40,6 +41,17 @@ export default function Sidebar() {
       }
     }
   }, []);
+
+  // Hàm xử lý Đăng xuất
+  const handleLogout = () => {
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+      // 1. Xóa cookie user_info bằng cách set expires về quá khứ và max-age=0
+      document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+      
+      // 2. Chuyển hướng người dùng về trang đăng nhập
+      router.push("/login");
+    }
+  };
 
   // Danh sách các Router trong hệ thống Admin
   const menuItems = [
@@ -75,7 +87,6 @@ export default function Sidebar() {
                   href={item.path}
                   className={`${styles.menuLink} ${isActive ? styles.active : ""}`}
                 >
-                  
                   <span className={styles.linkText}>{item.name}</span>
                 </Link>
               </li>
@@ -104,7 +115,8 @@ export default function Sidebar() {
             <p className={styles.adminRole}>Quản trị viên</p>
           </div>
         </div>
-        <button className={styles.logoutBtn}>
+        
+        <button className={styles.logoutBtn} onClick={handleLogout}>
           <span>🚪</span> Đăng xuất
         </button>
       </div>
