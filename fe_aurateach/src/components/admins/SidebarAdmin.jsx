@@ -60,7 +60,6 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-<<<<<<< HEAD
     { name: "Dashboard", path: "/admin-dashboard"},
     { name: "Quản lý lớp học", path: "/admin-classes"},
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management"},
@@ -68,16 +67,6 @@ export default function Sidebar() {
     { name: "Thu nhập & Ví", path: "/admin-revenue"},
     { name: "Cấu hình hồ sơ", path: "/admin-profile"},
   ];
-=======
-  { name: "Bảng điều khiển", path: "/admin" },
-  { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },  // ← Bỏ /admin prefix
-  { name: "Quản lý lớp học", path: "/admin-classes" },
-  { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
-  { name: "Lịch trình dạy", path: "/admin-schedule" },
-  { name: "Thu nhập & Ví", path: "/admin-revenue" },
-  { name: "Cấu hình hồ sơ", path: "/admin-profile" },
-];
->>>>>>> main
 
   // Trong khi chưa mount (Server render hoặc client chưa hydrate),
   // render placeholder để tránh mismatch
