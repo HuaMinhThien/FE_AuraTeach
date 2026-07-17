@@ -161,6 +161,73 @@
       "role": "student",
       "status": "active",
       "created_at": "2026-07-01T08:13:04.178Z"
+    },
+    {
+      "id": "u-admin-1",
+      "user_id": "u-admin-1",
+      "email": "thienadmin@gmail.com",
+      "password": "123123",
+      "full_name": "Thiện Admin",
+      "phone": "0912345678",
+      "avatar": "/img/avt/thien.jpg",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2026-01-15T08:00:00Z"
+    },
+    {
+      "id": "e62d",
+      "user_id": "user_1784195250277_zprx34",
+      "email": "sangnguyen@gmail.com",
+      "password": "123123",
+      "full_name": " Nguyễn Văn Sáng",
+      "phone": "0909890098",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T09:47:30.277Z"
+    },
+    {
+      "id": "3825",
+      "user_id": "user_1784195991700_sjra5e",
+      "email": "tamtran@gmail.com",
+      "password": "123123",
+      "full_name": "Trần Thanh Tâm",
+      "phone": "0932176859",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T09:59:51.700Z"
+    },
+    {
+      "id": "36b1",
+      "user_id": "user_1784198598761_gvy8le",
+      "email": "linhhoang@gmail.com",
+      "password": "123123",
+      "full_name": "Hoàng Yến Linh",
+      "phone": "0967867812",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T10:43:18.761Z"
+    },
+    {
+      "id": "09b6",
+      "user_id": "user_1784200232434_t7j79u",
+      "email": "ngochuynh@gmail.com",
+      "password": "123123",
+      "full_name": "Huỳnh Như Ngọc",
+      "phone": "0945645678",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T11:10:32.434Z"
+    }
+  ],
+  "admins": [
+    {
+      "admin_id": "admin_01",
+      "user_id": "u-admin-1",
+      "id": "949d"
     }
   ],
   "tutors": [
@@ -171,10 +238,13 @@
       "qualification": "Đại học - CNTT",
       "rating": 0,
       "verification_status": "Đã xác minh",
-      "Experience": "Dưới 1 năm",
+      "experience": "Dưới 1 năm",
       "id": "1f17",
       "pending_balance": 1200000,
-      "available_balance": 53390000
+      "available_balance": 53390000,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_01/profile",
+      "created_at": "2025-01-15T08:30:00.000Z"
     },
     {
       "tutor_id": "tutor_02",
@@ -183,10 +253,13 @@
       "qualification": "Cử nhân - Sư phạm Toán",
       "rating": 5,
       "verification_status": "Đã xác minh",
-      "Experience": "5 năm kinh nghiệm",
+      "experience": "5 năm kinh nghiệm",
       "id": "c95a",
       "pending_balance": 100000,
-      "available_balance": 3390000
+      "available_balance": 3390000,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_02/math-specialist",
+      "created_at": "2025-02-20T14:15:00.000Z"
     },
     {
       "tutor_id": "tutor_03",
@@ -195,10 +268,13 @@
       "qualification": "Thạc sĩ - Ngữ Văn",
       "rating": 4.9,
       "verification_status": "Đã xác minh",
-      "Experience": "6 năm kinh nghiệm",
+      "experience": "6 năm kinh nghiệm",
       "id": "12c3",
       "pending_balance": 2200000,
-      "available_balance": 533900
+      "available_balance": 533900,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_03/literature-teacher",
+      "created_at": "2025-03-10T09:45:00.000Z"
     },
     {
       "tutor_id": "tutor_04",
@@ -207,10 +283,13 @@
       "qualification": "Đại học - Ngôn ngữ Anh",
       "rating": 4.7,
       "verification_status": "Chưa cập nhật",
-      "Experience": "4 năm kinh nghiệm",
+      "experience": "4 năm kinh nghiệm",
       "id": "e73f",
       "pending_balance": 1222000,
-      "available_balance": 44390000
+      "available_balance": 44390000,
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_04/ielts-expert",
+      "created_at": "2025-04-05T11:20:00.000Z"
     },
     {
       "tutor_id": "tutor_1782855815613",
@@ -222,9 +301,67 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
-      "cv_link": "http://localhost:3000/register/teacher",
-      "created_at": "2026-06-30T21:43:35.613Z",
-      "id": "xN0b0SJLAwE"
+      "state": "active",
+      "cv_link": "https://example.com/cv/tutor_1782855815613/history",
+      "created_at": "2025-05-12T16:30:00.000Z",
+      "id": "d377"
+    },
+    {
+      "id": "5d17",
+      "tutor_id": "tutor_1784195250288",
+      "user_id": "user_1784195250277_zprx34",
+      "bio": "",
+      "qualification": "Ngữ văn",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
+      "created_at": "2026-07-16T09:47:30.288Z"
+    },
+    {
+      "id": "4f61",
+      "tutor_id": "tutor_1784195991707",
+      "user_id": "user_1784195991700_sjra5e",
+      "bio": "",
+      "qualification": "Tiếng Anh",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
+      "created_at": "2026-07-16T09:59:51.707Z"
+    },
+    {
+      "id": "7d7a",
+      "tutor_id": "tutor_1784198598774",
+      "user_id": "user_1784198598761_gvy8le",
+      "bio": "",
+      "qualification": "Ngữ văn",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
+      "created_at": "2026-07-16T10:43:18.774Z",
+      "rejection_reason": null
+    },
+    {
+      "id": "45da",
+      "tutor_id": "tutor_1784200232442",
+      "user_id": "user_1784200232434_t7j79u",
+      "bio": "",
+      "qualification": "Toán học, Tiếng Anh",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
+      "created_at": "2026-07-16T11:10:32.442Z"
     }
   ],
   "students": [
@@ -682,7 +819,8 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "u-student-1"
+        "u-student-1",
+        "user_1782855725159_tqroz6"
       ]
     },
     {
@@ -706,7 +844,8 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "u-student-1"
+        "u-student-1",
+        "user_1782855725159_tqroz6"
       ]
     },
     {
@@ -729,7 +868,9 @@
       "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
     }
   ],
   "reviews": [
@@ -833,12 +974,12 @@
       "student_id": "u-student-1",
       "course_id": "c-04",
       "tutor_id": "tutor_02",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-06-30T23:30:29.275Z",
       "created_at": "2026-06-30T23:30:29.275Z",
       "updated_at": "2026-06-30T23:30:29.275Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 180000,
       "payment_method": null,
       "transaction_id": null,
@@ -850,12 +991,12 @@
       "student_id": "u-student-1",
       "course_id": "c-08",
       "tutor_id": "tutor_02",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-01T05:50:00.460Z",
       "created_at": "2026-07-01T05:50:00.460Z",
       "updated_at": "2026-07-01T05:50:00.460Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 130000,
       "payment_method": null,
       "transaction_id": null
@@ -891,6 +1032,54 @@
       "payment_method": "qr",
       "transaction_id": null,
       "id": "W4jEzMa5lek"
+    },
+    {
+      "booking_id": "bk-1783032629904",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course-1783023956388",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-02T22:50:29.904Z",
+      "created_at": "2026-07-02T22:50:29.904Z",
+      "updated_at": "2026-07-02T22:50:29.904Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "LfNpIuHQSAM"
+    },
+    {
+      "booking_id": "bk-1783033475196",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course-1783032321908",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-02T23:04:35.196Z",
+      "created_at": "2026-07-02T23:04:35.196Z",
+      "updated_at": "2026-07-02T23:04:35.196Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "yIzNIW5ljVc"
+    },
+    {
+      "booking_id": "bk-1783033598415",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course-1783032386448",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-02T23:06:38.415Z",
+      "created_at": "2026-07-02T23:06:38.415Z",
+      "updated_at": "2026-07-02T23:06:38.415Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "eQXs2nd34hY"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

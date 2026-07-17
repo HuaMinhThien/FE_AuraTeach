@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  const { pathname } = request.nextUrl; // ✅ Đảm bảo pathname được khai báo ở đây
+  const { pathname } = request.nextUrl;
   const token = request.cookies.get("user_info")?.value;
   const role = request.cookies.get("role")?.value;
 
@@ -18,7 +18,7 @@ export function middleware(request) {
     "/forgot-password", 
     "/tutorList", 
     "/class-search",
-    "/api/bookings" 
+    "/api/bookings"
   ];
   const isPublicRoute = publicRoutes.some(route => 
     pathname === route || pathname.startsWith(route + "/")
@@ -30,6 +30,9 @@ export function middleware(request) {
     pathname === route || pathname.startsWith(route + "/")
   );
 
+  // Admin routes - cho phép tất cả route bắt đầu bằng /admin
+  const isAdminRoute = pathname.startsWith("/admin");
+
   // =========================================================================
   // LOGIC ĐIỀU HƯỚNG GỐC (TRANG ĐẦU TIÊN KHI MỞ TRÌNH DUYỆT / TRANG CHỦ "/")
   // =========================================================================
@@ -40,7 +43,6 @@ export function middleware(request) {
     if (token && role === "admin") {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
-    // Nếu là student hoặc khách vãng lai chưa đăng nhập -> Cho phép xem Trang chủ bình thường
     return NextResponse.next();
   }
 
@@ -49,7 +51,8 @@ export function middleware(request) {
     if (isPublicRoute) {
       return NextResponse.next();
     }
-    if (isStudentRoute || pathname.startsWith("/tutor") || pathname.startsWith("/admin") || pathname.startsWith("/classroom-management") || pathname.startsWith("/schedule") || pathname.startsWith("/income")) {
+    // Cho phép truy cập admin routes mà không cần token? Không, chuyển hướng đến login
+    if (isAdminRoute || isStudentRoute || pathname.startsWith("/tutor") || pathname.startsWith("/classroom-management") || pathname.startsWith("/schedule") || pathname.startsWith("/income")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }
@@ -65,46 +68,50 @@ export function middleware(request) {
     }
   }
 
-  // 3. Bảo vệ và phân quyền nghiêm ngặt không cho Tutor/Admin vào nhầm luồng hoặc quay lại trang Home ngầm
-  // 3. Bảo vệ và phân quyền nghiêm ngặt không cho Tutor/Admin/Student vào nhầm luồng
-    if (token) {
-      // 🔥 BỔ SUNG: Nếu là Student nhưng cố tình truy cập vào các trang của Tutor hoặc Admin
-      if (role === "student") {
-        const isTutorRoute = (pathname.startsWith("/tutor") && !pathname.startsWith("/tutorList")) || 
-                            pathname.startsWith("/classroom-management") || 
-                            pathname.startsWith("/schedule") || 
-                            pathname.startsWith("/income");
-                            
-        if (isTutorRoute || pathname.startsWith("/admin")) {
-          // Đá học viên quay trở lại trang chủ của student
-          return NextResponse.redirect(new URL("/", request.url));
-        }
-      }
-
-      // Nếu là Tutor nhưng đi lạc vào các Route của Admin hoặc Student
-      if (role === "tutor" && (pathname.startsWith("/admin") || isStudentRoute)) {
-        return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
-      }
-      
-      // Nếu là Admin nhưng đi lạc vào các Route của Tutor hoặc Student
-      if (role === "admin" && (pathname.startsWith("/tutor") || pathname.startsWith("/classroom-management") || pathname.startsWith("/schedule") || pathname.startsWith("/income") || isStudentRoute)) {
-        return NextResponse.redirect(new URL("/admin", request.url));
+  // 3. Bảo vệ và phân quyền
+  if (token) {
+    // Nếu là Student, không cho vào Admin routes
+    if (role === "student") {
+      const isTutorRoute = (pathname.startsWith("/tutor") && !pathname.startsWith("/tutorList")) || 
+                          pathname.startsWith("/classroom-management") || 
+                          pathname.startsWith("/schedule") || 
+                          pathname.startsWith("/income");
+                          
+      if (isTutorRoute || isAdminRoute) {
+        return NextResponse.redirect(new URL("/", request.url));
       }
     }
 
-    return NextResponse.next();
+    // Nếu là Tutor, không cho vào Admin routes hoặc Student routes
+    if (role === "tutor" && (isAdminRoute || isStudentRoute)) {
+      return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
+    }
+    
+    // Nếu là Admin, không cho vào Tutor routes hoặc Student routes
+    if (role === "admin" && (pathname.startsWith("/tutor") || 
+        pathname.startsWith("/classroom-management") || 
+        pathname.startsWith("/schedule") || 
+        pathname.startsWith("/income") || 
+        isStudentRoute)) {
+      // Cho phép admin truy cập admin routes
+      if (isAdminRoute) {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    // Cho phép admin truy cập tất cả admin routes
+    if (role === "admin" && isAdminRoute) {
+      return NextResponse.next();
+    }
   }
 
-// Cấu hình matcher để định tuyến chạy qua Middleware hiệu quả
+  return NextResponse.next();
+}
+
+// Cấu hình matcher
 export const config = {
   matcher: [
-    /*
-     * Khớp tất cả các request paths trừ các trường hợp static dưới đây:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - các file ảnh có đuôi: svg, png, jpg, jpeg, gif, webp
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

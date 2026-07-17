@@ -1,137 +1,197 @@
+// src/app/(public)/classList/[id]/page.jsx
 "use client";
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import styles from "./ClassDetail.module.css";
-import courseService from '@/services/courseService';
-import courseSubscriptionService from '@/services/courseSubscriptionService';
 import authService from "@/services/authService";
 import BookingModal from "@/components/users/BookingModal";
 import Avatar from "@/components/common/Avatar";
 
 export default function ClassDetailPage({ params }) {
   const router = useRouter();
+  
   const { id } = use(params);
   const courseId = id;
 
-  // Khởi tạo state an toàn
-  const [allCategories, setAllCategories] = useState([]);
-  const [isBooked, setIsBooked] = useState(false);
   const [course, setCourse] = useState(null);
-  const [tutorInfo, setTutorInfo] = useState({ qualification: '', bio: '', rating: 0, Experience: 'Chưa cập nhật' });
+  const [tutorInfo, setTutorInfo] = useState(null);
   const [userTutor, setUserTutor] = useState(null);
   const [courseReviews, setCourseReviews] = useState([]);
+  const [allUsers, setAllUsers] = useState([]); 
+  const [allStudents, setAllStudents] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
+
+  const [isBooked, setIsBooked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
-  // Hàm chuẩn hóa dữ liệu
-  const normalizeSchedule = (days) => {
-    if (Array.isArray(days)) return days;
-    if (typeof days === 'string') return days.split(',').map(d => d.trim());
-    return [];
-  };
+  const API_BASE = "http://localhost:3007";
 
   useEffect(() => {
-    const initPage = async () => {
-      setPageLoading(true);
-      try {
-        // 1. Lấy thông tin user
-        const user = await authService.getCurrentUser();
-        setCurrentUser(user);
+    let isMounted = true;
 
-        // 2. Lấy data khóa học
-        const data = await courseService.getDetailedCourse(courseId);
+    const fetchClassData = async () => {
+      try {
+        setPageLoading(true);
+
+        const courseRes = await fetch(`${API_BASE}/courses?course_id=${courseId}`);
+        const coursesData = await courseRes.json();
         
-        if (data) {
-          if (data.categories) {
-            setAllCategories(data.categories);
-          }
-          const rawCourse = data.course || data;
-          if (user && rawCourse.students) {
-            const studentId = user.user_id || user.id;
-            // Kiểm tra xem ID của user có nằm trong mảng students không
-            setIsBooked(rawCourse.students.includes(studentId));
-          }
-          setCourse({
-            ...rawCourse,
-            students: Array.isArray(rawCourse.students) ? rawCourse.students : [],
-            schedule_days: normalizeSchedule(rawCourse.schedule_days)
-          });
-          
-          setCourseReviews(data.reviews || []);
-          if (data.tutor) setTutorInfo(data.tutor);
-          if (data.userTutor) setUserTutor(data.userTutor);
+        if (!isMounted) return;
+
+        if (!coursesData || coursesData.length === 0) {
+          setCourse(null);
+          setPageLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error("Lỗi khởi tạo:", err);
+        const currentCourse = coursesData[0];
+        setCourse(currentCourse);
+
+        const categoriesRes = await fetch(`${API_BASE}/categories`);
+        const categoriesData = await categoriesRes.json();
+        if (isMounted) setAllCategories(categoriesData);
+
+        if (currentCourse.tutor_id) {
+          const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${currentCourse.tutor_id}`);
+          const tutorsData = await tutorRes.json();
+          
+          if (tutorsData.length > 0 && isMounted) {
+            const currentTutor = tutorsData[0];
+            setTutorInfo(currentTutor);
+
+            const userTutorRes = await fetch(`${API_BASE}/users?user_id=${currentTutor.user_id}`);
+            const usersTutorData = await userTutorRes.json();
+            if (usersTutorData.length > 0 && isMounted) {
+              setUserTutor(usersTutorData[0]);
+            }
+          }
+        }
+
+        const reviewsRes = await fetch(`${API_BASE}/reviews?course_id=${courseId}`);
+        const reviewsData = await reviewsRes.json();
+        if (isMounted) setCourseReviews(reviewsData);
+
+        const [usersRes, studentsRes] = await Promise.all([
+          fetch(`${API_BASE}/users`),
+          fetch(`${API_BASE}/students`)
+        ]);
+        
+        if (isMounted) {
+          setAllUsers(await usersRes.json());
+          setAllStudents(await studentsRes.json());
+
+          const user = await authService.getCurrentUser();
+          setCurrentUser(user);
+          
+          const studentId = user?.user_id || user?.id;
+          if (studentId && currentCourse.students?.includes(studentId)) {
+            setIsBooked(true);
+          }
+        }
+
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu từ Fetch API:", error);
       } finally {
-        setPageLoading(false);
+        if (isMounted) setPageLoading(false);
       }
     };
-    
-    if (courseId) initPage();
+
+    if (courseId) {
+      fetchClassData();
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [courseId]);
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!currentUser) {
       alert("Vui lòng đăng nhập để đăng ký học!");
       router.push('/login');
       return;
     }
+
     if (currentUser.role !== 'student') {
-      alert("Chỉ học viên mới có quyền đăng ký.");
+      alert("Chỉ tài khoản Học viên mới có quyền đăng ký tham gia lớp học này.");
       return;
     }
-    if (course.students.length >= course.max_students) {
-      alert("Lớp đã đủ học viên!");
+
+    const currentStudents = course.students || [];
+    if (currentStudents.length >= course.max_students) {
+      alert("Lớp học đã đủ số lượng học viên!");
       return;
     }
+
+    const studentId = currentUser.user_id || currentUser.id;
+    if (currentStudents.includes(studentId)) {
+      alert("Bạn đã đăng ký lớp học này rồi!");
+      return;
+    }
+
     setShowBookingModal(true);
   };
 
-  // src/app/(public)/classList/[id]/page.jsx - Cập nhật phần confirmBooking
   const confirmBooking = async (notes, paymentMethod) => {
     setBookingLoading(true);
-    const studentId = currentUser?.user_id || currentUser?.id;
-
-    // 1. Tính toán totalAmount ở đây trước khi sử dụng
-    const rate = course?.hourly_rate || course?.price_per_session || 0;
-    const weeks = course?.total_weeks || 12;
-    const totalAmount = rate * weeks; 
-
-    // 2. Đóng gói dữ liệu
-    const requestData = {
-      subscription: {
-        course_id: course.course_id,
-        student_id: studentId,
-        tutor_id: course.tutor_id,
-        notes: notes,
-      },
-      payment: {
-        payment_method: paymentMethod,
-        amount: totalAmount, // Sử dụng biến totalAmount đã định nghĩa ở trên
-      }
-    };
+    const studentId = currentUser.user_id || currentUser.id;
 
     try {
-      // 3. Gọi API
-      const result = await courseSubscriptionService.registerCourse(requestData);
-      
-      if (result) {
-        alert("Đăng ký thành công!");
-        setShowBookingModal(false);
-        return { success: true, data: result };
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseId: course.course_id,
+          studentId: studentId,
+          tutorId: course.tutor_id,
+          notes: notes,
+          paymentMethod: paymentMethod
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // ✅ Trả về data để tiếp tục xử lý thanh toán
+        return {
+          success: true,
+          data: result.data
+        };
+      } else {
+        // ✅ Hiển thị lỗi chi tiết
+        alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
+        return {
+          success: false,
+          message: result.message
+        };
       }
     } catch (error) {
-      console.error("Lỗi:", error);
-      alert("Đăng ký thất bại.");
-      return { success: false };
+      console.error("Lỗi liên kết API Booking:", error);
+      alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
+      return {
+        success: false,
+        message: error.message
+      };
     } finally {
       setBookingLoading(false);
     }
+  };
+
+  // ✅ Xử lý khi booking thành công (sau khi thanh toán)
+  const handleBookingSuccess = () => {
+    setIsBooked(true);
+    setCourse(prev => ({
+      ...prev,
+      students: [...(prev.students || []), currentUser.user_id || currentUser.id]
+    }));
+    setShowBookingModal(false);
   };
 
   const handleJoinClass = () => {
@@ -165,28 +225,17 @@ export default function ClassDetailPage({ params }) {
 
   const averageRating = courseReviews.length > 0 
     ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
-    : (tutorInfo?.rating || 4.8);
-
-  if (pageLoading) {
-    return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Đang tải dữ liệu...</div>;
-  }
-
-  if (!course) {
-    return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
-  }
+    : tutorInfo?.rating || 4.8;
 
   // Kiểm tra quyền xem link Google Meet
   const canViewMeetLink = () => {
-    // Nếu chưa đăng nhập
     if (!currentUser) return false;
     
-    // Nếu là tutor (gia sư) - có quyền xem link
     if (currentUser.role === 'tutor') return true;
     
-    // Nếu là student - chỉ xem được khi đã đăng ký lớp này
     if (currentUser.role === 'student') {
       const studentId = currentUser.user_id || currentUser.id;
-      return isBooked || (course?.students && course?.students.includes(studentId));
+      return isBooked || (course?.students && course.students.includes(studentId));
     }
     
     return false;
@@ -203,22 +252,10 @@ export default function ClassDetailPage({ params }) {
   if (!course) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
-  
-  const getStudentCount = (studentsData) => {
-    if (!studentsData) return 0;
-    // Nếu là mảng thì lấy length, nếu là chuỗi thì có thể cần parse
-    if (Array.isArray(studentsData)) return studentsData.length;
-    try {
-      return JSON.parse(studentsData).length;
-    } catch {
-      return 0;
-    }
-  };
 
-  const currentStudentsCount = Array.isArray(course?.students) ? course.students.length : 0;
-  
-  
+  const currentStudentsCount = course.students ? course.students.length : 0;
   const isFull = currentStudentsCount >= course.max_students;
+
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
 
@@ -306,11 +343,7 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Lịch học</span>
-                <span className={styles.detailValue}>
-                  {Array.isArray(course?.schedule_days) 
-                    ? course.schedule_days.join(", ") 
-                    : (course?.schedule_days || "Chưa cập nhật")}
-              </span>
+                <span className={styles.detailValue}>{course.schedule_days?.join(", ") || "Chưa cập nhật"}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Ngày bắt đầu</span>
@@ -409,11 +442,7 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>📅</span>
-                <span>
-                  {Array.isArray(course?.schedule_days) 
-                    ? course.schedule_days.join(", ") 
-                    : (course?.schedule_days || "Chưa cập nhật")}
-                </span>
+                <span>{course.schedule_days?.join(", ")}</span>
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>⏰</span>
@@ -511,6 +540,7 @@ export default function ClassDetailPage({ params }) {
           tutorName={userTutor?.full_name || "Gia sư"}
           onClose={() => setShowBookingModal(false)}
           onConfirm={confirmBooking}
+          onSuccess={handleBookingSuccess}
           loading={bookingLoading}
         />
       )}
