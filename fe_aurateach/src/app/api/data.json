@@ -173,6 +173,66 @@
       "role": "admin",
       "status": "active",
       "created_at": "2026-01-15T08:00:00Z"
+    },
+    {
+      "id": "u-admin-2",
+      "user_id": "u-admin-2",
+      "email": "liemadmin@gmail.com",
+      "password": "123123",
+      "full_name": "Liem Admin",
+      "phone": "0912345678",
+      "avatar": "/img/avt/liem.jpg",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2026-01-15T08:00:00Z"
+    },
+    {
+      "id": "e62d",
+      "user_id": "user_1784195250277_zprx34",
+      "email": "sangnguyen@gmail.com",
+      "password": "123123",
+      "full_name": " Nguyễn Văn Sáng",
+      "phone": "0909890098",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T09:47:30.277Z"
+    },
+    {
+      "id": "3825",
+      "user_id": "user_1784195991700_sjra5e",
+      "email": "tamtran@gmail.com",
+      "password": "123123",
+      "full_name": "Trần Thanh Tâm",
+      "phone": "0932176859",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T09:59:51.700Z"
+    },
+    {
+      "id": "36b1",
+      "user_id": "user_1784198598761_gvy8le",
+      "email": "linhhoang@gmail.com",
+      "password": "123123",
+      "full_name": "Hoàng Yến Linh",
+      "phone": "0967867812",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T10:43:18.761Z"
+    },
+    {
+      "id": "09b6",
+      "user_id": "user_1784200232434_t7j79u",
+      "email": "ngochuynh@gmail.com",
+      "password": "123123",
+      "full_name": "Huỳnh Như Ngọc",
+      "phone": "0945645678",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-16T11:10:32.434Z"
     }
   ],
   "admins": [
@@ -180,6 +240,11 @@
       "admin_id": "admin_01",
       "user_id": "u-admin-1",
       "id": "949d"
+    },
+    {
+      "admin_id": "admin_02",
+      "user_id": "u-admin-2",
+      "id": "e62d"
     }
   ],
   "tutors": [
@@ -257,6 +322,63 @@
       "cv_link": "https://example.com/cv/tutor_1782855815613/history",
       "created_at": "2025-05-12T16:30:00.000Z",
       "id": "d377"
+    },
+    {
+      "id": "5d17",
+      "tutor_id": "tutor_1784195250288",
+      "user_id": "user_1784195250277_zprx34",
+      "bio": "",
+      "qualification": "Ngữ văn",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
+      "created_at": "2026-07-16T09:47:30.288Z"
+    },
+    {
+      "id": "4f61",
+      "tutor_id": "tutor_1784195991707",
+      "user_id": "user_1784195991700_sjra5e",
+      "bio": "",
+      "qualification": "Tiếng Anh",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
+      "created_at": "2026-07-16T09:59:51.707Z"
+    },
+    {
+      "id": "7d7a",
+      "tutor_id": "tutor_1784198598774",
+      "user_id": "user_1784198598761_gvy8le",
+      "bio": "",
+      "qualification": "Ngữ văn",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
+      "created_at": "2026-07-16T10:43:18.774Z",
+      "rejection_reason": null
+    },
+    {
+      "id": "45da",
+      "tutor_id": "tutor_1784200232442",
+      "user_id": "user_1784200232434_t7j79u",
+      "bio": "",
+      "qualification": "Toán học, Tiếng Anh",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
+      "created_at": "2026-07-16T11:10:32.442Z"
     }
   ],
   "students": [

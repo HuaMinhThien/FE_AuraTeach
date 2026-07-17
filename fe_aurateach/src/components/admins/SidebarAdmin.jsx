@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import styles from "./Sidebar.module.css";
 import Image from "next/image";
 
@@ -52,8 +52,15 @@ export default function Sidebar() {
     }
   }, []);
 
-  // Danh sách các Router trong hệ thống Admin
+  const handleLogout = () => {
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+      document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+      router.push("/login");
+    }
+  };
+
   const menuItems = [
+<<<<<<< HEAD
     { name: "Dashboard", path: "/admin-dashboard"},
     { name: "Quản lý lớp học", path: "/admin-classes"},
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management"},
@@ -61,6 +68,16 @@ export default function Sidebar() {
     { name: "Thu nhập & Ví", path: "/admin-revenue"},
     { name: "Cấu hình hồ sơ", path: "/admin-profile"},
   ];
+=======
+  { name: "Bảng điều khiển", path: "/admin" },
+  { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },  // ← Bỏ /admin prefix
+  { name: "Quản lý lớp học", path: "/admin-classes" },
+  { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
+  { name: "Lịch trình dạy", path: "/admin-schedule" },
+  { name: "Thu nhập & Ví", path: "/admin-revenue" },
+  { name: "Cấu hình hồ sơ", path: "/admin-profile" },
+];
+>>>>>>> main
 
   // Trong khi chưa mount (Server render hoặc client chưa hydrate),
   // render placeholder để tránh mismatch
@@ -133,7 +150,7 @@ export default function Sidebar() {
       <nav className={styles.navigation}>
         <ul className={styles.menuList}>
           {menuItems.map((item, index) => {
-            const isActive = pathname === item.path;
+            const isActive = pathname === item.path || pathname?.startsWith(item.path + '/');
             return (
               <li key={index}>
                 <Link
@@ -167,7 +184,8 @@ export default function Sidebar() {
             <p className={styles.adminRole}>Quản trị viên</p>
           </div>
         </div>
-        <button className={styles.logoutBtn}>
+        
+        <button className={styles.logoutBtn} onClick={handleLogout}>
           <span>🚪</span> Đăng xuất
         </button>
       </div>

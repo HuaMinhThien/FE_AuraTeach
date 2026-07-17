@@ -11,7 +11,8 @@ export default function TeacherRegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [expertise, setExpertise] = useState("");
+  const [selectedExpertise, setSelectedExpertise] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [cvLink, setCvLink] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,7 +21,6 @@ export default function TeacherRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const expertiseOptions = [
-    "Chọn lĩnh vực của bạn",
     "Toán học",
     "Ngữ văn",
     "Tiếng Anh",
@@ -38,6 +38,27 @@ export default function TeacherRegisterPage() {
     "Khác",
   ];
 
+  // Xử lý chọn/bỏ chọn môn học
+  const toggleExpertise = (subject) => {
+    setSelectedExpertise(prev => {
+      if (prev.includes(subject)) {
+        return prev.filter(item => item !== subject);
+      } else {
+        return [...prev, subject];
+      }
+    });
+  };
+
+  // Xóa tất cả môn đã chọn
+  const clearAllExpertise = () => {
+    setSelectedExpertise([]);
+  };
+
+  // Đóng dropdown khi click ra ngoài
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -46,16 +67,11 @@ export default function TeacherRegisterPage() {
       !fullName ||
       !email ||
       !phone ||
-      !expertise ||
+      selectedExpertise.length === 0 ||
       !password ||
       !confirmPassword
     ) {
-      setError("Vui lòng nhập đầy đủ thông tin");
-      return;
-    }
-
-    if (expertise === "Chọn lĩnh vực của bạn") {
-      setError("Vui lòng chọn lĩnh vực chuyên môn");
+      setError("Vui lòng nhập đầy đủ thông tin và chọn ít nhất 1 lĩnh vực");
       return;
     }
 
@@ -83,12 +99,12 @@ export default function TeacherRegisterPage() {
         password: password,
         phone: phone,
         role: "tutor",
-        expertise: expertise,
+        expertise: selectedExpertise.join(", "),
         cvLink: cvLink
       });
 
       if (result.success) {
-        alert(result.message);
+        alert("✅ Đăng ký thành công! Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo qua email.");
         router.push("/login");
       } else {
         setError(result.message || "Đăng ký thất bại, vui lòng thử lại");
@@ -191,6 +207,7 @@ export default function TeacherRegisterPage() {
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Nguyễn Văn A"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -203,6 +220,7 @@ export default function TeacherRegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@example.com"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -215,23 +233,72 @@ export default function TeacherRegisterPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="090 123 4567"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
+                {/* Lĩnh vực chuyên môn - Dropdown */}
                 <div className="aurateach-form-group">
-                  <label htmlFor="expertise">Lĩnh vực chuyên môn</label>
-                  <select
-                    id="expertise"
-                    value={expertise}
-                    onChange={(e) => setExpertise(e.target.value)}
-                    className="aurateach-form-input"
+                  <label>
+                    Lĩnh vực chuyên môn <span style={{color: '#ef4444'}}>*</span>
+                  </label>
+                  
+                  {/* Dropdown toggle button */}
+                  <div 
+                    className={`aurateach-dropdown-toggle ${isDropdownOpen ? 'open' : ''}`}
+                    onClick={toggleDropdown}
                   >
-                    {expertiseOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                    <span className="aurateach-dropdown-text">
+                      {selectedExpertise.length > 0 
+                        ? `Đã chọn ${selectedExpertise.length} môn` 
+                        : 'Chọn lĩnh vực chuyên môn'}
+                    </span>
+                    <span className="aurateach-dropdown-arrow">
+                      {isDropdownOpen ? '▲' : '▼'}
+                    </span>
+                  </div>
+
+                  {/* Dropdown content */}
+                  {isDropdownOpen && (
+                    <div className="aurateach-dropdown-content">
+                      <div className="aurateach-dropdown-header">
+                        <span className="aurateach-dropdown-title">Chọn lĩnh vực</span>
+                        {selectedExpertise.length > 0 && (
+                          <button 
+                            type="button" 
+                            className="aurateach-clear-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearAllExpertise();
+                            }}
+                          >
+                            Xóa tất cả
+                          </button>
+                        )}
+                      </div>
+                      <div className="aurateach-expertise-list">
+                        {expertiseOptions.map((subject) => (
+                          <label key={subject} className="aurateach-expertise-item">
+                            <input
+                              type="checkbox"
+                              checked={selectedExpertise.includes(subject)}
+                              onChange={() => toggleExpertise(subject)}
+                            />
+                            <span>{subject}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="aurateach-dropdown-footer">
+                        <button 
+                          type="button" 
+                          className="aurateach-dropdown-close-btn"
+                          onClick={toggleDropdown}
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="aurateach-form-group">
@@ -255,6 +322,7 @@ export default function TeacherRegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="********"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
@@ -267,6 +335,7 @@ export default function TeacherRegisterPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="********"
                     className="aurateach-form-input"
+                    required
                   />
                 </div>
 
