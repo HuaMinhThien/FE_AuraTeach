@@ -20,12 +20,31 @@ function ReviewSection() {
           throw new Error('Không thể tải danh sách dữ liệu đánh giá');
         }
 
-        const reviewsData = await resReviews.json();
-        const studentsData = await resStudents.json();
-        const usersData = await resUsers.json();
-        const coursesData = await resCourses.json();
+        const reviewsRaw = await resReviews.json();
+        const studentsRaw = await resStudents.json();
+        const usersRaw = await resUsers.json();
+        const coursesRaw = await resCourses.json();
         
-        if (Array.isArray(reviewsData)) {
+        // 🛠️ Hàm helper tự động bóc tách mảng an toàn ở mọi cấu trúc API trả về
+        const extractArray = (resData) => {
+          if (Array.isArray(resData)) return resData;
+          if (!resData || typeof resData !== "object") return [];
+          if (Array.isArray(resData.data)) return resData.data;
+          if (resData.data && typeof resData.data === "object") {
+            if (Array.isArray(resData.data.data)) return resData.data.data;
+          }
+          for (let key in resData) {
+            if (Array.isArray(resData[key])) return resData[key];
+          }
+          return [];
+        };
+
+        const reviewsData = extractArray(reviewsRaw);
+        const studentsData = extractArray(studentsRaw);
+        const usersData = extractArray(usersRaw);
+        const coursesData = extractArray(coursesRaw);
+
+        if (reviewsData.length > 0) {
           const highRatingReviews = reviewsData
             .filter(item => Number(item.rating) >= 4.5)
             .sort(() => 0.5 - Math.random())
@@ -37,8 +56,8 @@ function ReviewSection() {
             const matchedCourse = coursesData.find(c => c.course_id === review.course_id) || {};
 
             return {
-              id: review.review_id,
-              author: matchedUser.full_name || "Học viên ẩn danh",
+              id: review.review_id || review.id,
+              author: matchedUser.full_name || matchedUser.name || "Học viên ẩn danh",
               role: matchedCourse.title ? `Học viên lớp: ${matchedCourse.title}` : "Học viên AuraTeach",
               rating: review.rating,
               comment: review.comment

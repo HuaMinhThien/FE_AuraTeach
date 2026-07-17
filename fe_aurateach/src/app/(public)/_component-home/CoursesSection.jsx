@@ -18,18 +18,44 @@ function CoursesSection() {
           try {
               const [resCategories, resCourses] = await Promise.all([
                   fetch('http://localhost:8000/api/categories'),
-                  fetch('http://localhost:8000/api/courses')
+                  fetch('http://localhost:8000/api/courses/all')
               ]);
 
               if (!resCategories.ok || !resCourses.ok) {
                   throw new Error(`Lỗi kết nối hệ thống!`);
               }
 
-              const dataCategories = await resCategories.json();
-              const dataCourses = await resCourses.json();
+              const dataCategoriesRaw = await resCategories.json();
+              const dataCoursesRaw = await resCourses.json();
 
-              setCategories(Array.isArray(dataCategories) ? dataCategories : []);
-              setCourses(Array.isArray(dataCourses) ? dataCourses : []);
+              console.log("Dữ liệu Categories gốc:", dataCategoriesRaw);
+              console.log("Dữ liệu Courses gốc:", dataCoursesRaw);
+
+              // 🛠️ Hàm helper tự động bóc tách mảng an toàn ở mọi cấu trúc API trả về
+              const extractArray = (resData) => {
+                if (Array.isArray(resData)) return resData;
+                if (!resData || typeof resData !== "object") return [];
+                
+                // Nếu là Laravel Paginator chuẩn: { current_page: 1, data: [...] }
+                if (Array.isArray(resData.data)) return resData.data;
+                
+                // Trường hợp bọc lồng nhau nhiều lớp: { success: true, data: { data: [...] } }
+                if (resData.data && typeof resData.data === "object") {
+                  if (Array.isArray(resData.data.data)) return resData.data.data;
+                  for (let subKey in resData.data) {
+                    if (Array.isArray(resData.data[subKey])) return resData.data.data[subKey];
+                  }
+                }
+                
+                // Quét toàn bộ các key ở cấp root
+                for (let key in resData) {
+                  if (Array.isArray(resData[key])) return resData[key];
+                }
+                return [];
+              };
+
+              setCategories(extractArray(dataCategoriesRaw));
+              setCourses(extractArray(dataCoursesRaw));
               setActiveTabId('All');
           } catch (error) {
               console.error('Lỗi gọi API trong CoursesSection:', error);
@@ -45,7 +71,10 @@ function CoursesSection() {
   // --- LOGIC LỌC: Lọc theo category_id ---
   const filteredCourses = activeTabId === 'All'
       ? courses
-      : courses.filter(course => course.category_id === activeTabId);
+      : courses.filter(course => {
+          const courseCatId = course.category_id || course.categoryId || course.category?.category_id || course.category?.id;
+          return String(courseCatId) === String(activeTabId);
+        });
 
   // --- SẮP XẾP: Từ ít học viên nhất đến nhiều học viên nhất ---
   const sortedCourses = [...filteredCourses].sort((a, b) => {
@@ -92,11 +121,11 @@ function CoursesSection() {
               Tất cả
             </button>
 
-            {categories
-              .filter(cat => cat.category_name !== 'Tất cả')
-              .map((cat) => {
-                const catId = cat.category_id || cat.id;
-                const isActive = activeTabId === catId;
+              {categories
+                .filter(cat => cat.category_name !== 'Tất cả')
+                .map((cat) => {
+                  const catId = cat.category_id || cat.id;
+                  const isActive = String(activeTabId) === String(catId);
                 return (
                   <button
                     key={catId}

@@ -1,5 +1,7 @@
 "use client"
 
+import studentService from "@/services/studentService"; // Điều chỉnh đường dẫn import cho đúng
+import tutorService from "@/services/tutorService";
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './AccountManager.module.css';
 
@@ -16,16 +18,14 @@ export default function AccountManager() {
   const loadDataFromServer = async () => {
     setIsLoading(true);
     try {
+      // Gọi song song các hàm service lấy danh sách học viên và gia sư
       const [studentRes, tutorRes] = await Promise.all([
-        fetch('/api/admin-account-management/student-management'),
-        fetch('/api/admin-account-management/tutor-management')
+        studentService.getStudents(),
+        tutorService.getTutorsWithDetails() // Hoặc hàm lấy danh sách gia sư tương ứng của bạn
       ]);
 
-      const studentsJson = await studentRes.json();
-      const tutorsJson = await tutorRes.json();
-
-      if (studentsJson.success && tutorsJson.success) {
-        setUsers([...studentsJson.data, ...tutorsJson.data]);
+      if (studentRes.success && tutorRes.success) {
+        setUsers([...studentRes.data, ...tutorRes.data]);
       }
     } catch (error) {
       console.error("Lỗi kết nối API:", error);
@@ -40,17 +40,15 @@ export default function AccountManager() {
 
     const initializeData = async () => {
       try {
+        // Gọi trực tiếp các service thay vì fetch qua API route cũ
         const [studentRes, tutorRes] = await Promise.all([
-          fetch('/api/admin-account-management/student-management'),
-          fetch('/api/admin-account-management/tutor-management')
+          studentService.getStudents(),
+          tutorService.getTutorsWithDetails()
         ]);
-        
-        const studentsJson = await studentRes.json();
-        const tutorsJson = await tutorRes.json();
 
         // Chỉ cập nhật state nếu component này vẫn đang được hiển thị trên màn hình
-        if (isMounted && studentsJson.success && tutorsJson.success) {
-          setUsers([...studentsJson.data, ...tutorsJson.data]);
+        if (isMounted && studentRes.success && tutorRes.success) {
+          setUsers([...studentRes.data, ...tutorRes.data]);
         }
       } catch (error) {
         console.error("Lỗi tải dữ liệu khởi tạo:", error);
@@ -89,47 +87,45 @@ export default function AccountManager() {
     const nextStatus = user.status === 'active' ? 'banned' : 'active';
     if (!window.confirm(`Bạn muốn thay đổi trạng thái của ${user.full_name} thành ${nextStatus.toUpperCase()}?`)) return;
 
-    const endpoint = user.role === 'student' 
-      ? '/api/admin-account-management/student-management'
-      : '/api/admin-account-management/tutor-management';
-
     try {
-      const res = await fetch(endpoint, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.user_id, status: nextStatus })
-      });
-      const result = await res.json();
+      let res;
+      // Phân tách gọi service dựa theo role của user
+      if (user.role === 'student') {
+        res = await studentService.updateStatus(user.user_id, nextStatus);
+      } else {
+        res = await tutorService.updateStatusOrVerification({ 
+          userId: user.user_id, 
+          status: nextStatus 
+        });
+      }
 
-      if (result.success) {
-        alert(result.message);
+      if (res && res.success) {
+        alert(res.message);
         loadDataFromServer(); // Tái sử dụng hàm load bên ngoài để cập nhật giao diện mới nhất
         if (selectedUser && selectedUser.user_id === user.user_id) {
           setSelectedUser(prev => ({ ...prev, status: nextStatus }));
         }
       }
     } catch (error) {
-      alert("Lỗi thực thi API!");
+      alert(error.message || "Lỗi thực thi API!");
     }
   };
 
   // Kích hoạt Duyệt hồ sơ Gia sư lên API trung gian
   const handleVerifyTutor = async (tutor) => {
     try {
-      const res = await fetch('/api/admin-account-management/tutor-management', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tutorId: tutor.tutor_id, verificationStatus: 'Đã xác minh' })
+      const res = await tutorService.updateStatusOrVerification({ 
+        tutorId: tutor.tutor_id, 
+        verificationStatus: 'Đã xác minh' 
       });
-      const result = await res.json();
 
-      if (result.success) {
+      if (res && res.success) {
         alert("Phê duyệt hồ sơ thành công!");
         loadDataFromServer(); // Tải lại danh sách mới
         setSelectedUser(prev => ({ ...prev, verification_status: 'Đã xác minh' }));
       }
     } catch (error) {
-      alert("Lỗi khi gửi yêu cầu duyệt!");
+      alert(error.message || "Lỗi khi gửi yêu cầu duyệt!");
     }
   };
 

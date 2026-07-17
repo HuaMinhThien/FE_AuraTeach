@@ -10,7 +10,6 @@ function FeaturedTutors() {
   useEffect(() => {
     const fetchTutors = async () => {
       try {
-        // Gọi đồng thời cả 3 API endpoint để lấy dữ liệu phục vụ cho việc map thuộc tính
         const [resUsers, resTutors, resCourses] = await Promise.all([
           fetch('http://localhost:8000/api/users'),
           fetch('http://localhost:8000/api/tutors'),
@@ -21,30 +20,49 @@ function FeaturedTutors() {
           throw new Error('Không thể tải đầy đủ dữ liệu gia sư');
         }
 
-        const usersData = await resUsers.json();
-        const tutorsData = await resTutors.json();
-        const coursesData = await resCourses.json();
+        const usersRaw = await resUsers.json();
+        const tutorsRaw = await resTutors.json();
+        const coursesRaw = await resCourses.json();
+
+        // 🛠️ Hàm helper tự động bóc tách mảng an toàn ở mọi cấu trúc API trả về
+        const extractArray = (resData) => {
+          if (Array.isArray(resData)) return resData;
+          if (!resData || typeof resData !== "object") return [];
+          if (Array.isArray(resData.data)) return resData.data;
+          if (resData.data && typeof resData.data === "object") {
+            if (Array.isArray(resData.data.data)) return resData.data.data;
+          }
+          for (let key in resData) {
+            if (Array.isArray(resData[key])) return resData[key];
+          }
+          return [];
+        };
+
+        const usersData = extractArray(usersRaw);
+        const tutorsData = extractArray(tutorsRaw);
+        const coursesData = extractArray(coursesRaw);
 
         const mergedTutors = tutorsData.map((tutor) => {
-  const matchedUser = usersData.find(u => String(u.user_id) === String(tutor.user_id)) || {};
-    const matchedCourse = coursesData.find(c => String(c.tutor_id) === String(tutor.tutor_id)) || {};
+          const matchedUser = usersData.find(u => String(u.user_id) === String(tutor.user_id)) || {};
+          const matchedCourse = coursesData.find(c => String(c.tutor_id) === String(tutor.tutor_id)) || {};
 
-    return {
-      id: tutor.tutor_id,
-      name: matchedUser.full_name || "Gia sư AuraTeach",
-      avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
-      subject: matchedCourse.course_name || matchedCourse.title || "Gia sư tự do", // Kiểm tra cả 2 trường
-      rating: parseFloat(tutor.rating) || 5.0, // Ép kiểu số
-      experience: tutor.Experience || "Chưa cập nhật",
-      bio: tutor.bio || "",
-      price: matchedCourse.price_per_session ? `${parseInt(matchedCourse.price_per_session).toLocaleString()}đ` : "Liên hệ",
-      reviews: tutor.reviews || 0 // Nếu API không có trường này, hãy để 0
-    };
-  });
+          return {
+            id: tutor.tutor_id || tutor.id,
+            name: matchedUser.full_name || matchedUser.name || "Gia sư AuraTeach",
+            avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
+            subject: matchedCourse.course_name || matchedCourse.title || "Gia sư tự do",
+            rating: parseFloat(tutor.rating) || 5.0,
+            experience: tutor.Experience || tutor.experience || "Chưa cập nhật",
+            bio: tutor.bio || "",
+            price: matchedCourse.price_per_session ? `${parseInt(matchedCourse.price_per_session).toLocaleString()}đ` : "Liên hệ",
+            reviews: tutor.reviews || 0
+          };
+        });
 
         setTutorsList(mergedTutors);
       } catch (error) {
         console.error('Lỗi gọi hoặc map API Section 5:', error);
+        setTutorsList([]);
       } finally {
         setLoading(false);
       }

@@ -1,27 +1,42 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import tutorService, { 
-  getColorForCourse, 
-  COURSE_LABELS, 
-  MAP_SCHEDULE_DAY_INDEX 
-} from "@/services/tutorService";
+import courseService from "@/services/courseService";
+import authService from "@/services/authService";
 import styles from "./schedule.module.css";
+import { 
+  COURSE_LABELS, 
+  MAP_SCHEDULE_DAY_INDEX, 
+  getColorForCourse 
+} from "@/services/courseService";
 
 export default function SchedulePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // FETCH API DATA QUA TUTOR SERVICE
   useEffect(() => {
     async function fetchActiveCourses() {
       try {
         setLoading(true);
-        const data = await tutorService.getActiveCourses("active", 100);
-        if (Array.isArray(data)) {
-          setCourses(data);
+        
+        const user = await authService.getCurrentUser();
+        const currentUserId = user?.id || user?.user_id;
+
+        const response = await courseService.getActiveCourses(currentUserId);
+        console.log("Dữ liệu thô từ API:", response); // 👈 Bật F12 xem console in ra cấu trúc gì
+
+        // Xử lý bóc tách linh hoạt mọi định dạng trả về của Laravel
+        let coursesData = [];
+        if (Array.isArray(response)) {
+          coursesData = response;
+        } else if (Array.isArray(response?.data)) {
+          coursesData = response.data; // Trường hợp trả về { success: true, data: [...] }
+        } else if (Array.isArray(response?.data?.data)) {
+          coursesData = response.data.data; // Trường hợp dùng paginate() của Laravel
         }
+
+        setCourses(coursesData);
       } catch (error) {
         console.error("Lỗi khi tải lịch học:", error);
       } finally {
@@ -90,7 +105,16 @@ export default function SchedulePage() {
       const topPosition = startHour * ROW_HEIGHT;
       const cardHeight = duration * ROW_HEIGHT - 8; 
 
-      const scheduleDays = Array.isArray(crs.schedule_days) ? crs.schedule_days : [];
+      let scheduleDays = [];
+      if (Array.isArray(crs.schedule_days)) {
+        scheduleDays = crs.schedule_days;
+      } else if (typeof crs.schedule_days === "string") {
+        try {
+          scheduleDays = JSON.parse(crs.schedule_days);
+        } catch (e) {
+          scheduleDays = [];
+        }
+      }
 
       scheduleDays.forEach((dayStr) => {
         const dayIdx = MAP_SCHEDULE_DAY_INDEX[dayStr];
@@ -128,8 +152,8 @@ export default function SchedulePage() {
             }}
           >
             <div className={styles.cardHeaderFlex}>
-              <div className={styles.classTitle} title={crs.course_name} style={{ color: colorStyle.text }}>
-                {crs.course_name}
+              <div className={styles.classTitle} title={crs.title} style={{ color: colorStyle.text }}>
+                {crs.title}
               </div>
               <span className={styles.timeBadge} style={{ backgroundColor: "rgba(0, 0, 0, 0.05)", color: colorStyle.text }}>
                 {crs.time_slot}

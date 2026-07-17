@@ -38,37 +38,50 @@ export default function TutorDashboardPage() {
         
         setUserName(userData.full_name || userData.name || "Gia Sư");
 
+        // Hàm helper an toàn: tự động tìm mảng bất chấp cấu trúc API trả về kiểu gì
+        const extractArray = (resData) => {
+          if (Array.isArray(resData)) return resData;
+          if (!resData || typeof resData !== "object") return [];
+          if (Array.isArray(resData.data)) return resData.data;
+          if (resData.data && typeof resData.data === "object") {
+            if (Array.isArray(resData.data.data)) return resData.data.data;
+          }
+          // Quét toàn bộ property trong object nếu lỡ backend bọc sâu
+          for (let key in resData) {
+            if (Array.isArray(resData[key])) return resData[key];
+          }
+          return [];
+        };
+
         // 1. Fetch thông tin ví từ tutors
         const tutorRes = await fetch(`http://localhost:8000/api/tutors?user_id=${tutorId}`);
         let tutorDetail = null;
         if (tutorRes.ok) {
-          const tutorData = await tutorRes.json();
-          if (tutorData && tutorData.length > 0) tutorDetail = tutorData[0];
+          const tutorJson = await tutorRes.json();
+          const tutorList = extractArray(tutorJson);
+          if (tutorList.length > 0) tutorDetail = tutorList[0];
         }
 
         // 2. Fetch danh sách lớp từ courses
         const coursesRes = await fetch(`http://localhost:8000/api/courses?tutor_id=${tutorId}`);
         if (coursesRes.ok) {
-          const coursesData = await coursesRes.json();
+          const coursesJson = await coursesRes.json();
+          const coursesData = extractArray(coursesJson); // Đảm bảo 100% là mảng
 
           const activeClasses = coursesData.filter(c => c.status === "active");
-          const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
+          const totalStudents = coursesData.reduce((sum, c) => sum + (Array.isArray(c.students) ? c.students.length : 0), 0);
           const availableWallet = parseFloat(tutorDetail?.available_balance) || 0;
           const pendingWallet = parseFloat(tutorDetail?.pending_balance) || 0;
           const calculatedTotalIncome = availableWallet + pendingWallet;
           const ratingValue = tutorDetail?.rating ? tutorDetail.rating : "0.0";
-          const safeTotal = calculatedTotalIncome > 0 ? calculatedTotalIncome : 1; // Tránh chia cho 0
+          const safeTotal = calculatedTotalIncome > 0 ? calculatedTotalIncome : 1; 
           const growthPercentage = pendingWallet > 0 
             ? Math.round((pendingWallet / safeTotal) * 100) 
             : 0;
-          console.log("Dữ liệu ví:", {availableWallet, pendingWallet})
+
           setStats({
-            // Dùng Math.round để xóa phần thập phân, sau đó mới format tiền tệ
             totalIncome: `${Math.round(calculatedTotalIncome).toLocaleString("vi-VN")}đ`,
-            
-            // Logic hiển thị an toàn
             incomeGrowth: pendingWallet > 0 ? `+${growthPercentage}% chờ duyệt` : "Ổn định",
-            
             totalStudents: totalStudents,
             studentsGrowth: `+${activeClasses.length} lớp`,
             openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
@@ -91,59 +104,54 @@ export default function TutorDashboardPage() {
           const formattedClasses = coursesData
             .map((course) => {
               const timeSlot = course.time_slot || "19:00-21:00";
-              const scheduleDays = Array.isArray(course.schedule_days) ? course.schedule_days : [];
               
-              // Lấy giờ bắt đầu dạy (Ví dụ: "19:00-21:00" -> 19 giờ 00 phút)
+              let scheduleDays = [];
+              if (Array.isArray(course.schedule_days)) {
+                scheduleDays = course.schedule_days;
+              } else if (typeof course.schedule_days === "string") {
+                try {
+                  scheduleDays = JSON.parse(course.schedule_days);
+                } catch (e) {
+                  scheduleDays = [];
+                }
+              }
+              
               const startTimeStr = timeSlot.split("-")[0].trim();
               const [startHour, startMinute] = startTimeStr.split(":").map(Number);
 
-              // Phân tích ngày bắt đầu khóa học (start_date trong DB đang lưu dạng YYYY-MM-DD)
               const startDate = course.start_date ? new Date(course.start_date) : new Date();
-              
-              // Tính ngày kết thúc dựa vào số tuần dạy (total_weeks)
               const totalWeeks = course.total_weeks || 12;
               const endDate = new Date(startDate.getTime());
               endDate.setDate(endDate.getDate() + (totalWeeks * 7));
 
-              // Nếu khóa học đã kết thúc hoàn toàn hoặc chưa tới ngày bắt đầu, đặt trọng số rất lớn để đẩy xuống cuối
               if (now > endDate) return null;
 
               let nextClassDate = null;
               
-              // Vòng lặp quét từ hôm nay trở đi tối đa 7 ngày để tìm ngày trùng lịch học gần nhất
               for (let i = 0; i <= 7; i++) {
                 const checkDate = new Date(now.getTime());
                 checkDate.setDate(now.getDate() + i);
                 
-                // Khóa học phải nằm trong khoảng thời gian đang chạy
                 if (checkDate >= startDate && checkDate <= endDate) {
-                  const dayNameInJs = checkDate.getDay(); // 0-6
-
-                  // Kiểm tra ngày này có trùng với thứ nào được xếp lịch không
+                  const dayNameInJs = checkDate.getDay();
                   const isMatchDay = scheduleDays.some(d => dayMap[d] === dayNameInJs);
 
                   if (isMatchDay) {
-                    // Set giờ học vào ngày tìm được
                     checkDate.setHours(startHour || 0, startMinute || 0, 0, 0);
-                    
-                    // Nếu ngày là hôm nay (i === 0) nhưng giờ học đã trôi qua rồi, bỏ qua tìm ngày tiếp theo
                     if (i === 0 && now > checkDate) {
                       continue;
                     }
-                    
                     nextClassDate = checkDate;
                     break;
                   }
                 }
               }
 
-              // Nếu không tìm được ngày nào phù hợp (khóa học chưa bắt đầu), lấy tạm ngày bắt đầu khóa học
               if (!nextClassDate) {
                 nextClassDate = startDate;
                 nextClassDate.setHours(startHour || 0, startMinute || 0, 0, 0);
               }
 
-              // Định dạng ngày hiển thị dạng trực quan (Ví dụ: "Hôm nay, 29/06" hoặc "Thứ 4, 01/07")
               let dateTag = "";
               const diffTime = nextClassDate.getTime() - now.getTime();
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -167,26 +175,23 @@ export default function TutorDashboardPage() {
                 tag: dateTag,
                 title: course.title || course.class_name || "Lớp học chưa đặt tên",
                 time: timeSlot,
-                students: `${course.students?.length || 0} học viên`,
-                sortTimestamp: nextClassDate.getTime(), // Dùng timestamp chính xác làm trọng số sắp xếp
+                students: `${Array.isArray(course.students) ? course.students.length : 0} học viên`,
+                sortTimestamp: nextClassDate.getTime(),
                 isUrgent: false,
                 thumbnail: course.thumbnail,
                 permanent_room_url: course.permanent_room_url || null
               };
             })
-            .filter(Boolean); // Loại bỏ các lớp đã kết thúc (null)
+            .filter(Boolean);
 
-          // Sắp xếp lớp có thời gian diễn ra sớm nhất lên đầu tiên
           formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
 
-          // Gắn trạng thái khẩn cấp cho lớp đầu tiên gần nhất nếu khoảng cách thời gian dưới 1 ngày
           if (formattedClasses.length > 0) {
             const firstClassTime = formattedClasses[0].sortTimestamp;
             const oneDayInMs = 24 * 60 * 60 * 1000;
             
             if (firstClassTime - now.getTime() < oneDayInMs) {
               formattedClasses[0].isUrgent = true;
-              // Nếu trùng hôm nay thì đổi chữ cho sinh động
               if (formattedClasses[0].tag.includes("HÔM NAY")) {
                 formattedClasses[0].tag = "SẮP DIỄN RA (HÔM NAY)";
               }
@@ -196,7 +201,6 @@ export default function TutorDashboardPage() {
           const limitedClasses = formattedClasses.slice(0, 3);
           setClassesList(limitedClasses);
 
-          // Build biểu đồ
           const mockChart = [
             { name: "Th1", income: Math.round(availableWallet * 0.15 / 1000000) || 4 },
             { name: "Th2", income: Math.round(availableWallet * 0.3 / 1000000) || 7 },
