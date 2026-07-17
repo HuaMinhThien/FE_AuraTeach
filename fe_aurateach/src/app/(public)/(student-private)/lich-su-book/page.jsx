@@ -19,6 +19,8 @@ export default function StudentBookingHistoryPage() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTutor, setSelectedTutor] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [allTutors, setAllTutors] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
     const initPage = async () => {
@@ -26,21 +28,27 @@ export default function StudentBookingHistoryPage() {
         setLoading(true);
         const user = await authService.getCurrentUser();
         
-        // THÊM LOG ĐỂ KIỂM TRA
-        console.log("User hiện tại:", user);
-
-        if (!user || (!user.user_id && !user.id)) {
-          console.error("Không lấy được ID người dùng!");
-          return;
+        console.log("Dữ liệu user lấy từ authService:", user);
+        
+        const userId = user?.id || user?.user_id; 
+        
+        if (!userId) {
+            console.error("Không tìm thấy ID người dùng!");
+            return;
         }
 
-        // Đảm bảo lấy đúng ID (thường là user_id hoặc id tùy theo backend trả về)
-        const currentStudentId = user.user_id || user.id; 
-        
-        const historyData = await courseSubscriptionService.getStudentHistory(currentStudentId);
+        // Gọi API lấy lịch sử
+        const historyData = await courseSubscriptionService.getStudentHistory(userId);
+        console.log("Dữ liệu history từ API:", historyData);
 
-        setBookings(historyData);
-        setBookedClasses(historyData.map(sub => sub.course));
+        // Đảm bảo historyData là mảng hợp lệ
+        if (Array.isArray(historyData)) {
+            const validData = historyData.filter(sub => sub && sub.course !== null);
+            setBookings(validData);
+            // Lưu trực tiếp các item dạng kết hợp để dễ hiển thị
+            setBookedClasses(validData); 
+        }
+
       } catch (error) {
         console.error("Lỗi khi tải lịch sử:", error);
       } finally {
@@ -49,47 +57,6 @@ export default function StudentBookingHistoryPage() {
     };
     initPage();
   }, []);
-
-  const getTutorName = (tutorId) => {
-    const tutor = allTutors.find(t => t.tutor_id === tutorId);
-    if (!tutor) return "Đang cập nhật";
-    const user = allUsers.find(u => u.user_id === tutor.user_id);
-    return user ? user.full_name : "Gia sư AuraTeach";
-  };
-
-  const getTutorInfo = (tutorId) => {
-    const tutor = allTutors.find(t => t.tutor_id === tutorId);
-    if (!tutor) return null;
-    const user = allUsers.find(u => u.user_id === tutor.user_id);
-    return {
-      ...tutor,
-      full_name: user ? user.full_name : "Gia sư AuraTeach"
-    };
-  };
-
-  const getBookingStatus = (courseId) => {
-    const sub = bookings.find(b => b.course_id === courseId);
-    if (!sub) return { label: 'N/A', className: '' };
-    const statusMap = {
-      'pending': { label: '⏳ Chờ xác nhận', className: 'status-pending' },
-      'confirmed': { label: '✅ Đã xác nhận', className: 'status-confirmed' },
-      'completed': { label: '🎓 Đã hoàn thành', className: 'status-completed' },
-      'cancelled': { label: '❌ Đã hủy', className: 'status-cancelled' }
-    };
-    return statusMap[sub.status] || { label: sub.status, className: '' };
-  };
-
-  const getPaymentStatus = (courseId) => {
-    const sub = bookings.find(b => b.course_id === courseId);
-    const payment = sub?.payment; 
-    if (!payment) return null;
-    const statusMap = {
-      'unpaid': { label: '⏳ Chưa thanh toán', className: 'payment-unpaid' },
-      'paid': { label: '✅ Đã thanh toán', className: 'payment-paid' },
-      'refunded': { label: '↩️ Đã hoàn tiền', className: 'payment-refunded' }
-    };
-    return statusMap[payment.payment_status] || null;
-  };
 
   const formatPrice = (price) => {
     if (!price) return "Liên hệ";
@@ -169,45 +136,38 @@ export default function StudentBookingHistoryPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookedClasses.filter(item => item !== null && item !== undefined).map((item) => {
-                        const status = getBookingStatus(item.course_id);
-                        const payment = getPaymentStatus(item.course_id);
-                        return (
-                          <tr key={item.course_id || item.id}>
-                            <td className="text-bold">{item.course_id || "N/A"}</td>
-                            <td>
-                              <div className="class-title-cell">
-                                <span className="class-name-text">{item.title}</span>
-                                <span className="class-flow-badge">{item.level || "Tiêu chuẩn"}</span>
-                              </div>
-                            </td>
-                            <td className="tutor-name-cell">👨‍🏫 {getTutorName(item.tutor_id)}</td>
-                            <td className="price-cell">{formatPrice(item.hourly_rate)}</td>
-                            <td>
-                              <span className={`status-badge ${status.className}`}>
-                                {status.label}
-                              </span>
-                            </td>
-                            <td>
-                              {payment ? (
-                                <span className={`payment-badge ${payment.className}`}>
-                                  {payment.label}
-                                </span>
-                              ) : (
-                                <span className="payment-badge payment-na">N/A</span>
-                              )}
-                            </td>
-                            <td>
-                              <button 
-                                className="view-detail-btn"
-                                onClick={() => handleViewDetail(item.course_id || item.id)}
-                              >
-                                Chi tiết ➜
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {bookedClasses.map((course, index) => (
+                        <tr key={course.course_id || `booking-${index}`}>
+                          <td>{course.course_id}</td>
+                          <td>{course.title}</td>
+                          <td className="tutor-name-cell">👨‍🏫 {course.tutor_display_name || course.tutor_id || "Gia sư AuraTeach"}</td>
+                          <td className="price-cell">{formatPrice(course.hourly_rate)}</td>
+                          
+                          {/* Cột Trạng thái đăng ký / khóa học */}
+                          <td>
+                            <span className="status-badge">
+                              {course.subscription_status}
+                            </span>
+                          </td>
+
+                          {/* Cột Trạng thái thanh toán (Thêm mới) */}
+                          <td>
+                            <span className={`status-badge ${course.payment_status_class || 'payment-unpaid'}`}>
+                              {course.payment_status_label || '⏳ Chưa thanh toán'}
+                            </span>
+                          </td>
+
+                          {/* Cột Hành động */}
+                          <td>
+                            <button 
+                              className="view-detail-btn"
+                              onClick={() => handleViewDetail(course.course_id)}
+                            >
+                              Chi tiết ➜
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

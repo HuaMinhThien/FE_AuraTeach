@@ -2,45 +2,43 @@
 
 import styles from "../management.module.css";
 
-export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseClass, getStatusBadge }) {
-  if (!selectedClass) return null;
+export default function CourseDetailModal({ selectedCourse, onCloseModal, onCloseCourse, getStatusBadge }) {
+  if (!selectedCourse) return null;
 
   const handleJoinRoom = () => {
-    const url = selectedClass.permanent_room_url;
+    const url = selectedCourse.permanent_room_url;
     
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học Google Meet!");
+      alert("Khóa học hiện tại chưa được cấu hình đường link phòng học Google Meet!");
     }
   };
-  console.log(selectedClass.permanent_room_url);
-  
+
+  const scheduleDays = Array.isArray(selectedCourse.schedule_days) ? selectedCourse.schedule_days : [];
+  const studentsList = Array.isArray(selectedCourse.students) ? selectedCourse.students : [];
 
   return (
     <div className={styles.modalOverlay} onClick={onCloseModal}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2>Chi tiết thông tin lớp học</h2>
+          <h2>Chi tiết thông tin khóa học</h2>
           <button className={styles.closeModalX} onClick={onCloseModal}>✕</button>
         </div>
 
         <div className={styles.modalBody}>
-          <h3 className={styles.mClassName}>{selectedClass.class_name}</h3>
+          <h3 className={styles.mClassName}>{selectedCourse.title || selectedCourse.course_name}</h3>
           <div className={styles.mBadgeRow}>
-            {getStatusBadge(selectedClass.status)}
-            <span>Thời gian học: <strong>{selectedClass.total_weeks} tuần</strong></span>
+            {getStatusBadge(selectedCourse.status)}
+            <span>Thời gian học: <strong>{selectedCourse.total_weeks || 0} tuần</strong></span>
           </div>
 
           <div className={styles.mInfoGrid}>
-            <p>📅 <strong>Ngày mở lớp:</strong> {selectedClass.start_date}</p>
-            <p>📅 <strong>Ngày kết thúc:</strong> {selectedClass.end_date}</p>
+            <p>📅 <strong>Ngày mở khóa học:</strong> {selectedCourse.start_date}</p>
+            <p>📅 <strong>Ngày kết thúc:</strong> {selectedCourse.end_date}</p>
           </div>
 
           <div>
-            {/* <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
-              🔗 <strong>Phòng học cố định:</strong> {selectedClass.permanent_room_url || "Chưa thiết lập"}
-            </p> */}
             <button 
               type="button"
               onClick={handleJoinRoom}
@@ -65,17 +63,16 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
           <div className={styles.scheduleSection}>
             <h4>📆 Lịch học định kỳ:</h4>
             <div className={styles.dayBadges}>
-              {selectedClass.schedule_days && selectedClass.schedule_days.map((day, idx) => (
+              {scheduleDays.map((day, idx) => (
                 <span key={idx} className={styles.dayBadge}>{day}</span>
               ))}
             </div>
           </div>
 
-          {/* Bảng danh sách học sinh tham gia */}
           <div className={styles.studentSection}>
-            <h4>👥 Thành viên lớp học ({selectedClass.students ? selectedClass.students.length : 0}):</h4>
-            {!selectedClass.students || selectedClass.students.length === 0 ? (
-              <p className={styles.noStudent}>Chưa có học sinh nào đăng ký lớp học này.</p>
+            <h4>👥 Thành viên khóa học ({studentsList.length}):</h4>
+            {studentsList.length === 0 ? (
+              <p className={styles.noStudent}>Chưa có học sinh nào đăng ký khóa học này.</p>
             ) : (
               <table className={styles.studentTable}>
                 <thead>
@@ -86,7 +83,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedClass.students.map((st, index) => (
+                  {studentsList.map((st, index) => (
                     <tr key={st.student_id}>
                       <td>{index + 1}</td>
                       <td><strong>{st.full_name}</strong></td>
@@ -100,9 +97,9 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
         </div>
 
         <div className={styles.modalFooter}>
-          {selectedClass.status === "active" && (
-            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.class_id)}>
-               Khóa lớp (Dừng nhận thêm)
+          {selectedCourse.status === "active" && (
+            <button className={styles.footerCloseBtn} onClick={() => onCloseCourse(selectedCourse.course_id)}>
+               Khóa khóa học (Dừng nhận thêm)
             </button>
           )}
           <button className={styles.footerCancelBtn} onClick={onCloseModal}>Đóng cửa sổ</button>

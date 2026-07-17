@@ -2,39 +2,39 @@
 
 import styles from "../management.module.css";
 
-export default function ClassGrid({ classes, loading, pagination, currentPage, setCurrentPage, onSelectClass, onCloseClass, getStatusBadge }) {
+export default function CourseGrid({ courses, loading, pagination, currentPage, setCurrentPage, onSelectCourse, onCloseCourse, getStatusBadge }) {
   if (loading) {
-    return <div className={styles.loadingText}>Đang tải danh sách lớp học...</div>;
+    return <div className={styles.loadingText}>Đang tải danh sách khóa học...</div>;
   }
 
-  const safeClasses = Array.isArray(classes) ? classes : [];
+  const safeCourses = Array.isArray(courses) ? courses : [];
 
-  if (safeClasses.length === 0) {
-    return <div className={styles.emptyText}>Không tìm thấy lớp học nào phù hợp.</div>;
+  if (safeCourses.length === 0) {
+    return <div className={styles.emptyText}>Không tìm thấy khóa học nào phù hợp.</div>;
   }
 
   return (
     <>
       <div className={styles.classGrid}>
-        {safeClasses.map((cls) => (
-          <div key={cls.course_id} className={styles.classCard}>
+        {safeCourses.map((crs) => (
+          <div key={crs.course_id} className={styles.classCard}>
             <div>
               <div className={styles.cardHeader}>
-                {getStatusBadge(cls.status)}
-                <span className={styles.weeksText}>⏳ {cls.total_weeks} tuần</span>
+                {getStatusBadge(crs.status)}
+                <span className={styles.weeksText}>⏳ {crs.total_weeks || 0} tuần</span>
               </div>
-              <h3 className={styles.className}>{cls.title}</h3>
-              <p className={styles.cardInfo}>🗓️ Ngày mở: {cls.start_date}</p>
-              <p className={styles.cardInfo}>👥 Học viên đã tham gia: {(cls.students || []).length} người</p>
+              <h3 className={styles.className}>{crs.title}</h3>
+              <p className={styles.cardInfo}>🗓️ Ngày mở: {crs.start_date}</p>
+              <p className={styles.cardInfo}>👥 Học viên đã tham gia: {(crs.students || []).length} người</p>
             </div>
             
             <div className={styles.cardAction}>
-              <button className={styles.detailBtn} onClick={() => onSelectClass(cls)}>
+              <button className={styles.detailBtn} onClick={() => onSelectCourse(crs)}>
                 Xem chi tiết
               </button>
-              {cls.status === "active" && (
-                <button className={styles.closeActionBtn} onClick={() => onCloseClass(cls.course_id)}>
-                  Khóa lớp
+              {crs.status === "active" && (
+                <button className={styles.closeActionBtn} onClick={() => onCloseCourse(crs.course_id)}>
+                  Khóa khóa học
                 </button>
               )}
             </div>
@@ -42,7 +42,6 @@ export default function ClassGrid({ classes, loading, pagination, currentPage, s
         ))}
       </div>
 
-      {/* Cụm nút bấm Phân trang */}
       {pagination.totalPages > 1 && (
         <div className={styles.paginationBox}>
           <button 

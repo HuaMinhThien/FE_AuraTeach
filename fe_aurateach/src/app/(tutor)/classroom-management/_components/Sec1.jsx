@@ -14,18 +14,17 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
           </span>
           <input
             type="text"
-            placeholder="Tìm theo tên lớp hoặc tên học viên..."
+            placeholder="Tìm theo tên khóa học hoặc tên học viên..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         
         <a href="/classroom-management/create" className={styles.createBtn}>
-          ➕ Tạo lớp học mới
+          ➕ Tạo khóa học mới
         </a>
       </div>
 
-      {/* Các tab lọc trạng thái lớp học */}
       <div className={styles.filterTabs}>
         <button className={statusFilter === "all" ? styles.tabActive : ""} onClick={() => onFilterChange("all")}>Tất cả</button>
         <button className={statusFilter === "active" ? styles.tabActive : ""} onClick={() => onFilterChange("active")}>Đang tuyển sinh</button>
