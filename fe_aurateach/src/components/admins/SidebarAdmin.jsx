@@ -62,6 +62,7 @@ export default function Sidebar() {
   const menuItems = [
     { name: "Dashboard", path: "/admin-dashboard"},
     { name: "Quản lý lớp học", path: "/admin-classes"},
+    { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management"},
     { name: "Lịch trình dạy", path: "/admin-schedule"},
     { name: "Thu nhập & Ví", path: "/admin-revenue"},
