@@ -175,6 +175,18 @@
       "created_at": "2026-01-15T08:00:00Z"
     },
     {
+      "id": "u-admin-2",
+      "user_id": "u-admin-2",
+      "email": "liemadmin@gmail.com",
+      "password": "123123",
+      "full_name": "Liem Admin",
+      "phone": "0912345678",
+      "avatar": "/img/avt/liem.jpg",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2026-01-15T08:00:00Z"
+    },
+    {
       "id": "e62d",
       "user_id": "user_1784195250277_zprx34",
       "email": "sangnguyen@gmail.com",
@@ -228,6 +240,11 @@
       "admin_id": "admin_01",
       "user_id": "u-admin-1",
       "id": "949d"
+    },
+    {
+      "admin_id": "admin_02",
+      "user_id": "u-admin-2",
+      "id": "e62d"
     }
   ],
   "tutors": [
