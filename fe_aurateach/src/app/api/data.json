@@ -233,6 +233,18 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T11:10:32.434Z"
+    },
+    {
+      "id": "d483",
+      "user_id": "user_1784278196023_24jwn9",
+      "email": "giasu@gmail.com",
+      "password": "123123",
+      "full_name": "Gia sư 1",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-17T08:49:56.023Z"
     }
   ],
   "admins": [
@@ -344,12 +356,13 @@
       "bio": "",
       "qualification": "Tiếng Anh",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "approved",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
-      "created_at": "2026-07-16T09:59:51.707Z"
+      "created_at": "2026-07-16T09:59:51.707Z",
+      "rejection_reason": null
     },
     {
       "id": "7d7a",
@@ -373,12 +386,28 @@
       "bio": "",
       "qualification": "Toán học, Tiếng Anh",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "rejected",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
-      "created_at": "2026-07-16T11:10:32.442Z"
+      "created_at": "2026-07-16T11:10:32.442Z",
+      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
+    },
+    {
+      "id": "3a4c",
+      "tutor_id": "tutor_1784278196031",
+      "user_id": "user_1784278196023_24jwn9",
+      "bio": "",
+      "qualification": "Toán học, Tiếng Anh",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-17T08:49:56.031Z",
+      "rejection_reason": null
     }
   ],
   "students": [
@@ -888,6 +917,31 @@
       "students": [
         "user_1782855725159_tqroz6"
       ]
+    },
+    {
+      "id": "course-1784279882327",
+      "course_id": "course-1784279882327",
+      "tutor_id": "tutor_1784195991707",
+      "title": "sinh hoc",
+      "category_id": "cat-06",
+      "level": "Cấp 1",
+      "description": "sinh hoc co ban",
+      "max_students": 14,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-27",
+      "end_date": "2026-10-19",
+      "total_weeks": 12,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 3"
+      ],
+      "time_slot": "02:00-04:00",
+      "thumbnail": "/img/class/default-class-5.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": [
+        "u-student-1"
+      ]
     }
   ],
   "reviews": [
@@ -1023,12 +1077,12 @@
       "student_id": "u-student-1",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T20:26:34.672Z",
       "created_at": "2026-07-02T20:26:34.672Z",
       "updated_at": "2026-07-02T20:26:34.672Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "banking",
       "transaction_id": null,
@@ -1097,6 +1151,22 @@
       "payment_method": "qr",
       "transaction_id": null,
       "id": "eQXs2nd34hY"
+    },
+    {
+      "id": "f503",
+      "booking_id": "bk-1784280010980",
+      "student_id": "u-student-1",
+      "course_id": "course-1784279882327",
+      "tutor_id": "tutor_1784195991707",
+      "status": "pending",
+      "booking_date": "2026-07-17T09:20:10.980Z",
+      "created_at": "2026-07-17T09:20:10.980Z",
+      "updated_at": "2026-07-17T09:20:10.980Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
