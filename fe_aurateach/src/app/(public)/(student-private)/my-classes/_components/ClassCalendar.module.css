@@ -1,0 +1,640 @@
+/* ClassCalendar.module.css */
+
+.wrapper {
+  padding: 8px 0;
+  position: relative;
+}
+
+/* ===== EMPTY STATE ===== */
+.emptySchedule {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.emptySchedule p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ===== TOOLTIP ===== */
+.tooltip {
+  position: fixed;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  padding: 10px 14px;
+  min-width: 200px;
+  max-width: 260px;
+  animation: tooltipFade 0.15s ease;
+  border: 1px solid #e5e7eb;
+  pointer-events: none;
+}
+
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tooltipContent h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tooltipContent p {
+  margin: 1px 0;
+  color: #4b5563;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tooltipContent small {
+  display: block;
+  margin-top: 3px;
+  color: #9ca3af;
+  font-size: 9px;
+  font-style: italic;
+  text-align: right;
+}
+
+/* ===== CALENDAR HEADER ===== */
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.calendarNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navBtn {
+  padding: 3px 10px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  color: #4b5563;
+}
+
+.navBtn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.calendarTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  min-width: 160px;
+  text-align: center;
+}
+
+.headerRight {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.todayBtn {
+  padding: 3px 12px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.todayBtn:hover {
+  background: #4338ca;
+}
+
+/* ===== FILTER SECTION - GIỐNG HÌNH MẪU ===== */
+.filterSection {
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.selectAllBtn {
+  padding: 4px 14px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.selectAllBtn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.filterOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.filterTag:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.filterTagActive {
+  background: #eef2ff;
+  border-color: #4f46e5;
+  color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
+}
+
+.filterTagActive:hover {
+  background: #e0e7ff;
+  border-color: #4338ca;
+}
+
+.filterCheckboxHidden {
+  display: none;
+}
+
+.filterTagText {
+  font-size: 13px;
+}
+
+.filterStatus {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  padding: 4px 0;
+}
+
+.filterStatus strong {
+  color: #4f46e5;
+}
+
+/* ===== TIMETABLE WRAPPER ===== */
+.timetableWrapper {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.timetableWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.timetableWrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.timetableWrapper::-webkit-scrollbar-thumb {
+  background: #c1c7cd;
+  border-radius: 4px;
+}
+
+.timetableWrapper::-webkit-scrollbar-thumb:hover {
+  background: #a0a7ae;
+}
+
+/* ===== TIMETABLE ===== */
+.timetable {
+  background: white;
+  min-width: 500px;
+}
+
+.timetableHeader {
+  display: grid;
+  grid-template-columns: 55px repeat(7, 1fr);
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.timeHeaderCell {
+  padding: 5px 3px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 10px;
+  color: #6b7280;
+  border-right: 1px solid #e5e7eb;
+  background: #f1f5f9;
+}
+
+.dayHeaderCell {
+  padding: 4px 2px;
+  text-align: center;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.dayHeaderCell:last-child {
+  border-right: none;
+}
+
+.dayName {
+  font-size: 10px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.dayNumberHeader {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.todayHeader {
+  background: #80cca5;
+}
+
+.todayHeader .dayNumberHeader {
+  color: #01442f;
+}
+
+/* Timetable Body */
+.timetableBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.timetableRow {
+  display: grid;
+  grid-template-columns: 55px repeat(7, 1fr);
+  border-bottom: 1px solid #f3f4f6;
+  min-height: 28px;
+}
+
+.timetableRow:last-child {
+  border-bottom: none;
+}
+
+.timeCell {
+  padding: 3px 2px;
+  text-align: center;
+  border-right: 1px solid #f3f4f6;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeText {
+  font-size: 9px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+/* ===== DAY CELLS ===== */
+.dayCell {
+  min-height: 28px;
+  border-right: 1px solid #f3f4f6;
+  background: #fafafa;
+  transition: background 0.15s;
+  cursor: default;
+}
+
+.dayCell:last-child {
+  border-right: none;
+}
+
+.hasClass {
+  background: #dbeafe;
+  cursor: pointer;
+}
+
+.hasClass:hover {
+  background: #bfdbfe;
+  box-shadow: inset 0 0 0 2px #4f46e5;
+}
+
+.todayCell {
+  background: #c8ffd8;
+}
+
+.todayCell.hasClass {
+  background: #d1fae5;
+}
+
+.todayCell.hasClass:hover {
+  background: #a7f3d0;
+  box-shadow: inset 0 0 0 2px #059669;
+}
+
+/* ===== LEGEND ===== */
+.calendarLegend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.legendDotGreen {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #dbeafe;
+  border: 2px solid #4f46e5;
+}
+
+.legendDotGray {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+}
+
+.legendDotBlue {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #d1fae5;
+  border: 2px solid #059669;
+}
+
+.legendDotPurple {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #ede9fe;
+  border: 2px solid #8b5cf6;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .filterSection {
+    padding: 10px 12px;
+  }
+
+  .filterOptions {
+    gap: 6px;
+  }
+
+  .filterTag {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .filterTagText {
+    font-size: 12px;
+  }
+
+  .filterHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .timetableWrapper {
+    max-height: 350px;
+  }
+
+  .timetableHeader {
+    grid-template-columns: 42px repeat(7, 1fr);
+  }
+
+  .timetableRow {
+    grid-template-columns: 42px repeat(7, 1fr);
+    min-height: 24px;
+  }
+
+  .timeHeaderCell {
+    font-size: 8px;
+    padding: 4px 2px;
+  }
+
+  .timeCell {
+    padding: 2px 1px;
+  }
+
+  .timeText {
+    font-size: 7px;
+  }
+
+  .dayCell {
+    min-height: 24px;
+  }
+
+  .dayName {
+    font-size: 8px;
+  }
+
+  .dayNumberHeader {
+    font-size: 9px;
+  }
+
+  .calendarTitle {
+    font-size: 11px;
+    min-width: 120px;
+  }
+
+  .calendarHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calendarNav {
+    justify-content: center;
+  }
+
+  .headerRight {
+    justify-content: center;
+  }
+
+  .tooltip {
+    min-width: 150px;
+    max-width: 200px;
+    padding: 6px 10px;
+  }
+
+  .tooltipContent h4 {
+    font-size: 11px;
+  }
+
+  .tooltipContent p {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filterSection {
+    padding: 8px 10px;
+  }
+
+  .filterOptions {
+    gap: 4px;
+  }
+
+  .filterTag {
+    padding: 3px 8px;
+    font-size: 10px;
+    border-radius: 14px;
+  }
+
+  .filterTagText {
+    font-size: 10px;
+  }
+
+  .filterLabel {
+    font-size: 11px;
+  }
+
+  .selectAllBtn {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+
+  .timetableWrapper {
+    max-height: 280px;
+  }
+
+  .timetableHeader {
+    grid-template-columns: 32px repeat(7, 1fr);
+  }
+
+  .timetableRow {
+    grid-template-columns: 32px repeat(7, 1fr);
+    min-height: 20px;
+  }
+
+  .timeHeaderCell {
+    font-size: 6px;
+    padding: 3px 1px;
+  }
+
+  .timeCell {
+    padding: 1px;
+  }
+
+  .timeText {
+    font-size: 6px;
+  }
+
+  .dayCell {
+    min-height: 20px;
+  }
+
+  .dayName {
+    font-size: 7px;
+  }
+
+  .dayNumberHeader {
+    font-size: 8px;
+  }
+
+  .calendarTitle {
+    font-size: 9px;
+    min-width: 90px;
+  }
+
+  .todayBtn {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+
+  .navBtn {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .calendarLegend {
+    gap: 8px;
+  }
+
+  .legendItem {
+    font-size: 8px;
+  }
+
+  .legendDotGreen,
+  .legendDotGray,
+  .legendDotBlue,
+  .legendDotPurple {
+    width: 8px;
+    height: 8px;
+  }
+}
