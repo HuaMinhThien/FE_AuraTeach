@@ -7,11 +7,11 @@ class AuthService {
     // Đọc từ environment variable
     this.useApi = process.env.NEXT_PUBLIC_USE_API === 'true'; 
     this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    // Thêm URL của JSON Server chạy mock data công khai
+    // URL của JSON Server chạy mock data
     this.jsonServerUrl = "http://localhost:3007"; 
   }
 
-  // Phương thức login - Đây là phương thức chính sẽ được gọi
+  // === LOGIN ===
   async login(email, password) {
     if (this.useApi) {
       return this.loginWithApi(email, password);
@@ -20,7 +20,7 @@ class AuthService {
     }
   }
 
-  // 1. Login với JSON / Mock JSON Server (An toàn cho Client Browser)
+  // Login với JSON Server (Mock Data)
   async loginWithJson(email, password) {
     try {
       const response = await fetch(`${this.jsonServerUrl}/users?email=${encodeURIComponent(email)}`);
@@ -30,7 +30,6 @@ class AuthService {
       }
 
       const users = await response.json();
-      
       const user = users.find((u) => u.password === password);
 
       if (!user) {
@@ -42,6 +41,16 @@ class AuthService {
       }
 
       const { password: _, ...userInfo } = user;
+      
+      // Lưu cookie
+      if (typeof window !== "undefined") {
+        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=86400`;
+        document.cookie = `role=${userInfo.role}; path=/; max-age=86400`;
+        if (userInfo.user_id) {
+          document.cookie = `user_id=${userInfo.user_id}; path=/; max-age=86400`;
+        }
+      }
+
       return {
         success: true,
         user: userInfo,
@@ -52,7 +61,7 @@ class AuthService {
     }
   }
 
-  // 2. Login với API thật (tương lai)
+  // Login với API thật (Laravel)
   async loginWithApi(email, password) {
     try {
       const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
@@ -69,13 +78,27 @@ class AuthService {
       }
 
       const data = await response.json();
+      
+      // Lưu cookie
+      if (data.success && data.user && typeof window !== "undefined") {
+        const { password: _, ...userInfo } = data.user;
+        document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=86400`;
+        document.cookie = `role=${userInfo.role}; path=/; max-age=86400`;
+        if (userInfo.user_id) {
+          document.cookie = `user_id=${userInfo.user_id}; path=/; max-age=86400`;
+        }
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+      }
+
       return data;
     } catch (error) {
       throw error;
     }
   }
 
-  // ✅ CẬP NHẬT: Đăng ký với JSON Server
+  // === REGISTER ===
   async register(userData) {
     if (this.useApi) {
       return this.registerWithApi(userData);
@@ -84,7 +107,7 @@ class AuthService {
     }
   }
 
-  // ✅ CẬP NHẬT: Register với JSON Server
+  // Register với JSON Server (qua Next.js API Route)
   async registerWithJson(userData) {
     try {
       const response = await fetch(`/api/auth/register`, {
@@ -107,7 +130,7 @@ class AuthService {
     }
   }
 
-  // 4. Register với API thật (tương lai)
+  // Register với API thật (Laravel)
   async registerWithApi(userData) {
     const response = await fetch(`${this.apiBaseUrl}/auth/register`, {
       method: "POST",
@@ -117,7 +140,7 @@ class AuthService {
     return response.json();
   }
 
-  // ✅ THÊM MỚI: Cập nhật thông tin user
+  // === UPDATE PROFILE ===
   async updateProfile(userId, userData) {
     try {
       const response = await fetch(`/api/users/${userId}`, {
@@ -136,11 +159,13 @@ class AuthService {
 
       // Cập nhật cookie với thông tin mới
       if (result.success && result.user) {
-        // Cập nhật cookie user_info
         const { password, ...userInfo } = result.user;
         if (typeof window !== "undefined") {
           document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=86400`;
           document.cookie = `role=${userInfo.role}; path=/; max-age=86400`;
+          if (userInfo.user_id) {
+            document.cookie = `user_id=${userInfo.user_id}; path=/; max-age=86400`;
+          }
         }
       }
 
@@ -150,14 +175,18 @@ class AuthService {
     }
   }
 
+  // === LOGOUT ===
   async logout() {
     if (typeof window !== "undefined") {
       document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      localStorage.removeItem('token');
     }
     return { success: true };
   }
 
+  // === GET CURRENT USER ===
   async getCurrentUser() {
     if (typeof window === "undefined") return null;
     
@@ -168,15 +197,57 @@ class AuthService {
       return null;
     };
 
+    // Ưu tiên lấy từ cookie user_info
     const userCookie = getCookie("user_info");
     if (userCookie) {
       try {
-        return JSON.parse(decodeURIComponent(userCookie));
-      } catch {
+        const userInfo = JSON.parse(decodeURIComponent(userCookie));
+        console.log("📋 User from cookie:", userInfo);
+        
+        // Đảm bảo có user_id
+        if (!userInfo.user_id) {
+          // Thử lấy từ cookie user_id riêng
+          const userIdCookie = getCookie("user_id");
+          if (userIdCookie) {
+            userInfo.user_id = userIdCookie;
+          }
+        }
+        
+        return userInfo;
+      } catch (error) {
+        console.error("❌ Lỗi parse cookie user_info:", error);
         return null;
       }
     }
+
+    // Fallback: Lấy từ cookie user_id
+    const userIdCookie = getCookie("user_id");
+    if (userIdCookie) {
+      try {
+        // Thử lấy user từ JSON Server
+        const response = await fetch(`${this.jsonServerUrl}/users?user_id=${userIdCookie}`);
+        const users = await response.json();
+        const user = users[0];
+        if (user) {
+          const { password, ...userInfo } = user;
+          // Lưu lại cookie user_info
+          document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=86400`;
+          document.cookie = `role=${userInfo.role}; path=/; max-age=86400`;
+          return userInfo;
+        }
+      } catch (error) {
+        console.error("❌ Lỗi fetch user từ user_id:", error);
+      }
+    }
+
+    console.warn("⚠️ Không tìm thấy user trong cookie");
     return null;
+  }
+
+  // === LẤY USER_ID ===
+  async getUserId() {
+    const user = await this.getCurrentUser();
+    return user?.user_id || null;
   }
 }
 

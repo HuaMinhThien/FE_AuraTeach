@@ -13,7 +13,6 @@ export default function StudentSidebar() {
     router.push("/login");
   };
 
-  // Danh sách menu items
   const menuItems = [
     {
       id: "profile",
@@ -28,10 +27,10 @@ export default function StudentSidebar() {
       active: pathname === "/lich-su-book"
     },
     {
-      id: "lich-su-giao-dich",
-      label: "Lịch sử giao dịch",
-      href: "/lich-su-giao-dich",
-      active: pathname === "/lich-su-giao-dich"
+      id: "my-classes",
+      label: "Lịch học của tôi",
+      href: "/my-classes",
+      active: pathname === "/my-classes" || pathname?.startsWith("/my-classes/")
     },
     {
       id: "messenger",
