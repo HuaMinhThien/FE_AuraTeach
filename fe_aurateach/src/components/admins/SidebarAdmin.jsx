@@ -8,6 +8,7 @@ import Image from "next/image";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter(); 
   
   const [mounted, setMounted] = useState(false);
   const [adminData, setAdminData] = useState(null);
@@ -47,6 +48,7 @@ export default function Sidebar() {
 
   // ✅ Danh sách menu - KHÔNG CÓ CONFLICT
   const menuItems = [
+<<<<<<< HEAD
     { name: "Bảng điều khiển", path: "/admin-dashboard" },
     { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
     { name: "Quản lý lớp học", path: "/admin-classes" },
@@ -54,6 +56,15 @@ export default function Sidebar() {
     { name: "Lịch trình dạy", path: "/admin-schedule" },
     { name: "Thu nhập & Ví", path: "/admin-revenue" },
     { name: "Cấu hình hồ sơ", path: "/admin-profile" },
+=======
+    { name: "Dashboard", path: "/admin-dashboard"},
+    { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
+    { name: "Xét duyệt thu nhập", path: "/admin-revenue"},
+    { name: "Quản lý tài khoản người dùng", path: "/admin-account-management"},
+    { name: "Lịch sử báo cáo", path: "/admin-report-history "},
+
+    
+>>>>>>> main
   ];
 
   if (!mounted || !adminData) {
