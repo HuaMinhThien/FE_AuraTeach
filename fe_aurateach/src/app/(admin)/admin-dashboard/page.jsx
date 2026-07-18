@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const [revenue, setRevenue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [period, setPeriod] = useState('week');  // ← Đổi từ 'month' thành 'week'
+  const [period, setPeriod] = useState('week');
 
   useEffect(() => {
     fetchDashboardData();
@@ -42,12 +42,6 @@ export default function AdminDashboard() {
 
   const handleRefresh = () => {
     fetchDashboardData();
-  };
-
-  // Format ngày hiển thị
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' });
   };
 
   if (loading) {

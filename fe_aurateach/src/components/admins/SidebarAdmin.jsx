@@ -2,24 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import styles from "./Sidebar.module.css";
 import Image from "next/image";
 
 export default function Sidebar() {
   const pathname = usePathname();
   
-  // Thêm state để kiểm tra component đã mount chưa
   const [mounted, setMounted] = useState(false);
-  
-  // State lưu thông tin admin, mặc định là null để tránh mismatch
   const [adminData, setAdminData] = useState(null);
 
-  // Chạy 1 lần sau khi component mount
   useEffect(() => {
     setMounted(true);
     
-    // Đọc cookie tại client
     const cookies = document.cookie.split("; ");
     const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
 
@@ -37,14 +32,12 @@ export default function Sidebar() {
         }
       } catch (error) {
         console.error("Lỗi parse cookie:", error);
-        // Fallback nếu lỗi
         setAdminData({
           name: "Admin",
           avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80",
         });
       }
     } else {
-      // Fallback nếu không có cookie
       setAdminData({
         name: "Admin",
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80",
@@ -52,35 +45,17 @@ export default function Sidebar() {
     }
   }, []);
 
-  const handleLogout = () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
-      document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-      router.push("/login");
-    }
-  };
-
+  // ✅ Danh sách menu - KHÔNG CÓ CONFLICT
   const menuItems = [
-<<<<<<< HEAD
-    { name: "Dashboard", path: "/admin-dashboard"},
-    { name: "Quản lý lớp học", path: "/admin-classes"},
-    { name: "Quản lý tài khoản người dùng", path: "/admin-account-management"},
-    { name: "Lịch trình dạy", path: "/admin-schedule"},
-    { name: "Thu nhập & Ví", path: "/admin-revenue"},
-    { name: "Cấu hình hồ sơ", path: "/admin-profile"},
+    { name: "Bảng điều khiển", path: "/admin-dashboard" },
+    { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
+    { name: "Quản lý lớp học", path: "/admin-classes" },
+    { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
+    { name: "Lịch trình dạy", path: "/admin-schedule" },
+    { name: "Thu nhập & Ví", path: "/admin-revenue" },
+    { name: "Cấu hình hồ sơ", path: "/admin-profile" },
   ];
-=======
-  { name: "Bảng điều khiển", path: "/admin" },
-  { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },  // ← Bỏ /admin prefix
-  { name: "Quản lý lớp học", path: "/admin-classes" },
-  { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
-  { name: "Lịch trình dạy", path: "/admin-schedule" },
-  { name: "Thu nhập & Ví", path: "/admin-revenue" },
-  { name: "Cấu hình hồ sơ", path: "/admin-profile" },
-];
->>>>>>> main
 
-  // Trong khi chưa mount (Server render hoặc client chưa hydrate),
-  // render placeholder để tránh mismatch
   if (!mounted || !adminData) {
     return (
       <div className={styles.sidebar}>
@@ -134,7 +109,6 @@ export default function Sidebar() {
     );
   }
 
-  // Render khi đã mount (có dữ liệu từ cookie)
   return (
     <div className={styles.sidebar}>
       <div className={styles.logoSection}>
@@ -150,7 +124,7 @@ export default function Sidebar() {
       <nav className={styles.navigation}>
         <ul className={styles.menuList}>
           {menuItems.map((item, index) => {
-            const isActive = pathname === item.path || pathname?.startsWith(item.path + '/');
+            const isActive = pathname === item.path;
             return (
               <li key={index}>
                 <Link
@@ -184,8 +158,7 @@ export default function Sidebar() {
             <p className={styles.adminRole}>Quản trị viên</p>
           </div>
         </div>
-        
-        <button className={styles.logoutBtn} onClick={handleLogout}>
+        <button className={styles.logoutBtn}>
           <span>🚪</span> Đăng xuất
         </button>
       </div>
