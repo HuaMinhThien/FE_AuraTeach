@@ -12,6 +12,7 @@ export default function AccountManager() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
 
+  // Hàm load dữ liệu ở ngoài (Phục vụ cho tính năng làm mới sau khi tương tác nút bấm)
   const loadDataFromServer = async () => {
     setIsLoading(true);
     try {
@@ -33,6 +34,7 @@ export default function AccountManager() {
     }
   };
 
+  // CÁCH 2: Khởi tạo dữ liệu ban đầu an toàn thông qua biến cờ hiệu cô lập
   useEffect(() => {
     let isMounted = true; // Cờ hiệu kiểm soát trạng thái tồn tại của component
 

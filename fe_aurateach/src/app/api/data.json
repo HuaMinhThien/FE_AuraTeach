@@ -1169,5 +1169,78 @@
       "transaction_id": null
     }
   ],
+
+   "payments": [
+    {
+      "payment_id": 1,
+      "student_id": "u-student-1",
+      "amount": 150000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-10T10:00:00Z",
+      "created_at": "2026-07-10T10:00:00Z",
+      "id": "pay_001"
+    },
+    {
+      "payment_id": 2,
+      "student_id": "u-student-1",
+      "amount": 180000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-11T14:30:00Z",
+      "created_at": "2026-07-11T14:30:00Z",
+      "id": "pay_002"
+    },
+    {
+      "payment_id": 3,
+      "student_id": "u-student-2",
+      "amount": 120000,
+      "payment_method": "qr",
+      "payment_status": "pending",
+      "paid_at": null,
+      "created_at": "2026-07-12T09:00:00Z",
+      "id": "pay_003"
+    },
+    {
+      "payment_id": 4,
+      "student_id": "u-student-1",
+      "amount": 200000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-13T16:20:00Z",
+      "created_at": "2026-07-13T16:20:00Z",
+      "id": "pay_004"
+    },
+    {
+      "payment_id": 5,
+      "student_id": "user_1782855725159_tqroz6",
+      "amount": 150000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-14T11:00:00Z",
+      "created_at": "2026-07-14T11:00:00Z",
+      "id": "pay_005"
+    },
+    {
+      "payment_id": 6,
+      "student_id": "u-student-1",
+      "amount": 130000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-15T08:45:00Z",
+      "created_at": "2026-07-15T08:45:00Z",
+      "id": "pay_006"
+    },
+    {
+      "payment_id": 7,
+      "student_id": "user_1782855725159_tqroz6",
+      "amount": 150000,
+      "payment_method": "qr",
+      "payment_status": "refunded",
+      "paid_at": "2026-07-16T13:00:00Z",
+      "created_at": "2026-07-16T13:00:00Z",
+      "id": "pay_007"
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }
