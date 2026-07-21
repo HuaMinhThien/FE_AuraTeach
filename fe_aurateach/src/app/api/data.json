@@ -1169,8 +1169,7 @@
       "transaction_id": null
     }
   ],
-
-   "payments": [
+  "payments": [
     {
       "payment_id": 1,
       "student_id": "u-student-1",
