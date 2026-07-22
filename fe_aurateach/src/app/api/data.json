@@ -261,66 +261,71 @@
   ],
   "tutors": [
     {
+      "id": "1f17",
       "tutor_id": "tutor_01",
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-      "expertise": "Đại học - CNTT",
+      "expertise": "Toán học, Công nghệ thông tin",
       "rating": 0,
       "verification_status": "Đã xác minh",
       "experience": "Dưới 1 năm",
-      "id": "1f17",
       "pending_balance": 1200000,
       "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
-      "created_at": "2025-01-15T08:30:00.000Z"
+      "created_at": "2025-01-15T08:30:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "c95a",
       "tutor_id": "tutor_02",
       "user_id": "u-02",
       "bio": "Cựu sinh viên chuyên ngành Sư phạm Toán học ĐH Sư Phạm. Chuyên trị các học sinh mất gốc hình học không gian và luyện thi vào các trường chuyên cấp 3.",
-      "expertise": "Cử nhân - Sư phạm Toán",
+      "expertise": "Toán học",
       "rating": 5,
       "verification_status": "Đã xác minh",
       "experience": "5 năm kinh nghiệm",
-      "id": "c95a",
       "pending_balance": 100000,
       "available_balance": 3390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_02/math-specialist",
-      "created_at": "2025-02-20T14:15:00.000Z"
+      "created_at": "2025-02-20T14:15:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "12c3",
       "tutor_id": "tutor_03",
       "user_id": "u-03",
       "bio": "Giáo viên Ngữ Văn tại trường THPT danh tiếng. Phương pháp truyền đạt văn học bằng bản đồ tư duy, giúp học sinh nắm bắt luận điểm nghị luận xã hội sâu sắc, ngắn gọn.",
-      "expertise": "Thạc sĩ - Ngữ Văn",
+      "expertise": "Toán học, Ngữ văn",
       "rating": 4.9,
       "verification_status": "Đã xác minh",
       "experience": "6 năm kinh nghiệm",
-      "id": "12c3",
       "pending_balance": 2200000,
       "available_balance": 533900,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_03/literature-teacher",
-      "created_at": "2025-03-10T09:45:00.000Z"
+      "created_at": "2025-03-10T09:45:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "e73f",
       "tutor_id": "tutor_04",
       "user_id": "u-04",
       "bio": "Chứng chỉ IELTS 8.5 thương mại. Chuyên đào tạo lấy gốc tiếng Anh cấp tốc, lấy lại nền tảng ngữ pháp và phản xạ giao tiếp tự tin chỉ sau 3 tháng.",
-      "expertise": "Đại học - Ngôn ngữ Anh",
+      "expertise": "Tiếng Anh",
       "rating": 4.7,
       "verification_status": "Chưa cập nhật",
       "experience": "4 năm kinh nghiệm",
-      "id": "e73f",
       "pending_balance": 1222000,
       "available_balance": 44390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_04/ielts-expert",
-      "created_at": "2025-04-05T11:20:00.000Z"
+      "created_at": "2025-04-05T11:20:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "d377",
       "tutor_id": "tutor_1782855815613",
       "user_id": "user_1782855815606_98bynm",
       "bio": "",
@@ -333,7 +338,7 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_1782855815613/history",
       "created_at": "2025-05-12T16:30:00.000Z",
-      "id": "d377"
+      "rejection_reason": null
     },
     {
       "id": "5d17",
@@ -346,8 +351,10 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
-      "created_at": "2026-07-16T09:47:30.288Z"
+      "created_at": "2026-07-16T09:47:30.288Z",
+      "rejection_reason": null
     },
     {
       "id": "4f61",
@@ -360,6 +367,7 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T09:59:51.707Z",
       "rejection_reason": null
@@ -375,6 +383,7 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T10:43:18.774Z",
       "rejection_reason": null
@@ -390,6 +399,7 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T11:10:32.442Z",
       "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
@@ -405,6 +415,7 @@
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-17T08:49:56.031Z",
       "rejection_reason": null
