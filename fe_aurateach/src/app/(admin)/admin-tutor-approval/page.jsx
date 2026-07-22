@@ -15,7 +15,7 @@ export default function TutorApprovalPage() {
     setIsLoading(true);
     try {
       const response = await fetch("/api/admin-tutor-approval/pending");
-      const result = await response.json();
+      const result = await response.json();      
       if (result.success) {
         setPendingTutors(result.data);
       }

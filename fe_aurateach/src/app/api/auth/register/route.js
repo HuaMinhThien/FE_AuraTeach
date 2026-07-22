@@ -57,7 +57,7 @@ export async function POST(request) {
       full_name: fullName,
       phone: phone || "",
       avatar: "/img/default-avatar.svg",
-      role: role, // "student" hoặc "tutor"
+      role: role,
       status: "active",
       created_at: new Date().toISOString()
     };

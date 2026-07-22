@@ -245,6 +245,18 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-17T08:49:56.023Z"
+    },
+    {
+      "id": "15c1",
+      "user_id": "user_1784713008253_rqdc45",
+      "email": "thienminh@gmail.com",
+      "password": "123123",
+      "full_name": "Hứa Minh Thiện",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-22T09:36:48.253Z"
     }
   ],
   "admins": [
@@ -419,6 +431,21 @@
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-17T08:49:56.031Z",
       "rejection_reason": null
+    },
+    {
+      "id": "dc17",
+      "tutor_id": "tutor_1784713008264",
+      "user_id": "user_1784713008253_rqdc45",
+      "bio": "",
+      "expertise": "Toán học, Ngữ văn",
+      "rating": 0,
+      "verification_status": "rejected",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-22T09:36:48.264Z",
+      "rejection_reason": "Không liên hệ được với ứng viên"
     }
   ],
   "students": [
