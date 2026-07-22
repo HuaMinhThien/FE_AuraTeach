@@ -102,41 +102,41 @@ export async function POST(request) {
 
       console.log(`📋 Tutor verification_status: ${tutor.verification_status}`);
 
-      // Kiểm tra trạng thái duyệt hồ sơ
-      if (tutor.verification_status === "pending") {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo!",
-          },
-          { status: 403 }
-        );
-      }
+      // // Kiểm tra trạng thái duyệt hồ sơ
+      // if (tutor.verification_status === "pending") {
+      //   return NextResponse.json(
+      //     {
+      //       success: false,
+      //       message: "Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo!",
+      //     },
+      //     { status: 403 }
+      //   );
+      // }
 
-      if (tutor.verification_status === "rejected") {
-        const rejectReason = tutor.rejection_reason || "Không có lý do cụ thể";
-        return NextResponse.json(
-          {
-            success: false,
-            message: `Tài khoản của bạn không được duyệt. Lý do: ${rejectReason}`,
-          },
-          { status: 403 }
-        );
-      }
+      // if (tutor.verification_status === "rejected") {
+      //   const rejectReason = tutor.rejection_reason || "Không có lý do cụ thể";
+      //   return NextResponse.json(
+      //     {
+      //       success: false,
+      //       message: `Tài khoản của bạn không được duyệt. Lý do: ${rejectReason}`,
+      //     },
+      //     { status: 403 }
+      //   );
+      // }
 
       // Cho phép đăng nhập nếu trạng thái là approved hoặc Đã xác minh
-      if (
-        tutor.verification_status !== "approved" &&
-        tutor.verification_status !== "Đã xác minh"
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Trạng thái tài khoản không hợp lệ. Vui lòng liên hệ hỗ trợ.",
-          },
-          { status: 403 }
-        );
-      }
+      // if (
+      //   tutor.verification_status !== "approved" &&
+      //   tutor.verification_status !== "Đã xác minh"
+      // ) {
+      //   return NextResponse.json(
+      //     {
+      //       success: false,
+      //       message: "Trạng thái tài khoản không hợp lệ. Vui lòng liên hệ hỗ trợ.",
+      //     },
+      //     { status: 403 }
+      //   );
+      // }
 
       console.log(
         `✅ Tutor ${user.full_name} đã được xác minh (${tutor.verification_status})`
