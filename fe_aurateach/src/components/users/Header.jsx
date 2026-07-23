@@ -7,6 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import SearchComponent from "./SearchInput";
 import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
 
+const API_BASE = "http://localhost:3007";
+
 export default function Header() {
     const pathname = usePathname(); 
     const router = useRouter();
@@ -14,6 +16,7 @@ export default function Header() {
     const [isMounted, setIsMounted] = useState(false);
     const dropdownRef = useRef(null);
     const [user, setUser] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const getCookie = (name) => {
         if (typeof window === "undefined") return null;
@@ -97,6 +100,53 @@ export default function Header() {
         router.push("/login");
     };
 
+    // ✅ Fetch unread count từ conversations
+    const fetchUnreadCount = useCallback(async (userId) => {
+        try {
+            const res = await fetch(`${API_BASE}/conversations`);
+            const allConversations = await res.json();
+            if (!Array.isArray(allConversations)) return;
+
+            const tutorsRes = await fetch(`${API_BASE}/tutors`);
+            const allTutors = await tutorsRes.json();
+            const tutorToUserMap = {};
+            const userToTutorMap = {};
+            if (Array.isArray(allTutors)) {
+                allTutors.forEach(t => {
+                    if (t.tutor_id && t.user_id) {
+                        tutorToUserMap[t.tutor_id] = t.user_id;
+                        userToTutorMap[t.user_id] = t.tutor_id;
+                    }
+                });
+            }
+
+            const myIds = [userId];
+            if (userToTutorMap[userId]) {
+                myIds.push(userToTutorMap[userId]);
+            }
+
+            const myConversations = allConversations.filter(conv => 
+                conv.participants && conv.participants.some(p => myIds.includes(p))
+            );
+
+            const totalUnread = myConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
+            setUnreadCount(totalUnread);
+        } catch (error) {
+            console.error("❌ Header: Lỗi fetch unread count:", error);
+        }
+    }, []);
+
+    // ✅ Polling unread count mỗi 3 giây
+    useEffect(() => {
+        if (!user?.user_id) return;
+        
+        const userId = user.user_id || user.id;
+        fetchUnreadCount(userId);
+        
+        const interval = setInterval(() => fetchUnreadCount(userId), 3000);
+        return () => clearInterval(interval);
+    }, [user, fetchUnreadCount]);
+
     const handleProfileClick = () => {
         console.log("=== PROFILE CLICK ===");
         console.log("Current user:", user);
@@ -126,7 +176,21 @@ export default function Header() {
                 </div>
 
                 <div className="header-right">
-                    <SearchComponent />
+                    {user ? (
+                        <>
+                            {/* ✅ Icon Messenger với badge unread count */}
+                            <Link href="/messenger" className="header-messenger-icon" title="Tin nhắn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00236f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="header-messenger-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                                )}
+                            </Link>
+                        </>
+                    ) : (
+                        <SearchComponent />
+                    )}
 
                     {isMounted ? (
                         user ? (
