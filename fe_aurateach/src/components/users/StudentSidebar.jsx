@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
-export default function StudentSidebar() {
+export default function StudentSidebar({ unreadCount = 0 }) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -34,9 +34,10 @@ export default function StudentSidebar() {
     },
     {
       id: "messenger",
-      label: "Messenger",
+      label: "Tin nhắn",
       href: "/messenger",
-      active: pathname === "/messenger"
+      active: pathname === "/messenger" || pathname?.startsWith("/messenger/"),
+      badge: unreadCount > 0 ? unreadCount : null
     }
   ];
 
@@ -54,6 +55,9 @@ export default function StudentSidebar() {
           >
             <span className="sidebar-icon">{item.icon}</span>
             {item.label}
+            {item.badge && (
+              <span className="sidebar-badge">{item.badge}</span>
+            )}
           </Link>
         ))}
         <button onClick={handleLogout} className="sidebar-link logout">

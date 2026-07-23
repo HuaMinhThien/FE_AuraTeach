@@ -107,7 +107,7 @@
       "full_name": "Liêm Tran",
       "phone": "0909123123",
       "birth_date": "2000-05-15",
-      "avatar": "",
+      "avatar": "/img/default-avatar.svg",
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
@@ -1277,6 +1277,578 @@
       "paid_at": "2026-07-16T13:00:00Z",
       "created_at": "2026-07-16T13:00:00Z",
       "id": "pay_007"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conv_001",
+      "participants": [
+        "u-student-1",
+        "u-01"
+      ],
+      "last_message": "hihi",
+      "last_message_time": "2026-07-23T19:24:10.325Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_002",
+      "participants": [
+        "u-student-1",
+        "tutor_02"
+      ],
+      "last_message": "Thầy ơi, em muốn hỏi về lịch học",
+      "last_message_time": "2026-07-19T15:30:00Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_003",
+      "participants": [
+        "u-student-2",
+        "u-01"
+      ],
+      "last_message": "Cảm ơn thầy đã tư vấn ạ",
+      "last_message_time": "2026-07-18T09:20:00Z",
+      "unread_count": 0
+    },
+    {
+      "id": "FvtVRh7m5So",
+      "participants": [
+        "user_1782855725159_tqroz6",
+        "tutor_01"
+      ],
+      "last_message": "SADFắedf",
+      "last_message_time": "2026-07-23T21:38:25.285Z",
+      "unread_count": 1
+    }
+  ],
+  "messages": [
+    {
+      "id": "BQ7s5fs0kTE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hello",
+      "created_at": "2026-07-23T14:08:41.947Z",
+      "is_read": false
+    },
+    {
+      "id": "HYF7yRcAnkI",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hello",
+      "created_at": "2026-07-23T14:11:39.778Z",
+      "is_read": false
+    },
+    {
+      "id": "muUZjYn5YQ8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "xin chào",
+      "created_at": "2026-07-23T14:35:56.223Z",
+      "is_read": false
+    },
+    {
+      "id": "qUBkNQuudvc",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T14:40:30.967Z",
+      "is_read": false
+    },
+    {
+      "id": "EplJlHWUm9M",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T14:46:31.709Z",
+      "is_read": false
+    },
+    {
+      "id": "NSUW5iLzvZE",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T15:48:06.936Z",
+      "is_read": false
+    },
+    {
+      "id": "3R-FJ468YSs",
+      "conversation_id": "conv_001",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "u-student-1",
+      "receiver_role": "student",
+      "content": "tôi nghe",
+      "created_at": "2026-07-23T15:48:35.626Z",
+      "is_read": false
+    },
+    {
+      "id": "2Sppemwa3xU",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "tôi cần tư vấn",
+      "created_at": "2026-07-23T19:23:20.638Z",
+      "is_read": false
+    },
+    {
+      "id": "-mUzkqwIWCQ",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hihi",
+      "created_at": "2026-07-23T19:24:10.304Z",
+      "is_read": false
+    },
+    {
+      "id": "sv0kZJB8iGc",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:24:32.609Z",
+      "is_read": false
+    },
+    {
+      "id": "qtYwkWFNInw",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hello",
+      "created_at": "2026-07-23T19:33:23.501Z",
+      "is_read": false
+    },
+    {
+      "id": "Hi8i3X-yi78",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:33:37.977Z",
+      "is_read": false
+    },
+    {
+      "id": "vHlpko-HoHM",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:40:20.948Z",
+      "is_read": false
+    },
+    {
+      "id": "8u0A8Bs3SN0",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "heloo",
+      "created_at": "2026-07-23T19:40:39.278Z",
+      "is_read": false
+    },
+    {
+      "id": "4nArWE0yOV4",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:58:10.048Z",
+      "is_read": false
+    },
+    {
+      "id": "28ExVEfWJd8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "hello",
+      "created_at": "2026-07-23T19:58:30.112Z",
+      "is_read": false
+    },
+    {
+      "id": "jHYya2tf6gQ",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "xin chào>???",
+      "created_at": "2026-07-23T19:59:05.972Z",
+      "is_read": false
+    },
+    {
+      "id": "kAAAtt1u2RM",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:59:18.215Z",
+      "is_read": false
+    },
+    {
+      "id": "aC1lPKKQTHY",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "hihihihihih",
+      "created_at": "2026-07-23T19:59:49.717Z",
+      "is_read": false
+    },
+    {
+      "id": "oI2ElkxT3cs",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "hehe",
+      "created_at": "2026-07-23T20:09:25.344Z",
+      "is_read": false
+    },
+    {
+      "id": "YEfXGmEIlFU",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "huhu",
+      "created_at": "2026-07-23T20:09:31.231Z",
+      "is_read": false
+    },
+    {
+      "id": "QVevwU0a6Cs",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "kaka",
+      "created_at": "2026-07-23T20:09:36.665Z",
+      "is_read": false
+    },
+    {
+      "id": "7JYVfHQaipI",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "kkkk",
+      "created_at": "2026-07-23T20:09:45.047Z",
+      "is_read": false
+    },
+    {
+      "id": "qohtXU9PV1o",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "huhuhu",
+      "created_at": "2026-07-23T20:12:32.222Z",
+      "is_read": false
+    },
+    {
+      "id": "08k07JkM4DU",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "heheh",
+      "created_at": "2026-07-23T20:12:36.311Z",
+      "is_read": false
+    },
+    {
+      "id": "JXxmV064SPE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hoho",
+      "created_at": "2026-07-23T20:12:42.325Z",
+      "is_read": false
+    },
+    {
+      "id": "CV1j7GpXENI",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "sdasdagf",
+      "created_at": "2026-07-23T20:13:17.106Z",
+      "is_read": false
+    },
+    {
+      "id": "zGKZTRBKHYw",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "fghsthgszfrg",
+      "created_at": "2026-07-23T20:18:16.674Z",
+      "is_read": false
+    },
+    {
+      "id": "YveKtut4SzA",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "ádfgZADSFgbZFg",
+      "created_at": "2026-07-23T20:18:20.266Z",
+      "is_read": false
+    },
+    {
+      "id": "tVX_OhyS7w8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "zfgzfrg",
+      "created_at": "2026-07-23T20:18:33.741Z",
+      "is_read": false
+    },
+    {
+      "id": "Zdy8dfHBIXA",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "adfaefĂEF",
+      "created_at": "2026-07-23T20:23:46.334Z",
+      "is_read": false
+    },
+    {
+      "id": "bIV-VIZvHJg",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sdfasregr",
+      "created_at": "2026-07-23T20:23:57.794Z",
+      "is_read": false
+    },
+    {
+      "id": "7RrUAxhbYac",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "adsfagzdfavgfdfvadr",
+      "created_at": "2026-07-23T20:24:06.976Z",
+      "is_read": false
+    },
+    {
+      "id": "lk_XShLbnOM",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "adoih ởig",
+      "created_at": "2026-07-23T20:29:28.071Z",
+      "is_read": false
+    },
+    {
+      "id": "EYe9Uh6AiX0",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ewarfwer",
+      "created_at": "2026-07-23T20:29:41.380Z",
+      "is_read": false
+    },
+    {
+      "id": "qEyWfTS1ufE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "eqrrfedF",
+      "created_at": "2026-07-23T20:29:46.076Z",
+      "is_read": false
+    },
+    {
+      "id": "rZ6PQU0569A",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "ádgarg",
+      "created_at": "2026-07-23T20:30:16.479Z",
+      "is_read": false
+    },
+    {
+      "id": "SGLGkAMG_1U",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "DSEDfvSEDfSD",
+      "created_at": "2026-07-23T20:33:58.130Z",
+      "is_read": false
+    },
+    {
+      "id": "EUfFiaSnITY",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sadgfsdargareg",
+      "created_at": "2026-07-23T20:36:06.799Z",
+      "is_read": false
+    },
+    {
+      "id": "8Ksb8xevgMk",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "dfAEdfased",
+      "created_at": "2026-07-23T20:37:51.492Z",
+      "is_read": false
+    },
+    {
+      "id": "OQm7IRddnQ0",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "SDFESfedfaedf",
+      "created_at": "2026-07-23T20:37:58.187Z",
+      "is_read": false
+    },
+    {
+      "id": "8CiMBO2uApA",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sdFASEDf",
+      "created_at": "2026-07-23T20:42:16.038Z",
+      "is_read": false
+    },
+    {
+      "id": "iVDfEe04h5Q",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ádfỀ",
+      "created_at": "2026-07-23T20:43:46.829Z",
+      "is_read": false
+    },
+    {
+      "id": "ltW5Js5_d3U",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-07-23T20:45:49.240Z",
+      "is_read": false
+    },
+    {
+      "id": "n040LHiZR68",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ảgasergasregafdgadfr",
+      "created_at": "2026-07-23T21:17:35.306Z",
+      "is_read": false
+    },
+    {
+      "id": "B6UNu2Gt-Sk",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "nè",
+      "created_at": "2026-07-23T21:25:31.117Z",
+      "is_read": false
+    },
+    {
+      "id": "wh2qzc0JQ-E",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "dsfaEDF",
+      "created_at": "2026-07-23T21:38:16.370Z",
+      "is_read": false
+    },
+    {
+      "id": "R9chnujsn08",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "SADFắedf",
+      "created_at": "2026-07-23T21:38:25.273Z",
+      "is_read": false
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -133,3 +133,34 @@
     width: 20px;
   }
 }
+
+/* Badge cho sidebar */
+.sidebar-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0px;
+  text-decoration: none;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.sidebar-badge {
+  margin-left: auto;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 8px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.sidebar-link.active .sidebar-badge {
+  background: #dc2626;
+}

@@ -1,21 +1,47 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './TutorDetail.module.css';
 import data from '../../../api/data.json';
 
+const API_BASE = "http://localhost:3007";
+
 export default function TutorDetailPage({ params }) {
+  const router = useRouter();
   const [tutorDetails, setTutorDetails] = useState(null);
   const [accountUser, setAccountUser] = useState(null);
   const [tutorCourses, setTutorCourses] = useState([]);
   const [tutorReviews, setTutorReviews] = useState([]);
   const [relatedTutorsList, setRelatedTutorsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Lấy thông tin user hiện tại từ cookie
+  useEffect(() => {
+    const getCurrentUser = () => {
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      };
+      const userCookie = getCookie("user_info");
+      if (userCookie) {
+        try {
+          return JSON.parse(decodeURIComponent(userCookie));
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    };
+    setCurrentUser(getCurrentUser());
+  }, []);
 
   useEffect(() => {
     const fetchAllTutorData = async () => {
       try {
-        // Lấy ID từ params
         const resolvedParams = await params;
         const currentTutorId = resolvedParams?.id;
 
@@ -25,14 +51,12 @@ export default function TutorDetailPage({ params }) {
           return;
         }
 
-        // Lấy dữ liệu từ file JSON
         const totalTutorsArray = data.tutors || [];
         const totalUsersArray = data.users || [];
         const totalCoursesArray = data.courses || [];
         const totalReviewsArray = data.reviews || [];
         const totalStudentsArray = data.students || [];
 
-        // Tìm gia sư theo ID
         const matchedTutor = totalTutorsArray.find(
           (singleTutor) => String(singleTutor.tutor_id) === String(currentTutorId)
         );
@@ -43,17 +67,14 @@ export default function TutorDetailPage({ params }) {
           return;
         }
 
-        // Tìm thông tin user
         const matchedUser = totalUsersArray.find(
           (singleUser) => singleUser.user_id === matchedTutor.user_id
         );
 
-        // Lọc khóa học của gia sư
         const filteredTutorCourses = totalCoursesArray.filter(
           (singleCourse) => String(singleCourse.tutor_id) === String(currentTutorId)
         );
 
-        // Lọc và format đánh giá
         const tutorCourseIdsArray = filteredTutorCourses.map((course) => course.course_id);
         const rawMatchedReviews = totalReviewsArray.filter((review) => 
           tutorCourseIdsArray.includes(review.course_id)
@@ -72,7 +93,6 @@ export default function TutorDetailPage({ params }) {
           };
         });
 
-        // Danh sách gia sư liên quan
         const specificRelatedTutors = totalTutorsArray
           .filter((tutor) => String(tutor.tutor_id) !== String(currentTutorId))
           .slice(0, 4)
@@ -107,6 +127,93 @@ export default function TutorDetailPage({ params }) {
 
     fetchAllTutorData();
   }, [params]);
+
+  // ===== HÀM TÌM HOẶC TẠO CONVERSATION =====
+  const findOrCreateConversation = async (studentId, userId, tutorId) => {
+    try {
+      console.log(`🔍 Tìm conversation: student=${studentId}, user_id=${userId}, tutor_id=${tutorId}`);
+
+      // 1. Lấy tất cả conversations
+      const res = await fetch(`${API_BASE}/conversations`);
+      const conversations = await res.json();
+      
+      // 2. Tìm conversation đã tồn tại (kiểm tra cả user_id và tutor_id)
+      const existingConv = conversations.find(conv => {
+        if (!conv.participants || !conv.participants.includes(studentId)) return false;
+        
+        // Kiểm tra xem conversation có chứa tutor không (theo user_id hoặc tutor_id)
+        return conv.participants.includes(userId) || conv.participants.includes(tutorId);
+      });
+      
+      if (existingConv) {
+        console.log("✅ Found existing conversation:", existingConv);
+        return existingConv;
+      }
+      
+      // 3. Tạo conversation mới (dùng user_id để đồng bộ với dữ liệu hiện tại)
+      const newConv = {
+        id: `conv_${Date.now()}`,
+        participants: [studentId, userId],
+        last_message: "",
+        last_message_time: new Date().toISOString(),
+        unread_count: 0
+      };
+      
+      console.log("📝 Creating new conversation:", newConv);
+      
+      const createRes = await fetch(`${API_BASE}/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newConv),
+      });
+      
+      if (!createRes.ok) {
+        throw new Error("Không thể tạo hội thoại");
+      }
+      
+      const createdConv = await createRes.json();
+      console.log("✅ Created new conversation:", createdConv);
+      return createdConv;
+      
+    } catch (error) {
+      console.error("❌ Lỗi tìm/tạo conversation:", error);
+      return null;
+    }
+  };
+
+  // ===== HÀM XỬ LÝ LIÊN HỆ =====
+  const handleContact = async () => {
+    // Kiểm tra đã đăng nhập chưa
+    if (!currentUser) {
+      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      return;
+    }
+
+    // Kiểm tra nếu là học viên thì chuyển đến Messenger
+    if (currentUser.role === 'student') {
+      try {
+        const studentId = currentUser.user_id || currentUser.id;
+        const userId = accountUser?.user_id;     // user_id của gia sư
+        const tutorId = tutorDetails?.tutor_id;   // tutor_id của gia sư
+        
+        console.log(`📌 Contact: studentId=${studentId}, userId=${userId}, tutorId=${tutorId}`);
+        
+        // ✅ Tìm hoặc tạo conversation
+        const conv = await findOrCreateConversation(studentId, userId, tutorId);
+        
+        if (conv) {
+          router.push(`/messenger?conversationId=${conv.id}`);
+        } else {
+          router.push('/messenger');
+        }
+      } catch (error) {
+        console.error("❌ Lỗi tạo hội thoại:", error);
+        router.push('/messenger');
+      }
+    } else {
+      alert('Bạn cần đăng nhập với tài khoản học viên để liên hệ!');
+    }
+  };
 
   // Hiển thị loading
   if (isLoading) {
@@ -294,10 +401,21 @@ export default function TutorDetailPage({ params }) {
         {/* ================= CỘT BÊN PHẢI: SIDEBAR TIỆN ÍCH ================= */}
         <div className={styles.rightColumn}>
           
+          {/* 🔥 NÚT LIÊN HỆ - ĐÃ SỬA */}
           <div className={styles.contactBox}>
-            <button className={styles.callBtn}>
-              📞 Gọi điện: {accountUser.phone || 'Chưa cập nhật'}
+            <button className={styles.contactBtn} onClick={handleContact}>
+              💬 Liên hệ với {accountUser.full_name?.split(' ').pop() || 'gia sư'}
             </button>
+            {!currentUser && (
+              <p className={styles.contactNote}>
+                🔑 Vui lòng <Link href="/login" className={styles.loginLink}>đăng nhập</Link> để liên hệ
+              </p>
+            )}
+            {currentUser && currentUser.role !== 'student' && (
+              <p className={styles.contactNote}>
+                ⚠️ Bạn cần tài khoản học viên để liên hệ
+              </p>
+            )}
           </div>
 
           <div className={styles.infoBox}>

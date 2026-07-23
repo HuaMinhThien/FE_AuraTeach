@@ -297,6 +297,7 @@
   gap: 24px;
 }
 
+/* 🔥 NÚT LIÊN HỆ MỚI */
 .contactBox {
   background-color: #fff;
   border: 1px solid #e2e8f0;
@@ -305,25 +306,48 @@
   text-align: center;
 }
 
-.callBtn {
+.contactBtn {
   width: 100%;
-  background-color: #fff;
-  color: #00236F;
-  border: 1px solid #00236F;
-  padding: 12px;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 14px;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
-.callBtn:hover {
-  background-color: #00236F;
-  color: #fff;
+.contactBtn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+}
+
+.contactBtn:active {
+  transform: translateY(0);
+}
+
+.contactNote {
+  font-size: 12px;
+  color: #64748b;
+  margin: 10px 0 0 0;
+}
+
+.loginLink {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
 }
 
 .infoBox {
@@ -551,5 +575,10 @@
 
   .sectionBlock {
     padding: 20px;
+  }
+
+  .contactBtn {
+    font-size: 14px;
+    padding: 12px;
   }
 }
