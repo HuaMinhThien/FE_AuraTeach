@@ -125,7 +125,7 @@ export default function TutorApprovalPage() {
     if (!window.confirm(`Bạn có chắc muốn ${actionText} yêu cầu thay đổi này?`)) return;
 
     try {
-      const response = await fetch(`/api/admin-tutor-approval/update-request/${reqId}`, {
+      const response = await fetch(`/api/admin-tutor-update-requests/${reqId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, reject_reason: status === "rejected" ? rejectReason : null }),

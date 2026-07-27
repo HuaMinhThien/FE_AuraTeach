@@ -277,7 +277,7 @@
       "tutor_id": "tutor_01",
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-      "expertise": "Toán, Tin học & Lập trình",
+      "expertise": "Toán, Tin học & Lập trình, Ngữ văn",
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
@@ -1297,9 +1297,32 @@
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình, Lý"
       },
-      "status": "pending",
+      "status": "rejected",
+      "reject_reason": "Không đạt yêu cầu",
+      "created_at": "2026-07-27T10:02:22.838Z",
+      "updated_at": "2026-07-27T11:15:45.401Z"
+    },
+    {
+      "id": "1c26",
+      "tutor_id": "1f17",
+      "old_data": {
+        "phone": "0912345678",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình"
+      },
+      "new_data": {
+        "phone": "0906761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 2 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình, Lý"
+      },
+      "status": "approved",
       "reject_reason": null,
-      "created_at": "2026-07-27T10:02:22.838Z"
+      "created_at": "2026-07-27T11:16:19.358Z",
+      "updated_at": "2026-07-27T11:23:18.541Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
