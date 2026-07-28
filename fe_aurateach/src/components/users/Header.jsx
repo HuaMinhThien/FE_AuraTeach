@@ -1,6 +1,6 @@
 // src/components/users/Header.jsx
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link"; 
 import { usePathname, useRouter } from "next/navigation"; 

@@ -57,7 +57,7 @@
       "email": "thien@gmail.com",
       "password": "thien123",
       "full_name": "Thiện đây nè ",
-      "phone": "0912345678",
+      "phone": "09106761390",
       "avatar": "/img/avt/thien.jpg",
       "role": "tutor",
       "status": "active",
@@ -257,6 +257,30 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-22T09:36:48.253Z"
+    },
+    {
+      "id": "e54d",
+      "user_id": "user_1785245366797_7df24g",
+      "email": "haha@gmail.com",
+      "password": "123123",
+      "full_name": "haha",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-28T13:29:26.797Z"
+    },
+    {
+      "id": "e09b",
+      "user_id": "user_1785245928354_lwwbbd",
+      "email": "hehe@gmail.com",
+      "password": "123123",
+      "full_name": "hehe",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-28T13:38:48.354Z"
     }
   ],
   "admins": [
@@ -446,6 +470,21 @@
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-22T09:36:48.264Z",
       "rejection_reason": "Không liên hệ được với ứng viên"
+    },
+    {
+      "id": "0639",
+      "tutor_id": "tutor_1785245366805",
+      "user_id": "user_1785245366797_7df24g",
+      "bio": "",
+      "expertise": "Toán học",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-28T13:29:26.805Z",
+      "rejection_reason": null
     }
   ],
   "students": [
@@ -478,6 +517,14 @@
       "grade": "",
       "school_name": "",
       "created_at": "2026-07-01T08:13:04.219Z"
+    },
+    {
+      "id": "e8cd",
+      "student_id": "student_1785245928367",
+      "user_id": "user_1785245928354_lwwbbd",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-28T13:38:48.367Z"
     }
   ],
   "courses": [
@@ -503,7 +550,9 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1785245928354_lwwbbd"
+      ]
     },
     {
       "id": "8ab5",
@@ -904,7 +953,8 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1",
-        "user_1782855725159_tqroz6"
+        "user_1782855725159_tqroz6",
+        "user_1785245928354_lwwbbd"
       ]
     },
     {
@@ -1131,12 +1181,12 @@
       "student_id": "u-student-1",
       "course_id": "course-1783032321908",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:46:59.478Z",
       "created_at": "2026-07-02T22:46:59.478Z",
       "updated_at": "2026-07-02T22:46:59.478Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,
@@ -1200,6 +1250,38 @@
       "booking_date": "2026-07-17T09:20:10.980Z",
       "created_at": "2026-07-17T09:20:10.980Z",
       "updated_at": "2026-07-17T09:20:10.980Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    },
+    {
+      "id": "0cc5",
+      "booking_id": "bk-1785246485874",
+      "student_id": "user_1785245928354_lwwbbd",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T13:48:05.874Z",
+      "created_at": "2026-07-28T13:48:05.874Z",
+      "updated_at": "2026-07-28T13:48:05.874Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    },
+    {
+      "id": "848b",
+      "booking_id": "bk-1785246669276",
+      "student_id": "user_1785245928354_lwwbbd",
+      "course_id": "course-1783023956388",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T13:51:09.276Z",
+      "created_at": "2026-07-28T13:51:09.276Z",
+      "updated_at": "2026-07-28T13:51:09.276Z",
       "notes": "",
       "payment_status": "unpaid",
       "payment_amount": 150000,

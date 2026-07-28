@@ -78,6 +78,7 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
             opacity: !isChecking && !isApproved ? 0.6 : 1,
             cursor: !isChecking && !isApproved ? "not-allowed" : "pointer"
           }}
+          
           title={!isApproved ? "Hồ sơ của bạn cần được phê duyệt trước khi tạo lớp" : ""}
         >
           ➕ Tạo lớp học mới
