@@ -1,12 +1,13 @@
-// src/app/(public)/(auth)/login/page.jsx
 "use client";
 import authService from "@/services/authService";
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // <--- Thêm router của Next.js
 import Link from "next/link";
 import Headers from "@/components/users/Header";
 import "./login.css";
 
 export default function LoginPage() {
+  const router = useRouter(); // <--- Khởi tạo router
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -19,24 +20,34 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const data = await authService.login(email, password);
-      const role = data.user.role;
+      const response = await authService.login(email, password);
+      const user = response.user || response.data?.user || response;
+      const role = user?.role;
+
+      // 1. Lưu localStorage như cũ
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // 2. BẮT BUỘC PHẢI LƯU COOKIE ĐỂ MIDDLEWARE ĐỌC ĐƯỢC
+      document.cookie = `user_info=true; path=/; max-age=86400`; // Token giả lập hoặc token thật
+      document.cookie = `role=${role}; path=/; max-age=86400`;    // Lưu role vào cookie
+
+      // 3. Điều hướng dựa theo role
       switch (role) {
         case "student":
-          window.location.href = "/";
+          router.push("/");
           break;
         case "tutor":
-          window.location.href = "/tutor-dashboard";
+          router.push("/tutor-dashboard");
           break;
         case "admin":
-          window.location.href = "/admin-dashboard";
+          router.push("/admin");
           break;
         default:
-          window.location.href = "/";
+          router.push("/");
       }
     } catch (error) {
       console.error("❌ Login error:", error);
-      setError(error.message || "Đăng nhập thất bại");
+      setError(error.response?.data?.message || error.message || "Đăng nhập thất bại");
     } finally {
       setIsLoading(false);
     }

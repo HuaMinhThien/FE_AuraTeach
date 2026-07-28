@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import adminService from "@/services/adminService"; // Thay đổi đường dẫn import cho đúng thực tế
 import styles from "./TutorApproval.module.css";
 
 export default function TutorApprovalPage() {
@@ -10,12 +11,11 @@ export default function TutorApprovalPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  // Load danh sách giảng viên chờ duyệt
+  // Load danh sách giảng viên chờ duyệt qua adminService
   const loadPendingTutors = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/admin-tutor-approval/pending");
-      const result = await response.json();
+      const result = await adminService.getPendingTutors();
       if (result.success) {
         setPendingTutors(result.data);
       }
@@ -35,20 +35,12 @@ export default function TutorApprovalPage() {
     setSelectedTutor(tutor);
   };
 
-  // Chấp nhận duyệt
+  // Chấp nhận duyệt qua adminService
   const handleApprove = async (tutor) => {
     if (!window.confirm(`Bạn có chắc muốn duyệt hồ sơ của ${tutor.full_name}?`)) return;
 
     try {
-      const response = await fetch("/api/admin-tutor-approval/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          userId: tutor.user_id,
-          tutorId: tutor.tutor_id 
-        }),
-      });
-      const result = await response.json();
+      const result = await adminService.approveTutor(tutor.user_id, tutor.tutor_id);
       if (result.success) {
         alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}. Giảng viên có thể đăng nhập ngay!`);
         loadPendingTutors();
@@ -57,11 +49,11 @@ export default function TutorApprovalPage() {
         alert(result.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      alert("Lỗi khi duyệt hồ sơ!");
+      alert(error.message || "Lỗi khi duyệt hồ sơ!");
     }
   };
 
-  // Từ chối duyệt
+  // Từ chối duyệt qua adminService
   const handleReject = async () => {
     if (!rejectReason.trim()) {
       alert("Vui lòng nhập lý do từ chối");
@@ -69,16 +61,11 @@ export default function TutorApprovalPage() {
     }
 
     try {
-      const response = await fetch("/api/admin-tutor-approval/reject", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          userId: selectedTutor.user_id,
-          tutorId: selectedTutor.tutor_id,
-          reason: rejectReason 
-        }),
-      });
-      const result = await response.json();
+      const result = await adminService.rejectTutor(
+        selectedTutor.user_id, 
+        selectedTutor.tutor_id, 
+        rejectReason
+      );
       if (result.success) {
         alert(`❌ Đã từ chối hồ sơ của ${selectedTutor.full_name}. Lý do: ${rejectReason}`);
         loadPendingTutors();
@@ -89,24 +76,16 @@ export default function TutorApprovalPage() {
         alert(result.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      alert("Lỗi khi từ chối hồ sơ!");
+      alert(error.message || "Lỗi khi từ chối hồ sơ!");
     }
   };
 
-  // Xóa hồ sơ đã từ chối
+  // Xóa hồ sơ đã từ chối qua adminService
   const handleDelete = async (tutor) => {
     if (!window.confirm(`Bạn có chắc muốn xóa hồ sơ của ${tutor.full_name}?`)) return;
 
     try {
-      const response = await fetch("/api/admin-tutor-approval/delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          userId: tutor.user_id,
-          tutorId: tutor.tutor_id 
-        }),
-      });
-      const result = await response.json();
+      const result = await adminService.deleteTutorProfile(tutor.user_id, tutor.tutor_id);
       if (result.success) {
         alert("✅ Đã xóa hồ sơ!");
         loadPendingTutors();
@@ -114,7 +93,7 @@ export default function TutorApprovalPage() {
         alert(result.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      alert("Lỗi khi xóa hồ sơ!");
+      alert(error.message || "Lỗi khi xóa hồ sơ!");
     }
   };
 

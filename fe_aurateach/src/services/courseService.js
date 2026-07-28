@@ -29,10 +29,31 @@ export const MAP_SCHEDULE_DAY_INDEX = {
 
 const courseService = {
   // 1. Lấy danh sách khóa học
-  getAll: async (tutorId, params = {}) => {
-    const { page = 1, limit = 6, status = "all", search = "" } = params;
-    const query = new URLSearchParams({ tutor_id: tutorId || '', page, limit, status, search });
-    return await apiClient.get(`/courses?${query.toString()}`);
+  getAll: async (tutorIdOrParams = {}) => {
+    const query = new URLSearchParams();
+    let queryParams = {};
+
+    // Nếu truyền vào string hoặc number (kiểu cũ: courseService.getAll(5))
+    if (typeof tutorIdOrParams === 'string' || typeof tutorIdOrParams === 'number') {
+      queryParams.tutor_id = tutorIdOrParams;
+    } 
+    // Nếu truyền vào object (kiểu mới: courseService.getAll({ limit: 'all', status: 'active' }))
+    else if (typeof tutorIdOrParams === 'object' && tutorIdOrParams !== null) {
+      queryParams = { ...tutorIdOrParams };
+    }
+
+    // Đưa tất cả vào URLSearchParams, bỏ qua mấy giá trị rỗng
+    Object.keys(queryParams).forEach(key => {
+      const val = queryParams[key];
+      if (val !== undefined && val !== null && val !== '') {
+        query.append(key, val);
+      }
+    });
+
+    const queryString = query.toString();
+    const url = queryString ? `/courses?${queryString}` : '/courses';
+
+    return await apiClient.get(url);
   },
 
   // 2. Tạo khóa học mới

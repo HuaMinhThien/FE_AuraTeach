@@ -33,11 +33,19 @@ export default function TeacherListPage() {
           fetch('http://localhost:8000/api/users')
         ]);
         
+        if (!tutorsRes.ok || !usersRes.ok) {
+          throw new Error('Không thể kết nối tới server API');
+        }
+
         const tutorsData = await tutorsRes.json();
         const usersData = await usersRes.json();
 
-        const formattedTutors = tutorsData.map((tutor) => {
-          const user = usersData.find(u => u.user_id === tutor.user_id);
+        // Xử lý dữ liệu đề phòng API trả về dạng bọc object { success: true, data: [...] }
+        const tutorsList = Array.isArray(tutorsData) ? tutorsData : (tutorsData.data || []);
+        const usersList = Array.isArray(usersData) ? usersData : (usersData.data || []);
+
+        const formattedTutors = tutorsList.map((tutor) => {
+          const user = usersList.find(u => u.user_id === tutor.user_id);
           return {
             id: tutor.tutor_id,
             name: user?.full_name || "Gia sư AuraTeach",

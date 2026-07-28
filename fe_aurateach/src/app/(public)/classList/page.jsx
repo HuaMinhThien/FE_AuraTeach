@@ -30,18 +30,26 @@ export default function ClassListPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Sử dụng Promise.all với service
-        const [courses, tutors, users, categories] = await Promise.all([
-          courseService.getAll(),
+        const [resCourses, resTutors, resUsers, resCategories] = await Promise.all([
+          courseService.getAll({ limit: 'all' }),
           courseService.getTutors(),
           courseService.getUsers(),
           courseService.getCategories()
         ]);
 
-        setCourses(Array.isArray(courses) ? courses : []);
-        setTutors(Array.isArray(tutors) ? tutors : []);
-        setUsers(Array.isArray(users) ? users : []);
-        setCategories(Array.isArray(categories) ? categories : []);
+        // Hứng linh hoạt dù API trả về mảng trực tiếp hay bọc trong object { data: [...] }
+        const extractData = (res) => {
+          if (Array.isArray(res)) return res;
+          if (res && Array.isArray(res.data)) return res.data;
+          if (res && Array.isArray(res.courses)) return res.courses;
+          return [];
+        };
+
+        setCourses(extractData(resCourses));
+        setTutors(extractData(resTutors));
+        setUsers(extractData(resUsers));
+        setCategories(extractData(resCategories));
+        
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
         setError('Không thể kết nối đến hệ thống.');

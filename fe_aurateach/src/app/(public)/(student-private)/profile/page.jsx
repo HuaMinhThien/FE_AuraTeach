@@ -65,23 +65,27 @@ export default function ProfilePage() {
         try {
             setLoading(true);
             const currentUser = await authService.getCurrentUser();
-            if (!currentUser || !currentUser.id) {
+            
+            // Hỗ trợ kiểm tra linh hoạt cả `id` lẫn `user_id`
+            const currentUserId = currentUser?.id || currentUser?.user_id;
+
+            if (!currentUser || !currentUserId) {
                 router.push("/login");
                 return;
             }
 
-            // Dùng userService để lấy dữ liệu full
-            const fullUser = await userService.getUserDetails(currentUser.id);
-            const studentData = await fetchStudentInfo(currentUser.id);
+            // Dùng currentUserId thay vì currentUser.id cố định
+            const fullUser = await userService.getUserDetails(currentUserId);
+            const studentData = await fetchStudentInfo(currentUserId);
             
             setUser(fullUser); 
             setStudentInfo(studentData);
             
             setFormData({
-                full_name: fullUser.full_name || fullUser.name || "",
-                phone: fullUser.phone || "",
-                avatar: fullUser.avatar || "",
-                birth_date: fullUser.birth_date || "",
+                full_name: fullUser?.full_name || fullUser?.name || "",
+                phone: fullUser?.phone || "",
+                avatar: fullUser?.avatar || "",
+                birth_date: fullUser?.birth_date || "",
                 grade: studentData?.grade || "",        
                 school_name: studentData?.school_name || "", 
             });
@@ -92,7 +96,7 @@ export default function ProfilePage() {
         }
     };
     initPage();
-  }, [router]);
+  }, [router]); 
 
   // Xử lý thay đổi input
   const handleInputChange = (e) => {

@@ -94,13 +94,13 @@ export default function TeacherRegisterPage() {
 
     try {
       const result = await authService.register({
-        fullName: fullName,
+        full_name: fullName,
         email: email,
         password: password,
         phone: phone,
         role: "tutor",
         expertise: selectedExpertise.join(", "),
-        cvLink: cvLink
+        cv_link: cvLink
       });
 
       if (result.success) {
