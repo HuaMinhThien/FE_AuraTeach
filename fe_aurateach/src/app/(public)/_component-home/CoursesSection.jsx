@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { courseService } from '@/services/courseService';
+import { categoryService } from '@/services/categoryService';
 
 function CoursesSection() {
   const [categories, setCategories] = useState([]);
@@ -11,54 +13,53 @@ function CoursesSection() {
   const [loading, setLoading] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // 2 hàng x 4 lớp = 8 lớp/trang
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 8;
 
+  // 1. Lấy danh mục 1 lần khi load trang
   useEffect(() => {
-      const fetchSectionData = async () => {
-          try {
-              const [resCategories, resCourses] = await Promise.all([
-                  fetch('http://localhost:3007/categories'),
-                  fetch('http://localhost:3007/courses')
-              ]);
-
-              if (!resCategories.ok || !resCourses.ok) {
-                  throw new Error(`Lỗi kết nối hệ thống!`);
-              }
-
-              const dataCategories = await resCategories.json();
-              const dataCourses = await resCourses.json();
-
-              setCategories(Array.isArray(dataCategories) ? dataCategories : []);
-              setCourses(Array.isArray(dataCourses) ? dataCourses : []);
-              setActiveTabId('All');
-          } catch (error) {
-              console.error('Lỗi gọi API trong CoursesSection:', error);
-              setCategories([{ category_id: 'All', category_name: 'Tất cả' }]);
-              setCourses([]);
-          } finally {
-              setLoading(false);
-          }
-      };
-      fetchSectionData();
+    const fetchCategories = async () => {
+      try {
+        const data = await categoryService.getCategories();
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Lỗi tải danh mục:', error);
+        setCategories([{ category_id: 'All', category_name: 'Tất cả' }]);
+      }
+    };
+    fetchCategories();
   }, []);
 
-  // --- LOGIC LỌC: Lọc theo category_id ---
-  const filteredCourses = activeTabId === 'All'
-      ? courses
-      : courses.filter(course => course.category_id === activeTabId);
+  // 2. Lấy danh sách khóa học theo Tab và Phân trang từ Backend
+  // 2. Lấy danh sách khóa học theo Tab và Phân trang từ Backend
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+      try {
+        const params = {
+          category_id: activeTabId,
+          page: currentPage,
+          per_page: itemsPerPage,
+          sort_by: 'current_students',
+          direction: 'asc'
+        };
 
-  // --- SẮP XẾP: Từ ít học viên nhất đến nhiều học viên nhất ---
-  const sortedCourses = [...filteredCourses].sort((a, b) => {
-      const studentsA = a.current_students || a.students_count || 0;
-      const studentsB = b.current_students || b.students_count || 0;
-      return studentsA - studentsB;
-  });
+        // ✅ Sửa lại ở đây (bỏ chữ 'data =')
+        const response = await courseService.getCourses(params);
+        
+        // Laravel paginate trả về object chứa .data và .last_page
+        setCourses(response.data || []);
+        setTotalPages(response.last_page || 1);
+      } catch (error) {
+        console.error('Lỗi tải danh sách lớp học:', error);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(sortedCourses.length / itemsPerPage) || 1;
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedCourses.slice(indexOfFirstItem, indexOfLastItem);
+    fetchCourses();
+  }, [activeTabId, currentPage]);
 
   const goToPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -66,7 +67,7 @@ function CoursesSection() {
     }
   };
 
-  if (loading) {
+  if (loading && courses.length === 0) {
     return <div style={{textAlign: 'center', padding: '40px'}}>Đang tải danh sách lớp học...</div>;
   }
 
@@ -115,13 +116,13 @@ function CoursesSection() {
           </div>
 
           {/* DANH SÁCH LỚP HỌC */}
-          {currentItems.length === 0 ? (
+          {courses.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
               Không có lớp học nào thuộc danh mục này.
             </div>
           ) : (
             <div className="teacher-sec3__grid">
-              {currentItems.map((course) => (
+              {courses.map((course) => (
                 <Link 
                   key={course.id || course.course_id} 
                   href={`/classList/${course.course_id || course.id}`}
@@ -140,7 +141,7 @@ function CoursesSection() {
                       <p className="course-card__description">{course.description}</p>
                       <div className="course-card__footer">
                         <div className="course-card__price">
-                          <span className="course-card__price-value">{parseInt(course.hourly_rate).toLocaleString('vi-VN')} đ/h</span>
+                          <span className="course-card__price-value">{parseInt(course.hourly_rate || 0).toLocaleString('vi-VN')} đ/h</span>
                         </div>
                         <div className="course-card__students">
                           <span>👨‍🎓 {course.current_students || course.students_count || 0}/{course.max_students} HS</span>
