@@ -22,6 +22,19 @@ export async function POST(request) {
       );
     }
 
+    // === VALIDATION: Kiểm tra email phải là Gmail ===
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!gmailRegex.test(email)) {
+      console.log("❌ Email không phải Gmail:", email);
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Chỉ hỗ trợ email Gmail (@gmail.com)",
+        },
+        { status: 400 }
+      );
+    }
+
     // === 1. CALL API LẤY DANH SÁCH USERS TỪ JSON SERVER ===
     const usersRes = await fetch(`${BACKEND_URL}/users`, {
       cache: "no-store",
@@ -102,7 +115,9 @@ export async function POST(request) {
 
       console.log(`📋 Tutor verification_status: ${tutor.verification_status}`);
 
-      // // Kiểm tra trạng thái duyệt hồ sơ
+      // === KIỂM TRA TRẠNG THÁI DUYỆT HỒ SƠ (TẠM THỜI COMMENT ĐỂ TEST) ===
+      // Khi có backend thật, bỏ comment các dòng bên dưới
+      
       // if (tutor.verification_status === "pending") {
       //   return NextResponse.json(
       //     {
@@ -124,7 +139,6 @@ export async function POST(request) {
       //   );
       // }
 
-      // Cho phép đăng nhập nếu trạng thái là approved hoặc Đã xác minh
       // if (
       //   tutor.verification_status !== "approved" &&
       //   tutor.verification_status !== "Đã xác minh"
