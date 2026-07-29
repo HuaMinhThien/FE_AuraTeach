@@ -1,53 +1,127 @@
+// src/app/(public)/(auth)/login/page.jsx
 "use client";
-import authService from "@/services/authService";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // <--- Thêm router của Next.js
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Headers from "@/components/users/Header";
 import "./login.css";
 
 export default function LoginPage() {
-  const router = useRouter(); // <--- Khởi tạo router
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Hàm kiểm tra email Gmail
+  const isValidGmail = (email) => {
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setErrors({});
+
+    let hasError = false;
+    const newErrors = {};
+
+    // Kiểm tra email
+    if (!email) {
+      newErrors.email = "Vui lòng nhập email";
+      hasError = true;
+    } else if (!isValidGmail(email)) {
+      newErrors.email = "Vui lòng sử dụng email Gmail (@gmail.com)";
+      hasError = true;
+    }
+
+    // Kiểm tra password
+    if (!password) {
+      newErrors.password = "Vui lòng nhập mật khẩu";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await authService.login(email, password);
-      const user = response.user || response.data?.user || response;
-      const role = user?.role;
+      console.log("=== LOGIN SUBMIT ===");
+      console.log("Email:", email);
 
-      // 1. Lưu localStorage như cũ
-      localStorage.setItem("user", JSON.stringify(user));
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // 2. BẮT BUỘC PHẢI LƯU COOKIE ĐỂ MIDDLEWARE ĐỌC ĐƯỢC
-      document.cookie = `user_info=true; path=/; max-age=86400`; // Token giả lập hoặc token thật
-      document.cookie = `role=${role}; path=/; max-age=86400`;    // Lưu role vào cookie
+      const data = await response.json();
+      console.log("Response data:", data);
 
-      // 3. Điều hướng dựa theo role
-      switch (role) {
+      if (!response.ok) {
+        // Hiển thị lỗi từ server
+        if (data.message) {
+          // Kiểm tra xem lỗi có liên quan đến email hay password không
+          if (data.message.includes("email") || data.message.includes("Gmail")) {
+            newErrors.email = data.message;
+          } else if (data.message.includes("mật khẩu") || data.message.includes("password")) {
+            newErrors.password = data.message;
+          } else {
+            setError(data.message);
+          }
+          setErrors(newErrors);
+        }
+        throw new Error(data.message || "Đăng nhập thất bại");
+      }
+
+      if (!data.success || !data.user) {
+        throw new Error("Dữ liệu đăng nhập không hợp lệ");
+      }
+
+      // Tạo userInfo
+      const userInfo = {
+        id: data.user.user_id,
+        name: data.user.full_name,
+        email: data.user.email,
+        role: data.user.role,
+        avatar: data.user.avatar || "/img/default-avatar.png",
+      };
+
+      console.log("✅ UserInfo to save:", userInfo);
+
+      // Lưu cookie
+      const expires = rememberMe ? 30 : 1;
+      document.cookie = `user_info=${encodeURIComponent(
+        JSON.stringify(userInfo)
+      )}; path=/; max-age=${expires * 24 * 60 * 60}`;
+
+      document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
+
+      // Chuyển hướng
+      switch (data.user.role) {
         case "student":
-          router.push("/");
+          window.location.href = "/";
           break;
         case "tutor":
-          router.push("/tutor-dashboard");
+          window.location.href = "/tutor-dashboard";
           break;
         case "admin":
-          router.push("/admin");
+          window.location.href = "/admin-dashboard";
           break;
         default:
-          router.push("/");
+          window.location.href = "/";
       }
     } catch (error) {
       console.error("❌ Login error:", error);
-      setError(error.response?.data?.message || error.message || "Đăng nhập thất bại");
+      if (!Object.keys(errors).length) {
+        setError(error.message || "Đăng nhập thất bại");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -71,29 +145,48 @@ export default function LoginPage() {
                 )}
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Email <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="email"
                     id="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    className="aurateach-form-input"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) {
+                        setErrors(prev => ({ ...prev, email: '' }));
+                      }
+                    }}
+                    placeholder="example@gmail.com"
+                    className={`aurateach-form-input ${errors.email ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.email && (
+                    <span className="error-text">{errors.email}</span>
+                  )}
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Chỉ hỗ trợ email Gmail (@gmail.com)
+                  </small>
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="password">Mật khẩu</label>
+                  <label htmlFor="password">Mật khẩu <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="password"
                     id="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) {
+                        setErrors(prev => ({ ...prev, password: '' }));
+                      }
+                    }}
                     placeholder="••••••"
-                    className="aurateach-form-input"
+                    className={`aurateach-form-input ${errors.password ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.password && (
+                    <span className="error-text">{errors.password}</span>
+                  )}
                 </div>
 
                 <div className="aurateach-form-options">

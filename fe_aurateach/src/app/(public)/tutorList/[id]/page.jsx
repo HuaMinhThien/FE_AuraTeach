@@ -1,81 +1,270 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './TutorDetail.module.css';
+import data from '../../../api/data.json';
+
+const API_BASE = "http://localhost:3007";
 
 export default function TutorDetailPage({ params }) {
+  const router = useRouter();
   const [tutorDetails, setTutorDetails] = useState(null);
   const [accountUser, setAccountUser] = useState(null);
   const [tutorCourses, setTutorCourses] = useState([]);
   const [tutorReviews, setTutorReviews] = useState([]);
   const [relatedTutorsList, setRelatedTutorsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Lấy thông tin user hiện tại từ cookie
+  useEffect(() => {
+    const getCurrentUser = () => {
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      };
+      const userCookie = getCookie("user_info");
+      if (userCookie) {
+        try {
+          return JSON.parse(decodeURIComponent(userCookie));
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    };
+    setCurrentUser(getCurrentUser());
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllTutorData = async () => {
       try {
         const resolvedParams = await params;
         const currentTutorId = resolvedParams?.id;
-        if (!currentTutorId) return;
 
-        // Gọi API chi tiết gia sư, đánh giá, khóa học và API related mới
-        const [tutorRes, reviewsRes, coursesRes, relatedRes] = await Promise.all([
-          fetch(`http://localhost:8000/api/tutors/${currentTutorId}`),
-          fetch(`http://localhost:8000/api/reviews?tutor_id=${currentTutorId}`),
-          fetch(`http://localhost:8000/api/courses?tutor_id=${currentTutorId}`),
-          fetch(`http://localhost:8000/api/tutors/${currentTutorId}/related`) // API mới
-        ]);
+        if (!currentTutorId) {
+          console.error("Không tìm thấy ID gia sư");
+          setIsLoading(false);
+          return;
+        }
 
-        const tutorData = await tutorRes.json();
-        const reviewsData = await reviewsRes.json();
-        const coursesData = await coursesRes.json();
-        const relatedData = await relatedRes.json();
+        const totalTutorsArray = data.tutors || [];
+        const totalUsersArray = data.users || [];
+        const totalCoursesArray = data.courses || [];
+        const totalReviewsArray = data.reviews || [];
+        const totalStudentsArray = data.students || [];
 
-        // Fetch user riêng biệt (dựa vào user_id từ tutorData)
-        const userRes = await fetch(`http://localhost:8000/api/users/${tutorData.user_id}`);
-        const userData = await userRes.json();
-
-        // Set State
-        setTutorDetails(tutorData);
-        setAccountUser(userData);
-        setTutorCourses(coursesData);
-      console.log("Dữ liệu review thô:", reviewsData);
-        setTutorReviews(reviewsData.map(r => ({ 
-          ...r, 
-          studentName: r.student_name || "Học viên ẩn danh" 
-        })));
-
-        // Xử lý dữ liệu related nhận về từ API
-        console.log("Dữ liệu reviews đang có:", tutorReviews);
-        const uniqueRelated = Array.from(new Map(relatedData.map(t => [t.tutor_id, t])).values());
-        setRelatedTutorsList(
-          uniqueRelated.map(t => ({
-            id: t.tutor_id,
-            name: t.full_name,
-            avatar: t.avatar,
-            subject: t.category_name || "Chưa có môn",
-            rating: t.rating
-          }))
+        const matchedTutor = totalTutorsArray.find(
+          (singleTutor) => String(singleTutor.tutor_id) === String(currentTutorId)
         );
 
-      } catch (err) {
-        console.error("Lỗi fetch dữ liệu:", err);
+        if (!matchedTutor) {
+          console.error("Không tìm thấy gia sư với ID:", currentTutorId);
+          setIsLoading(false);
+          return;
+        }
+
+        const matchedUser = totalUsersArray.find(
+          (singleUser) => singleUser.user_id === matchedTutor.user_id
+        );
+
+        const filteredTutorCourses = totalCoursesArray.filter(
+          (singleCourse) => String(singleCourse.tutor_id) === String(currentTutorId)
+        );
+
+        const tutorCourseIdsArray = filteredTutorCourses.map((course) => course.course_id);
+        const rawMatchedReviews = totalReviewsArray.filter((review) => 
+          tutorCourseIdsArray.includes(review.course_id)
+        );
+
+        const formattedReviews = rawMatchedReviews.map((singleReview) => {
+          const matchedStudent = totalStudentsArray.find(
+            (student) => student.student_id === singleReview.student_id
+          ) || {};
+          const studentUserInfo = totalUsersArray.find(
+            (user) => user.user_id === matchedStudent.user_id
+          ) || {};
+          return { 
+            ...singleReview, 
+            studentName: studentUserInfo.full_name || "Học viên ẩn danh" 
+          };
+        });
+
+        const specificRelatedTutors = totalTutorsArray
+          .filter((tutor) => String(tutor.tutor_id) !== String(currentTutorId))
+          .slice(0, 4)
+          .map((otherTutor) => {
+            const otherTutorUser = totalUsersArray.find(
+              (user) => user.user_id === otherTutor.user_id
+            ) || {};
+            const otherTutorCourse = totalCoursesArray.find(
+              (course) => course.tutor_id === otherTutor.tutor_id
+            ) || {};
+            return {
+              id: otherTutor.tutor_id,
+              name: otherTutorUser.full_name || "Gia sư AuraTeach",
+              avatar: otherTutorUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+              subject: otherTutorCourse.title || "Gia sư AuraTeach",
+              rating: otherTutor.rating || 4.5
+            };
+          });
+
+        setTutorDetails(matchedTutor);
+        setAccountUser(matchedUser);
+        setTutorCourses(filteredTutorCourses);
+        setTutorReviews(formattedReviews);
+        setRelatedTutorsList(specificRelatedTutors);
+
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
+
+    fetchAllTutorData();
   }, [params]);
 
+  // ===== HÀM TÌM HOẶC TẠO CONVERSATION =====
+  const findOrCreateConversation = async (studentId, userId, tutorId) => {
+    try {
+      console.log(`🔍 Tìm conversation: student=${studentId}, user_id=${userId}, tutor_id=${tutorId}`);
 
-  if (isLoading) return <div style={{textAlign: 'center', marginTop: '100px'}}>Đang tải...</div>;
-  if (!tutorDetails || !accountUser) return <div style={{textAlign: 'center', marginTop: '100px'}}>Không tìm thấy dữ liệu.</div>;
+      // 1. Lấy tất cả conversations
+      const res = await fetch(`${API_BASE}/conversations`);
+      const conversations = await res.json();
+      
+      // 2. Tìm conversation đã tồn tại (kiểm tra cả user_id và tutor_id)
+      const existingConv = conversations.find(conv => {
+        if (!conv.participants || !conv.participants.includes(studentId)) return false;
+        
+        // Kiểm tra xem conversation có chứa tutor không (theo user_id hoặc tutor_id)
+        return conv.participants.includes(userId) || conv.participants.includes(tutorId);
+      });
+      
+      if (existingConv) {
+        console.log("✅ Found existing conversation:", existingConv);
+        return existingConv;
+      }
+      
+      // 3. Tạo conversation mới (dùng user_id để đồng bộ với dữ liệu hiện tại)
+      const newConv = {
+        id: `conv_${Date.now()}`,
+        participants: [studentId, userId],
+        last_message: "",
+        last_message_time: new Date().toISOString(),
+        unread_count: 0
+      };
+      
+      console.log("📝 Creating new conversation:", newConv);
+      
+      const createRes = await fetch(`${API_BASE}/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newConv),
+      });
+      
+      if (!createRes.ok) {
+        throw new Error("Không thể tạo hội thoại");
+      }
+      
+      const createdConv = await createRes.json();
+      console.log("✅ Created new conversation:", createdConv);
+      return createdConv;
+      
+    } catch (error) {
+      console.error("❌ Lỗi tìm/tạo conversation:", error);
+      return null;
+    }
+  };
 
-  // PHẦN DƯỚI ĐÂY LÀ JSX NGUYÊN BẢN CỦA BẠN (ĐÃ GIỮ NGUYÊN)
+  // ===== HÀM XỬ LÝ LIÊN HỆ =====
+  const handleContact = async () => {
+    // Kiểm tra đã đăng nhập chưa
+    if (!currentUser) {
+      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      return;
+    }
+
+    // Kiểm tra nếu là học viên thì chuyển đến Messenger
+    if (currentUser.role === 'student') {
+      try {
+        const studentId = currentUser.user_id || currentUser.id;
+        const userId = accountUser?.user_id;     // user_id của gia sư
+        const tutorId = tutorDetails?.tutor_id;   // tutor_id của gia sư
+        
+        console.log(`📌 Contact: studentId=${studentId}, userId=${userId}, tutorId=${tutorId}`);
+        
+        // ✅ Tìm hoặc tạo conversation
+        const conv = await findOrCreateConversation(studentId, userId, tutorId);
+        
+        if (conv) {
+          router.push(`/messenger?conversationId=${conv.id}`);
+        } else {
+          router.push('/messenger');
+        }
+      } catch (error) {
+        console.error("❌ Lỗi tạo hội thoại:", error);
+        router.push('/messenger');
+      }
+    } else {
+      alert('Bạn cần đăng nhập với tài khoản học viên để liên hệ!');
+    }
+  };
+
+  // Hiển thị loading
+  if (isLoading) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '100px 20px',
+        fontSize: '18px',
+        color: '#475569'
+      }}>
+        <div style={{ marginBottom: '16px' }}>⏳</div>
+        Đang tải thông tin gia sư...
+      </div>
+    );
+  }
+
+  // Hiển thị khi không tìm thấy
+  if (!tutorDetails || !accountUser) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '100px 20px',
+        fontSize: '18px',
+        color: '#475569'
+      }}>
+        <div style={{ marginBottom: '16px' }}>😅</div>
+        Không tìm thấy thông tin gia sư. Vui lòng quay lại trang danh sách.
+        <div style={{ marginTop: '20px' }}>
+          <Link href="/tutorList" style={{
+            display: 'inline-block',
+            padding: '10px 24px',
+            backgroundColor: '#1259c9',
+            color: '#fff',
+            borderRadius: '8px',
+            textDecoration: 'none'
+          }}>
+            Quay lại danh sách
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.tutorProfilePage}>
       <div className={styles.mainLayout}>
+        
+        {/* ================= CỘT BÊN TRÁI: THÔNG TIN CHI TIẾT GIA SƯ ================= */}
         <div className={styles.leftColumn}>
+          
+          {/* 1. Thẻ thông tin chung đầu trang */}
           <div className={styles.headerCard}>
             <img 
               src={accountUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"} 
@@ -88,9 +277,10 @@ export default function TutorDetailPage({ params }) {
                 <span className={styles.verifiedCheck}>✓</span>
               </div>
               <div className={styles.ratingMeta}>
-                ⭐ {tutorDetails.rating ? Number(tutorDetails.rating).toFixed(1) : '4.5'} 
+                ⭐ {tutorDetails.rating ? tutorDetails.rating.toFixed(1) : '4.5'} 
                 <span>({tutorReviews.length} đánh giá)</span>
               </div>
+              
               <div className={styles.statsContainer}>
                 <div className={styles.statBox}>
                   <div className={styles.statValue}>120</div>
@@ -108,11 +298,13 @@ export default function TutorDetailPage({ params }) {
             </div>
           </div>
 
+          {/* 2. Đoạn văn giới thiệu bản thân */}
           <div className={styles.sectionBlock}>
             <h2 className={styles.sectionTitle}>Giới thiệu</h2>
             <p className={styles.bioText}>{tutorDetails.bio || "Chưa có thông tin giới thiệu"}</p>
           </div>
 
+          {/* 3. Khối bằng cấp và thành tích */}
           <div className={styles.sectionBlock}>
             <h2 className={styles.sectionTitle}>Thành tích nổi bật</h2>
             <img 
@@ -127,6 +319,7 @@ export default function TutorDetailPage({ params }) {
             </div>
           </div>
 
+          {/* 4. Khối danh sách các lớp học hiện có */}
           <div className={styles.sectionBlock}>
             <h2 className={styles.sectionTitle}>Lớp học hiện có</h2>
             {tutorCourses.length > 0 ? (
@@ -153,12 +346,13 @@ export default function TutorDetailPage({ params }) {
             )}
           </div>
 
+          {/* 5. Khối đánh giá */}
           <div className={styles.sectionBlock}>
             <h2 className={styles.sectionTitle}>Đánh giá từ học viên</h2>
             <div className={styles.ratingSummary}>
               <div style={{ textAlign: 'center' }}>
                 <div className={styles.bigScore}>
-                  {tutorDetails.rating ? Number(tutorDetails.rating).toFixed(1) : '4.5'}
+                  {tutorDetails.rating ? tutorDetails.rating.toFixed(1) : '4.5'}
                 </div>
                 <div className={styles.starsRow}>⭐⭐⭐⭐⭐</div>
                 <div className={styles.voteCount}>{tutorReviews.length} bình chọn</div>
@@ -166,11 +360,15 @@ export default function TutorDetailPage({ params }) {
               <div className={styles.progressContainer}>
                 <div className={styles.progressRow}>
                   <span>5 sao</span>
-                  <div className={styles.progressBarTrack}><div className={styles.progressBarFill5}></div></div>
+                  <div className={styles.progressBarTrack}>
+                    <div className={styles.progressBarFill5}></div>
+                  </div>
                 </div>
                 <div className={styles.progressRow}>
                   <span>4 sao</span>
-                  <div className={styles.progressBarTrack}><div className={styles.progressBarFill4}></div></div>
+                  <div className={styles.progressBarTrack}>
+                    <div className={styles.progressBarFill4}></div>
+                  </div>
                 </div>
                 <div className={styles.progressRow}>
                   <span>3 sao</span>
@@ -197,21 +395,43 @@ export default function TutorDetailPage({ params }) {
               </p>
             )}
           </div>
+
         </div>
 
+        {/* ================= CỘT BÊN PHẢI: SIDEBAR TIỆN ÍCH ================= */}
         <div className={styles.rightColumn}>
+          
+          {/* 🔥 NÚT LIÊN HỆ - ĐÃ SỬA */}
           <div className={styles.contactBox}>
-            <button className={styles.callBtn}>
-              📞 Gọi điện: {accountUser.phone || 'Chưa cập nhật'}
+            <button className={styles.contactBtn} onClick={handleContact}>
+              💬 Liên hệ với {accountUser.full_name?.split(' ').pop() || 'gia sư'}
             </button>
+            {!currentUser && (
+              <p className={styles.contactNote}>
+                🔑 Vui lòng <Link href="/login" className={styles.loginLink}>đăng nhập</Link> để liên hệ
+              </p>
+            )}
+            {currentUser && currentUser.role !== 'student' && (
+              <p className={styles.contactNote}>
+                ⚠️ Bạn cần tài khoản học viên để liên hệ
+              </p>
+            )}
           </div>
 
           <div className={styles.infoBox}>
             <h3 className={styles.infoBoxTitle}>Thông tin hồ sơ</h3>
             <div className={styles.infoList}>
-              <div><span>Kinh nghiệm:</span> <strong>{tutorDetails.Experience || 'Chưa cập nhật'}</strong></div>
-              <div><span>Trình độ:</span> <strong>{tutorDetails.qualification || 'Chưa cập nhật'}</strong></div>
-              <div><span>Trạng thái:</span> <strong className={styles.statusActive}>{tutorDetails.verification_status || 'Đã xác minh'}</strong></div>
+              <div>
+                <span>Kinh nghiệm:</span> 
+                <strong>{tutorDetails.experience || 'Chưa cập nhật'}</strong>
+              </div>
+              <div>
+                <span>Trạng thái:</span> 
+                <strong className={styles.statusActive}>
+                  {tutorDetails.verification_status === 'approved' ? 'Đã xác thực' : 'Chưa xác thực'}
+                </strong>
+              </div>
+              
               <div className={styles.subjectsDivider}>
                 <span className={styles.subjectsTitle}>Môn học giảng dạy:</span>
                 <div className={styles.tagsContainer}>
@@ -224,6 +444,7 @@ export default function TutorDetailPage({ params }) {
             <div className={styles.reportBtn}>⚠️ Báo cáo gia sư</div>
           </div>
 
+          {/* Danh sách Gia sư liên quan */}
           <div className={styles.relatedBox}>
             <h3 className={styles.relatedBoxTitle}>Gia sư liên quan</h3>
             {relatedTutorsList.length > 0 ? (
@@ -238,9 +459,11 @@ export default function TutorDetailPage({ params }) {
                     <div className={styles.relatedInfo}>
                       <h4 className={styles.relatedName}>{relatedTutor.name}</h4>
                       <p className={styles.relatedSub}>{relatedTutor.subject}</p>
-                      <span className={styles.relatedStars}>⭐ {relatedTutor.rating ? Number(relatedTutor.rating).toFixed(1) : '4.5'}</span>
+                      <span className={styles.relatedStars}>⭐ {relatedTutor.rating ? relatedTutor.rating.toFixed(1) : '4.5'}</span>
                     </div>
-                    <Link href={`/tutorList/${relatedTutor.id}`} className={styles.viewBtn}>Xem</Link>
+                    <Link href={`/tutorList/${relatedTutor.id}`} className={styles.viewBtn}>
+                      Xem
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -250,7 +473,9 @@ export default function TutorDetailPage({ params }) {
               </p>
             )}
           </div>
+
         </div>
+
       </div>
     </div>
   );

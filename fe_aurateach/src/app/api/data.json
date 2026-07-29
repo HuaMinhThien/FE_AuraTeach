@@ -7,7 +7,7 @@
     },
     {
       "category_id": "cat-03",
-      "category_name": "Văn",
+      "category_name": "Ngữ văn",
       "id": "c8aa"
     },
     {
@@ -57,7 +57,7 @@
       "email": "thien@gmail.com",
       "password": "thien123",
       "full_name": "Thiện đây nè ",
-      "phone": "0912345678",
+      "phone": "09106761390",
       "avatar": "/img/avt/thien.jpg",
       "role": "tutor",
       "status": "active",
@@ -107,7 +107,7 @@
       "full_name": "Liêm Tran",
       "phone": "0909123123",
       "birth_date": "2000-05-15",
-      "avatar": "",
+      "avatar": "/img/default-avatar.svg",
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
@@ -175,6 +175,18 @@
       "created_at": "2026-01-15T08:00:00Z"
     },
     {
+      "id": "u-admin-2",
+      "user_id": "u-admin-2",
+      "email": "liemadmin@gmail.com",
+      "password": "123123",
+      "full_name": "Liem Admin",
+      "phone": "0912345678",
+      "avatar": "/img/avt/liem.jpg",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2026-01-15T08:00:00Z"
+    },
+    {
       "id": "e62d",
       "user_id": "user_1784195250277_zprx34",
       "email": "sangnguyen@gmail.com",
@@ -221,6 +233,66 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T11:10:32.434Z"
+    },
+    {
+      "id": "d483",
+      "user_id": "user_1784278196023_24jwn9",
+      "email": "giasu@gmail.com",
+      "password": "123123",
+      "full_name": "Gia sư 1",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-17T08:49:56.023Z"
+    },
+    {
+      "id": "15c1",
+      "user_id": "user_1784713008253_rqdc45",
+      "email": "thienminh@gmail.com",
+      "password": "123123",
+      "full_name": "Hứa Minh Thiện",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-22T09:36:48.253Z"
+    },
+    {
+      "id": "e54d",
+      "user_id": "user_1785245366797_7df24g",
+      "email": "haha@gmail.com",
+      "password": "123123",
+      "full_name": "haha",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-28T13:29:26.797Z"
+    },
+    {
+      "id": "e09b",
+      "user_id": "user_1785245928354_lwwbbd",
+      "email": "hehe@gmail.com",
+      "password": "123123",
+      "full_name": "hehe",
+      "phone": "0906761390",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-28T13:38:48.354Z"
+    },
+    {
+      "id": "bb6a",
+      "user_id": "user_1785310832917_7hkim6",
+      "email": "liemtran3107@gmail.com",
+      "password": "123123",
+      "full_name": "thanhliem",
+      "phone": "09091898751",
+      "avatar": "/img/default-avatar.svg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-29T07:40:32.917Z"
     }
   ],
   "admins": [
@@ -228,74 +300,84 @@
       "admin_id": "admin_01",
       "user_id": "u-admin-1",
       "id": "949d"
+    },
+    {
+      "admin_id": "admin_02",
+      "user_id": "u-admin-2",
+      "id": "e62d"
     }
   ],
   "tutors": [
     {
+      "id": "1f17",
       "tutor_id": "tutor_01",
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-      "qualification": "Đại học - CNTT",
+      "expertise": "Toán, Tin học & Lập trình, Ngữ văn",
       "rating": 0,
-      "verification_status": "Đã xác minh",
+      "verification_status": "approved",
       "experience": "Dưới 1 năm",
-      "id": "1f17",
       "pending_balance": 1200000,
       "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
-      "created_at": "2025-01-15T08:30:00.000Z"
+      "created_at": "2025-01-15T08:30:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "c95a",
       "tutor_id": "tutor_02",
       "user_id": "u-02",
-      "bio": "Cựu sinh viên chuyên ngành Sư phạm Toán học ĐH Sư Phạm. Chuyên trị các học sinh mất gốc hình học không gian và luyện thi vào các trường chuyên cấp 3.",
-      "qualification": "Cử nhân - Sư phạm Toán",
+      "bio": "Cựu sinh viên chuyên ngành Sư phạm Toán ĐH Sư Phạm. Chuyên trị các học sinh mất gốc hình học không gian và luyện thi vào các trường chuyên cấp 3.",
+      "expertise": "Toán",
       "rating": 5,
-      "verification_status": "Đã xác minh",
+      "verification_status": "approved",
       "experience": "5 năm kinh nghiệm",
-      "id": "c95a",
       "pending_balance": 100000,
       "available_balance": 3390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_02/math-specialist",
-      "created_at": "2025-02-20T14:15:00.000Z"
+      "created_at": "2025-02-20T14:15:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "12c3",
       "tutor_id": "tutor_03",
       "user_id": "u-03",
       "bio": "Giáo viên Ngữ Văn tại trường THPT danh tiếng. Phương pháp truyền đạt văn học bằng bản đồ tư duy, giúp học sinh nắm bắt luận điểm nghị luận xã hội sâu sắc, ngắn gọn.",
-      "qualification": "Thạc sĩ - Ngữ Văn",
+      "expertise": "Toán, Ngữ văn",
       "rating": 4.9,
-      "verification_status": "Đã xác minh",
+      "verification_status": "approved",
       "experience": "6 năm kinh nghiệm",
-      "id": "12c3",
       "pending_balance": 2200000,
       "available_balance": 533900,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_03/literature-teacher",
-      "created_at": "2025-03-10T09:45:00.000Z"
+      "created_at": "2025-03-10T09:45:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "e73f",
       "tutor_id": "tutor_04",
       "user_id": "u-04",
       "bio": "Chứng chỉ IELTS 8.5 thương mại. Chuyên đào tạo lấy gốc tiếng Anh cấp tốc, lấy lại nền tảng ngữ pháp và phản xạ giao tiếp tự tin chỉ sau 3 tháng.",
-      "qualification": "Đại học - Ngôn ngữ Anh",
+      "expertise": "Tiếng Anh",
       "rating": 4.7,
-      "verification_status": "Chưa cập nhật",
+      "verification_status": "approved",
       "experience": "4 năm kinh nghiệm",
-      "id": "e73f",
       "pending_balance": 1222000,
       "available_balance": 44390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_04/ielts-expert",
-      "created_at": "2025-04-05T11:20:00.000Z"
+      "created_at": "2025-04-05T11:20:00.000Z",
+      "rejection_reason": null
     },
     {
+      "id": "d377",
       "tutor_id": "tutor_1782855815613",
       "user_id": "user_1782855815606_98bynm",
       "bio": "",
-      "qualification": "Lịch sử",
+      "expertise": "Lịch sử",
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
@@ -304,47 +386,52 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_1782855815613/history",
       "created_at": "2025-05-12T16:30:00.000Z",
-      "id": "d377"
+      "rejection_reason": null
     },
     {
       "id": "5d17",
       "tutor_id": "tutor_1784195250288",
       "user_id": "user_1784195250277_zprx34",
       "bio": "",
-      "qualification": "Ngữ văn",
+      "expertise": "Ngữ văn",
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
-      "created_at": "2026-07-16T09:47:30.288Z"
+      "created_at": "2026-07-16T09:47:30.288Z",
+      "rejection_reason": null
     },
     {
       "id": "4f61",
       "tutor_id": "tutor_1784195991707",
       "user_id": "user_1784195991700_sjra5e",
       "bio": "",
-      "qualification": "Tiếng Anh",
+      "expertise": "Tiếng Anh",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "approved",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
-      "created_at": "2026-07-16T09:59:51.707Z"
+      "created_at": "2026-07-16T09:59:51.707Z",
+      "rejection_reason": null
     },
     {
       "id": "7d7a",
       "tutor_id": "tutor_1784198598774",
       "user_id": "user_1784198598761_gvy8le",
       "bio": "",
-      "qualification": "Ngữ văn",
+      "expertise": "Ngữ văn",
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T10:43:18.774Z",
       "rejection_reason": null
@@ -354,14 +441,62 @@
       "tutor_id": "tutor_1784200232442",
       "user_id": "user_1784200232434_t7j79u",
       "bio": "",
-      "qualification": "Toán học, Tiếng Anh",
+      "expertise": "Toán, Tiếng Anh",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "rejected",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
+      "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
-      "created_at": "2026-07-16T11:10:32.442Z"
+      "created_at": "2026-07-16T11:10:32.442Z",
+      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
+    },
+    {
+      "id": "3a4c",
+      "tutor_id": "tutor_1784278196031",
+      "user_id": "user_1784278196023_24jwn9",
+      "bio": "",
+      "expertise": "Toán, Tiếng Anh",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "state": "active",
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-17T08:49:56.031Z",
+      "rejection_reason": null
+    },
+    {
+      "id": "dc17",
+      "tutor_id": "tutor_1784713008264",
+      "user_id": "user_1784713008253_rqdc45",
+      "bio": "",
+      "expertise": "Toán, Ngữ văn",
+      "rating": 0,
+      "verification_status": "rejected",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-22T09:36:48.264Z",
+      "rejection_reason": "Không liên hệ được với ứng viên"
+    },
+    {
+      "id": "0639",
+      "tutor_id": "tutor_1785245366805",
+      "user_id": "user_1785245366797_7df24g",
+      "bio": "",
+      "expertise": "Toán học",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-28T13:29:26.805Z",
+      "rejection_reason": null
     }
   ],
   "students": [
@@ -394,6 +529,22 @@
       "grade": "",
       "school_name": "",
       "created_at": "2026-07-01T08:13:04.219Z"
+    },
+    {
+      "id": "e8cd",
+      "student_id": "student_1785245928367",
+      "user_id": "user_1785245928354_lwwbbd",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-28T13:38:48.367Z"
+    },
+    {
+      "id": "4183",
+      "student_id": "student_1785310832931",
+      "user_id": "user_1785310832917_7hkim6",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-29T07:40:32.931Z"
     }
   ],
   "courses": [
@@ -402,9 +553,9 @@
       "course_id": "c-01",
       "category_id": "cat-02",
       "tutor_id": "tutor_01",
-      "title": "Gia sư môn Toán học",
+      "title": "Gia sư môn Toán",
       "level": "Cấp 2",
-      "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán học bền vững cấp 1, 2, 3.",
+      "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán bền vững cấp 1, 2, 3.",
       "max_students": 1,
       "hourly_rate": 150000,
       "start_date": "2026-07-01",
@@ -419,7 +570,9 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1785245928354_lwwbbd"
+      ]
     },
     {
       "id": "8ab5",
@@ -570,7 +723,7 @@
       "tutor_id": "tutor_02",
       "title": "Toán Tư Duy Tiểu Học & Khối Cấp 1",
       "level": "Cấp 1",
-      "description": "Phát triển tư duy logic toán học cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
+      "description": "Phát triển tư duy logic toán cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
       "max_students": 2,
       "hourly_rate": 130000,
       "start_date": "2026-07-05",
@@ -820,7 +973,8 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1",
-        "user_1782855725159_tqroz6"
+        "user_1782855725159_tqroz6",
+        "user_1785245928354_lwwbbd"
       ]
     },
     {
@@ -870,6 +1024,31 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "user_1782855725159_tqroz6"
+      ]
+    },
+    {
+      "id": "course-1784279882327",
+      "course_id": "course-1784279882327",
+      "tutor_id": "tutor_1784195991707",
+      "title": "sinh hoc",
+      "category_id": "cat-06",
+      "level": "Cấp 1",
+      "description": "sinh hoc co ban",
+      "max_students": 14,
+      "hourly_rate": 150000,
+      "start_date": "2026-07-27",
+      "end_date": "2026-10-19",
+      "total_weeks": 12,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 3"
+      ],
+      "time_slot": "02:00-04:00",
+      "thumbnail": "/img/class/default-class-5.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": [
+        "u-student-1"
       ]
     }
   ],
@@ -1006,12 +1185,12 @@
       "student_id": "u-student-1",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T20:26:34.672Z",
       "created_at": "2026-07-02T20:26:34.672Z",
       "updated_at": "2026-07-02T20:26:34.672Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "banking",
       "transaction_id": null,
@@ -1022,12 +1201,12 @@
       "student_id": "u-student-1",
       "course_id": "course-1783032321908",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:46:59.478Z",
       "created_at": "2026-07-02T22:46:59.478Z",
       "updated_at": "2026-07-02T22:46:59.478Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,
@@ -1080,6 +1259,172 @@
       "payment_method": "qr",
       "transaction_id": null,
       "id": "eQXs2nd34hY"
+    },
+    {
+      "id": "f503",
+      "booking_id": "bk-1784280010980",
+      "student_id": "u-student-1",
+      "course_id": "course-1784279882327",
+      "tutor_id": "tutor_1784195991707",
+      "status": "pending",
+      "booking_date": "2026-07-17T09:20:10.980Z",
+      "created_at": "2026-07-17T09:20:10.980Z",
+      "updated_at": "2026-07-17T09:20:10.980Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    },
+    {
+      "id": "0cc5",
+      "booking_id": "bk-1785246485874",
+      "student_id": "user_1785245928354_lwwbbd",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T13:48:05.874Z",
+      "created_at": "2026-07-28T13:48:05.874Z",
+      "updated_at": "2026-07-28T13:48:05.874Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    },
+    {
+      "id": "848b",
+      "booking_id": "bk-1785246669276",
+      "student_id": "user_1785245928354_lwwbbd",
+      "course_id": "course-1783023956388",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T13:51:09.276Z",
+      "created_at": "2026-07-28T13:51:09.276Z",
+      "updated_at": "2026-07-28T13:51:09.276Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    }
+  ],
+  "payments": [
+    {
+      "payment_id": 1,
+      "student_id": "u-student-1",
+      "amount": 150000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-10T10:00:00Z",
+      "created_at": "2026-07-10T10:00:00Z",
+      "id": "pay_001"
+    },
+    {
+      "payment_id": 2,
+      "student_id": "u-student-1",
+      "amount": 180000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-11T14:30:00Z",
+      "created_at": "2026-07-11T14:30:00Z",
+      "id": "pay_002"
+    },
+    {
+      "payment_id": 3,
+      "student_id": "u-student-2",
+      "amount": 120000,
+      "payment_method": "qr",
+      "payment_status": "pending",
+      "paid_at": null,
+      "created_at": "2026-07-12T09:00:00Z",
+      "id": "pay_003"
+    },
+    {
+      "payment_id": 4,
+      "student_id": "u-student-1",
+      "amount": 200000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-13T16:20:00Z",
+      "created_at": "2026-07-13T16:20:00Z",
+      "id": "pay_004"
+    },
+    {
+      "payment_id": 5,
+      "student_id": "user_1782855725159_tqroz6",
+      "amount": 150000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-14T11:00:00Z",
+      "created_at": "2026-07-14T11:00:00Z",
+      "id": "pay_005"
+    },
+    {
+      "payment_id": 6,
+      "student_id": "u-student-1",
+      "amount": 130000,
+      "payment_method": "qr",
+      "payment_status": "paid",
+      "paid_at": "2026-07-15T08:45:00Z",
+      "created_at": "2026-07-15T08:45:00Z",
+      "id": "pay_006"
+    },
+    {
+      "payment_id": 7,
+      "student_id": "user_1782855725159_tqroz6",
+      "amount": 150000,
+      "payment_method": "qr",
+      "payment_status": "refunded",
+      "paid_at": "2026-07-16T13:00:00Z",
+      "created_at": "2026-07-16T13:00:00Z",
+      "id": "pay_007"
+    }
+  ],
+  "tutor_update_requests": [
+    {
+      "id": "2078",
+      "tutor_id": "1f17",
+      "old_data": {
+        "phone": "0912345678",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình"
+      },
+      "new_data": {
+        "phone": "0912345678",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình, Lý"
+      },
+      "status": "rejected",
+      "reject_reason": "Không đạt yêu cầu",
+      "created_at": "2026-07-27T10:02:22.838Z",
+      "updated_at": "2026-07-27T11:15:45.401Z"
+    },
+    {
+      "id": "1c26",
+      "tutor_id": "1f17",
+      "old_data": {
+        "phone": "0912345678",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình"
+      },
+      "new_data": {
+        "phone": "0906761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 2 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình, Lý"
+      },
+      "status": "approved",
+      "reject_reason": null,
+      "created_at": "2026-07-27T11:16:19.358Z",
+      "updated_at": "2026-07-27T11:23:18.541Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

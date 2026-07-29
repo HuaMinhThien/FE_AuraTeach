@@ -439,47 +439,24 @@
   .aurateach-terms-content {
     max-height: 200px;
   }
+}
 
-  /* Overlay làm mờ nền */
-  .aurateach-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
-    animation: fadeIn 0.3s ease; /* Thêm hiệu ứng fade */
-  }
+/* Thêm vào cuối file register.css */
 
-  /* Popup thành công */
-  .aurateach-success-popup {
-    position: fixed; 
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #28a745;
-    color: white;
-    padding: 20px 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    z-index: 9999;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    
-    /* Thêm hiệu ứng xuất hiện */
-    animation: popUpScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
+/* ========= ERROR STYLES ========= */
+.input-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
 
-  /* Keyframes cho hiệu ứng */
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+.input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
 
-  @keyframes popUpScale {
-    from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  }
+.error-text {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
 }

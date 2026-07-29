@@ -359,3 +359,55 @@ header {
 .arrow-icon.rotate {
     transform: rotate(180deg);
 }
+
+/* Icon Messenger trong Header */
+.header-messenger-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f0f4ff;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.header-messenger-icon:hover {
+    background: #e0e7ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 35, 111, 0.15);
+}
+
+.header-messenger-icon svg {
+    width: 22px;
+    height: 22px;
+    transition: transform 0.3s ease;
+}
+
+.header-messenger-icon:hover svg {
+    transform: scale(1.1);
+}
+
+.header-messenger-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #F7F9FB;
+    padding: 0 2px;
+    box-sizing: border-box;
+    line-height: 1;
+}
