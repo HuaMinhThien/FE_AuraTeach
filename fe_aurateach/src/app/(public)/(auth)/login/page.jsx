@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { authService } from "@/services/authService";
 import Headers from "@/components/users/Header";
 import "./login.css";
 
@@ -23,27 +24,18 @@ export default function LoginPage() {
       console.log("=== LOGIN SUBMIT ===");
       console.log("Email:", email);
 
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      // 👇 Gọi qua authService để trỏ đúng sang Laravel (cổng 8000)
+      const data = await authService.login({ email, password });
       console.log("Response data:", data);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Đăng nhập thất bại");
+      if (!data || data.success === false || !data.user) {
+        throw new Error(data?.message || "Dữ liệu đăng nhập không hợp lệ từ máy chủ");
       }
 
-      if (!data.success || !data.user) {
-        throw new Error("Dữ liệu đăng nhập không hợp lệ");
-      }
-
-      // Tạo userInfo với đúng cấu trúc
+      // Tạo userInfo với cấu trúc chuẩn
       const userInfo = {
-        id: data.user.user_id,
-        name: data.user.full_name,
+        id: data.user.user_id || data.user.id,
+        name: data.user.full_name || data.user.name,
         email: data.user.email,
         role: data.user.role,
         avatar: data.user.avatar || "/img/default-avatar.png",
@@ -51,35 +43,39 @@ export default function LoginPage() {
 
       console.log("✅ UserInfo to save:", userInfo);
 
-      // Lưu cookie
+      // Lưu cookie thời gian theo rememberMe
       const expires = rememberMe ? 30 : 1;
-      // Chỉ giữ lại 1 dòng này, xóa dòng trùng lặp
+      const maxAgeSeconds = expires * 24 * 60 * 60;
+
       document.cookie = `user_info=${encodeURIComponent(
         JSON.stringify(userInfo)
-      )}; path=/; max-age=${expires * 24 * 60 * 60}`;
+      )}; path=/; max-age=${maxAgeSeconds}`;
 
-      document.cookie = `role=${data.user.role}; path=/; max-age=${expires * 24 * 60 * 60}`;
+      document.cookie = `role=${data.user.role}; path=/; max-age=${maxAgeSeconds}`;
 
-      console.log("✅ Cookies saved:");
-      console.log("user_info:", document.cookie);
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=${maxAgeSeconds}`;
+      }
 
-      // Chuyển hướng
+      console.log("✅ Cookies saved successfully");
+
+      // Chuyển hướng theo phân quyền (role)
       switch (data.user.role) {
         case "student":
-          window.location.href = "/";
+          router.push("/");
           break;
         case "tutor":
-          window.location.href = "/tutor-dashboard";
+          router.push("/tutor-dashboard");
           break;
         case "admin":
-          window.location.href = "/admin-dashboard";
+          router.push("/admin-dashboard");
           break;
         default:
-          window.location.href = "/";
+          router.push("/");
       }
-    } catch (error) {
-      console.error("❌ Login error:", error);
-      setError(error.message || "Đăng nhập thất bại");
+    } catch (err) {
+      console.error("❌ Login error:", err);
+      setError(err.response?.data?.message || err.message || "Đăng nhập thất bại");
     } finally {
       setIsLoading(false);
     }

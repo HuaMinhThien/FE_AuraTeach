@@ -6,6 +6,7 @@ import styles from "./management.module.css";
 import FilterControl from "./_components/Sec1";
 import ClassGrid from "./_components/Sec2";
 import ClassDetailModal from "./_components/Sec3";
+import { courseService } from "@/services/courseService"; // 👈 Sử dụng courseService chuẩn
 
 export default function ClassroomManagementPage() {
   const [classes, setClasses] = useState([]);
@@ -22,17 +23,23 @@ export default function ClassroomManagementPage() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          `/api/classes?page=${currentPage}&limit=6&status=${statusFilter}&search=${search}`
-        );
-        const resData = await res.json();
+        // Gọi qua courseService.getCourses với các tham số lọc
+        const resData = await courseService.getCourses({
+          page: currentPage,
+          limit: 6,
+          status: statusFilter,
+          search: search
+        });
         
-        if (isMounted && resData.success) {
-          setClasses(resData.data);
-          setPagination(resData.pagination);
+        if (isMounted && resData) {
+          const classList = Array.isArray(resData) ? resData : (resData.data || []);
+          const pageInfo = resData.pagination || { totalPages: resData.last_page || 1 };
+
+          setClasses(classList);
+          setPagination(pageInfo);
         }
       } catch (error) {
-        console.error("Lỗi tải danh sách lớp học từ JSON Server:", error);
+        console.error("Lỗi tải danh sách lớp học từ Backend:", error);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -55,29 +62,22 @@ export default function ClassroomManagementPage() {
     if (!confirmClose) return;
 
     try {
-      // 1. Gọi tới API Route động xử lý PATCH dữ liệu
-      const response = await fetch(`/api/classes/${classId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "closed" }),
-      });
+      // Gọi service cập nhật trạng thái thông qua courseService
+      const result = await courseService.updateCourseStatus(classId, { status: "closed" });
 
-      const result = await response.json();
-
-      if (result.success) {
-        // 2. Cập nhật State danh sách lớp học ở client ngay lập tức để UI render lại mượt mà
+      if (result && (result.success !== false)) {
+        // Cập nhật State giao diện ngay lập tức
         setClasses(prev => 
-          prev.map(c => c.class_id === classId ? { ...c, status: "closed" } : c)
+          prev.map(c => (c.class_id === classId || c.id === classId) ? { ...c, status: "closed" } : c)
         );
 
-        // 3. Nếu người dùng đang mở xem Modal chi tiết của chính lớp này, cập nhật trạng thái hiển thị trong Modal luôn
-        if (selectedClass && selectedClass.class_id === classId) {
+        if (selectedClass && (selectedClass.class_id === classId || selectedClass.id === classId)) {
           setSelectedClass(prev => ({ ...prev, status: "closed" }));
         }
 
-        alert("🔒 Đã khóa tuyển sinh lớp học thành công và lưu vào hệ thống!");
+        alert("🔒 Đã khóa tuyển sinh lớp học thành công!");
       } else {
-        alert(`Khóa lớp thất bại: ${result.message}`);
+        alert(`Khóa lớp thất bại: ${result?.message || 'Lỗi không xác định'}`);
       }
     } catch (error) {
       console.error("Lỗi khi thực hiện khóa lớp phía Client:", error);
@@ -105,7 +105,7 @@ export default function ClassroomManagementPage() {
         onFilterChange={handleFilterChange}
       />
 
-      {/* 2. Section Danh sách Lưới 3x2 và Phân trang */}
+      {/* 2. Section Danh sách Lưới và Phân trang */}
       <ClassGrid 
         classes={classes}
         loading={loading}

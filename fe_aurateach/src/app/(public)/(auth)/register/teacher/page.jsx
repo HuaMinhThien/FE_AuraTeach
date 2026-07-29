@@ -1,9 +1,10 @@
+// src/app/(public)/(auth)/register/teacher/page.jsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 import "./teacher.css";
 
 export default function TeacherRegisterPage() {
@@ -19,6 +20,8 @@ export default function TeacherRegisterPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  const dropdownRef = useRef(null);
 
   const expertiseOptions = [
     "Toán học",
@@ -38,6 +41,17 @@ export default function TeacherRegisterPage() {
     "Khác",
   ];
 
+  // Tự động đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Xử lý chọn/bỏ chọn môn học
   const toggleExpertise = (subject) => {
     setSelectedExpertise(prev => {
@@ -54,7 +68,7 @@ export default function TeacherRegisterPage() {
     setSelectedExpertise([]);
   };
 
-  // Đóng dropdown khi click ra ngoài
+  // Đóng mở dropdown
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -93,7 +107,7 @@ export default function TeacherRegisterPage() {
     setIsLoading(true);
 
     try {
-      const result = await authService.register({
+      const result = await authService.registerTeacher({
         fullName: fullName,
         email: email,
         password: password,
@@ -103,14 +117,14 @@ export default function TeacherRegisterPage() {
         cvLink: cvLink
       });
 
-      if (result.success) {
+      if (result && result.success !== false) {
         alert("✅ Đăng ký thành công! Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo qua email.");
         router.push("/login");
       } else {
-        setError(result.message || "Đăng ký thất bại, vui lòng thử lại");
+        setError(result?.message || "Đăng ký thất bại, vui lòng thử lại");
       }
-    } catch (error) {
-      setError(error.message || "Đã xảy ra lỗi khi đăng ký");
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Đã xảy ra lỗi khi đăng ký");
     } finally {
       setIsLoading(false);
     }
@@ -238,7 +252,7 @@ export default function TeacherRegisterPage() {
                 </div>
 
                 {/* Lĩnh vực chuyên môn - Dropdown */}
-                <div className="aurateach-form-group">
+                <div className="aurateach-form-group" ref={dropdownRef}>
                   <label>
                     Lĩnh vực chuyên môn <span style={{color: '#ef4444'}}>*</span>
                   </label>

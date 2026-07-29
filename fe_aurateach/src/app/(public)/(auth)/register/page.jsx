@@ -1,9 +1,10 @@
+// src/app/(public)/(auth)/register/page.jsx
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 import "./register.css";
 
 export default function RegisterPage() {
@@ -20,66 +21,44 @@ export default function RegisterPage() {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const termsRef = useRef(null);
 
+  // Tự động cho phép nếu nội dung ngắn không cần cuộn
+  useEffect(() => {
+    const el = termsRef.current;
+    if (el && el.scrollHeight <= el.clientHeight) {
+      setHasScrolledToBottom(true);
+    }
+  }, [isTermsOpen]);
+
   const handleTermsScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollTop + clientHeight >= scrollHeight - 10) {
+    // Thêm sai số 15px để bù trừ độ lệch trên các trình duyệt khác nhau
+    if (scrollTop + clientHeight >= scrollHeight - 15) {
       setHasScrolledToBottom(true);
-    } else {
-      setHasScrolledToBottom(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     setError("");
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      setError("Vui lòng nhập đầy đủ thông tin");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
-      return;
-    }
-
-    if (!hasScrolledToBottom) {
-      setError("Vui lòng đọc hết điều khoản trước khi đăng ký");
-      setIsTermsOpen(true);
-      return;
-    }
-
-    if (!agreeTerms) {
-      setError("Vui lòng đồng ý với điều khoản dịch vụ");
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      const result = await authService.register({
-        fullName: fullName,
+      const result = await authService.registerStudent({
+        full_name: fullName,
         email: email,
         password: password,
         phone: phone,
         role: "student",
-        grade: "",
-        schoolName: ""
+        grade: "",         // Không cần dùng state, truyền trực tiếp chuỗi rỗng
+        schoolName: ""     // Không cần dùng state, truyền trực tiếp chuỗi rỗng
       });
 
       if (result.success) {
         alert(result.message);
         router.push("/login");
-      } else {
-        setError(result.message || "Đăng ký thất bại, vui lòng thử lại");
       }
-    } catch (error) {
-      setError(error.message || "Đã xảy ra lỗi khi đăng ký");
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }

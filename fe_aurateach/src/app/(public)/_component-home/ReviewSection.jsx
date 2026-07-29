@@ -1,6 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+// Import các service tương ứng trong dự án
+import { reviewService } from '@/services/reviewService';
+import { studentService } from '@/services/studentService';
+import { userService } from '@/services/userService';
+import { courseService } from '@/services/courseService';
 
 function ReviewSection() {
   const [reviews, setReviews] = useState([]);
@@ -9,21 +14,19 @@ function ReviewSection() {
   useEffect(() => {
     const fetchReviewsData = async () => {
       try {
+        // Gọi song song các service thay vì fetch chay URL, đồng thời truyền get_all: true nếu cần lấy toàn bộ dữ liệu
         const [resReviews, resStudents, resUsers, resCourses] = await Promise.all([
-          fetch('http://localhost:3007/reviews'),
-          fetch('http://localhost:3007/students'),
-          fetch('http://localhost:3007/users'),
-          fetch('http://localhost:3007/courses')
+          reviewService.getReviews ? reviewService.getReviews({ get_all: true }) : reviewService.getAllReviews(),
+          studentService.getStudents ? studentService.getStudents({ get_all: true }) : studentService.getAllStudents(),
+          userService.getUsers ? userService.getUsers({ get_all: true }) : userService.getAllUsers(),
+          courseService.getCourses({ get_all: true })
         ]);
 
-        if (!resReviews.ok || !resStudents.ok || !resUsers.ok || !resCourses.ok) {
-          throw new Error('Không thể tải danh sách dữ liệu đánh giá');
-        }
-
-        const reviewsData = await resReviews.json();
-        const studentsData = await resStudents.json();
-        const usersData = await resUsers.json();
-        const coursesData = await resCourses.json();
+        // Chuẩn hóa dữ liệu đầu ra đề phòng API trả về dạng phân trang của Laravel (.data)
+        const reviewsData = Array.isArray(resReviews) ? resReviews : (resReviews?.data || []);
+        const studentsData = Array.isArray(resStudents) ? resStudents : (resStudents?.data || []);
+        const usersData = Array.isArray(resUsers) ? resUsers : (resUsers?.data || []);
+        const coursesData = Array.isArray(resCourses) ? resCourses : (resCourses?.data || []);
         
         if (Array.isArray(reviewsData)) {
           const highRatingReviews = reviewsData
@@ -37,7 +40,7 @@ function ReviewSection() {
             const matchedCourse = coursesData.find(c => c.course_id === review.course_id) || {};
 
             return {
-              id: review.review_id,
+              id: review.review_id || review.id,
               author: matchedUser.full_name || "Học viên ẩn danh",
               role: matchedCourse.title ? `Học viên lớp: ${matchedCourse.title}` : "Học viên AuraTeach",
               rating: review.rating,
@@ -90,7 +93,7 @@ function ReviewSection() {
                       key={index} 
                       className="aurateach-sec7__star-icon" 
                       stroke="currentColor" 
-                      fill={index < item.rating ? "currentColor" : "none"}
+                      fill={index < Number(item.rating) ? "currentColor" : "none"}
                       strokeWidth="2" 
                       viewBox="0 0 24 24" 
                       height="14" 
@@ -101,7 +104,7 @@ function ReviewSection() {
                     </svg>
                   ))}
                 </div>
-                <span className="aurateach-sec7__score">{Number(item.rating).toFixed(1)}</span>
+                <span className="aurateach-sec7__score">{Number(item.rating || 0).toFixed(1)}</span>
               </div>
 
               <p className="aurateach-sec7__content">“{item.comment}”</p>

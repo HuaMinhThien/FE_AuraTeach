@@ -13,8 +13,8 @@ export const courseService = {
     return await apiClient.get(`/courses/${id}`);
   },
 
-  // Lấy danh sách danh mục (Gọi vào API /categories mới)
-  getCategories: async () => {
-    return await apiClient.get('/categories');
-  }
+  // 👈 Bổ sung hàm cập nhật trạng thái lớp học/khóa học (Dùng cho tính năng khóa lớp)
+  updateCourseStatus: async (id, statusData) => {
+    return await apiClient.patch(`/courses/${id}`, statusData);
+  },
 };

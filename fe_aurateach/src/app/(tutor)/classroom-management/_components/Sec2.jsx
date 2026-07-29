@@ -23,7 +23,7 @@ export default function ClassGrid({ classes, loading, pagination, currentPage, s
               </div>
               <h3 className={styles.className}>{cls.class_name}</h3>
               <p className={styles.cardInfo}>🗓️ Ngày mở: {cls.start_date}</p>
-              <p className={styles.cardInfo}>👥 Học viên đã tham gia: {cls.students.length} người</p>
+              <p className={styles.cardInfo}>👥 Học viên đã tham gia: {cls.students?.length || 0} người</p>
             </div>
             
             <div className={styles.cardAction}>

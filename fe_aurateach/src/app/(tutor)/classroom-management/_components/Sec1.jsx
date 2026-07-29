@@ -5,13 +5,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../management.module.css";
 import Image from "next/image";
+import { tutorService } from "@/services/tutorService"; // 👈 Import service của bạn (điều chỉnh đường dẫn cho đúng thực tế)
 
 export default function FilterControl({ search, setSearch, statusFilter, onFilterChange }) {
   const router = useRouter();
   const [isApproved, setIsApproved] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
 
-  // Kiểm tra verification_status của Gia sư
+  // Kiểm tra verification_status của Gia sư thông qua Service & ApiClient
+// Kiểm tra verification_status của Gia sư thông qua Service & ApiClient
   useEffect(() => {
     const checkVerification = async () => {
       try {
@@ -23,16 +25,25 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
           const userInfo = JSON.parse(cookieValue);
 
           if (userInfo && userInfo.user_id) {
-            const res = await fetch(`http://localhost:3007/tutors?user_id=${userInfo.user_id}`);
-            if (res.ok) {
-              const data = await res.json();
-              if (data.length > 0) {
-                const status = data[0].verification_status;
-                // Cho phép tạo lớp nếu status là approved hoặc Đã xác minh
-                if (status === "approved" || status === "Đã xác minh") {
-                  setIsApproved(true);
-                }
+            // 💡 Gọi qua service chuẩn của dự án
+            const data = await tutorService.getByUserId(userInfo.user_id);
+            
+            // 🔍 DÁN CÁC DÒNG LOG NÀY VÀO ĐÂY ĐỂ KIỂM TRA
+            console.log("🔍 Dữ liệu tutor trả về từ Laravel:", data);
+            
+            const tutors = Array.isArray(data) ? data : (data?.data || []);
+            console.log("📋 Danh sách tutors sau khi xử lý:", tutors);
+
+            if (tutors.length > 0) {
+              console.log("📌 Status thực tế trong DB:", tutors[0].verification_status);
+              const status = tutors[0].verification_status;
+              
+              // Cho phép tạo lớp nếu status là approved hoặc Đã xác minh
+              if (status === "approved" || status === "Đã xác minh") {
+                setIsApproved(true);
               }
+            } else {
+              console.warn("⚠️ Không tìm thấy bản ghi tutor nào khớp với user_id này!");
             }
           }
         }

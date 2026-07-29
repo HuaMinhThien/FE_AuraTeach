@@ -1,7 +1,7 @@
 const API_BASE_URL = "http://localhost:8000/api";
 
 const getHeaders = (customHeaders = {}, isFormData = false) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   
   const headers = {
     "Accept": "application/json",
@@ -42,11 +42,17 @@ const handleResponse = async (response) => {
 const apiClient = {
   // Phương thức GET
   get: async (endpoint, options = {}) => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: "GET",
-      headers: getHeaders(options.headers),
-    });
-    return handleResponse(response);
+    const url = `${API_BASE_URL}${endpoint}`;
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: getHeaders(options.headers),
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error(`❌ Không thể kết nối tới API: ${url}`, error);
+      throw error;
+    }
   },
 
   // Phương thức POST (hỗ trợ cả JSON và FormData)

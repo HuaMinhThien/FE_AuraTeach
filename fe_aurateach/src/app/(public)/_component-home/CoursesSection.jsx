@@ -14,14 +14,14 @@ function CoursesSection() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 8;
 
   // 1. Lấy danh mục 1 lần khi load trang
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await categoryService.getCategories();
-        setCategories(Array.isArray(data) ? data : []);
+        const response = await categoryService.getCategories();
+        const categoriesData = response.data || response; 
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       } catch (error) {
         console.error('Lỗi tải danh mục:', error);
         setCategories([{ category_id: 'All', category_name: 'Tất cả' }]);
@@ -31,7 +31,6 @@ function CoursesSection() {
   }, []);
 
   // 2. Lấy danh sách khóa học theo Tab và Phân trang từ Backend
-  // 2. Lấy danh sách khóa học theo Tab và Phân trang từ Backend
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
@@ -39,12 +38,11 @@ function CoursesSection() {
         const params = {
           category_id: activeTabId,
           page: currentPage,
-          per_page: itemsPerPage,
+          per_page: 8, // Trực tiếp quy định số lượng item lấy trên mỗi trang là 8
           sort_by: 'current_students',
           direction: 'asc'
         };
 
-        // ✅ Sửa lại ở đây (bỏ chữ 'data =')
         const response = await courseService.getCourses(params);
         
         // Laravel paginate trả về object chứa .data và .last_page

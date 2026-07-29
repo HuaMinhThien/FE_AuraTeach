@@ -5,52 +5,40 @@ import "../../css/tutor-style/sidebar.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-
-const API_BASE = "http://localhost:3007";
+import { tutorService } from "@/services/tutorService"; 
+import { conversationService } from "@/services/conversationService"; // 👈 Sử dụng service mới
 
 export default function Sidebar() {
     const router = useRouter();
     const pathname = usePathname();
     const [unreadCount, setUnreadCount] = useState(0);
-    const [userId, setUserId] = useState(null);
 
-    // Lấy user_id từ cookie
     useEffect(() => {
-        const getCurrentUser = () => {
-            const getCookie = (name) => {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-                return null;
-            };
-            const userCookie = getCookie("user_info");
-            if (userCookie) {
-                try {
-                    const user = JSON.parse(decodeURIComponent(userCookie));
-                    return user.user_id || user.id;
-                } catch {
-                    return null;
-                }
-            }
-            return null;
-        };
-        const id = getCurrentUser();
-        setUserId(id);
-    }, []);
-
-    // Lấy số tin chưa đọc
-    useEffect(() => {
-        if (!userId) return;
-
-        const fetchUnreadCount = async () => {
+        const fetchSidebarData = async () => {
             try {
+                // Lấy user_id từ cookie
+                const getCookie = (name) => {
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+                    if (parts.length === 2) return parts.pop().split(';').shift();
+                    return null;
+                };
+
+                const userCookie = getCookie("user_info");
+                if (!userCookie) return;
+
+                const user = JSON.parse(decodeURIComponent(userCookie));
+                const userId = user.user_id || user.id;
+                if (!userId) return;
+
+                // Gọi song song thông qua conversationService và tutorService chuẩn
                 const [convRes, tutorsRes] = await Promise.all([
-                    fetch(`${API_BASE}/conversations`),
-                    fetch(`${API_BASE}/tutors`)
+                    conversationService.getConversations(),
+                    tutorService.getTutors()
                 ]);
                 
-                const allConversations = await convRes.json();
-                const allTutors = await tutorsRes.json();
+                const allConversations = Array.isArray(convRes) ? convRes : (convRes?.data || []);
+                const allTutors = Array.isArray(tutorsRes) ? tutorsRes : (tutorsRes?.data || []);
                 
                 // ✅ Tạo map tutor_id ↔ user_id
                 const userToTutorMap = {};
@@ -76,18 +64,19 @@ export default function Sidebar() {
                     (sum, conv) => sum + (conv.unread_count || 0), 
                     0
                 );
+                
                 setUnreadCount(totalUnread);
             } catch (error) {
-                console.error("❌ Lỗi lấy số tin chưa đọc:", error);
+                console.error("❌ Lỗi đồng bộ Sidebar:", error);
             }
         };
 
-        fetchUnreadCount();
+        fetchSidebarData();
 
         // Polling mỗi 10 giây để cập nhật số tin chưa đọc
-        const interval = setInterval(fetchUnreadCount, 10000);
+        const interval = setInterval(fetchSidebarData, 10000);
         return () => clearInterval(interval);
-    }, [userId]);
+    }, []);
 
     const handleLogout = () => {
         document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -96,28 +85,13 @@ export default function Sidebar() {
     };
 
     const menuItems = [
-        {
-            path: "/tutor-dashboard",
-            text: "Bảng điều khiển"
-        },
-        {
-            path: "/classroom-management",
-            text: "Lớp học của tôi"
-        },
-        {
-            path: "/schedule",
-            text: "Lịch trình"
-        },
-        {
-            path: "/income",
-            text: "Thu nhập"
-        },
-        {
-            path: "/profile-tutor",
-            text: "Hồ sơ"
-        },
-        {
-            path: "tutor-messenger",
+        { path: "/tutor-dashboard", text: "Bảng điều khiển" },
+        { path: "/classroom-management", text: "Lớp học của tôi" },
+        { path: "/schedule", text: "Lịch trình" },
+        { path: "/income", text: "Thu nhập" },
+        { path: "/profile-tutor", text: "Hồ sơ" },
+        { 
+            path: "/tutor-messenger", 
             text: "Tin nhắn",
             badge: unreadCount > 0 ? unreadCount : null
         }

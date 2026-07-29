@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
+import { userService } from '@/services/userService';
+import { tutorService } from '@/services/tutorService';
+import { courseService } from '@/services/courseService';
 
 function FeaturedTutors() {
   const [tutorsList, setTutorsList] = useState([]);
@@ -10,30 +13,30 @@ function FeaturedTutors() {
   useEffect(() => {
     const fetchTutors = async () => {
       try {
+        // Truyền thêm { get_all: true } để lấy toàn bộ danh sách khóa học không bị phân trang
         const [resUsers, resTutors, resCourses] = await Promise.all([
-          fetch('http://localhost:3007/users'),
-          fetch('http://localhost:3007/tutors'),
-          fetch('http://localhost:3007/courses')
+          userService.getUsers(),
+          tutorService.getTutors(),
+          courseService.getCourses({ get_all: true }) 
         ]);
 
-        if (!resUsers.ok || !resTutors.ok || !resCourses.ok) {
-          throw new Error('Không thể tải đầy đủ dữ liệu gia sư');
-        }
-
-        const usersData = await resUsers.json();
-        const tutorsData = await resTutors.json();
-        const coursesData = await resCourses.json();
+        // Chuẩn hóa dữ liệu: Đảm bảo luôn lấy được mảng bất kể API trả về kiểu gì
+        const usersData = Array.isArray(resUsers) ? resUsers : (resUsers?.data || []);
+        const tutorsData = Array.isArray(resTutors) ? resTutors : (resTutors?.data || []);
+        const coursesData = Array.isArray(resCourses) ? resCourses : (resCourses?.data || []);
 
         const mergedTutors = tutorsData.map((tutor) => {
           const matchedUser = usersData.find(u => u.user_id === tutor.user_id) || {};
           const matchedCourse = coursesData.find(c => c.tutor_id === tutor.tutor_id) || {};
+
+          const ratingNum = tutor.rating !== undefined && tutor.rating !== null ? Number(tutor.rating) : 0.0;
 
           return {
             id: tutor.tutor_id,
             name: matchedUser.full_name || "Gia sư AuraTeach",
             avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
             subject: matchedCourse.title || "Gia sư tự do",
-            rating: tutor.rating || 5.0,
+            rating: isNaN(ratingNum) ? 5.0 : ratingNum,
             experience: tutor.Experience || "Chưa cập nhật",
             bio: tutor.bio || "",
             price: matchedCourse.hourly_rate ? `${parseInt(matchedCourse.hourly_rate).toLocaleString('vi-VN')}đ/h` : "Đang cập nhật",
