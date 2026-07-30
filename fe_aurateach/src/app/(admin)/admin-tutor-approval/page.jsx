@@ -4,54 +4,80 @@ import React, { useState, useEffect } from "react";
 import styles from "./TutorApproval.module.css";
 
 export default function TutorApprovalPage() {
+  const [activeTab, setActiveTab] = useState("pending_tutors"); // "pending_tutors" | "update_requests"
   const [pendingTutors, setPendingTutors] = useState([]);
+  const [updateRequests, setUpdateRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // States cho modal
   const [selectedTutor, setSelectedTutor] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  // Load danh sách giảng viên chờ duyệt
-  const loadPendingTutors = async () => {
+  // Load danh sách dữ liệu
+  const loadData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/admin-tutor-approval/pending");
-      const result = await response.json();
-      if (result.success) {
-        setPendingTutors(result.data);
+      if (activeTab === "pending_tutors") {
+        const response = await fetch("/api/admin-tutor-approval/pending");
+        const result = await response.json();
+        if (result.success) setPendingTutors(result.data || []);
+      } else {
+        const response = await fetch("http://localhost:3007/tutor_update_requests?status=pending");
+        const data = await response.json();
+        setUpdateRequests(data || []);
       }
     } catch (error) {
-      console.error("Lỗi tải danh sách:", error);
+      console.error("Lỗi tải dữ liệu:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadPendingTutors();
-  }, []);
+  let ignore = false;
+  
+  async function fetchData() {
+    setIsLoading(true);
+    try {
+      if (activeTab === "pending_tutors") {
+        const response = await fetch("/api/admin-tutor-approval/pending");
+        const result = await response.json();
+        if (!ignore && result.success) setPendingTutors(result.data || []);
+      } else {
+        const response = await fetch("http://localhost:3007/tutor_update_requests?status=pending");
+        const data = await response.json();
+        if (!ignore) setUpdateRequests(data || []);
+      }
+    } catch (error) {
+      console.error("Lỗi tải dữ liệu:", error);
+    } finally {
+      if (!ignore) setIsLoading(false);
+    }
+  }
 
-  // Xem chi tiết
-  const handleViewDetail = (tutor) => {
-    setSelectedTutor(tutor);
+  fetchData();
+
+  return () => {
+    ignore = true; // Chống race-condition khi switch tab nhanh
   };
+}, [activeTab]);
 
-  // Chấp nhận duyệt
-  const handleApprove = async (tutor) => {
+  // Xử lý Duyệt Gia Sư Mới
+  const handleApproveTutor = async (tutor) => {
     if (!window.confirm(`Bạn có chắc muốn duyệt hồ sơ của ${tutor.full_name}?`)) return;
 
     try {
       const response = await fetch("/api/admin-tutor-approval/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          userId: tutor.user_id,
-          tutorId: tutor.tutor_id 
-        }),
+        body: JSON.stringify({ userId: tutor.user_id, tutorId: tutor.tutor_id }),
       });
       const result = await response.json();
       if (result.success) {
-        alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}. Giảng viên có thể đăng nhập ngay!`);
-        loadPendingTutors();
+        alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}.`);
+        loadData();
         setSelectedTutor(null);
       } else {
         alert(result.message || "Có lỗi xảy ra");
@@ -61,8 +87,8 @@ export default function TutorApprovalPage() {
     }
   };
 
-  // Từ chối duyệt
-  const handleReject = async () => {
+  // Xử lý Từ chối Gia Sư Mới
+  const handleRejectTutor = async () => {
     if (!rejectReason.trim()) {
       alert("Vui lòng nhập lý do từ chối");
       return;
@@ -72,16 +98,16 @@ export default function TutorApprovalPage() {
       const response = await fetch("/api/admin-tutor-approval/reject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           userId: selectedTutor.user_id,
           tutorId: selectedTutor.tutor_id,
-          reason: rejectReason 
+          reason: rejectReason,
         }),
       });
       const result = await response.json();
       if (result.success) {
-        alert(`❌ Đã từ chối hồ sơ của ${selectedTutor.full_name}. Lý do: ${rejectReason}`);
-        loadPendingTutors();
+        alert(`❌ Đã từ chối hồ sơ của ${selectedTutor.full_name}.`);
+        loadData();
         setSelectedTutor(null);
         setShowRejectModal(false);
         setRejectReason("");
@@ -93,166 +119,338 @@ export default function TutorApprovalPage() {
     }
   };
 
-  // Xóa hồ sơ đã từ chối
-  const handleDelete = async (tutor) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa hồ sơ của ${tutor.full_name}?`)) return;
+  // Xử lý Duyệt/Từ chối Yêu cầu Cập nhật Thông tin
+  const handleProcessUpdateRequest = async (reqId, status) => {
+    const actionText = status === "approved" ? "duyệt" : "từ chối";
+    if (!window.confirm(`Bạn có chắc muốn ${actionText} yêu cầu thay đổi này?`)) return;
 
     try {
-      const response = await fetch("/api/admin-tutor-approval/delete", {
-        method: "DELETE",
+      const response = await fetch(`/api/admin-tutor-update-requests/${reqId}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          userId: tutor.user_id,
-          tutorId: tutor.tutor_id 
-        }),
+        body: JSON.stringify({ status, reject_reason: status === "rejected" ? rejectReason : null }),
       });
       const result = await response.json();
       if (result.success) {
-        alert("✅ Đã xóa hồ sơ!");
-        loadPendingTutors();
+        alert(`✅ Đã ${actionText} yêu cầu cập nhật thành công!`);
+        loadData();
+        setSelectedRequest(null);
+        setShowRejectModal(false);
       } else {
-        alert(result.message || "Có lỗi xảy ra");
+        alert(result.message || "Thao tác thất bại");
       }
     } catch (error) {
-      alert("Lỗi khi xóa hồ sơ!");
+      alert("Có lỗi xảy ra khi xử lý yêu cầu!");
     }
   };
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>📋 Xét duyệt giảng viên</h1>
-        <p>Quản lý và phê duyệt hồ sơ đăng ký làm giảng viên</p>
-        <span className={styles.badgePending}>{pendingTutors.length} hồ sơ chờ duyệt</span>
+        <div>
+          <h1>Quản lý Xét duyệt Gia sư</h1>
+          <p>Phê duyệt hồ sơ đăng ký mới và các yêu cầu chỉnh sửa thông tin gia sư</p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className={styles.tabContainer}>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "pending_tutors" ? styles.activeTab : ""}`}
+            onClick={() => setActiveTab("pending_tutors")}
+          >
+            Hồ sơ đăng ký mới
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === "update_requests" ? styles.activeTab : ""}`}
+            onClick={() => setActiveTab("update_requests")}
+          >
+            Yêu cầu sửa thông tin ({updateRequests.length})
+          </button>
+        </div>
       </header>
 
+      {/* Hiển thị danh sách theo Tab */}
       {isLoading ? (
         <div className={styles.loading}>Đang tải dữ liệu...</div>
-      ) : pendingTutors.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>✅</div>
-          <h3>Không có hồ sơ chờ duyệt</h3>
-          <p>Tất cả giảng viên đã được xét duyệt</p>
-        </div>
       ) : (
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Họ tên</th>
-                <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Lĩnh vực</th>
-                <th>Ngày đăng ký</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingTutors.map((tutor) => (
-                <tr key={tutor.user_id} className={styles.tableRow}>
-                  <td className={styles.boldText}>{tutor.full_name}</td>
-                  <td>{tutor.email}</td>
-                  <td>{tutor.phone}</td>
-                  <td>
-                    <span className={styles.badgeExpertise}>
-                      {tutor.qualification || "Chưa cập nhật"}
-                    </span>
-                  </td>
-                  <td>{new Date(tutor.created_at).toLocaleDateString("vi-VN")}</td>
-                  <td>
-                    <div className={styles.actionGroup}>
-                      <button 
-                        className={`${styles.btn} ${styles.btnInfo}`}
-                        onClick={() => handleViewDetail(tutor)}
-                      >
-                        Chi tiết
-                      </button>
-                      <button 
-                        className={`${styles.btn} ${styles.btnSuccess}`}
-                        onClick={() => handleApprove(tutor)}
-                      >
-                        Duyệt
-                      </button>
-                      <button 
-                        className={`${styles.btn} ${styles.btnDanger}`}
-                        onClick={() => {
-                          setSelectedTutor(tutor);
-                          setShowRejectModal(true);
-                          setRejectReason("");
-                        }}
-                      >
-                        Từ chối
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          {activeTab === "pending_tutors" ? (
+            /* --- BẢNG DÂN SÁCH ĐĂNG KÝ MỚI --- */
+            pendingTutors.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>✅</div>
+                <h3>Không có hồ sơ chờ duyệt</h3>
+              </div>
+            ) : (
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Họ tên</th>
+                      <th>Email</th>
+                      <th>Số điện thoại</th>
+                      <th>Lĩnh vực</th>
+                      <th>Ngày đăng ký</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingTutors.map((tutor) => (
+                      <tr key={tutor.user_id} className={styles.tableRow}>
+                        <td className={styles.boldText}>{tutor.full_name}</td>
+                        <td>{tutor.email}</td>
+                        <td>{tutor.phone}</td>
+                        <td>
+                          <span className={styles.badgeExpertise}>
+                            {tutor.expertise || "Chưa cập nhật"}
+                          </span>
+                        </td>
+                        <td>{new Date(tutor.created_at).toLocaleDateString("vi-VN")}</td>
+                        <td>
+                          <div className={styles.actionGroup}>
+                            <button
+                              className={`${styles.btn} ${styles.btnInfo}`}
+                              onClick={() => setSelectedTutor(tutor)}
+                            >
+                              Chi tiết
+                            </button>
+                            <button
+                              className={`${styles.btn} ${styles.btnSuccess}`}
+                              onClick={() => handleApproveTutor(tutor)}
+                            >
+                              Duyệt
+                            </button>
+                            <button
+                              className={`${styles.btn} ${styles.btnDanger}`}
+                              onClick={() => {
+                                setSelectedTutor(tutor);
+                                setShowRejectModal(true);
+                                setRejectReason("");
+                              }}
+                            >
+                              Từ chối
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          ) : (
+            /* --- BẢNG YÊU CẦU CẬP NHẬT THÔNG TIN --- */
+            updateRequests.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>📝</div>
+                <h3>Không có yêu cầu thay đổi thông tin nào</h3>
+              </div>
+            ) : (
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Mã Yêu Cầu</th>
+                      <th>Gia sư (ID)</th>
+                      <th>Lĩnh vực mới</th>
+                      <th>Thời gian yêu cầu</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {updateRequests.map((req) => (
+                      <tr key={req.id} className={styles.tableRow}>
+                        <td className={styles.boldText}>#{req.id}</td>
+                        <td>{req.tutor_id}</td>
+                        <td>
+                          <span className={styles.badgeExpertise}>{req.new_data.expertise}</span>
+                        </td>
+                        <td>{new Date(req.created_at).toLocaleString("vi-VN")}</td>
+                        <td>
+                          <span className={styles.badgePending}>Chờ duyệt</span>
+                        </td>
+                        <td>
+                          <div className={styles.actionGroup}>
+                            <button
+                              className={`${styles.btn} ${styles.btnInfo}`}
+                              onClick={() => setSelectedRequest(req)}
+                            >
+                              🔍 Đối chiếu Cũ/Mới
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
         </div>
       )}
 
-      {/* Modal chi tiết */}
-      {selectedTutor && !showRejectModal && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedTutor(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setSelectedTutor(null)}>&times;</button>
-            
+      {/* ================= MODAL ĐỐI CHIẾU DỮ LIỆU CỦ VS MỚI ================= */}
+      {selectedRequest && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedRequest(null)}>
+          <div
+            className={`${styles.modalContent} ${styles.compareModal}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.closeBtn} onClick={() => setSelectedRequest(null)}>
+              &times;
+            </button>
+
             <div className={styles.modalHeader}>
-              <h2>📄 Chi tiết hồ sơ</h2>
-              <span className={styles.badgePending}>Chờ duyệt</span>
+              <h2>🔄 Đối Chiếu Thay Đổi Thông Tin (ID: #{selectedRequest.id})</h2>
             </div>
 
             <div className={styles.modalBody}>
-              <div className={styles.infoGrid}>
-                <div className={styles.infoItem}>
-                  <label>Họ và tên</label>
-                  <p>{selectedTutor.full_name}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <label>Email</label>
-                  <p>{selectedTutor.email}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <label>Số điện thoại</label>
-                  <p>{selectedTutor.phone}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <label>Lĩnh vực chuyên môn</label>
-                  <p>{selectedTutor.qualification || "Chưa cập nhật"}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <label>CV / Portfolio</label>
-                  {selectedTutor.cv_link ? (
-                    <a href={selectedTutor.cv_link} target="_blank" rel="noopener noreferrer" className={styles.cvLink}>
-                      📎 Xem CV
+              <div className={styles.compareGrid}>
+                {/* Cột dữ liệu CŨ */}
+                <div className={styles.compareColOld}>
+                  <h3 className={styles.colTitleOld}>Dữ Liệu Cũ</h3>
+                  <div className={styles.infoItem}>
+                    <label>Số điện thoại</label>
+                    <p
+                      className={
+                        selectedRequest.old_data.phone !== selectedRequest.new_data.phone
+                          ? styles.changedText
+                          : ""
+                      }
+                    >
+                      {selectedRequest.old_data.phone}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Chuyên môn / Lĩnh vực</label>
+                    <p
+                      className={
+                        selectedRequest.old_data.expertise !== selectedRequest.new_data.expertise
+                          ? styles.changedText
+                          : ""
+                      }
+                    >
+                      {selectedRequest.old_data.expertise}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Kinh nghiệm</label>
+                    <p
+                      className={
+                        selectedRequest.old_data.experience !==
+                        selectedRequest.new_data.experience
+                          ? styles.changedText
+                          : ""
+                      }
+                    >
+                      {selectedRequest.old_data.experience}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Giới thiệu (Bio)</label>
+                    <div
+                      className={`${styles.bioBox} ${
+                        selectedRequest.old_data.bio !== selectedRequest.new_data.bio
+                          ? styles.changedText
+                          : ""
+                      }`}
+                    >
+                      {selectedRequest.old_data.bio}
+                    </div>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Link CV</label>
+                    <a
+                      href={selectedRequest.old_data.cv_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.cvLink}
+                    >
+                      Xem CV cũ
                     </a>
-                  ) : (
-                    <p className={styles.noData}>Chưa có CV</p>
-                  )}
+                  </div>
                 </div>
-                <div className={styles.infoItem}>
-                  <label>Ngày đăng ký</label>
-                  <p>{new Date(selectedTutor.created_at).toLocaleString("vi-VN")}</p>
+
+                {/* Cột dữ liệu MỚI */}
+                <div className={styles.compareColNew}>
+                  <h3 className={styles.colTitleNew}>Dữ Liệu Mới (Cần Duyệt)</h3>
+                  <div className={styles.infoItem}>
+                    <label>Số điện thoại</label>
+                    <p
+                      className={
+                        selectedRequest.old_data.phone !== selectedRequest.new_data.phone
+                          ? styles.highlightNew
+                          : ""
+                      }
+                    >
+                      {selectedRequest.new_data.phone}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Chuyên môn / Lĩnh vực</label>
+                    <p
+                      className={
+                        selectedRequest.old_data.expertise !== selectedRequest.new_data.expertise
+                          ? styles.highlightNew
+                          : ""
+                      }
+                    >
+                      {selectedRequest.new_data.expertise}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Kinh nghiệm</label>
+                    <p
+                      className={
+                        selectedRequest.old_data.experience !==
+                        selectedRequest.new_data.experience
+                          ? styles.highlightNew
+                          : ""
+                      }
+                    >
+                      {selectedRequest.new_data.experience}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Giới thiệu (Bio)</label>
+                    <div
+                      className={`${styles.bioBox} ${
+                        selectedRequest.old_data.bio !== selectedRequest.new_data.bio
+                          ? styles.highlightNew
+                          : ""
+                      }`}
+                    >
+                      {selectedRequest.new_data.bio}
+                    </div>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Link CV</label>
+                    <a
+                      href={selectedRequest.new_data.cv_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.cvLink}
+                    >
+                      Xem CV mới
+                    </a>
+                  </div>
                 </div>
               </div>
 
+              {/* Thao tác phê duyệt thay đổi */}
               <div className={styles.modalActions}>
-                <button 
+                <button
                   className={`${styles.btn} ${styles.btnSuccess}`}
-                  onClick={() => {
-                    handleApprove(selectedTutor);
-                  }}
+                  onClick={() => handleProcessUpdateRequest(selectedRequest.id, "approved")}
                 >
-                  ✅ Chấp nhận
+                  Đồng ý cập nhật
                 </button>
-                <button 
+                <button
                   className={`${styles.btn} ${styles.btnDanger}`}
-                  onClick={() => {
-                    setShowRejectModal(true);
-                  }}
+                  onClick={() => handleProcessUpdateRequest(selectedRequest.id, "rejected")}
                 >
-                  ❌ Từ chối
+                  Từ chối cập nhật
                 </button>
               </div>
             </div>
@@ -260,72 +458,40 @@ export default function TutorApprovalPage() {
         </div>
       )}
 
-      {/* Modal từ chối */}
+      {/* Modal từ chối đăng ký mới */}
       {showRejectModal && selectedTutor && (
-        <div className={styles.modalOverlay} onClick={() => {
-          setShowRejectModal(false);
-          setRejectReason("");
-        }}>
-          <div className={`${styles.modalContent} ${styles.rejectModal}`} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => {
-              setShowRejectModal(false);
-              setRejectReason("");
-            }}>&times;</button>
-            
+        <div className={styles.modalOverlay} onClick={() => setShowRejectModal(false)}>
+          <div
+            className={`${styles.modalContent} ${styles.rejectModal}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.closeBtn} onClick={() => setShowRejectModal(false)}>
+              &times;
+            </button>
             <div className={styles.modalHeader}>
               <h2>❌ Từ chối hồ sơ</h2>
-              <span className={styles.badgeRejected}>Từ chối</span>
             </div>
-
             <div className={styles.modalBody}>
-              <p><strong>Giảng viên:</strong> {selectedTutor.full_name}</p>
-              <p><strong>Email:</strong> {selectedTutor.email}</p>
-              
               <div className={styles.rejectForm}>
-                <label htmlFor="reason">Lý do từ chối <span className={styles.required}>*</span></label>
-                <select 
-                  id="reason"
+                <label>Lý do từ chối</label>
+                <select
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   className={styles.selectInput}
                 >
                   <option value="">-- Chọn lý do --</option>
-                  <option value="Không đủ bằng cấp/chứng chỉ theo yêu cầu">Không đủ bằng cấp/chứng chỉ theo yêu cầu</option>
-                  <option value="Không phù hợp với lĩnh vực giảng dạy đăng ký">Không phù hợp với lĩnh vực giảng dạy đăng ký</option>
-                  <option value="Thiếu kinh nghiệm giảng dạy">Thiếu kinh nghiệm giảng dạy</option>
+                  <option value="Không đủ bằng cấp/chứng chỉ">Không đủ bằng cấp/chứng chỉ</option>
                   <option value="Thông tin cá nhân không hợp lệ">Thông tin cá nhân không hợp lệ</option>
-                  <option value="Không liên hệ được với ứng viên">Không liên hệ được với ứng viên</option>
-                  <option value="CV/Portfolio không đáp ứng yêu cầu">CV/Portfolio không đáp ứng yêu cầu</option>
                   <option value="Lý do khác">Lý do khác</option>
                 </select>
-
-                {rejectReason === "Lý do khác" && (
-                  <textarea
-                    placeholder="Nhập lý do chi tiết..."
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    className={styles.textareaInput}
-                    rows={3}
-                  />
-                )}
               </div>
-
               <div className={styles.modalActions}>
-                <button 
+                <button
                   className={`${styles.btn} ${styles.btnDanger}`}
-                  onClick={handleReject}
+                  onClick={handleRejectTutor}
                   disabled={!rejectReason}
                 >
-                  Xác nhận từ chối
-                </button>
-                <button 
-                  className={`${styles.btn} ${styles.btnSecondary}`}
-                  onClick={() => {
-                    setShowRejectModal(false);
-                    setRejectReason("");
-                  }}
-                >
-                  Hủy
+                  Xác nhận
                 </button>
               </div>
             </div>

@@ -474,16 +474,12 @@ export default function TutorDetailPage({ params }) {
             <div className={styles.infoList}>
               <div>
                 <span>Kinh nghiệm:</span> 
-                <strong>{tutorDetails.Experience || 'Chưa cập nhật'}</strong>
-              </div>
-              <div>
-                <span>Trình độ:</span> 
-                <strong>{tutorDetails.qualification || 'Chưa cập nhật'}</strong>
+                <strong>{tutorDetails.experience || 'Chưa cập nhật'}</strong>
               </div>
               <div>
                 <span>Trạng thái:</span> 
                 <strong className={styles.statusActive}>
-                  {tutorDetails.verification_status || 'Đã xác minh'}
+                  {tutorDetails.verification_status === 'approved' ? 'Đã xác thực' : 'Chưa xác thực'}
                 </strong>
               </div>
               

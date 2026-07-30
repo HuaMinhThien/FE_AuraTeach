@@ -34,9 +34,9 @@ export default function AccountManager() {
     }
   };
 
-  // CÁCH 2: Khởi tạo dữ liệu ban đầu an toàn thông qua biến cờ hiệu cô lập
+  // Khởi tạo dữ liệu ban đầu an toàn thông qua biến cờ hiệu cô lập
   useEffect(() => {
-    let isMounted = true; // Cờ hiệu kiểm soát trạng thái tồn tại của component
+    let isMounted = true;
 
     const initializeData = async () => {
       try {
@@ -48,7 +48,6 @@ export default function AccountManager() {
         const studentsJson = await studentRes.json();
         const tutorsJson = await tutorRes.json();
 
-        // Chỉ cập nhật state nếu component này vẫn đang được hiển thị trên màn hình
         if (isMounted && studentsJson.success && tutorsJson.success) {
           setUsers([...studentsJson.data, ...tutorsJson.data]);
         }
@@ -56,14 +55,13 @@ export default function AccountManager() {
         console.error("Lỗi tải dữ liệu khởi tạo:", error);
       } finally {
         if (isMounted) {
-          setIsLoading(false); // Dòng này chạy bất đồng bộ nên không gây lỗi render dây chuyền
+          setIsLoading(false);
         }
       }
     };
 
     initializeData();
 
-    // Hàm Cleanup dọn dẹp bộ nhớ khi người dùng đột ngột rời khỏi trang/chuyển menu
     return () => {
       isMounted = false;
     };
@@ -72,6 +70,10 @@ export default function AccountManager() {
   // Bộ lọc Client-side tìm kiếm
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
+      if (user.role === 'tutor' && user.verification_status === 'pending') {
+        return false;
+      }
+
       const matchSearch = 
         (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (user.phone || '').includes(searchTerm) ||
@@ -87,7 +89,7 @@ export default function AccountManager() {
   // Kích hoạt cập nhật trạng thái Block qua API trung gian
   const handleToggleBlock = async (user) => {
     const nextStatus = user.status === 'active' ? 'banned' : 'active';
-    if (!window.confirm(`Bạn muốn thay đổi trạng thái của ${user.full_name} thành ${nextStatus.toUpperCase()}?`)) return;
+    if (!window.confirm(`Bạn muốn thay đổi trạng thái của ${user.full_name} thành ${nextStatus === 'banned' ? 'Khóa' : 'Mở khóa'}?`)) return;
 
     const endpoint = user.role === 'student' 
       ? '/api/admin-account-management/student-management'
@@ -103,7 +105,7 @@ export default function AccountManager() {
 
       if (result.success) {
         alert(result.message);
-        loadDataFromServer(); // Tái sử dụng hàm load bên ngoài để cập nhật giao diện mới nhất
+        loadDataFromServer();
         if (selectedUser && selectedUser.user_id === user.user_id) {
           setSelectedUser(prev => ({ ...prev, status: nextStatus }));
         }
@@ -125,7 +127,7 @@ export default function AccountManager() {
 
       if (result.success) {
         alert("Phê duyệt hồ sơ thành công!");
-        loadDataFromServer(); // Tải lại danh sách mới
+        loadDataFromServer();
         setSelectedUser(prev => ({ ...prev, verification_status: 'Đã xác minh' }));
       }
     } catch (error) {
@@ -136,7 +138,7 @@ export default function AccountManager() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>Trang Quản Lý Tài Khoản </h1>
+        <h1>Trang Quản Lý Tài Khoản</h1>
       </header>
 
       {/* Tìm kiếm & Lọc */}

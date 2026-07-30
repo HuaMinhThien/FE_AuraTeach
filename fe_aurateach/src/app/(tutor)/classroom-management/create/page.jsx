@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./create-class.module.css"; 
 
@@ -18,6 +19,12 @@ const DEFAULT_IMAGES = [
 ];
 
 export default function CreateClassPage() {
+  const router = useRouter();
+
+  // --- State Kiểm soát Quyền Tạo Lớp ---
+  const [isPermissionChecked, setIsPermissionChecked] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
+
   // --- Các State quản lý dữ liệu Form ---
   const [className, setClassName] = useState("");
   const [category, setCategory] = useState("");
@@ -26,28 +33,87 @@ export default function CreateClassPage() {
   const [maxStudents, setMaxStudents] = useState(15);
   const [hourlyRate, setHourlyRate] = useState(150000);
   
-  // 🔥 Thêm State quản lý link Google Meet do gia sư nhập
+  // State quản lý link Google Meet
   const [meetLink, setMeetLink] = useState("");
   const [meetError, setMeetError] = useState("");
 
-  // --- State danh mục động nạp từ API ---
+  // State danh mục động nạp từ API
   const [categoriesList, setCategoriesList] = useState([]);
 
-  // --- State về Thời gian & Lịch học ---
+  // State về Thời gian & Lịch học
   const [startDate, setStartDate] = useState("");
   const [totalWeeks, setTotalWeeks] = useState(12);
   const [selectedDays, setSelectedDays] = useState([]);
   const [startTime, setStartTime] = useState("18:00");
   const [endTime, setEndTime] = useState("20:00");
 
-  // --- State quản lý ảnh đại diện lớp học ---
+  // State quản lý ảnh đại diện lớp học
   const [selectedImage, setSelectedImage] = useState(DEFAULT_IMAGES[0]);
   const [customImage, setCustomImage] = useState(null);
 
-  // --- State trạng thái hệ thống ---
+  // State trạng thái hệ thống
   const [conflictMessage, setConflictMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
+
+  //  HÀM NGĂN CHẶN BẢO VỆ TRANG: Kiểm tra verification_status
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkTutorPermission = async () => {
+      try {
+        const cookies = document.cookie.split("; ");
+        const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
+
+        if (!userInfoCookie) {
+          alert(" Vui lòng đăng nhập để thực hiện chức năng này!");
+          router.push("/login");
+          return;
+        }
+
+        const cookieValue = decodeURIComponent(userInfoCookie.split("=")[1]);
+        const userInfo = JSON.parse(cookieValue);
+
+        if (userInfo.role !== "tutor") {
+          alert("⚠️ Chỉ tài khoản Giảng viên / Gia sư mới có quyền tạo lớp học!");
+          router.push("/classroom-management");
+          return;
+        }
+
+        // Gọi API lấy hồ sơ tutor
+        const res = await fetch(`http://localhost:3007/tutors?user_id=${userInfo.user_id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const tutor = data[0];
+
+          if (!tutor || (tutor.verification_status !== "approved" && tutor.verification_status !== "Đã xác minh")) {
+            if (isMounted) {
+              alert("⚠️ Hồ sơ gia sư của bạn chưa được xét duyệt thành công. Bạn chưa thể tạo lớp học mới!");
+              router.push("/classroom-management");
+            }
+            return;
+          }
+
+          if (isMounted) {
+            setIsAllowed(true);
+          }
+        }
+      } catch (error) {
+        console.error("Lỗi kiểm tra quyền hạn gia sư:", error);
+        router.push("/classroom-management");
+      } finally {
+        if (isMounted) {
+          setIsPermissionChecked(true);
+        }
+      }
+    };
+
+    checkTutorPermission();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   // Tự động gọi API lấy danh mục động khi màn hình load thành công
   useEffect(() => {
@@ -65,13 +131,12 @@ export default function CreateClassPage() {
     fetchCategories();
   }, []);
 
-  // 🔥 Hàm kiểm tra ngày bắt đầu có hợp lệ không (phải từ ngày hiện tại trở đi)
+  // Hàm kiểm tra ngày bắt đầu có hợp lệ không
   const validateStartDate = (dateString) => {
-    if (!dateString) return true; // Chưa chọn ngày thì chưa validate
+    if (!dateString) return true;
     
     const selectedDate = new Date(dateString);
     const today = new Date();
-    // Reset giờ về 0 để so sánh chính xác ngày
     today.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
     
@@ -85,14 +150,12 @@ export default function CreateClassPage() {
     return true;
   };
 
-  // Xử lý khi thay đổi ngày bắt đầu
   const handleStartDateChange = (e) => {
     const value = e.target.value;
     setStartDate(value);
     validateStartDate(value);
   };
 
-  // Tính toán Ngày kết thúc (Derived State)
   let endDate = "";
   if (startDate && totalWeeks) {
     const start = new Date(startDate);
@@ -110,7 +173,6 @@ export default function CreateClassPage() {
         return;
       }
 
-      // 🔥 Chỉ kiểm tra trùng lịch nếu ngày bắt đầu hợp lệ
       if (!validateStartDate(startDate)) {
         return;
       }
@@ -140,13 +202,11 @@ export default function CreateClassPage() {
     checkScheduleConflict();
   }, [startDate, endDate, selectedDays, startTime, endTime]);
 
-  // 🔥 Hàm kiểm tra định dạng đường dẫn Google Meet hợp lệ
   const validateGoogleMeet = (url) => {
     if (!url.trim()) {
       setMeetError("Vui lòng nhập đường liên kết lớp học Google Meet.");
       return false;
     }
-    // Regex kiểm tra cấu trúc định dạng chuẩn: meet.google.com/xxx-yyyy-zzz
     const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
     if (!meetRegex.test(url.trim())) {
       setMeetError("Đường liên kết không hợp lệ. Định dạng chuẩn phải là: https://meet.google.com/abc-xxxx-def");
@@ -156,7 +216,6 @@ export default function CreateClassPage() {
     return true;
   };
 
-  // Xử lý thay đổi dữ liệu ô nhập link Meet
   const handleMeetChange = (e) => {
     const value = e.target.value;
     setMeetLink(value);
@@ -180,14 +239,18 @@ export default function CreateClassPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 🛡️ BẢO VỆ LẦN CUỐI KHI SUBMIT: Kiểm tra lại quyền hạn trước khi gửi API
+    if (!isAllowed) {
+      alert("⚠️ Bạn không có quyền thực hiện chức năng này!");
+      return;
+    }
     
-    // 🔥 Kiểm tra ngày bắt đầu trước khi submit
     if (!validateStartDate(startDate)) {
       alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (từ hôm nay trở đi)!");
       return;
     }
 
-    // Kiểm tra lại link Meet trước khi gửi dữ liệu
     const isMeetValid = validateGoogleMeet(meetLink);
     if (!isMeetValid) return;
 
@@ -223,6 +286,7 @@ export default function CreateClassPage() {
       const data = await response.json();
       if (data.success) {
         alert("🎉 Tạo lớp học thành công! Hệ thống đã hiển thị công khai để học sinh tuyển sinh.");
+        router.push("/classroom-management");
       } else {
         alert(`Lỗi: ${data.message}`);
       }
@@ -233,11 +297,24 @@ export default function CreateClassPage() {
     }
   };
 
-  // 🔥 Lấy ngày hiện tại để set min cho input date
   const getTodayString = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
   };
+
+  // Trả về màn hình chờ đang kiểm tra quyền
+  if (!isPermissionChecked) {
+    return (
+      <div style={{ textAlign: "center", padding: "120px 20px", fontSize: "16px", color: "#666" }}>
+         Đang kiểm tra quyền hạn tài khoản gia sư...
+      </div>
+    );
+  }
+
+  // Nếu không đủ quyền, không hiển thị Form tạo lớp
+  if (!isAllowed) {
+    return null;
+  }
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
@@ -391,7 +468,7 @@ export default function CreateClassPage() {
                   type="date" 
                   value={startDate} 
                   onChange={handleStartDateChange}
-                  min={getTodayString()} // 🔥 Chỉ cho phép chọn từ ngày hiện tại trở đi
+                  min={getTodayString()}
                   required 
                 />
                 {dateErrorMessage && (
@@ -480,7 +557,7 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage}
+              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed}
             >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tiếp tục ➔"}
             </button>

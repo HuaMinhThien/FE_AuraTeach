@@ -7,6 +7,44 @@ const generateId = () => {
   return `user_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 };
 
+// Hàm kiểm tra link CV/Portfolio hợp lệ
+const isValidCvLink = (link) => {
+  if (!link) return true; // Cho phép để trống
+  
+  try {
+    const url = new URL(link);
+    const hostname = url.hostname.toLowerCase();
+    
+    // Danh sách domain được phép
+    const allowedDomains = [
+      'linkedin.com',
+      'www.linkedin.com',
+      'topcv.vn',
+      'www.topcv.vn',
+      'drive.google.com',
+      'www.drive.google.com',
+      'portfolio.com',
+      'www.portfolio.com',
+      'myportfolio.com',
+      'www.myportfolio.com',
+      'github.com',
+      'www.github.com',
+      'behance.net',
+      'www.behance.net',
+      'dribbble.com',
+      'www.dribbble.com',
+      'docs.google.com',
+      'www.docs.google.com',
+    ];
+    
+    return allowedDomains.some(domain => 
+      hostname === domain || hostname.endsWith('.' + domain)
+    );
+  } catch {
+    return false;
+  }
+};
+
 // POST: Đăng ký tài khoản mới
 export async function POST(request) {
   try {
@@ -23,6 +61,10 @@ export async function POST(request) {
       schoolName
     } = body;
 
+    console.log("=== START REGISTER API ===");
+    console.log("📧 Email:", email);
+    console.log("👤 Role:", role);
+
     // 1. Validate dữ liệu đầu vào
     if (!fullName || !email || !password || !role) {
       return NextResponse.json(
@@ -34,6 +76,34 @@ export async function POST(request) {
     if (password.length < 6) {
       return NextResponse.json(
         { success: false, message: "Mật khẩu phải có ít nhất 6 ký tự" },
+        { status: 400 }
+      );
+    }
+
+    // === VALIDATION: Kiểm tra email phải là Gmail ===
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!gmailRegex.test(email)) {
+      return NextResponse.json(
+        { success: false, message: "Chỉ hỗ trợ email Gmail (@gmail.com)" },
+        { status: 400 }
+      );
+    }
+
+    // === VALIDATION: Kiểm tra số điện thoại (nếu có) ===
+    if (phone) {
+      const phoneRegex = /^0[0-9]{9}$/;
+      if (!phoneRegex.test(phone)) {
+        return NextResponse.json(
+          { success: false, message: "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // === VALIDATION: Kiểm tra link CV/Portfolio (nếu có) ===
+    if (cvLink && !isValidCvLink(cvLink)) {
+      return NextResponse.json(
+        { success: false, message: "Link CV/Portfolio không hợp lệ. Chỉ hỗ trợ: LinkedIn, TopCV, Google Drive, Github, Behance, Portfolio" },
         { status: 400 }
       );
     }
@@ -57,7 +127,7 @@ export async function POST(request) {
       full_name: fullName,
       phone: phone || "",
       avatar: "/img/default-avatar.svg",
-      role: role, // "student" hoặc "tutor"
+      role: role,
       status: "active",
       created_at: new Date().toISOString()
     };
@@ -77,7 +147,6 @@ export async function POST(request) {
     let profileData = null;
 
     if (role === "student") {
-      // Tạo student profile
       profileData = {
         student_id: `student_${Date.now()}`,
         user_id: newUser.user_id,
@@ -93,13 +162,11 @@ export async function POST(request) {
       });
 
       if (!createStudentRes.ok) {
-        // Rollback: Xóa user vừa tạo
         await fetch(`${API_BASE}/users/${newUser.user_id}`, { method: "DELETE" });
         throw new Error("Không thể tạo hồ sơ học viên");
       }
 
     } else if (role === "tutor") {
-      // Tạo tutor profile
       if (!expertise) {
         return NextResponse.json(
           { success: false, message: "Vui lòng chọn lĩnh vực chuyên môn" },
@@ -128,34 +195,35 @@ export async function POST(request) {
       });
 
       if (!createTutorRes.ok) {
-        // Rollback: Xóa user vừa tạo
         await fetch(`${API_BASE}/users/${newUser.user_id}`, { method: "DELETE" });
         throw new Error("Không thể tạo hồ sơ gia sư");
       }
     }
 
     // 6. Trả về kết quả thành công
-      const { password: _, ...userInfo } = newUser;
+    const { password: _, ...userInfo } = newUser;
 
-    // Tạo message phù hợp với role
-      let successMessage = "";
-      if (role === "student") {
-        successMessage = "Đăng ký tài khoản Học viên thành công! Vui lòng đăng nhập.";
-      } else if (role === "tutor") {
-        successMessage = "Đăng ký tài khoản Giảng viên thành công! Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo.";
+    let successMessage = "";
+    if (role === "student") {
+      successMessage = "Đăng ký tài khoản Học viên thành công! Vui lòng đăng nhập.";
+    } else if (role === "tutor") {
+      successMessage = "Đăng ký tài khoản Giảng viên thành công! Tài khoản của bạn đang chờ admin xét duyệt. Vui lòng đợi thông báo.";
+    }
+
+    console.log("✅ Register success:", userInfo.email);
+    console.log("=== END REGISTER API ===");
+
+    return NextResponse.json({
+      success: true,
+      message: successMessage,
+      data: {
+        user: userInfo,
+        profile: profileData
       }
-
-      return NextResponse.json({
-        success: true,
-        message: successMessage,
-        data: {
-          user: userInfo,
-          profile: profileData
-        }
-      });
+    });
 
   } catch (error) {
-    console.error("Lỗi POST /api/auth/register:", error);
+    console.error("❌ Register API error:", error);
     return NextResponse.json(
       { success: false, message: error.message || "Lỗi server" },
       { status: 500 }
