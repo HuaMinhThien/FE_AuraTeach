@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./TutorProfile.module.css"; 
 
+const API_BASE = "http://localhost:3007";
+
 const getUserIdFromCookie = () => {
   try {
     const cookies = document.cookie.split("; ");
@@ -11,7 +13,7 @@ const getUserIdFromCookie = () => {
       const cookieValue = userInfoCookie.split("=")[1];
       const decodedValue = decodeURIComponent(cookieValue);
       const userInfo = JSON.parse(decodedValue);
-      return userInfo.id || null;
+      return userInfo.user_id || userInfo.id || null;
     }
   } catch (error) {
     console.error("Lỗi đọc cookie:", error);
@@ -101,6 +103,18 @@ export default function TutorProfile() {
     fetchData();
   }, []);
 
+  const handleSave = async () => {
+    try {
+      // Cập nhật users
+      await fetch(`${API_BASE}/users/${tutorData.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: editFields.phone })
+      });
+
+      // Cập nhật tutors
+      await fetch(`${API_BASE}/tutors/${tutorData.id}`, {
+        method: "PATCH",
   const getCategoryName = (cat) => {
     if (typeof cat === "string") return cat.trim();
     return (cat.category_name || cat.name || "").trim();
@@ -184,12 +198,11 @@ export default function TutorProfile() {
   if (errorMsg || !tutorData) return <div className={styles.errorContainer}>{errorMsg}</div>;
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount || 0);
   };
 
   return (
     <div className={styles.profileContainer}>
-      {/* Tiêu đề trang quản lý và nút Chỉnh sửa */}
       <div className={styles.pageHeaderActions}>
         <h2>Hồ sơ cá nhân</h2>
         
@@ -214,13 +227,14 @@ export default function TutorProfile() {
         )}
       </div>
 
-      {/* Khối Thông Tin Đầu Trang */}
+      {/* Header Card */}
       <div className={styles.headerCard}>
         <div className={styles.avatarWrapper}>
           <img
             src={tutorData.avatar}
             alt={tutorData.full_name}
             className={styles.avatar}
+            onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
           />
           <span className={`${styles.statusBadge} ${tutorData.status === "active" ? styles.statusActive : styles.statusLocked}`}>
             {tutorData.status === "active" ? "Đang hoạt động" : "Tạm khóa"}
@@ -250,20 +264,32 @@ export default function TutorProfile() {
               </span>
             )}
 
-            <span className={`${styles.badge} ${tutorData.verification_status === "approved" ? styles.badgeVerifyVerified : styles.badgeVerifyPending}`}>
-              ✔️ {tutorData.verification_status === "approved" ? "Đã xác minh" : "Chưa xác minh"}
+          <div className={styles.badgeGroup}>
+            <span className={`${styles.badge} ${styles.badgeRating}`}>⭐ {tutorData.rating ?? "0"} Đánh giá</span>
+            <span className={`${styles.badge} ${styles.badgeExp}`}>💼 {tutorData.Experience || "Chưa cập nhật"}</span>
+            <span className={`${styles.badge} ${tutorData.verification_status === "Đã xác minh" || tutorData.verification_status === "approved" ? styles.badgeVerifyVerified : styles.badgeVerifyPending}`}>
+              ✔️ {tutorData.verification_status || "Chưa xác minh"}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Grid Số Dư & Liên Hệ */}
+      {/* Balance Cards */}
       <div className={styles.gridContainer}>
         <div className={styles.balanceCardMain}>
           <p className={styles.balanceLabelMain}>Số dư khả dụng</p>
           <div className={styles.balanceRow}>
             <p className={styles.balanceAmountMain}>{formatCurrency(tutorData.available_balance || 0)}</p>
-            <button className={styles.btnPayout}>Rút tiền về ví</button>
+            <button 
+              className={styles.btnPayout}
+              disabled={(tutorData.available_balance || 0) <= 0}
+              style={{
+                opacity: (tutorData.available_balance || 0) <= 0 ? 0.5 : 1,
+                cursor: (tutorData.available_balance || 0) <= 0 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {tutorData.available_balance > 0 ? "Rút tiền về ví" : "Chưa có tiền"}
+            </button>
           </div>
         </div>
 
@@ -284,7 +310,7 @@ export default function TutorProfile() {
                 onChange={e => setEditFields({...editFields, phone: e.target.value})}
               />
             ) : (
-              tutorData.phone
+              tutorData.phone || "Chưa cập nhật"
             )}
           </div>
 

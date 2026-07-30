@@ -36,8 +36,8 @@ export default function Tutor_sec2({ classesData }) {
 
       <div className={styles.list}>
         {list.map((item) => {
-
-          const isUrgent = item.isUrgent || item.status === "active"; 
+          const isUrgent = item.isUrgent || false;
+          const studentCount = Array.isArray(item.students) ? item.students.length : 0;
 
           return (
             <div key={item.id || item.course_id} className={styles.classCard}>
@@ -56,9 +56,14 @@ export default function Tutor_sec2({ classesData }) {
                 </span>
                 <h4>{item.title}</h4>
                 <div className={styles.meta}>
-                  <span>⏰ {item.time_slot || item.time || "Chưa xếp lịch"}</span>
-                  <span>👥 {Array.isArray(item.students) ? `${item.students.length} học viên` : "0 học viên"}</span>
+                  <span>⏰ {item.time || "Chưa xếp lịch"}</span>
+                  <span>👥 {studentCount} học viên</span>
                 </div>
+                {item.studentNames && item.studentNames.length > 0 && (
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                    👤 {item.studentNames.join(', ')}
+                  </div>
+                )}
               </div>
 
               <div className={styles.action}>

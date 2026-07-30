@@ -317,11 +317,14 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
-      "pending_balance": 1200000,
+      "id": "1f17",
+      "pending_balance": 3201500,
       "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
+      "total_earnings": 3201500,
+      "updated_at": "2026-07-29T10:00:00.000Z"
       "rejection_reason": null
     },
     {
@@ -418,7 +421,8 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T09:59:51.707Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "total_earnings": 0
     },
     {
       "id": "7d7a",
@@ -434,7 +438,8 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T10:43:18.774Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "total_earnings": 0
     },
     {
       "id": "45da",
@@ -450,7 +455,8 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T11:10:32.442Z",
-      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
+      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu",
+      "total_earnings": 0
     },
     {
       "id": "3a4c",
@@ -595,7 +601,9 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
     },
     {
       "id": "fad2",
@@ -1023,7 +1031,8 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "user_1782855725159_tqroz6"
+        "user_1782855725159_tqroz6",
+        "u-student-1"
       ]
     },
     {
@@ -1048,8 +1057,55 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "u-student-1"
+        "u-student-1",
+        "user_1782855725159_tqroz6"
       ]
+    },
+    {
+      "id": "8Dm2sl1jb6Q",
+      "course_id": "course-1785266029907",
+      "tutor_id": "tutor_01",
+      "title": "hihi",
+      "category_id": "cat-11",
+      "level": "Cấp 1",
+      "description": "sdfdsafedsf",
+      "max_students": 1,
+      "hourly_rate": 100000,
+      "start_date": "2026-07-30",
+      "end_date": "2026-08-06",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 2"
+      ],
+      "time_slot": "23:30-12:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
+    },
+    {
+      "id": "InHiOrTy1Fk",
+      "course_id": "course-1785271005161",
+      "tutor_id": "tutor_01",
+      "title": "dsfsadf",
+      "category_id": "cat-03",
+      "level": "Cấp 1",
+      "description": "adfsgrga",
+      "max_students": 1,
+      "hourly_rate": 50000,
+      "start_date": "2026-07-30",
+      "end_date": "2026-08-06",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 5"
+      ],
+      "time_slot": "21:00-22:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
     }
   ],
   "reviews": [
@@ -1105,10 +1161,10 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-07-01T10:00:00Z",
       "created_at": "2026-07-01T10:00:00Z",
-      "updated_at": "2026-07-01T10:00:00Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "Học viên đã đăng ký thành công",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1121,15 +1177,15 @@
       "student_id": "u-student-1",
       "course_id": "c-02",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-06-30T20:42:52.004Z",
       "created_at": "2026-06-30T20:42:52.004Z",
-      "updated_at": "2026-06-30T20:42:52.004Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 120000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000000",
       "id": "TVt4v5vvMxM"
     },
     {
@@ -1137,15 +1193,15 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-06-30T23:20:49.566Z",
       "created_at": "2026-06-30T23:20:49.566Z",
-      "updated_at": "2026-06-30T23:20:49.566Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000001",
       "id": "rA_YHb4Z_lU"
     },
     {
@@ -1156,12 +1212,12 @@
       "status": "confirmed",
       "booking_date": "2026-06-30T23:30:29.275Z",
       "created_at": "2026-06-30T23:30:29.275Z",
-      "updated_at": "2026-06-30T23:30:29.275Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 180000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000002",
       "id": "KVlWv2aShoo"
     },
     {
@@ -1173,12 +1229,12 @@
       "status": "confirmed",
       "booking_date": "2026-07-01T05:50:00.460Z",
       "created_at": "2026-07-01T05:50:00.460Z",
-      "updated_at": "2026-07-01T05:50:00.460Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 130000,
-      "payment_method": null,
-      "transaction_id": null
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000003"
     },
     {
       "booking_id": "bk-1783023994671",
@@ -1188,7 +1244,7 @@
       "status": "confirmed",
       "booking_date": "2026-07-02T20:26:34.672Z",
       "created_at": "2026-07-02T20:26:34.672Z",
-      "updated_at": "2026-07-02T20:26:34.672Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1204,7 +1260,7 @@
       "status": "confirmed",
       "booking_date": "2026-07-02T22:46:59.478Z",
       "created_at": "2026-07-02T22:46:59.478Z",
-      "updated_at": "2026-07-02T22:46:59.478Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1217,12 +1273,12 @@
       "student_id": "user_1782855725159_tqroz6",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:50:29.904Z",
       "created_at": "2026-07-02T22:50:29.904Z",
-      "updated_at": "2026-07-02T22:50:29.904Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,

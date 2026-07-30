@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation"; 
 import SearchComponent from "./SearchInput";
 import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
+import NotificationBell from "@/components/common/NotificationBell";
 
 const API_BASE = "http://localhost:3007";
 
@@ -178,6 +179,11 @@ export default function Header() {
                 <div className="header-right">
                     {user ? (
                         <>
+                            {/* ✅ Notification Bell */}
+                            <NotificationBell 
+                                userId={user.user_id || user.id}
+                                userRole={user.role || 'student'}
+                            />
                             {/* ✅ Icon Messenger với badge unread count */}
                             <Link href="/messenger" className="header-messenger-icon" title="Tin nhắn">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00236f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

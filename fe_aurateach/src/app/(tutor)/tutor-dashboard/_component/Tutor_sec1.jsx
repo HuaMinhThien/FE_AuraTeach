@@ -5,12 +5,12 @@ import styles from "../_css/sec1.module.css";
 export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
 
   const defaultStats = {
-    totalIncome: "25,000,000đ",
-    incomeGrowth: "+12%",
-    totalStudents: 150,
-    studentsGrowth: "+5",
-    openClasses: "08",
-    rating: "4.9/5.0"
+    totalIncome: "0đ",
+    incomeGrowth: "Chưa có thu nhập",
+    totalStudents: 0,
+    studentsGrowth: "0 lớp",
+    openClasses: "00",
+    rating: "0.0/5.0"
   };
 
   const data = statsData || defaultStats;
@@ -28,7 +28,9 @@ export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
             <span className={styles.icon}>
               <Image src="/img/icons/money1.png" alt="money" width={20} height={20} />
             </span>
-            <span className={`${styles.badge} ${styles.greenBg}`}>{data.incomeGrowth}</span>
+            <span className={`${styles.badge} ${data.incomeGrowth.includes('chờ') ? styles.goldBg : styles.greenBg}`}>
+              {data.incomeGrowth}
+            </span>
           </div>
           <p className={styles.cardLabel}>Tổng thu nhập</p>
           <h2 className={styles.cardValue}>{data.totalIncome}</h2>
@@ -61,7 +63,7 @@ export default function Tutor_sec1({ tutorName = "Thiện", statsData }) {
             <span className={styles.icon}>
               <Image src="/img/icons/star.png" alt="class" width={20} height={20} />
             </span>
-            <span className={`${styles.badge} ${styles.goldBg}`}>Top Rated</span>
+            <span className={`${styles.badge} ${styles.goldBg}`}>Đánh giá</span>
           </div>
           <p className={styles.cardLabel}>Đánh giá trung bình</p>
           <h2 className={styles.cardValue}>{data.rating}</h2>
