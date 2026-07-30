@@ -21,9 +21,10 @@ const DEFAULT_IMAGES = [
 export default function CreateClassPage() {
   const router = useRouter();
 
-  // --- State Kiểm soát Quyền Tạo Lớp ---
+  // --- State Kiểm soát Quyền Tạo Lớp & Danh mục cho phép ---
   const [isPermissionChecked, setIsPermissionChecked] = useState(false);
   const [isAllowed, setIsAllowed] = useState(false);
+  const [allowedCategories, setAllowedCategories] = useState([]);
 
   // --- Các State quản lý dữ liệu Form ---
   const [className, setClassName] = useState("");
@@ -55,8 +56,25 @@ export default function CreateClassPage() {
   const [conflictMessage, setConflictMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
+  const [tutorId, setTutorId] = useState("");
 
-  //  HÀM NGĂN CHẶN BẢO VỆ TRANG: Kiểm tra verification_status
+  // 1. Tự động gọi API lấy toàn bộ danh mục môn học
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:3007/categories");
+        if (res.ok) {
+          const data = await res.json();
+          setCategoriesList(data);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy danh mục môn học từ JSON Server:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // 2. HÀM NGĂN CHẶN BẢO VỆ TRANG & LỌC CHUYÊN MÔN GIA SƯ
   useEffect(() => {
     let isMounted = true;
 
@@ -66,7 +84,7 @@ export default function CreateClassPage() {
         const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
 
         if (!userInfoCookie) {
-          alert(" Vui lòng đăng nhập để thực hiện chức năng này!");
+          alert("⚠️ Vui lòng đăng nhập để thực hiện chức năng này!");
           router.push("/login");
           return;
         }
@@ -80,7 +98,7 @@ export default function CreateClassPage() {
           return;
         }
 
-        // Gọi API lấy hồ sơ tutor
+        // Gọi API lấy hồ sơ gia sư
         const res = await fetch(`http://localhost:3007/tutors?user_id=${userInfo.user_id}`);
         if (res.ok) {
           const data = await res.json();
@@ -95,6 +113,14 @@ export default function CreateClassPage() {
           }
 
           if (isMounted) {
+            setTutorId(tutor.tutor_id);
+
+            // Tách các chuyên môn gia sư đã đăng ký (ví dụ: "Toán, Tin học & Lập trình, Ngữ văn")
+            const registeredExpertise = tutor.expertise
+              ? tutor.expertise.split(",").map((exp) => exp.trim().toLowerCase())
+              : [];
+
+            setAllowedCategories(registeredExpertise);
             setIsAllowed(true);
           }
         }
@@ -114,22 +140,6 @@ export default function CreateClassPage() {
       isMounted = false;
     };
   }, [router]);
-
-  // Tự động gọi API lấy danh mục động khi màn hình load thành công
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("http://localhost:3007/categories");
-        if (res.ok) {
-          const data = await res.json();
-          setCategoriesList(data);
-        }
-      } catch (error) {
-        console.error("Lỗi lấy danh mục môn học từ JSON Server:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   // Hàm kiểm tra ngày bắt đầu có hợp lệ không
   const validateStartDate = (dateString) => {
@@ -184,6 +194,7 @@ export default function CreateClassPage() {
           end: endDate,
           days: selectedDays.join(","),
           slot: timeSlot,
+          id_tutor: tutorId,
         });
 
         const res = await fetch(`/api/classes/check-conflict?${queryParams}`);
@@ -195,12 +206,12 @@ export default function CreateClassPage() {
           setConflictMessage("");
         }
       } catch (err) {
-        console.error("Lỗi kiểm tra trùng lịch trùng:", err);
+        console.error("Lỗi kiểm tra trùng lịch:", err);
       }
     };
 
     checkScheduleConflict();
-  }, [startDate, endDate, selectedDays, startTime, endTime]);
+  }, [startDate, endDate, selectedDays, startTime, endTime, tutorId]);
 
   const validateGoogleMeet = (url) => {
     if (!url.trim()) {
@@ -240,9 +251,14 @@ export default function CreateClassPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🛡️ BẢO VỆ LẦN CUỐI KHI SUBMIT: Kiểm tra lại quyền hạn trước khi gửi API
+    // 🛡️ BẢO VỆ KHI SUBMIT
     if (!isAllowed) {
       alert("⚠️ Bạn không có quyền thực hiện chức năng này!");
+      return;
+    }
+
+    if (!category) {
+      alert("⚠️ Vui lòng chọn môn học được phép dạy!");
       return;
     }
     
@@ -261,8 +277,9 @@ export default function CreateClassPage() {
 
     setIsSubmitting(true);
     const payload = {
+      tutor_id: tutorId,
       class_name: className,
-      category,
+      category_id: category,
       level,
       description,
       max_students: parseInt(maxStudents),
@@ -306,7 +323,7 @@ export default function CreateClassPage() {
   if (!isPermissionChecked) {
     return (
       <div style={{ textAlign: "center", padding: "120px 20px", fontSize: "16px", color: "#666" }}>
-         Đang kiểm tra quyền hạn tài khoản gia sư...
+        Đang kiểm tra quyền hạn tài khoản gia sư...
       </div>
     );
   }
@@ -316,8 +333,13 @@ export default function CreateClassPage() {
     return null;
   }
 
+  // Lọc danh sách danh mục chỉ chứa các môn học gia sư đã đăng ký chuyên môn (`expertise`)
+  const filteredCategories = categoriesList.filter((cat) =>
+    allowedCategories.some((allowed) => allowed === cat.category_name.toLowerCase())
+  );
+
   return (
-    <div className={styles.container} style={{marginTop: "80px"}}>
+    <div className={styles.container} style={{ marginTop: "80px" }}>
       <div className={styles.headerCreate}>
         <h1>Tạo lớp học mới</h1>
         <p>Bắt đầu hành trình chia sẻ kiến thức của bạn bằng cách thiết lập thông tin lớp học.</p>
@@ -348,12 +370,12 @@ export default function CreateClassPage() {
                 onChange={handleMeetChange}
                 required
               />
-              {meetError && <p className={styles.errorAlert} style={{marginTop: "8px", fontSize: "14px"}}>{meetError}</p>}
+              {meetError && <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "14px" }}>{meetError}</p>}
             </div>
 
             <div className={styles.rowGrid}>
               <div className={styles.formGroup}>
-                <label htmlFor="category">Môn học học phần <span className={styles.required}>*</span></label>
+                <label htmlFor="category">Môn học học phần (Chỉ chọn môn đã đăng ký chuyên môn) <span className={styles.required}>*</span></label>
                 <select
                   id="category"
                   value={category}
@@ -361,14 +383,23 @@ export default function CreateClassPage() {
                   required
                 >
                   <option value="">-- Chọn môn học dạy --</option>
-                  {categoriesList
-                    .filter(cat => cat.category_name !== "Tất cả")
-                    .map((cat) => (
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((cat) => (
                       <option key={cat.category_id} value={cat.category_id}>
                         {cat.category_name}
                       </option>
-                    ))}
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      Chưa có chuyên môn hợp lệ được phê duyệt
+                    </option>
+                  )}
                 </select>
+                {filteredCategories.length === 0 && (
+                  <p className={styles.errorAlert} style={{ marginTop: "6px", fontSize: "13px" }}>
+                    ⚠️ Bạn chưa đăng ký hoặc chưa được duyệt chuyên môn dạy môn nào trong danh mục hệ thống.
+                  </p>
+                )}
               </div>
 
               <div className={styles.formGroup}>
@@ -472,7 +503,7 @@ export default function CreateClassPage() {
                   required 
                 />
                 {dateErrorMessage && (
-                  <p className={styles.errorAlert} style={{marginTop: "8px", fontSize: "14px"}}>
+                  <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "14px" }}>
                     {dateErrorMessage}
                   </p>
                 )}
@@ -557,9 +588,9 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed}
+              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || filteredCategories.length === 0}
             >
-              {isSubmitting ? "Đang xử lý tạo lớp..." : "Tiếp tục ➔"}
+              {isSubmitting ? "Đang xử lý tạo lớp..." : "Tạo lớp ➔"}
             </button>
           </div>
         </div>

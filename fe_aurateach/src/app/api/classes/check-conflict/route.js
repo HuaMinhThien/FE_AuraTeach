@@ -7,9 +7,16 @@ export async function GET(request) {
     const endDate = searchParams.get("end");
     const days = searchParams.get("days")?.split(",") || [];
     const [newStart, newEnd] = (searchParams.get("slot") || "").split("-");
+    
+    // Lấy id_tutor từ query params
+    const idTutor = searchParams.get("id_tutor") || searchParams.get("tutor_id");
 
-    // Lấy dữ liệu từ JSON Server để đối chiếu chéo
-    const res = await fetch("http://localhost:3007/classByIdTutor", { cache: "no-store" });
+    // Ghép tham số lọc theo tutor_id nếu có
+    const fetchUrl = idTutor
+      ? `http://localhost:3007/courses?tutor_id=${idTutor}`
+      : "http://localhost:3007/courses";
+
+    const res = await fetch(fetchUrl, { cache: "no-store" });
     if (!res.ok) return NextResponse.json({ success: true, isConflict: false });
 
     const jsonServerData = await res.json();

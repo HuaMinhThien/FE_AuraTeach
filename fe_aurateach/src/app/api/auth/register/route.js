@@ -178,7 +178,7 @@ export async function POST(request) {
         tutor_id: `tutor_${Date.now()}`,
         user_id: newUser.user_id,
         bio: "",
-        qualification: expertise,
+        expertise: expertise,
         rating: 0,
         verification_status: "pending",
         experience: "",

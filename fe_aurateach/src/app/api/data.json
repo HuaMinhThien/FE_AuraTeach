@@ -986,6 +986,30 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
+    },
+    {
+      "id": "course-1785435401738",
+      "course_id": "course-1785435401738",
+      "tutor_id": "tutor_01",
+      "title": "toán hình cơ bản",
+      "category_id": "cat-02",
+      "level": "Cấp 1",
+      "description": "toán hình cấp 1 cho học sinh mất gốc ",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-08-02",
+      "end_date": "2026-08-16",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "13:00-14:00",
+      "thumbnail": "/img/class/default-class-9.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
     }
   ],
   "reviews": [
