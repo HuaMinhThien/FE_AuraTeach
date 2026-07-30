@@ -207,7 +207,7 @@
       "phone": "0932176859",
       "avatar": "/img/default-avatar.svg",
       "role": "tutor",
-      "status": "active",
+      "status": "banned",
       "created_at": "2026-07-16T09:59:51.700Z"
     },
     {
@@ -343,13 +343,17 @@
       "bio": "",
       "expertise": "Lịch sử",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "approved",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_1782855815613/history",
       "created_at": "2025-05-12T16:30:00.000Z",
+<<<<<<< Updated upstream
+=======
+      "id": "d377",
+>>>>>>> Stashed changes
       "rejection_reason": null
     },
     {
@@ -359,14 +363,18 @@
       "bio": "",
       "expertise": "Ngữ văn",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "rejected",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
       "created_at": "2026-07-16T09:47:30.288Z",
+<<<<<<< Updated upstream
       "rejection_reason": null
+=======
+      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
+>>>>>>> Stashed changes
     },
     {
       "id": "4f61",
