@@ -194,8 +194,7 @@ export default function TutorDashboardPage() {
                       });
                     }
                   }
-                  nextClassDate = checkDate;
-                  break;
+                  
                 }
               }
             }

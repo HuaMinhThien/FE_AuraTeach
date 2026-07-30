@@ -941,30 +941,6 @@
       ]
     },
     {
-      "id": "8Dm2sl1jb6Q",
-      "course_id": "course-1785266029907",
-      "tutor_id": "tutor_01",
-      "title": "hihi",
-      "category_id": "cat-11",
-      "level": "Cấp 1",
-      "description": "sdfdsafedsf",
-      "max_students": 1,
-      "hourly_rate": 100000,
-      "start_date": "2026-07-30",
-      "end_date": "2026-08-06",
-      "total_weeks": 1,
-      "schedule_days": [
-        "Thứ 2"
-      ],
-      "time_slot": "23:30-12:30",
-      "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": [
-        "user_1782855725159_tqroz6"
-      ]
-    },
-    {
       "id": "course-1785319823221",
       "course_id": "course-1785319823221",
       "tutor_id": "tutor_01",
@@ -983,6 +959,30 @@
       ],
       "time_slot": "21:00-22:00",
       "thumbnail": "/img/class/default-class-9.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
+    },
+    {
+      "id": "course-1785425982093",
+      "course_id": "course-1785425982093",
+      "tutor_id": "tutor_01",
+      "title": "Lập trình",
+      "category_id": "cat-10",
+      "level": "Cấp 2",
+      "description": "",
+      "max_students": 2,
+      "hourly_rate": 100000,
+      "start_date": "2026-07-31",
+      "end_date": "2026-08-07",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 6",
+        "Thứ 7",
+        "Chủ Nhật"
+      ],
+      "time_slot": "16:00-17:00",
+      "thumbnail": "/img/class/default-class-10.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
