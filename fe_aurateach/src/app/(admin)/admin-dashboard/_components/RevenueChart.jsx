@@ -13,7 +13,6 @@ import {
 } from 'recharts';
 
 export default function RevenueChart({ data }) {
-  // Format số tiền
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -22,13 +21,12 @@ export default function RevenueChart({ data }) {
     }).format(value);
   };
 
-  // Format ngày
   const formatDate = (dateStr) => {
+    if (!dateStr) return '';
     const date = new Date(dateStr);
     return `${date.getDate()}/${date.getMonth() + 1}`;
   };
 
-  // Custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -51,33 +49,42 @@ export default function RevenueChart({ data }) {
     return null;
   };
 
+  // ✅ Xử lý khi không có dữ liệu
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+        Không có dữ liệu để hiển thị
+      </div>
+    );
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-        <XAxis 
-          dataKey="date" 
-          tickFormatter={formatDate}
-          tick={{ fontSize: 12, fill: '#6b7280' }}
-          axisLine={{ stroke: '#e5e7eb' }}
-        />
-        <YAxis 
-          tickFormatter={formatCurrency}
-          tick={{ fontSize: 12, fill: '#6b7280' }}
-          axisLine={{ stroke: '#e5e7eb' }}
-        />
-        <Tooltip content={<CustomTooltip />} />
-        <Legend 
-          wrapperStyle={{ paddingTop: '12px' }}
-        />
-        <Bar 
-          dataKey="revenue" 
-          fill="#dc2626" 
-          name="💰 Doanh thu"
-          radius={[4, 4, 0, 0]}
-          barSize={30}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+          <XAxis 
+            dataKey="date" 
+            tickFormatter={formatDate}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            axisLine={{ stroke: '#e5e7eb' }}
+          />
+          <YAxis 
+            tickFormatter={formatCurrency}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            axisLine={{ stroke: '#e5e7eb' }}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend wrapperStyle={{ paddingTop: '12px' }} />
+          <Bar 
+            dataKey="revenue" 
+            fill="#dc2626" 
+            name="💰 Doanh thu"
+            radius={[4, 4, 0, 0]}
+            barSize={30}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

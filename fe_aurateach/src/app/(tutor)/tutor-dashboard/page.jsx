@@ -6,6 +6,8 @@ import Tutor_sec2 from "./_component/Tutor_sec2";
 import Tutor_sec3 from "./_component/Tutor_sec3";
 import Tutor_sec4 from "./_component/Tutor_sec4";
 
+const API_BASE = "http://localhost:3007";
+
 export default function TutorDashboardPage() {
   const [userName, setUserName] = useState("Gia Sư");
   const [stats, setStats] = useState({
@@ -192,6 +194,8 @@ export default function TutorDashboardPage() {
                       });
                     }
                   }
+                  nextClassDate = checkDate;
+                  break;
                 }
               }
             }

@@ -78,11 +78,55 @@ class PaymentService {
   }
 
   async checkStatusWithJson(paymentId) {
-    // Luôn trả về pending - KHÔNG TỰ ĐỘNG PAID
+    // Lưu thời điểm bắt đầu vào bộ nhớ tạm
+    if (!this._paymentStartTimes) {
+      this._paymentStartTimes = {};
+    }
+    
+    // Nếu chưa có thời gian bắt đầu, lưu lại
+    if (!this._paymentStartTimes[paymentId]) {
+      this._paymentStartTimes[paymentId] = Date.now();
+      return {
+        success: true,
+        status: 'pending',
+        message: 'Chờ thanh toán. Vui lòng quét QR để thanh toán.'
+      };
+    }
+
+    const elapsed = (Date.now() - this._paymentStartTimes[paymentId]) / 1000;
+    
+    // Sau 15s, tự động chuyển sang paid (demo mode)
+    if (elapsed >= 15) {
+      // 🔥 Gọi API để cập nhật booking và gửi notifications
+      try {
+        console.log(`⏰ Auto-pay triggered for payment: ${paymentId}`);
+        const res = await fetch(`/api/payments/manual-pay/${paymentId}`, {
+          method: 'POST',
+        });
+        const result = await res.json();
+        console.log(`📊 Auto-pay result:`, result);
+        
+        if (result.success) {
+          // Xóa khỏi bộ nhớ tạm
+          delete this._paymentStartTimes[paymentId];
+          return {
+            success: true,
+            status: 'paid',
+            message: '✅ Thanh toán thành công! (Demo: tự động sau 15s)'
+          };
+        } else {
+          console.error('❌ Auto-pay failed:', result.message);
+        }
+      } catch (error) {
+        console.error('❌ Auto-pay error:', error);
+      }
+    }
+
+    const remaining = Math.max(0, 15 - Math.round(elapsed));
     return {
       success: true,
       status: 'pending',
-      message: 'Chờ thanh toán. Vui lòng quét QR để thanh toán.'
+      message: `⏳ Chờ thanh toán... Tự động xác nhận sau ${remaining}s (demo)`
     };
   }
 
@@ -93,7 +137,14 @@ class PaymentService {
         const response = await fetch(`/api/payments/manual-pay/${paymentId}`, {
           method: 'POST',
         });
-        return await response.json();
+        const result = await response.json();
+        
+        // Xóa khỏi bộ nhớ tạm nếu thành công
+        if (result.success && this._paymentStartTimes) {
+          delete this._paymentStartTimes[paymentId];
+        }
+        
+        return result;
       } catch (error) {
         return {
           success: true,

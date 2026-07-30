@@ -64,7 +64,7 @@ export function middleware(request) {
     } else if (role === "tutor") {
       return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
     } else if (role === "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL("/admin-dashboard", request.url));
     }
   }
 

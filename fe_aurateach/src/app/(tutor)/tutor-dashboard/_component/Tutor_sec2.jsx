@@ -245,6 +245,11 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
                     </button>
                   )}
                 </div>
+                {item.studentNames && item.studentNames.length > 0 && (
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                    👤 {item.studentNames.join(', ')}
+                  </div>
+                )}
               </div>
             );
           })}
