@@ -17,6 +17,7 @@ export default function TutorDashboardPage() {
     rating: "0.0/5.0"
   });
   const [classesList, setClassesList] = useState([]);
+  const [pendingConfirmations, setPendingConfirmations] = useState([]);
   const [chartData, setChartData] = useState([]);
 
   const getCookie = (name) => {
@@ -27,193 +28,287 @@ export default function TutorDashboardPage() {
     return null;
   };
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      const userCookie = getCookie("user_info");
-      if (!userCookie) return;
+  // 🔄 HÀM TỰ ĐỘNG GIẢI NGÂN (Trừ ví chờ pending -> Cộng ví rút available sau 24 tiếng)
+  const processHoldingPayouts = async (tutorDetail, lessonConfirmations) => {
+    const now = new Date();
+    const readyConfirmations = lessonConfirmations.filter(lc => {
+      if (lc.payout_status !== "holding") return false;
+      const payoutTime = new Date(lc.payout_available_at);
+      return now >= payoutTime;
+    });
 
-      try {
-        const userData = JSON.parse(decodeURIComponent(userCookie));
-        const tutorId = userData.user_id || userData.tutor_id || userData.id || "u-01";
+    if (readyConfirmations.length === 0) return tutorDetail;
+
+    let updatedPending = tutorDetail.pending_balance || 0;
+    let updatedAvailable = tutorDetail.available_balance || 0;
+
+    for (const conf of readyConfirmations) {
+      const amount = conf.lesson_amount || 0;
+      updatedPending = Math.max(0, updatedPending - amount);
+      updatedAvailable += amount;
+
+      await fetch(`http://localhost:3007/lesson_confirmations/${conf.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payout_status: "transferred",
+          status: "approved"
+        })
+      });
+    }
+
+    await fetch(`http://localhost:3007/tutors/${tutorDetail.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pending_balance: updatedPending,
+        available_balance: updatedAvailable
+      })
+    });
+
+    return {
+      ...tutorDetail,
+      pending_balance: updatedPending,
+      available_balance: updatedAvailable
+    };
+  };
+
+  const fetchDashboardData = async () => {
+    const userCookie = getCookie("user_info");
+    if (!userCookie) return;
+
+    try {
+      const userData = JSON.parse(decodeURIComponent(userCookie));
+      const userId = userData.user_id;
+      setUserName(userData.full_name || userData.name || "Gia Sư");
+
+      // 1. Lấy thông tin gia sư
+      const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${userId}`);
+      let tutorDetail = null;
+      if (tutorRes.ok) {
+        const tutorData = await tutorRes.json();
+        if (tutorData && tutorData.length > 0) tutorDetail = tutorData[0];
+      }
+
+      if (!tutorDetail) return;
+
+      const usersRes = await fetch(`http://localhost:3007/users`);
+      const allUsers = usersRes.ok ? await usersRes.json() : [];
+
+      // 2. Lấy danh sách xác nhận bài học & tự động giải ngân nếu đủ 24 tiếng
+      const confRes = await fetch(`http://localhost:3007/lesson_confirmations?tutor_id=${tutorDetail.tutor_id}`);
+      let lessonConfirmations = confRes.ok ? await confRes.json() : [];
+
+      tutorDetail = await processHoldingPayouts(tutorDetail, lessonConfirmations);
+
+      // 3. Lấy danh sách khóa học
+      const coursesRes = await fetch(`http://localhost:3007/courses?tutor_id=${tutorDetail.tutor_id}`);
+      
+      if (coursesRes.ok) {
+        const coursesData = await coursesRes.json();
+        const activeClasses = coursesData.filter(c => c.status === "active");
+        const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
         
-        setUserName(userData.full_name || userData.name || "Gia Sư");
+        const availableWallet = tutorDetail?.available_balance || 0;
+        const pendingWallet = tutorDetail?.pending_balance || 0;
+        const calculatedTotalIncome = availableWallet + pendingWallet;
 
-        // 1. Fetch thông tin ví từ tutors
-        const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${tutorId}`);
-        let tutorDetail = null;
-        if (tutorRes.ok) {
-          const tutorData = await tutorRes.json();
-          if (tutorData && tutorData.length > 0) tutorDetail = tutorData[0];
-        }
+        setStats({
+          totalIncome: `${calculatedTotalIncome.toLocaleString("vi-VN")}đ`,
+          incomeGrowth: pendingWallet > 0 ? `+${((pendingWallet / (calculatedTotalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` : "Ổn định",
+          totalStudents: totalStudents,
+          studentsGrowth: `+${activeClasses.length} lớp`,
+          openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
+          rating: `${tutorDetail?.rating || 0}/5.0`
+        });
 
-        // 2. Fetch danh sách lớp từ courses
-        const coursesRes = await fetch(`http://localhost:3007/courses?tutor_id=${tutorId}`);
-        if (coursesRes.ok) {
-          const coursesData = await coursesRes.json();
+        const dayMap = {
+          "Chủ Nhật": 0, "Chủ nhật": 0, "CN": 0,
+          "Thứ 2": 1, "Thứ hai": 1, "T2": 1,
+          "Thứ 3": 2, "Thứ ba": 2, "T3": 2,
+          "Thứ 4": 3, "Thứ tư": 3, "T4": 3,
+          "Thứ 5": 4, "Thứ năm": 4, "T5": 4,
+          "Thứ 6": 5, "Thứ sáu": 5, "T6": 5,
+          "Thứ 7": 6, "Thứ bảy": 6, "T7": 6
+        };
 
-          const activeClasses = coursesData.filter(c => c.status === "active");
-          const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
-          const availableWallet = tutorDetail?.available_balance || 0;
-          const pendingWallet = tutorDetail?.pending_balance || 0;
-          const calculatedTotalIncome = availableWallet + pendingWallet;
-          const rating = tutorDetail?.rating;
+        const now = new Date();
+        const confirmableList = [];
 
-          setStats({
-            totalIncome: `${calculatedTotalIncome.toLocaleString("vi-VN")}đ`,
-            incomeGrowth: pendingWallet > 0 ? `+${((pendingWallet / (calculatedTotalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` : "Ổn định",
-            totalStudents: totalStudents,
-            studentsGrowth: `+${activeClasses.length} lớp`,
-            openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
-            rating: `${rating}/5.0`
-          });
+        const formattedClasses = coursesData
+          .map((course) => {
+            if (course.status !== "active") return null;
 
-          // --- THUẬT TOÁN TÌM CHÍNH XÁC NGÀY HỌC TIẾP THEO ---
-          const dayMap = {
-            "Chủ Nhật": 0, "Chủ nhật": 0, "CN": 0,
-            "Thứ 2": 1, "Thứ hai": 1, "T2": 1,
-            "Thứ 3": 2, "Thứ ba": 2, "T3": 2,
-            "Thứ 4": 3, "Thứ tư": 3, "T4": 3,
-            "Thứ 5": 4, "Thứ năm": 4, "T5": 4,
-            "Thứ 6": 5, "Thứ sáu": 5, "T6": 5,
-            "Thứ 7": 6, "Thứ bảy": 6, "T7": 6
-          };
+            const timeSlot = course.time_slot || "18:00-20:00";
+            const scheduleDays = Array.isArray(course.schedule_days) ? course.schedule_days : [];
+            const [startStr, endStr] = timeSlot.split("-").map(s => s.trim());
+            const [startHour, startMinute] = (startStr || "00:00").split(":").map(Number);
+            const [endHour, endMinute] = (endStr || "23:59").split(":").map(Number);
 
-          const now = new Date();
+            const startDate = course.start_date ? new Date(course.start_date) : new Date();
+            const totalWeeks = course.total_weeks || 12;
+            const endDate = new Date(startDate.getTime());
+            endDate.setDate(endDate.getDate() + (totalWeeks * 7));
 
-          const formattedClasses = coursesData
-            .map((course) => {
-              const timeSlot = course.time_slot || "19:00-21:00";
-              const scheduleDays = Array.isArray(course.schedule_days) ? course.schedule_days : [];
-              
-              // Lấy giờ bắt đầu dạy (Ví dụ: "19:00-21:00" -> 19 giờ 00 phút)
-              const startTimeStr = timeSlot.split("-")[0].trim();
-              const [startHour, startMinute] = startTimeStr.split(":").map(Number);
+            const enrolledStudents = (course.students || []).map(stId => {
+              const u = allUsers.find(usr => usr.user_id === stId || usr.id === stId);
+              return u ? { user_id: stId, full_name: u.full_name, email: u.email, phone: u.phone, avatar: u.avatar } 
+                       : { user_id: stId, full_name: "Học sinh " + stId };
+            });
 
-              // Phân tích ngày bắt đầu khóa học (start_date trong DB đang lưu dạng YYYY-MM-DD)
-              const startDate = course.start_date ? new Date(course.start_date) : new Date();
-              
-              // Tính ngày kết thúc dựa vào số tuần dạy (total_weeks)
-              const totalWeeks = course.total_weeks || 12;
-              const endDate = new Date(startDate.getTime());
-              endDate.setDate(endDate.getDate() + (totalWeeks * 7));
+            // KIỂM TRA BUỔI HỌC VỪA KẾT THÚC CẦN XÁC NHẬN HOÀN THÀNH (14 NGÀY GẦN NHẤT)
+            for (let i = 0; i <= 14; i++) {
+              const checkDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+              if (checkDate >= startDate && checkDate <= endDate) {
+                const dayOfWeek = checkDate.getDay();
+                if (scheduleDays.some(d => dayMap[d] === dayOfWeek)) {
+                  const sessionEnd = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), endHour, endMinute, 0);
 
-              // Nếu khóa học đã kết thúc hoàn toàn hoặc chưa tới ngày bắt đầu, đặt trọng số rất lớn để đẩy xuống cuối
-              if (now > endDate) return null;
+                  // Đã vượt qua thời điểm kết thúc buổi học
+                  if (now >= sessionEnd) {
+                    const yearStr = checkDate.getFullYear();
+                    const monthStr = String(checkDate.getMonth() + 1).padStart(2, "0");
+                    const dateNumStr = String(checkDate.getDate()).padStart(2, "0");
+                    const dateStr = `${yearStr}-${monthStr}-${dateNumStr}`;
 
-              let nextClassDate = null;
-              
-              // Vòng lặp quét từ hôm nay trở đi tối đa 7 ngày để tìm ngày trùng lịch học gần nhất
-              for (let i = 0; i <= 7; i++) {
-                const checkDate = new Date(now.getTime());
-                checkDate.setDate(now.getDate() + i);
-                
-                // Khóa học phải nằm trong khoảng thời gian đang chạy
-                if (checkDate >= startDate && checkDate <= endDate) {
-                  const dayNameInJs = checkDate.getDay(); // 0-6
+                    const confirmationId = `${course.course_id || course.id}_${dateStr}`;
+                    const isAlreadySubmitted = lessonConfirmations.some(lc => lc.comfirmation_id === confirmationId);
 
-                  // Kiểm tra ngày này có trùng với thứ nào được xếp lịch không
-                  const isMatchDay = scheduleDays.some(d => dayMap[d] === dayNameInJs);
-
-                  if (isMatchDay) {
-                    // Set giờ học vào ngày tìm được
-                    checkDate.setHours(startHour || 0, startMinute || 0, 0, 0);
-                    
-                    // Nếu ngày là hôm nay (i === 0) nhưng giờ học đã trôi qua rồi, bỏ qua tìm ngày tiếp theo
-                    if (i === 0 && now > checkDate) {
-                      continue;
+                    if (!isAlreadySubmitted) {
+                      const durationHours = Math.max(((endHour * 60 + endMinute) - (startHour * 60 + startMinute)) / 60, 0.5);
+                      
+                      confirmableList.push({
+                        comfirmation_id: confirmationId,
+                        course_id: course.course_id || course.id,
+                        course_title: course.title,
+                        tutor_id: tutorDetail.tutor_id,
+                        tutor_db_id: tutorDetail.id,
+                        lesson_date: dateStr,
+                        time_slot: timeSlot,
+                        hourly_rate: course.hourly_rate || 0,
+                        duration_hours: durationHours,
+                        students_count: course.students?.length || 0,
+                        tutor_pending_balance: tutorDetail.pending_balance || 0
+                      });
                     }
-                    
-                    nextClassDate = checkDate;
-                    break;
                   }
                 }
               }
+            }
 
-              // Nếu không tìm được ngày nào phù hợp (khóa học chưa bắt đầu), lấy tạm ngày bắt đầu khóa học
-              if (!nextClassDate) {
-                nextClassDate = startDate;
-                nextClassDate.setHours(startHour || 0, startMinute || 0, 0, 0);
+            if (now > endDate) return null;
+
+            let nextStartDateTime = null;
+            let nextEndDateTime = null;
+            
+            for (let i = 0; i <= 14; i++) {
+              const checkDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+              if (checkDate >= startDate && checkDate <= endDate) {
+                const dayOfWeek = checkDate.getDay();
+                if (scheduleDays.some(d => dayMap[d] === dayOfWeek)) {
+                  const sessionStart = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), startHour, startMinute, 0);
+                  const sessionEnd = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), endHour, endMinute, 0);
+
+                  if (now > sessionEnd) continue;
+
+                  nextStartDateTime = sessionStart;
+                  nextEndDateTime = sessionEnd;
+                  break;
+                }
               }
+            }
 
-              // Định dạng ngày hiển thị dạng trực quan (Ví dụ: "Hôm nay, 29/06" hoặc "Thứ 4, 01/07")
-              let dateTag = "";
-              const diffTime = nextClassDate.getTime() - now.getTime();
+            if (!nextStartDateTime) return null;
+
+            const canJoinTime = new Date(nextStartDateTime.getTime() - 15 * 60 * 1000);
+            const isLive = now >= canJoinTime && now <= nextEndDateTime;
+
+            let dateTag = "";
+            const formattedDateString = nextStartDateTime.toLocaleDateString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit"
+            });
+
+            if (isLive) {
+              dateTag = "🔴 ĐANG DIỄN RA";
+            } else if (nextStartDateTime.toDateString() === now.toDateString()) {
+              dateTag = `HÔM NAY, ${formattedDateString}`;
+            } else {
+              const diffTime = nextStartDateTime.getTime() - now.getTime();
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-              const formattedDateString = nextClassDate.toLocaleDateString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit"
-              });
-
-              if (nextClassDate.toDateString() === now.toDateString()) {
-                dateTag = `HÔM NAY, ${formattedDateString}`;
-              } else if (diffDays === 1) {
+              if (diffDays === 1) {
                 dateTag = `NGÀY MAI, ${formattedDateString}`;
               } else {
                 const weekdays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-                dateTag = `${weekdays[nextClassDate.getDay()]}, ${formattedDateString}`;
-              }
-
-              return {
-                id: course.id || course.course_id,
-                tag: dateTag,
-                title: course.title || course.class_name || "Lớp học chưa đặt tên",
-                time: timeSlot,
-                students: `${course.students?.length || 0} học viên`,
-                sortTimestamp: nextClassDate.getTime(), // Dùng timestamp chính xác làm trọng số sắp xếp
-                isUrgent: false,
-                thumbnail: course.thumbnail,
-                permanent_room_url: course.permanent_room_url || null
-              };
-            })
-            .filter(Boolean); // Loại bỏ các lớp đã kết thúc (null)
-
-          // Sắp xếp lớp có thời gian diễn ra sớm nhất lên đầu tiên
-          formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
-
-          // Gắn trạng thái khẩn cấp cho lớp đầu tiên gần nhất nếu khoảng cách thời gian dưới 1 ngày
-          if (formattedClasses.length > 0) {
-            const firstClassTime = formattedClasses[0].sortTimestamp;
-            const oneDayInMs = 24 * 60 * 60 * 1000;
-            
-            if (firstClassTime - now.getTime() < oneDayInMs) {
-              formattedClasses[0].isUrgent = true;
-              // Nếu trùng hôm nay thì đổi chữ cho sinh động
-              if (formattedClasses[0].tag.includes("HÔM NAY")) {
-                formattedClasses[0].tag = "SẮP DIỄN RA (HÔM NAY)";
+                dateTag = `${weekdays[nextStartDateTime.getDay()]}, ${formattedDateString}`;
               }
             }
-          }
 
-          const limitedClasses = formattedClasses.slice(0, 3);
-          setClassesList(limitedClasses);
+            return {
+              id: course.course_id || course.id,
+              tag: dateTag,
+              title: course.title || "Lớp học chưa đặt tên",
+              level: course.level,
+              description: course.description,
+              hourly_rate: course.hourly_rate,
+              schedule_days: course.schedule_days,
+              time: timeSlot,
+              studentsCount: course.students?.length || 0,
+              enrolledStudentsDetails: enrolledStudents,
+              sortTimestamp: nextStartDateTime.getTime(),
+              isLive: isLive,
+              thumbnail: course.thumbnail,
+              permanent_room_url: course.permanent_room_url || null
+            };
+          })
+          .filter(Boolean);
 
-          // Build biểu đồ
-          const mockChart = [
-            { name: "Th1", income: Math.round(availableWallet * 0.15 / 1000000) || 4 },
-            { name: "Th2", income: Math.round(availableWallet * 0.3 / 1000000) || 7 },
-            { name: "Th3", income: Math.round(availableWallet * 0.45 / 1000000) || 11 },
-            { name: "Th4", income: Math.round(availableWallet * 0.6 / 1000000) || 14 },
-            { name: "Th5", income: Math.round(availableWallet * 0.8 / 1000000) || 18 },
-            { name: "Th6", income: Math.round(calculatedTotalIncome / 1000000) || 22 },
-          ];
-          setChartData(mockChart);
-        }
-      } catch (error) {
-        console.error("Lỗi xử lý API tại trang Dashboard:", error);
+        formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+
+        setClassesList(formattedClasses.slice(0, 3));
+        setPendingConfirmations(confirmableList);
+
+        const mockChart = [
+          { name: "Th1", income: Math.round(availableWallet * 0.15 / 1000000) || 4 },
+          { name: "Th2", income: Math.round(availableWallet * 0.3 / 1000000) || 7 },
+          { name: "Th3", income: Math.round(availableWallet * 0.45 / 1000000) || 11 },
+          { name: "Th4", income: Math.round(availableWallet * 0.6 / 1000000) || 14 },
+          { name: "Th5", income: Math.round(availableWallet * 0.8 / 1000000) || 18 },
+          { name: "Th6", income: Math.round(calculatedTotalIncome / 1000000) || 22 },
+        ];
+        setChartData(mockChart);
       }
-    };
+    } catch (error) {
+      console.error("Lỗi xử lý API tại trang Dashboard:", error);
+    }
+  };
 
-    fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 15000);
-    return () => clearInterval(interval);
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      if (isMounted) await fetchDashboardData();
+    };
+    loadData();
+
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, 15000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px", width: "100%", marginTop: "80px" }}>
       <Tutor_sec1 tutorName={userName} statsData={stats} />
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", width: "100%" }}>
-        <Tutor_sec2 classesData={classesList} />
+        <Tutor_sec2 
+          classesData={classesList} 
+          pendingConfirmations={pendingConfirmations}
+          onRefreshData={fetchDashboardData}
+        />
         <Tutor_sec3 activitiesData={null} />
       </div>
       <Tutor_sec4 chartData={chartData} />

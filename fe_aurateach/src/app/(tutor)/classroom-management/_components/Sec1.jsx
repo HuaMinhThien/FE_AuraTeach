@@ -24,12 +24,13 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
 
           if (userInfo && userInfo.user_id) {
             const res = await fetch(`http://localhost:3007/tutors?user_id=${userInfo.user_id}`);
+            
             if (res.ok) {
               const data = await res.json();
               if (data.length > 0) {
-                const status = data[0].verification_status;
-                // Cho phép tạo lớp nếu status là approved hoặc Đã xác minh
-                if (status === "approved" || status === "Đã xác minh") {
+                const verification_status = data[0].verification_status;
+                // Cho phép tạo lớp nếu status là approved
+                if (verification_status === "approved") {
                   setIsApproved(true);
                 }
               }
@@ -46,10 +47,13 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
     checkVerification();
   }, []);
 
+
   const handleCreateClick = (e) => {
+    console.log(isApproved);
+    
     if (!isApproved) {
       e.preventDefault();
-      alert("⚠️ Hồ sơ Gia sư của bạn chưa được phê duyệt. Bạn không thể thực hiện chức năng tạo lớp học mới!");
+      alert("Hồ sơ Gia sư của bạn chưa được phê duyệt. Bạn không thể thực hiện chức năng tạo lớp học mới!");
     } else {
       router.push("/classroom-management/create");
     }

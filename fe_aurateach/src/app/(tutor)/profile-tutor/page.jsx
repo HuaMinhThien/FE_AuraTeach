@@ -11,7 +11,7 @@ const getUserIdFromCookie = () => {
       const cookieValue = userInfoCookie.split("=")[1];
       const decodedValue = decodeURIComponent(cookieValue);
       const userInfo = JSON.parse(decodedValue);
-      return userInfo.id || null;
+      return userInfo.user_id || null;
     }
   } catch (error) {
     console.error("Lỗi đọc cookie:", error);

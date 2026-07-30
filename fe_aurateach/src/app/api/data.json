@@ -107,7 +107,7 @@
       "full_name": "Liêm Tran",
       "phone": "0909123123",
       "birth_date": "2000-05-15",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
@@ -132,7 +132,7 @@
       "password": "123123",
       "full_name": "MAI THÁI TUẤN",
       "phone": "0345646979",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-06-30T21:42:05.159Z",
@@ -144,7 +144,7 @@
       "password": "123123",
       "full_name": "lửa nè",
       "phone": "0345646979",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-06-30T21:43:35.606Z",
@@ -157,7 +157,7 @@
       "password": "123123",
       "full_name": "Nguyễn Văn Liêm",
       "phone": "0909123123",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-07-01T08:13:04.178Z"
@@ -193,7 +193,7 @@
       "password": "123123",
       "full_name": " Nguyễn Văn Sáng",
       "phone": "0909890098",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T09:47:30.277Z"
@@ -205,7 +205,7 @@
       "password": "123123",
       "full_name": "Trần Thanh Tâm",
       "phone": "0932176859",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T09:59:51.700Z"
@@ -217,7 +217,7 @@
       "password": "123123",
       "full_name": "Hoàng Yến Linh",
       "phone": "0967867812",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T10:43:18.761Z"
@@ -229,7 +229,7 @@
       "password": "123123",
       "full_name": "Huỳnh Như Ngọc",
       "phone": "0945645678",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T11:10:32.434Z"
@@ -241,7 +241,7 @@
       "password": "123123",
       "full_name": "Gia sư 1",
       "phone": "0906761390",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-17T08:49:56.023Z"
@@ -253,7 +253,7 @@
       "password": "123123",
       "full_name": "Hứa Minh Thiện",
       "phone": "0906761390",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-22T09:36:48.253Z"
@@ -265,7 +265,7 @@
       "password": "123123",
       "full_name": "haha",
       "phone": "0906761390",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-28T13:29:26.797Z"
@@ -277,7 +277,7 @@
       "password": "123123",
       "full_name": "hehe",
       "phone": "0906761390",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-07-28T13:38:48.354Z"
@@ -289,10 +289,34 @@
       "password": "123123",
       "full_name": "thanhliem",
       "phone": "09091898751",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-07-29T07:40:32.917Z"
+    },
+    {
+      "id": "user_1785316486801_xrhwby",
+      "user_id": "user_1785316486801_kvbbi7",
+      "email": "huhu@gmail.com",
+      "password": "123123",
+      "full_name": "huhu",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-29T09:14:46.801Z"
+    },
+    {
+      "id": "user_1785318296404_vob36q",
+      "user_id": "user_1785318296404_4tdrq7",
+      "email": "al@gmail.com",
+      "password": "123123",
+      "full_name": "Anh Long",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-29T09:44:56.404Z"
     }
   ],
   "admins": [
@@ -317,7 +341,7 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
-      "pending_balance": 1200000,
+      "pending_balance": 1500000,
       "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
@@ -497,6 +521,20 @@
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-28T13:29:26.805Z",
       "rejection_reason": null
+    },
+    {
+      "id": "tutor_1785318296422",
+      "tutor_id": "tutor_1785318296422",
+      "user_id": "user_1785318296404_4tdrq7",
+      "bio": "",
+      "qualification": "Toán học",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://vn.linkedin.com",
+      "created_at": "2026-07-29T09:44:56.422Z"
     }
   ],
   "students": [
@@ -545,6 +583,14 @@
       "grade": "",
       "school_name": "",
       "created_at": "2026-07-29T07:40:32.931Z"
+    },
+    {
+      "id": "student_1785316486813",
+      "student_id": "student_1785316486813",
+      "user_id": "user_1785316486801_kvbbi7",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-29T09:14:46.813Z"
     }
   ],
   "courses": [
@@ -593,29 +639,6 @@
       ],
       "time_slot": "19:30-21:30",
       "thumbnail": "/img/class/default-class-8.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "fad2",
-      "course_id": "c-03",
-      "category_id": "cat-04",
-      "tutor_id": "tutor_01",
-      "title": "Gia sư Tiếng Anh chuẩn quốc tế",
-      "level": "Cấp 3",
-      "description": "Học tiếng Anh chuẩn quốc tế, nâng cao kỹ năng giao tiếp và luyện thi chứng chỉ.",
-      "max_students": 2,
-      "hourly_rate": 200000,
-      "start_date": "2026-07-10",
-      "end_date": "2026-09-04",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 4",
-        "Chủ Nhật"
-      ],
-      "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
@@ -812,146 +835,6 @@
       "students": []
     },
     {
-      "id": "649d",
-      "course_id": "c-12",
-      "category_id": "cat-06",
-      "tutor_id": "tutor_01",
-      "title": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
-      "level": "Cấp 3",
-      "description": "Làm chủ chuỗi phản ứng Ankan, Anken, Đơn chức, Đa chức Este Lipit và phương pháp dồn chất giải toán cực khó.",
-      "max_students": 3,
-      "hourly_rate": 150000,
-      "start_date": "2026-07-10",
-      "end_date": "2026-09-04",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 4",
-        "Chủ Nhật"
-      ],
-      "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-7.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "fbf7",
-      "course_id": "course-1782228975646",
-      "tutor_id": "u-01",
-      "title": "Ôn toán cấp tốc",
-      "level": "Cấp 3",
-      "description": "ôn tập luyện thi chất lượng cao",
-      "max_students": 5,
-      "hourly_rate": 250000,
-      "start_date": "2026-06-25",
-      "end_date": "2026-08-20",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 4",
-        "Thứ 6"
-      ],
-      "time_slot": "19:00-01:00",
-      "thumbnail": "/img/class/default-class-9.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "718f",
-      "course_id": "course-1782717829149",
-      "tutor_id": "u-01",
-      "title": "học văn ",
-      "category_id": "cat-03",
-      "level": "Cấp 2",
-      "description": "sssss",
-      "max_students": 2,
-      "hourly_rate": 120000,
-      "start_date": "2026-06-30",
-      "end_date": "2026-07-14",
-      "total_weeks": 2,
-      "schedule_days": [
-        "Thứ 5",
-        "Thứ 3"
-      ],
-      "time_slot": "21:00-23:00",
-      "thumbnail": "/img/class/default-class-8.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "067c",
-      "course_id": "course-1782737175419",
-      "tutor_id": "u-01",
-      "title": "Dạy vẽ cơ bản",
-      "category_id": "cat-11",
-      "level": "Cấp 1",
-      "description": "Dạy vẽ cơ bản",
-      "max_students": 3,
-      "hourly_rate": 120000,
-      "start_date": "2026-07-05",
-      "end_date": "2026-07-26",
-      "total_weeks": 3,
-      "schedule_days": [
-        "Thứ 7",
-        "Chủ Nhật",
-        "Thứ 5"
-      ],
-      "time_slot": "19:00-20:00",
-      "thumbnail": "/img/class/default-class-10.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "c3c6",
-      "course_id": "course-1782825797683",
-      "tutor_id": "u-01",
-      "title": "sinh hoc",
-      "category_id": "cat-06",
-      "level": "Cấp 1",
-      "description": "aaaas",
-      "max_students": 15,
-      "hourly_rate": 150000,
-      "start_date": "2026-07-06",
-      "end_date": "2026-09-14",
-      "total_weeks": 10,
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 4",
-        "Thứ 6"
-      ],
-      "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-5.png",
-      "status": "closed",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "course-1782895610088",
-      "course_id": "course-1782895610088",
-      "tutor_id": "u-01",
-      "title": "anh văn",
-      "category_id": "cat-02",
-      "level": "Cấp 3",
-      "description": "âsdads",
-      "max_students": 15,
-      "hourly_rate": 150000,
-      "start_date": "2026-07-24",
-      "end_date": "2026-09-25",
-      "total_weeks": 9,
-      "schedule_days": [
-        "Thứ 3",
-        "Thứ 6"
-      ],
-      "time_slot": "18:00-20:00",
-      "thumbnail": "blob:http://localhost:3000/f31cf9f2-869c-438d-8758-9aa82c2daa9b",
-      "status": "closed",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
       "id": "5nyoHgVuYIk",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
@@ -1050,6 +933,29 @@
       "students": [
         "u-student-1"
       ]
+    },
+    {
+      "id": "course-1785319823221",
+      "course_id": "course-1785319823221",
+      "tutor_id": "tutor_01",
+      "title": "Tiếng Anh lớp 1",
+      "category_id": "cat-09",
+      "level": "Cấp 1",
+      "description": "TA cơ bản",
+      "max_students": 11,
+      "hourly_rate": 300000,
+      "start_date": "2026-08-01",
+      "end_date": "2026-08-15",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 7",
+        "Thứ 6"
+      ],
+      "time_slot": "21:00-22:00",
+      "thumbnail": "/img/class/default-class-9.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
     }
   ],
   "reviews": [
@@ -1425,6 +1331,76 @@
       "reject_reason": null,
       "created_at": "2026-07-27T11:16:19.358Z",
       "updated_at": "2026-07-27T11:23:18.541Z"
+    },
+    {
+      "id": "aa96",
+      "tutor_id": "1f17",
+      "old_data": {
+        "phone": "09106761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình, Ngữ văn"
+      },
+      "new_data": {
+        "phone": "09106761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình"
+      },
+      "status": "pending",
+      "reject_reason": null,
+      "created_at": "2026-07-29T09:33:58.620Z"
+    }
+  ],
+  "lesson_confirmations": [
+    {
+      "comfirmation_id": "c-01_2026-08-01",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "lesson_number": 3,
+      "lesson_date": "2026-08-01",
+      "evidence_url": "https://drive.google.com/file/d/1xABCxyz...",
+      "note": "Đã dạy xong bài...",
+      "submitted_at": "2026-08-01T20:00:00.000Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-08-02T20:00:00.000Z",
+      "status": "pending_review",
+      "lesson_amount": 300000,
+      "payout_status": "holding"
+    },
+    {
+      "id": "937b",
+      "comfirmation_id": "c-02_2026-07-27",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "lesson_number": 1,
+      "lesson_date": "2026-07-27",
+      "evidence_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "note": "ôn tập",
+      "submitted_at": "2026-07-30T13:16:37.233Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-07-31T13:16:37.233Z",
+      "status": "pending_review",
+      "lesson_amount": 0,
+      "payout_status": "holding"
+    },
+    {
+      "id": "55ed",
+      "comfirmation_id": "c-01_2026-07-29",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "lesson_number": 1,
+      "lesson_date": "2026-07-29",
+      "evidence_url": "localhost:3000/tutor-dashboard",
+      "note": "",
+      "submitted_at": "2026-07-30T14:49:19.781Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-07-31T14:49:19.781Z",
+      "status": "pending_review",
+      "lesson_amount": 300000,
+      "payout_status": "holding"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
