@@ -13,13 +13,12 @@ import {
 } from 'recharts';
 
 export default function RegistrationChart({ data }) {
-  // Format ngày để hiển thị ngắn gọn
   const formatDate = (dateStr) => {
+    if (!dateStr) return '';
     const date = new Date(dateStr);
     return `${date.getDate()}/${date.getMonth() + 1}`;
   };
 
-  // Custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -44,43 +43,53 @@ export default function RegistrationChart({ data }) {
     return null;
   };
 
+  // ✅ Xử lý khi không có dữ liệu
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+        Không có dữ liệu để hiển thị
+      </div>
+    );
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-        <XAxis 
-          dataKey="date" 
-          tickFormatter={formatDate}
-          tick={{ fontSize: 12, fill: '#6b7280' }}
-          axisLine={{ stroke: '#e5e7eb' }}
-        />
-        <YAxis 
-          tick={{ fontSize: 12, fill: '#6b7280' }}
-          axisLine={{ stroke: '#e5e7eb' }}
-        />
-        <Tooltip content={<CustomTooltip />} />
-        <Legend 
-          wrapperStyle={{ paddingTop: '12px' }}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="students" 
-          stroke="#4f46e5" 
-          strokeWidth={2.5}
-          name="👨‍🎓 Học viên"
-          dot={{ r: 4, fill: '#4f46e5' }}
-          activeDot={{ r: 6 }}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="tutors" 
-          stroke="#059669" 
-          strokeWidth={2.5}
-          name="👨‍🏫 Gia sư"
-          dot={{ r: 4, fill: '#059669' }}
-          activeDot={{ r: 6 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <div style={{ width: '100%', height: 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+          <XAxis 
+            dataKey="date" 
+            tickFormatter={formatDate}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            axisLine={{ stroke: '#e5e7eb' }}
+          />
+          <YAxis 
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            axisLine={{ stroke: '#e5e7eb' }}
+            allowDecimals={false}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend wrapperStyle={{ paddingTop: '12px' }} />
+          <Line 
+            type="monotone" 
+            dataKey="students" 
+            stroke="#4f46e5" 
+            strokeWidth={2.5}
+            name="👨‍🎓 Học viên"
+            dot={{ r: 4, fill: '#4f46e5' }}
+            activeDot={{ r: 6 }}
+          />
+          <Line 
+            type="monotone" 
+            dataKey="tutors" 
+            stroke="#059669" 
+            strokeWidth={2.5}
+            name="👨‍🏫 Gia sư"
+            dot={{ r: 4, fill: '#059669' }}
+            activeDot={{ r: 6 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

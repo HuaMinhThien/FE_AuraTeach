@@ -6,6 +6,8 @@ import Tutor_sec2 from "./_component/Tutor_sec2";
 import Tutor_sec3 from "./_component/Tutor_sec3";
 import Tutor_sec4 from "./_component/Tutor_sec4";
 
+const API_BASE = "http://localhost:3007";
+
 export default function TutorDashboardPage() {
   const [userName, setUserName] = useState("Gia Sư");
   const [stats, setStats] = useState({
@@ -34,173 +36,232 @@ export default function TutorDashboardPage() {
 
       try {
         const userData = JSON.parse(decodeURIComponent(userCookie));
-        const tutorId = userData.user_id || userData.tutor_id || userData.id || "u-01";
+        const userId = userData.user_id || userData.id || userData.tutor_id;
         
         setUserName(userData.full_name || userData.name || "Gia Sư");
 
-        // 1. Fetch thông tin ví từ tutors
-        const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${tutorId}`);
-        let tutorDetail = null;
-        if (tutorRes.ok) {
-          const tutorData = await tutorRes.json();
-          if (tutorData && tutorData.length > 0) tutorDetail = tutorData[0];
+        console.log("👤 User ID:", userId);
+
+        // Lấy tất cả dữ liệu từ JSON Server
+        const [usersRes, tutorsRes, coursesRes, bookingsRes] = await Promise.all([
+          fetch(`${API_BASE}/users`),
+          fetch(`${API_BASE}/tutors`),
+          fetch(`${API_BASE}/courses`),
+          fetch(`${API_BASE}/bookings`)
+        ]);
+
+        const users = await usersRes.json();
+        const tutors = await tutorsRes.json();
+        const courses = await coursesRes.json();
+        const bookings = await bookingsRes.json();
+
+        // Tìm tutor của user hiện tại
+        let tutor = tutors.find(t => t.user_id === userId);
+        if (!tutor) {
+          tutor = tutors.find(t => t.tutor_id === userId);
         }
 
-        // 2. Fetch danh sách lớp từ courses
-        const coursesRes = await fetch(`http://localhost:3007/courses?tutor_id=${tutorId}`);
-        if (coursesRes.ok) {
-          const coursesData = await coursesRes.json();
+        if (!tutor) {
+          console.warn("⚠️ Không tìm thấy tutor cho user:", userId);
+          return;
+        }
 
-          const activeClasses = coursesData.filter(c => c.status === "active");
-          const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
-          const availableWallet = tutorDetail?.available_balance || 0;
-          const pendingWallet = tutorDetail?.pending_balance || 0;
-          const calculatedTotalIncome = availableWallet + pendingWallet;
-          const rating = tutorDetail?.rating;
+        console.log("✅ Tutor found:", tutor);
 
-          setStats({
-            totalIncome: `${calculatedTotalIncome.toLocaleString("vi-VN")}đ`,
-            incomeGrowth: pendingWallet > 0 ? `+${((pendingWallet / (calculatedTotalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` : "Ổn định",
-            totalStudents: totalStudents,
-            studentsGrowth: `+${activeClasses.length} lớp`,
-            openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
-            rating: `${rating}/5.0`
-          });
+        // Lấy danh sách courses của tutor
+        const tutorCourses = courses.filter(c => c.tutor_id === tutor.tutor_id);
+        console.log("📚 Tutor courses:", tutorCourses.length);
 
-          // --- THUẬT TOÁN TÌM CHÍNH XÁC NGÀY HỌC TIẾP THEO ---
-          const dayMap = {
-            "Chủ Nhật": 0, "Chủ nhật": 0, "CN": 0,
-            "Thứ 2": 1, "Thứ hai": 1, "T2": 1,
-            "Thứ 3": 2, "Thứ ba": 2, "T3": 2,
-            "Thứ 4": 3, "Thứ tư": 3, "T4": 3,
-            "Thứ 5": 4, "Thứ năm": 4, "T5": 4,
-            "Thứ 6": 5, "Thứ sáu": 5, "T6": 5,
-            "Thứ 7": 6, "Thứ bảy": 6, "T7": 6
-          };
+        // ✅ TÍNH TỔNG HỌC VIÊN - CÁCH 1: Dùng Set để loại bỏ trùng
+        const allStudents = new Set();
+        tutorCourses.forEach(c => {
+          if (c.students && Array.isArray(c.students)) {
+            c.students.forEach(s => {
+              if (s) {
+                allStudents.add(s);
+                console.log("👤 Student ID:", s);
+              }
+            });
+          }
+        });
+        const totalStudents = allStudents.size;
+        console.log("👥 Total unique students:", totalStudents);
+        console.log("👥 Student list:", Array.from(allStudents));
 
-          const now = new Date();
+        // ✅ TÍNH TỔNG HỌC VIÊN - CÁCH 2: Đếm từng học viên trong từng lớp
+        let totalStudentsCount = 0;
+        tutorCourses.forEach(c => {
+          if (c.students && Array.isArray(c.students)) {
+            totalStudentsCount += c.students.length;
+          }
+        });
+        console.log("👥 Total students count (sum):", totalStudentsCount);
 
-          const formattedClasses = coursesData
-            .map((course) => {
-              const timeSlot = course.time_slot || "19:00-21:00";
-              const scheduleDays = Array.isArray(course.schedule_days) ? course.schedule_days : [];
+        // Lấy số lớp đang hoạt động
+        const activeClasses = tutorCourses.filter(c => c.status === "active");
+        console.log("📚 Active classes:", activeClasses.length);
+
+        // Tính tổng thu nhập
+        const totalIncome = (tutor.available_balance || 0) + (tutor.pending_balance || 0);
+        console.log("💰 Total income:", totalIncome);
+
+        // Lấy rating
+        const tutorRating = tutor.rating || 0;
+
+        // Cập nhật stats
+        setStats({
+          totalIncome: `${totalIncome.toLocaleString("vi-VN")}đ`,
+          incomeGrowth: tutor.pending_balance > 0 
+            ? `+${((tutor.pending_balance / (totalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` 
+            : totalIncome > 0 ? "Đã nhận đủ" : "Chưa có thu nhập",
+          totalStudents: totalStudents, // ✅ Đã sửa: dùng Set để đếm unique
+          studentsGrowth: activeClasses.length > 0 ? `${activeClasses.length} lớp đang mở` : "Chưa có lớp",
+          openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
+          rating: `${tutorRating.toFixed(1)}/5.0`
+        });
+
+        // Xây dựng danh sách lớp sắp diễn ra
+        const dayMap = {
+          "Chủ Nhật": 0, "Chủ nhật": 0, "CN": 0,
+          "Thứ 2": 1, "Thứ hai": 1, "T2": 1,
+          "Thứ 3": 2, "Thứ ba": 2, "T3": 2,
+          "Thứ 4": 3, "Thứ tư": 3, "T4": 3,
+          "Thứ 5": 4, "Thứ năm": 4, "T5": 4,
+          "Thứ 6": 5, "Thứ sáu": 5, "T6": 5,
+          "Thứ 7": 6, "Thứ bảy": 6, "T7": 6
+        };
+
+        const now = new Date();
+
+        const formattedClasses = tutorCourses
+          .filter(c => c.status === "active")
+          .map((course) => {
+            const timeSlot = course.time_slot || "19:00-21:00";
+            const scheduleDays = Array.isArray(course.schedule_days) ? course.schedule_days : [];
+            
+            const startTimeStr = timeSlot.split("-")[0].trim();
+            const [startHour, startMinute] = startTimeStr.split(":").map(Number);
+
+            const startDate = course.start_date ? new Date(course.start_date) : new Date();
+            const totalWeeks = course.total_weeks || 12;
+            const endDate = new Date(startDate.getTime());
+            endDate.setDate(endDate.getDate() + (totalWeeks * 7));
+
+            if (now > endDate) return null;
+
+            let nextClassDate = null;
+            
+            for (let i = 0; i <= 7; i++) {
+              const checkDate = new Date(now.getTime());
+              checkDate.setDate(now.getDate() + i);
               
-              // Lấy giờ bắt đầu dạy (Ví dụ: "19:00-21:00" -> 19 giờ 00 phút)
-              const startTimeStr = timeSlot.split("-")[0].trim();
-              const [startHour, startMinute] = startTimeStr.split(":").map(Number);
+              if (checkDate >= startDate && checkDate <= endDate) {
+                const dayNameInJs = checkDate.getDay();
+                const isMatchDay = scheduleDays.some(d => dayMap[d] === dayNameInJs);
 
-              // Phân tích ngày bắt đầu khóa học (start_date trong DB đang lưu dạng YYYY-MM-DD)
-              const startDate = course.start_date ? new Date(course.start_date) : new Date();
-              
-              // Tính ngày kết thúc dựa vào số tuần dạy (total_weeks)
-              const totalWeeks = course.total_weeks || 12;
-              const endDate = new Date(startDate.getTime());
-              endDate.setDate(endDate.getDate() + (totalWeeks * 7));
-
-              // Nếu khóa học đã kết thúc hoàn toàn hoặc chưa tới ngày bắt đầu, đặt trọng số rất lớn để đẩy xuống cuối
-              if (now > endDate) return null;
-
-              let nextClassDate = null;
-              
-              // Vòng lặp quét từ hôm nay trở đi tối đa 7 ngày để tìm ngày trùng lịch học gần nhất
-              for (let i = 0; i <= 7; i++) {
-                const checkDate = new Date(now.getTime());
-                checkDate.setDate(now.getDate() + i);
-                
-                // Khóa học phải nằm trong khoảng thời gian đang chạy
-                if (checkDate >= startDate && checkDate <= endDate) {
-                  const dayNameInJs = checkDate.getDay(); // 0-6
-
-                  // Kiểm tra ngày này có trùng với thứ nào được xếp lịch không
-                  const isMatchDay = scheduleDays.some(d => dayMap[d] === dayNameInJs);
-
-                  if (isMatchDay) {
-                    // Set giờ học vào ngày tìm được
-                    checkDate.setHours(startHour || 0, startMinute || 0, 0, 0);
-                    
-                    // Nếu ngày là hôm nay (i === 0) nhưng giờ học đã trôi qua rồi, bỏ qua tìm ngày tiếp theo
-                    if (i === 0 && now > checkDate) {
-                      continue;
-                    }
-                    
-                    nextClassDate = checkDate;
-                    break;
+                if (isMatchDay) {
+                  checkDate.setHours(startHour || 0, startMinute || 0, 0, 0);
+                  if (i === 0 && now > checkDate) {
+                    continue;
                   }
+                  nextClassDate = checkDate;
+                  break;
                 }
               }
-
-              // Nếu không tìm được ngày nào phù hợp (khóa học chưa bắt đầu), lấy tạm ngày bắt đầu khóa học
-              if (!nextClassDate) {
-                nextClassDate = startDate;
-                nextClassDate.setHours(startHour || 0, startMinute || 0, 0, 0);
-              }
-
-              // Định dạng ngày hiển thị dạng trực quan (Ví dụ: "Hôm nay, 29/06" hoặc "Thứ 4, 01/07")
-              let dateTag = "";
-              const diffTime = nextClassDate.getTime() - now.getTime();
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-              const formattedDateString = nextClassDate.toLocaleDateString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit"
-              });
-
-              if (nextClassDate.toDateString() === now.toDateString()) {
-                dateTag = `HÔM NAY, ${formattedDateString}`;
-              } else if (diffDays === 1) {
-                dateTag = `NGÀY MAI, ${formattedDateString}`;
-              } else {
-                const weekdays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-                dateTag = `${weekdays[nextClassDate.getDay()]}, ${formattedDateString}`;
-              }
-
-              return {
-                id: course.id || course.course_id,
-                tag: dateTag,
-                title: course.title || course.class_name || "Lớp học chưa đặt tên",
-                time: timeSlot,
-                students: `${course.students?.length || 0} học viên`,
-                sortTimestamp: nextClassDate.getTime(), // Dùng timestamp chính xác làm trọng số sắp xếp
-                isUrgent: false,
-                thumbnail: course.thumbnail,
-                permanent_room_url: course.permanent_room_url || null
-              };
-            })
-            .filter(Boolean); // Loại bỏ các lớp đã kết thúc (null)
-
-          // Sắp xếp lớp có thời gian diễn ra sớm nhất lên đầu tiên
-          formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
-
-          // Gắn trạng thái khẩn cấp cho lớp đầu tiên gần nhất nếu khoảng cách thời gian dưới 1 ngày
-          if (formattedClasses.length > 0) {
-            const firstClassTime = formattedClasses[0].sortTimestamp;
-            const oneDayInMs = 24 * 60 * 60 * 1000;
-            
-            if (firstClassTime - now.getTime() < oneDayInMs) {
-              formattedClasses[0].isUrgent = true;
-              // Nếu trùng hôm nay thì đổi chữ cho sinh động
-              if (formattedClasses[0].tag.includes("HÔM NAY")) {
-                formattedClasses[0].tag = "SẮP DIỄN RA (HÔM NAY)";
-              }
             }
-          }
 
-          const limitedClasses = formattedClasses.slice(0, 3);
-          setClassesList(limitedClasses);
+            if (!nextClassDate) {
+              nextClassDate = startDate;
+              nextClassDate.setHours(startHour || 0, startMinute || 0, 0, 0);
+            }
 
-          // Build biểu đồ
-          const mockChart = [
-            { name: "Th1", income: Math.round(availableWallet * 0.15 / 1000000) || 4 },
-            { name: "Th2", income: Math.round(availableWallet * 0.3 / 1000000) || 7 },
-            { name: "Th3", income: Math.round(availableWallet * 0.45 / 1000000) || 11 },
-            { name: "Th4", income: Math.round(availableWallet * 0.6 / 1000000) || 14 },
-            { name: "Th5", income: Math.round(availableWallet * 0.8 / 1000000) || 18 },
-            { name: "Th6", income: Math.round(calculatedTotalIncome / 1000000) || 22 },
-          ];
-          setChartData(mockChart);
+            let dateTag = "";
+            const diffTime = nextClassDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const formattedDateString = nextClassDate.toLocaleDateString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit"
+            });
+
+            if (nextClassDate.toDateString() === now.toDateString()) {
+              dateTag = `HÔM NAY, ${formattedDateString}`;
+            } else if (diffDays === 1) {
+              dateTag = `NGÀY MAI, ${formattedDateString}`;
+            } else {
+              const weekdays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+              dateTag = `${weekdays[nextClassDate.getDay()]}, ${formattedDateString}`;
+            }
+
+            // Lấy danh sách học viên thực tế
+            const studentsList = course.students || [];
+            const studentNames = studentsList.map(sid => {
+              const user = users.find(u => u.user_id === sid);
+              return user ? user.full_name : sid;
+            });
+
+            return {
+              id: course.id || course.course_id,
+              tag: dateTag,
+              title: course.title || course.class_name || "Lớp học",
+              time: timeSlot,
+              students: studentsList,
+              studentNames: studentNames,
+              sortTimestamp: nextClassDate.getTime(),
+              isUrgent: diffDays < 1,
+              thumbnail: course.thumbnail,
+              permanent_room_url: course.permanent_room_url || null,
+              status: course.status
+            };
+          })
+          .filter(Boolean);
+
+        formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+        const limitedClasses = formattedClasses.slice(0, 3);
+        setClassesList(limitedClasses);
+
+        // Xây dựng biểu đồ thu nhập
+        const tutorPaidBookings = bookings.filter(b => 
+          b.tutor_id === tutor.tutor_id && 
+          (b.status === "confirmed" || b.payment_status === "paid")
+        );
+
+        const monthMap = {};
+        const monthNames = ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"];
+        
+        for (let i = 0; i < 12; i++) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - (11 - i));
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          monthMap[monthKey] = {
+            name: monthNames[date.getMonth()],
+            income: 0,
+            month: date.getMonth(),
+            year: date.getFullYear()
+          };
         }
+
+        tutorPaidBookings.forEach(b => {
+          const date = new Date(b.created_at);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          if (monthMap[monthKey]) {
+            const amount = b.payment_amount || 0;
+            const tutorEarning = Math.round(amount * 0.61);
+            monthMap[monthKey].income += tutorEarning;
+          }
+        });
+
+        const chartDataArray = Object.values(monthMap)
+          .sort((a, b) => a.year - b.year || a.month - b.month)
+          .map(item => ({
+            name: item.name,
+            income: Math.round(item.income / 1000000)
+          }));
+
+        setChartData(chartDataArray);
+
       } catch (error) {
-        console.error("Lỗi xử lý API tại trang Dashboard:", error);
+        console.error("❌ Lỗi xử lý API:", error);
       }
     };
 

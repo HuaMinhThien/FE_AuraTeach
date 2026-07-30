@@ -14,16 +14,17 @@ export default function Tutor_sec4({ chartData }) {
     return () => cancelAnimationFrame(timer);
   }, []);
 
+  // Dữ liệu mặc định chỉ khi không có dữ liệu thực tế
   const defaultData = [
-    { name: "Th5", income: 12 },
-    { name: "Th6", income: 18 },
-    { name: "Th7", income: 15 },
-    { name: "Th8", income: 22 },
-    { name: "Th9", income: 20 },
-    { name: "Th10", income: 25 },
+    { name: "Th1", income: 0 },
+    { name: "Th2", income: 0 },
+    { name: "Th3", income: 0 },
+    { name: "Th4", income: 0 },
+    { name: "Th5", income: 0 },
+    { name: "Th6", income: 0 },
   ];
 
-  const data = chartData || defaultData;
+  const data = chartData && chartData.length > 0 ? chartData : defaultData;
 
   if (!isClient) {
     return (
@@ -35,12 +36,15 @@ export default function Tutor_sec4({ chartData }) {
     );
   }
 
+  // Kiểm tra có dữ liệu thực tế không
+  const hasRealData = data.some(item => item.income > 0);
+
   return (
     <div className={styles.container}>
       <div className={styles.chartHeader}>
         <div className={styles.titleArea}>
           <h3>Thu nhập gần đây</h3>
-          <p>Biểu đồ tăng trưởng thu nhập trong 6 tháng qua</p>
+          <p>{hasRealData ? "Biểu đồ thu nhập thực tế từ các lớp học" : "Chưa có dữ liệu thu nhập"}</p>
         </div>
       </div>
 
@@ -49,9 +53,21 @@ export default function Tutor_sec4({ chartData }) {
           <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
             <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} />
-            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}M`} />
+            <YAxis 
+              stroke="#94a3b8" 
+              fontSize={12} 
+              tickLine={false} 
+              axisLine={false} 
+              tickFormatter={(value) => `${value}M`}
+              domain={[0, 'auto']}
+            />
             <Tooltip formatter={(value) => [`${value.toLocaleString()} Triệu`, "Thu nhập"]} />
-            <Bar dataKey="income" fill="#0a37a3" radius={[4, 4, 0, 0]} barSize={40} />
+            <Bar 
+              dataKey="income" 
+              fill="#0a37a3" 
+              radius={[4, 4, 0, 0]} 
+              barSize={40}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

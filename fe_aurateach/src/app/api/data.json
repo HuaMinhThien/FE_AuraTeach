@@ -269,11 +269,13 @@
       "verification_status": "Đã xác minh",
       "experience": "Dưới 1 năm",
       "id": "1f17",
-      "pending_balance": 1200000,
+      "pending_balance": 3201500,
       "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
-      "created_at": "2025-01-15T08:30:00.000Z"
+      "created_at": "2025-01-15T08:30:00.000Z",
+      "total_earnings": 3201500,
+      "updated_at": "2026-07-29T10:00:00.000Z"
     },
     {
       "tutor_id": "tutor_02",
@@ -284,11 +286,12 @@
       "verification_status": "Đã xác minh",
       "experience": "5 năm kinh nghiệm",
       "id": "c95a",
-      "pending_balance": 100000,
+      "pending_balance": 310000,
       "available_balance": 3390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_02/math-specialist",
-      "created_at": "2025-02-20T14:15:00.000Z"
+      "created_at": "2025-02-20T14:15:00.000Z",
+      "total_earnings": 310000
     },
     {
       "tutor_id": "tutor_03",
@@ -303,7 +306,8 @@
       "available_balance": 533900,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_03/literature-teacher",
-      "created_at": "2025-03-10T09:45:00.000Z"
+      "created_at": "2025-03-10T09:45:00.000Z",
+      "total_earnings": 2200000
     },
     {
       "tutor_id": "tutor_04",
@@ -318,7 +322,8 @@
       "available_balance": 44390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_04/ielts-expert",
-      "created_at": "2025-04-05T11:20:00.000Z"
+      "created_at": "2025-04-05T11:20:00.000Z",
+      "total_earnings": 1222000
     },
     {
       "tutor_id": "tutor_1782855815613",
@@ -333,7 +338,8 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_1782855815613/history",
       "created_at": "2025-05-12T16:30:00.000Z",
-      "id": "d377"
+      "id": "d377",
+      "total_earnings": 0
     },
     {
       "id": "5d17",
@@ -347,7 +353,8 @@
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
-      "created_at": "2026-07-16T09:47:30.288Z"
+      "created_at": "2026-07-16T09:47:30.288Z",
+      "total_earnings": 0
     },
     {
       "id": "4f61",
@@ -362,7 +369,8 @@
       "available_balance": 0,
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T09:59:51.707Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "total_earnings": 0
     },
     {
       "id": "7d7a",
@@ -377,7 +385,8 @@
       "available_balance": 0,
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T10:43:18.774Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "total_earnings": 0
     },
     {
       "id": "45da",
@@ -392,7 +401,8 @@
       "available_balance": 0,
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T11:10:32.442Z",
-      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
+      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu",
+      "total_earnings": 0
     },
     {
       "id": "3a4c",
@@ -407,7 +417,8 @@
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-17T08:49:56.031Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "total_earnings": 0
     }
   ],
   "students": [
@@ -465,7 +476,9 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
     },
     {
       "id": "8ab5",
@@ -488,7 +501,9 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
     },
     {
       "id": "fad2",
@@ -915,7 +930,8 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "user_1782855725159_tqroz6"
+        "user_1782855725159_tqroz6",
+        "u-student-1"
       ]
     },
     {
@@ -940,8 +956,55 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "u-student-1"
+        "u-student-1",
+        "user_1782855725159_tqroz6"
       ]
+    },
+    {
+      "id": "8Dm2sl1jb6Q",
+      "course_id": "course-1785266029907",
+      "tutor_id": "tutor_01",
+      "title": "hihi",
+      "category_id": "cat-11",
+      "level": "Cấp 1",
+      "description": "sdfdsafedsf",
+      "max_students": 1,
+      "hourly_rate": 100000,
+      "start_date": "2026-07-30",
+      "end_date": "2026-08-06",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 2"
+      ],
+      "time_slot": "23:30-12:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
+    },
+    {
+      "id": "InHiOrTy1Fk",
+      "course_id": "course-1785271005161",
+      "tutor_id": "tutor_01",
+      "title": "dsfsadf",
+      "category_id": "cat-03",
+      "level": "Cấp 1",
+      "description": "adfsgrga",
+      "max_students": 1,
+      "hourly_rate": 50000,
+      "start_date": "2026-07-30",
+      "end_date": "2026-08-06",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 5"
+      ],
+      "time_slot": "21:00-22:30",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
     }
   ],
   "reviews": [
@@ -997,10 +1060,10 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-07-01T10:00:00Z",
       "created_at": "2026-07-01T10:00:00Z",
-      "updated_at": "2026-07-01T10:00:00Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "Học viên đã đăng ký thành công",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1013,15 +1076,15 @@
       "student_id": "u-student-1",
       "course_id": "c-02",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-06-30T20:42:52.004Z",
       "created_at": "2026-06-30T20:42:52.004Z",
-      "updated_at": "2026-06-30T20:42:52.004Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 120000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000000",
       "id": "TVt4v5vvMxM"
     },
     {
@@ -1029,15 +1092,15 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-06-30T23:20:49.566Z",
       "created_at": "2026-06-30T23:20:49.566Z",
-      "updated_at": "2026-06-30T23:20:49.566Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000001",
       "id": "rA_YHb4Z_lU"
     },
     {
@@ -1048,12 +1111,12 @@
       "status": "confirmed",
       "booking_date": "2026-06-30T23:30:29.275Z",
       "created_at": "2026-06-30T23:30:29.275Z",
-      "updated_at": "2026-06-30T23:30:29.275Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 180000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000002",
       "id": "KVlWv2aShoo"
     },
     {
@@ -1065,12 +1128,12 @@
       "status": "confirmed",
       "booking_date": "2026-07-01T05:50:00.460Z",
       "created_at": "2026-07-01T05:50:00.460Z",
-      "updated_at": "2026-07-01T05:50:00.460Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 130000,
-      "payment_method": null,
-      "transaction_id": null
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000003"
     },
     {
       "booking_id": "bk-1783023994671",
@@ -1080,7 +1143,7 @@
       "status": "confirmed",
       "booking_date": "2026-07-02T20:26:34.672Z",
       "created_at": "2026-07-02T20:26:34.672Z",
-      "updated_at": "2026-07-02T20:26:34.672Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1093,12 +1156,12 @@
       "student_id": "u-student-1",
       "course_id": "course-1783032321908",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:46:59.478Z",
       "created_at": "2026-07-02T22:46:59.478Z",
-      "updated_at": "2026-07-02T22:46:59.478Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,
@@ -1109,12 +1172,12 @@
       "student_id": "user_1782855725159_tqroz6",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:50:29.904Z",
       "created_at": "2026-07-02T22:50:29.904Z",
-      "updated_at": "2026-07-02T22:50:29.904Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,
@@ -1167,6 +1230,86 @@
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null
+    },
+    {
+      "booking_id": "bk-1784967517416",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-25T08:18:37.416Z",
+      "created_at": "2026-07-25T08:18:37.416Z",
+      "updated_at": "2026-07-25T08:18:37.416Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 1800000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "F1sWITcsKb4"
+    },
+    {
+      "booking_id": "bk-1785229692282",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course-1784279882327",
+      "tutor_id": "tutor_1784195991707",
+      "status": "pending",
+      "booking_date": "2026-07-28T09:08:12.282Z",
+      "created_at": "2026-07-28T09:08:12.282Z",
+      "updated_at": "2026-07-28T09:08:12.282Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 1800000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "c_cyHGHuYCc"
+    },
+    {
+      "booking_id": "bk-1785229818714",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T09:10:18.714Z",
+      "created_at": "2026-07-28T09:10:18.714Z",
+      "updated_at": "2026-07-28T09:10:18.714Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 1920000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "MPRn4vlsiEQ"
+    },
+    {
+      "booking_id": "bk-1785266048036",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course-1785266029907",
+      "tutor_id": "tutor_01",
+      "status": "confirmed",
+      "booking_date": "2026-07-28T19:14:08.036Z",
+      "created_at": "2026-07-28T19:14:08.036Z",
+      "updated_at": "2026-07-28T19:14:16.639Z",
+      "notes": "",
+      "payment_status": "paid",
+      "payment_amount": 100000,
+      "payment_method": "qr",
+      "transaction_id": "txn_1785266056639",
+      "id": "3f4PLJS_yNs"
+    },
+    {
+      "booking_id": "bk-1785271092634",
+      "student_id": "u-student-1",
+      "course_id": "course-1783032386448",
+      "tutor_id": "tutor_01",
+      "status": "confirmed",
+      "booking_date": "2026-07-28T20:38:12.634Z",
+      "created_at": "2026-07-28T20:38:12.634Z",
+      "updated_at": "2026-07-28T20:38:16.641Z",
+      "notes": "",
+      "payment_status": "paid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": "txn_1785271096641",
+      "id": "hOEsO0BMKSM"
     }
   ],
   "payments": [
@@ -1278,9 +1421,9 @@
         "user_1782855725159_tqroz6",
         "tutor_01"
       ],
-      "last_message": "SADFắedf",
-      "last_message_time": "2026-07-23T21:38:25.285Z",
-      "unread_count": 1
+      "last_message": "ăedsfawedf",
+      "last_message_time": "2026-07-29T12:31:44.633Z",
+      "unread_count": 0
     }
   ],
   "messages": [
@@ -1811,6 +1954,133 @@
       "content": "SADFắedf",
       "created_at": "2026-07-23T21:38:25.273Z",
       "is_read": false
+    },
+    {
+      "id": "PEqbmMsdar8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "íuhgdroiaer",
+      "created_at": "2026-07-28T14:07:08.411Z",
+      "is_read": false
+    },
+    {
+      "id": "YWNWTAW-ZzQ",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ÀDWERFư",
+      "created_at": "2026-07-28T14:08:06.167Z",
+      "is_read": false
+    },
+    {
+      "id": "Wi9UfP41Pxc",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "sdfhsrhgehthsh",
+      "created_at": "2026-07-29T12:16:56.863Z",
+      "is_read": false
+    },
+    {
+      "id": "Vi7E0xT7E2M",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sADgREGAREG",
+      "created_at": "2026-07-29T12:17:21.652Z",
+      "is_read": false
+    },
+    {
+      "id": "6T1FURIkCLk",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "dgxfhsxdfhsr",
+      "created_at": "2026-07-29T12:31:37.598Z",
+      "is_read": false
+    },
+    {
+      "id": "licmTGqjV6I",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "dsafaesdf",
+      "created_at": "2026-07-29T12:31:42.195Z",
+      "is_read": false
+    },
+    {
+      "id": "u0tXxB2yEmE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ăedsfawedf",
+      "created_at": "2026-07-29T12:31:44.620Z",
+      "is_read": false
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_1743000000000_abc123",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Gia sư môn Toán học'.",
+      "related_id": "bk-001",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000001_def456",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Gia sư môn Toán học' với gia sư.",
+      "related_id": "bk-001",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000002_ghi789",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Toán hình học không gian nâng cao'.",
+      "related_id": "bk-1782862229275",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000003_jkl012",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Toán hình học không gian nâng cao' với gia sư.",
+      "related_id": "bk-1782862229275",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-07-29T10:00:00.000Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

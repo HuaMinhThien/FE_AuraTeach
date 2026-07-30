@@ -54,7 +54,7 @@ export async function POST(request) {
     const body = await request.json();
     const { courseId, studentId, tutorId, notes = "", paymentMethod = "wallet" } = body;
 
-    console.log("Tạo booking với dữ liệu:", { courseId, studentId, tutorId, notes, paymentMethod });
+    console.log("📝 Tạo booking với dữ liệu:", { courseId, studentId, tutorId, notes, paymentMethod });
 
     if (!courseId || !studentId || !tutorId) {
       return NextResponse.json(
@@ -102,8 +102,7 @@ export async function POST(request) {
       );
     }
 
-    // 5. KIỂM TRA TRÙNG LỊCH - FIX
-    // Lấy tất cả bookings của student (chỉ lấy pending và confirmed)
+    // 5. KIỂM TRA TRÙNG LỊCH
     const allBookingsRes = await fetch(`${API_BASE}/bookings`, { cache: "no-store" });
     const allBookings = await allBookingsRes.json();
     
@@ -112,15 +111,11 @@ export async function POST(request) {
       (b.status === 'pending' || b.status === 'confirmed')
     );
 
-    console.log(`Tìm thấy ${studentActiveBookings.length} booking đang hoạt động của student`);
+    console.log(`📋 Tìm thấy ${studentActiveBookings.length} booking đang hoạt động của student`);
 
-    // Nếu student chưa có booking nào, bỏ qua kiểm tra trùng lịch
-    if (studentActiveBookings.length === 0) {
-      console.log("Student chưa có booking nào, bỏ qua kiểm tra trùng lịch");
-    } else {
-      // Lấy các course mà student đã booking
+    if (studentActiveBookings.length > 0) {
       const bookedCourseIds = studentActiveBookings.map(b => b.course_id);
-      console.log("Course IDs đã booking:", bookedCourseIds);
+      console.log("📋 Course IDs đã booking:", bookedCourseIds);
 
       const bookedCoursesRes = await Promise.all(
         bookedCourseIds.map(id => 
@@ -130,45 +125,32 @@ export async function POST(request) {
         )
       );
       const bookedCourses = bookedCoursesRes.flat();
-      console.log(`Tìm thấy ${bookedCourses.length} course đã booking`);
+      console.log(`📋 Tìm thấy ${bookedCourses.length} course đã booking`);
 
-      // Kiểm tra trùng lịch - CHỈ KIỂM TRA KHI CÓ ÍT NHẤT 1 NGÀY TRÙNG
       let hasConflict = false;
       let conflictDetails = [];
 
       for (const bookedCourse of bookedCourses) {
         if (!bookedCourse) continue;
         
-        // Kiểm tra ngày học trùng
         const bookedDays = bookedCourse.schedule_days || [];
         const newDays = course.schedule_days || [];
         
         const commonDays = bookedDays.filter(day => newDays.includes(day));
         
-        if (commonDays.length === 0) {
-          console.log(`Không trùng ngày với course ${bookedCourse.course_id}`);
-          continue;
-        }
+        if (commonDays.length === 0) continue;
 
-        console.log(`Trùng ngày ${commonDays.join(', ')} với course ${bookedCourse.course_id}`);
+        console.log(`⚠️ Trùng ngày ${commonDays.join(', ')} với course ${bookedCourse.course_id}`);
 
-        // Kiểm tra khung giờ trùng
         const bookedTimeSlot = bookedCourse.time_slot || "";
         const newTimeSlot = course.time_slot || "";
 
-        // Nếu không có thông tin giờ học, coi như không trùng
-        if (!bookedTimeSlot || !newTimeSlot) {
-          console.log(`Thiếu thông tin giờ học, bỏ qua kiểm tra`);
-          continue;
-        }
+        if (!bookedTimeSlot || !newTimeSlot) continue;
 
         const [bookedStart, bookedEnd] = bookedTimeSlot.split("-").map(t => t.trim());
         const [newStart, newEnd] = newTimeSlot.split("-").map(t => t.trim());
 
-        if (!bookedStart || !bookedEnd || !newStart || !newEnd) {
-          console.log(`Không parse được giờ học, bỏ qua kiểm tra`);
-          continue;
-        }
+        if (!bookedStart || !bookedEnd || !newStart || !newEnd) continue;
 
         const toMinutes = (time) => {
           try {
@@ -188,7 +170,6 @@ export async function POST(request) {
         const newStartMin = toMinutes(newStart);
         const newEndMin = toMinutes(newEnd);
 
-        // Kiểm tra khoảng thời gian trùng nhau
         const isOverlap = newStartMin < bookedEndMin && newEndMin > bookedStartMin;
 
         if (isOverlap) {
@@ -199,9 +180,7 @@ export async function POST(request) {
             days: commonDays,
             time_slot: bookedTimeSlot
           });
-          console.log(`TRÙNG LỊCH với course ${bookedCourse.course_id}: ${bookedTimeSlot}`);
-        } else {
-          console.log(`Không trùng giờ với course ${bookedCourse.course_id}`);
+          console.log(`❌ TRÙNG LỊCH với course ${bookedCourse.course_id}: ${bookedTimeSlot}`);
         }
       }
 
@@ -221,6 +200,9 @@ export async function POST(request) {
     }
 
     // 6. Tạo booking mới
+    // 🔥 QUAN TRỌNG: Nếu paymentMethod là "wallet", set payment_status = "paid"
+    const isPaid = paymentMethod === "wallet";
+    
     const newBooking = {
       booking_id: `bk-${Date.now()}`,
       student_id: studentId,
@@ -231,10 +213,10 @@ export async function POST(request) {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       notes: notes || "",
-      payment_status: paymentMethod === "wallet" ? "paid" : "unpaid",
-      payment_amount: course.hourly_rate || course.price_per_session || 0,
+      payment_status: isPaid ? "paid" : "unpaid",
+      payment_amount: (course.hourly_rate || course.price_per_session || 0) * (course.total_weeks || 1),
       payment_method: paymentMethod || null,
-      transaction_id: paymentMethod === "wallet" ? `txn-${Date.now()}` : null
+      transaction_id: isPaid ? `txn-${Date.now()}` : null
     };
 
     console.log("💾 Lưu booking:", newBooking);
@@ -248,12 +230,12 @@ export async function POST(request) {
 
     if (!createRes.ok) {
       const errorText = await createRes.text();
-      console.error("Lỗi tạo booking:", errorText);
+      console.error("❌ Lỗi tạo booking:", errorText);
       throw new Error(`Không thể tạo booking: ${errorText}`);
     }
 
     const createdBooking = await createRes.json();
-    console.log("Booking created:", createdBooking);
+    console.log("✅ Booking created:", createdBooking);
 
     // 7. Cập nhật course: thêm student vào danh sách
     const updatedStudents = [...currentStudents, studentId];
@@ -271,8 +253,9 @@ export async function POST(request) {
 
     if (!updateRes.ok) {
       const errorText = await updateRes.text();
-      console.error("Lỗi cập nhật course:", errorText);
+      console.error("❌ Lỗi cập nhật course:", errorText);
       
+      // Rollback: Xóa booking vừa tạo
       await fetch(`${API_BASE}/bookings/${createdBooking.id}`, {
         method: "DELETE"
       });
@@ -280,7 +263,182 @@ export async function POST(request) {
     }
 
     const updatedCourse = await updateRes.json();
-    console.log("Course updated:", updatedCourse);
+    console.log("✅ Course updated:", updatedCourse);
+
+    // ============================================================
+    // 🔥 PHẦN QUAN TRỌNG: GỬI THÔNG BÁO & CẬP NHẬT VÍ TUTOR
+    // ============================================================
+    try {
+      // === 1. TÌM THÔNG TIN TUTOR ===
+      let tutorInfo = null;
+      let tutorUserId = null;
+      let tutorIdForSearch = tutorId;
+
+      console.log("🔍 Đang tìm tutor với tutor_id:", tutorIdForSearch);
+
+      // Thử tìm theo tutor_id trước
+      const tutorRes1 = await fetch(`${API_BASE}/tutors?tutor_id=${tutorIdForSearch}`, { cache: "no-store" });
+      const tutorData1 = await tutorRes1.json();
+      const tutorArr1 = Array.isArray(tutorData1) ? tutorData1 : [];
+      
+      if (tutorArr1.length > 0) {
+        tutorInfo = tutorArr1[0];
+        tutorUserId = tutorInfo.user_id;
+        console.log("✅ Tìm thấy tutor theo tutor_id:", tutorInfo.tutor_id, "-> user_id:", tutorUserId);
+      } else {
+        // Fallback: tìm theo user_id (trường hợp tutorId là user_id)
+        console.log("🔍 Không tìm thấy theo tutor_id, thử tìm theo user_id:", tutorIdForSearch);
+        const tutorRes2 = await fetch(`${API_BASE}/tutors?user_id=${tutorIdForSearch}`, { cache: "no-store" });
+        const tutorData2 = await tutorRes2.json();
+        const tutorArr2 = Array.isArray(tutorData2) ? tutorData2 : [];
+        
+        if (tutorArr2.length > 0) {
+          tutorInfo = tutorArr2[0];
+          tutorUserId = tutorInfo.user_id;
+          console.log("✅ Tìm thấy tutor theo user_id:", tutorUserId);
+        }
+      }
+
+      if (!tutorInfo) {
+        console.error("❌ Không tìm thấy tutor cho tutorId:", tutorId);
+      } else {
+        console.log("✅ Tutor info:", {
+          tutor_id: tutorInfo.tutor_id,
+          user_id: tutorInfo.user_id,
+          pending_balance: tutorInfo.pending_balance,
+          available_balance: tutorInfo.available_balance
+        });
+      }
+
+      // === 2. LẤY TÊN HỌC VIÊN ===
+      let studentName = "Học viên";
+      try {
+        const studentRes = await fetch(`${API_BASE}/users?user_id=${studentId}`, { cache: "no-store" });
+        const studentData = await studentRes.json();
+        const studentArr = Array.isArray(studentData) ? studentData : [];
+        if (studentArr.length > 0) {
+          studentName = studentArr[0]?.full_name || "Học viên";
+          console.log("👤 Student name:", studentName);
+        }
+      } catch (e) {
+        console.error("⚠️ Lỗi tìm student:", e);
+      }
+
+      const courseTitle = course.title || "Khóa học";
+
+      // === 3. CẬP NHẬT VÍ TUTOR ===
+      // 🔥 Điều kiện: payment_method = "wallet" HOẶC payment_status = "paid"
+      const shouldUpdateWallet = (newBooking.payment_method === 'wallet' || newBooking.payment_status === 'paid');
+      console.log(`💰 Kiểm tra cập nhật ví: payment_method=${newBooking.payment_method}, payment_status=${newBooking.payment_status}, shouldUpdate=${shouldUpdateWallet}`);
+
+      if (tutorInfo && shouldUpdateWallet) {
+        const tutorAmount = newBooking.payment_amount || 0;
+        const currentPending = tutorInfo.pending_balance || 0;
+        const currentAvailable = tutorInfo.available_balance || 0;
+        const currentTotalEarnings = tutorInfo.total_earnings || 0;
+        
+        // Phí sàn 39%: Tutor nhận 61%, Admin giữ 39%
+        const tutorEarning = Math.round(tutorAmount * 0.61);
+        const adminFee = tutorAmount - tutorEarning;
+
+        console.log(`💰 Cập nhật ví tutor:`, {
+          tutorId: tutorInfo.tutor_id,
+          tutorUserId: tutorUserId,
+          amount: tutorAmount,
+          tutorEarning: tutorEarning,
+          adminFee: adminFee,
+          currentPending: currentPending,
+          newPending: currentPending + tutorEarning
+        });
+
+        // Cập nhật pending_balance và total_earnings
+        const updateWalletRes = await fetch(`${API_BASE}/tutors/${tutorInfo.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pending_balance: currentPending + tutorEarning,
+            total_earnings: currentTotalEarnings + tutorEarning,
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        if (updateWalletRes.ok) {
+          console.log(`💰 [Tutor Wallet] Updated: ${currentPending} → ${currentPending + tutorEarning}`);
+        } else {
+          console.error("❌ Lỗi cập nhật ví tutor:", await updateWalletRes.text());
+        }
+      } else {
+        console.log("⏭️ Bỏ qua cập nhật ví (không đủ điều kiện)");
+      }
+
+      // === 4. GỬI THÔNG BÁO CHO TUTOR ===
+      if (tutorUserId) {
+        const nowTime = new Date().toISOString();
+        const tutorNotifData = {
+          id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          receiver_id: tutorUserId,
+          receiver_role: 'tutor',
+          type: 'booking',
+          title: '📩 Đăng ký khóa học mới',
+          message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}".`,
+          related_id: createdBooking.booking_id,
+          related_type: 'booking',
+          is_read: false,
+          created_at: nowTime,
+        };
+
+        console.log("📬 Gửi notification cho tutor:", {
+          receiver_id: tutorUserId,
+          title: tutorNotifData.title
+        });
+
+        const tutorNotifRes = await fetch(`${API_BASE}/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tutorNotifData),
+        });
+
+        if (tutorNotifRes.ok) {
+          console.log(`📬 Tutor notif sent successfully to: ${tutorUserId}`);
+        } else {
+          console.error("❌ Lỗi gửi tutor notification:", await tutorNotifRes.text());
+        }
+      }
+
+      // === 5. GỬI THÔNG BÁO CHO ADMIN ===
+      const adminNotifData = {
+        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        receiver_id: 'u-admin-1',
+        receiver_role: 'admin',
+        type: 'booking',
+        title: '📊 Đăng ký khóa học mới',
+        message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}" với gia sư.`,
+        related_id: createdBooking.booking_id,
+        related_type: 'booking',
+        is_read: false,
+        created_at: new Date().toISOString(),
+      };
+
+      console.log("📬 Gửi notification cho admin:", {
+        receiver_id: 'u-admin-1',
+        title: adminNotifData.title
+      });
+
+      const adminNotifRes = await fetch(`${API_BASE}/notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adminNotifData),
+      });
+
+      if (adminNotifRes.ok) {
+        console.log(`📬 Admin notif sent successfully`);
+      } else {
+        console.error("❌ Lỗi gửi admin notification:", await adminNotifRes.text());
+      }
+
+    } catch (notifError) {
+      console.error("⚠️ Lỗi trong quá trình gửi thông báo/cập nhật ví:", notifError);
+    }
 
     return NextResponse.json({
       success: true,
@@ -289,7 +447,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error("Lỗi POST /api/bookings:", error);
+    console.error("❌ Lỗi POST /api/bookings:", error);
     return NextResponse.json(
       { success: false, message: error.message || "Lỗi server" },
       { status: 500 }

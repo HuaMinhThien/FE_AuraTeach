@@ -17,11 +17,19 @@ export async function GET() {
       .filter(u => u.role === 'tutor')
       .map(user => {
         const detail = tutors.find(t => t.user_id === user.user_id) || {};
-        return { ...user, ...detail };
+        return { 
+          ...user, 
+          ...detail,
+          // Đảm bảo các trường ví được hiển thị
+          pending_balance: detail.pending_balance || 0,
+          available_balance: detail.available_balance || 0,
+          total_earnings: detail.total_earnings || 0,
+        };
       });
 
     return NextResponse.json({ success: true, data: tutorList });
   } catch (error) {
+    console.error("❌ Lỗi GET tutor-management:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
@@ -59,6 +67,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ success: true, message: "Cập nhật dữ liệu gia sư lên Backend thành công!" });
   } catch (error) {
+    console.error("❌ Lỗi PUT tutor-management:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
