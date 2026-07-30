@@ -86,11 +86,11 @@ export default function LoginPage() {
 
       // Tạo userInfo
       const userInfo = {
-        id: data.user.user_id,
+        user_id: data.user.user_id,
         name: data.user.full_name,
         email: data.user.email,
         role: data.user.role,
-        avatar: data.user.avatar || "/img/default-avatar.png",
+        avatar: data.user.avatar || "/img/avt.jpg",
       };
 
       console.log("✅ UserInfo to save:", userInfo);

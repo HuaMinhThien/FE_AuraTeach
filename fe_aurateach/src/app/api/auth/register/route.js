@@ -126,7 +126,7 @@ export async function POST(request) {
       password: password,
       full_name: fullName,
       phone: phone || "",
-      avatar: "/img/default-avatar.svg",
+      avatar: "/img/avt/avt.jpg",
       role: role,
       status: "active",
       created_at: new Date().toISOString()
