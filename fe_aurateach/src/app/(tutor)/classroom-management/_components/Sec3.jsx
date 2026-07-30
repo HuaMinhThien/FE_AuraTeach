@@ -6,16 +6,17 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
   if (!selectedClass) return null;
 
   const handleJoinRoom = () => {
-    const url = selectedClass.permanent_room_url;
+    // 💡 Lấy link Google Meet từ phần tử đầu tiên của bảng course_schedules
+    const url = selectedClass.schedules && selectedClass.schedules.length > 0 
+      ? selectedClass.schedules[0].meeting_platform 
+      : null;
     
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học Google Meet!");
+      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học Google Meet trong lịch trình!");
     }
   };
-  console.log(selectedClass.permanent_room_url);
-  
 
   return (
     <div className={styles.modalOverlay} onClick={onCloseModal}>
@@ -26,21 +27,28 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
         </div>
 
         <div className={styles.modalBody}>
-          <h3 className={styles.mClassName}>{selectedClass.class_name}</h3>
+          <h3 className={styles.mClassName}>{selectedClass.title}</h3>
+          
           <div className={styles.mBadgeRow}>
             {getStatusBadge(selectedClass.status)}
             <span>Thời gian học: <strong>{selectedClass.total_weeks} tuần</strong></span>
           </div>
 
           <div className={styles.mInfoGrid}>
-            <p>📅 <strong>Ngày mở lớp:</strong> {selectedClass.start_date}</p>
-            <p>📅 <strong>Ngày kết thúc:</strong> {selectedClass.end_date}</p>
+            <p>🏷️ <strong>Mã lớp:</strong> {selectedClass.course_id}</p>
+            <p>💰 <strong>Học phí/giờ:</strong> {Number(selectedClass.hourly_rate).toLocaleString("vi-VN")} đ</p>
+            <p>👥 <strong>Sĩ số:</strong> {selectedClass.current_students} / {selectedClass.max_students} học viên</p>
+            <p>📊 <strong>Cấp độ:</strong> {selectedClass.level}</p>
           </div>
 
-          <div>
-            {/* <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
-              🔗 <strong>Phòng học cố định:</strong> {selectedClass.permanent_room_url || "Chưa thiết lập"}
-            </p> */}
+          {/* Phần mô tả lớp học */}
+          {selectedClass.description && (
+            <div style={{ margin: "12px 0", fontSize: "14px", color: "#4b5563" }}>
+              <p>📝 <strong>Mô tả:</strong> {selectedClass.description}</p>
+            </div>
+          )}
+
+          <div style={{ marginTop: "16px" }}>
             <button 
               type="button"
               onClick={handleJoinRoom}
@@ -62,12 +70,26 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
             </button>
           </div>
 
+          {/* Lịch học định kỳ & Link Google Meet (Lấy từ quan hệ course_schedules) */}
           <div className={styles.scheduleSection}>
-            <h4>📆 Lịch học định kỳ:</h4>
-            <div className={styles.dayBadges}>
-              {selectedClass.schedule_days && selectedClass.schedule_days.map((day, idx) => (
-                <span key={idx} className={styles.dayBadge}>{day}</span>
-              ))}
+            <h4>📆 Lịch học định kỳ & Link Google Meet:</h4>
+            <div className={styles.dayBadges} style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+              {selectedClass.schedules && selectedClass.schedules.length > 0 ? (
+                selectedClass.schedules.map((sch, idx) => (
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f9fafb", padding: "8px 12px", borderRadius: "6px", border: "1px solid #e5e7eb", fontSize: "13px" }}>
+                    <span>📅 <strong>{sch.day_of_week}</strong> ({sch.time_slot})</span>
+                    {sch.meeting_platform ? (
+                      <a href={sch.meeting_platform} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb", textDecoration: "underline", fontWeight: "500" }}>
+                        🔗 Link Meet riêng
+                      </a>
+                    ) : (
+                      <span style={{ color: "#9ca3af", fontStyle: "italic" }}>Chưa có link</span>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <span style={{ fontSize: "13px", color: "#6b7280" }}>Đang cập nhật lịch học tuần</span>
+              )}
             </div>
           </div>
 
@@ -87,7 +109,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
                 </thead>
                 <tbody>
                   {selectedClass.students.map((st, index) => (
-                    <tr key={st.student_id}>
+                    <tr key={st.student_id || index}>
                       <td>{index + 1}</td>
                       <td><strong>{st.full_name}</strong></td>
                       <td>{st.email}</td>
@@ -101,7 +123,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
 
         <div className={styles.modalFooter}>
           {selectedClass.status === "active" && (
-            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.class_id)}>
+            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.course_id)}>
                Khóa lớp (Dừng nhận thêm)
             </button>
           )}

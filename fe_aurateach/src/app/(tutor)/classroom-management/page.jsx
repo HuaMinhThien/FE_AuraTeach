@@ -23,12 +23,27 @@ export default function ClassroomManagementPage() {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Gọi qua courseService.getCourses với các tham số lọc
+        // 🛡️ Lấy user_id từ cookie an toàn trước khi gọi API
+        let currentUserId = "";
+        const cookies = document.cookie.split("; ");
+        const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
+
+        if (userInfoCookie) {
+          try {
+            const userInfo = JSON.parse(decodeURIComponent(userInfoCookie.split("=")[1]));
+            currentUserId = userInfo.user_id || userInfo.id || "";
+          } catch (err) {
+            console.error("Lỗi phân tích cookie user_info:", err);
+          }
+        }
+
+        // Gọi qua courseService.getCourses với các tham số lọc kèm theo tutor_id
         const resData = await courseService.getCourses({
           page: currentPage,
           limit: 6,
           status: statusFilter,
-          search: search
+          search: search,
+          tutor_id: currentUserId // 👈 Đã được định nghĩa chính xác
         });
         
         if (isMounted && resData) {
@@ -62,16 +77,16 @@ export default function ClassroomManagementPage() {
     if (!confirmClose) return;
 
     try {
-      // Gọi service cập nhật trạng thái thông qua courseService
       const result = await courseService.updateCourseStatus(classId, { status: "closed" });
 
       if (result && (result.success !== false)) {
-        // Cập nhật State giao diện ngay lập tức
+        // 💡 1. Cập nhật ngay lập tức trạng thái trong danh sách lớp (Grid)
         setClasses(prev => 
-          prev.map(c => (c.class_id === classId || c.id === classId) ? { ...c, status: "closed" } : c)
+          prev.map(c => (c.course_id === classId || c.id === classId) ? { ...c, status: "closed" } : c)
         );
 
-        if (selectedClass && (selectedClass.class_id === classId || selectedClass.id === classId)) {
+        // 💡 2. Cập nhật ngay lập tức trạng thái trong modal chi tiết đang mở (nếu có)
+        if (selectedClass && (selectedClass.course_id === classId || selectedClass.id === classId)) {
           setSelectedClass(prev => ({ ...prev, status: "closed" }));
         }
 

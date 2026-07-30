@@ -33,7 +33,7 @@ export default function Sidebar() {
 
                 // Gọi song song thông qua conversationService và tutorService chuẩn
                 const [convRes, tutorsRes] = await Promise.all([
-                    conversationService.getConversations(),
+                    // conversationService.getConversations(),
                     tutorService.getTutors()
                 ]);
                 

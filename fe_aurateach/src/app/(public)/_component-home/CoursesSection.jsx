@@ -36,18 +36,31 @@ function CoursesSection() {
       setLoading(true);
       try {
         const params = {
-          category_id: activeTabId,
+          category_id: activeTabId === 'All' ? '' : activeTabId,
           page: currentPage,
-          per_page: 8, // Trực tiếp quy định số lượng item lấy trên mỗi trang là 8
+          per_page: 8,
           sort_by: 'current_students',
           direction: 'asc'
         };
 
-        const response = await courseService.getCourses(params);
-        
-        // Laravel paginate trả về object chứa .data và .last_page
-        setCourses(response.data || []);
-        setTotalPages(response.last_page || 1);
+        const res = await courseService.getCourses(params);
+        console.log("Check data phân trang từ BE (CHI TIẾT):", res);
+
+        // Kiểm tra xem res có phải là mảng hay object
+        if (Array.isArray(res)) {
+            console.warn("⚠️ CẢNH BÁO: BE đang trả về MẢNG THUẦN TÚY thay vì Object Phân Trang!");
+            setCourses(res);
+            setTotalPages(1);
+        } else {
+            // Nếu là Object phân trang của Laravel
+            const coursesList = res.data || [];
+            setCourses(coursesList);
+            
+            // Lấy last_page linh hoạt mọi ngóc ngách
+            const pages = res.last_page || res.meta?.last_page || 1;
+            console.log("🔢 Tổng số trang tính được:", pages);
+            setTotalPages(pages);
+        }
       } catch (error) {
         console.error('Lỗi tải danh sách lớp học:', error);
         setCourses([]);

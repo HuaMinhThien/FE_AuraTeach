@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./create-class.module.css"; 
 
+// Import các service đã chuẩn hóa
+import { tutorService } from "@/services/tutorService";
+import { categoryService } from "@/services/categoryService";
+import { courseService } from "@/services/courseService";
+
 const DEFAULT_IMAGES = [
   "/img/class/default-class-1.jpg",
   "/img/class/default-class-2.png",
@@ -56,7 +61,7 @@ export default function CreateClassPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
 
-  //  HÀM NGĂN CHẶN BẢO VỆ TRANG: Kiểm tra verification_status
+  // Kiểm tra quyền hạn gia sư
   useEffect(() => {
     let isMounted = true;
 
@@ -66,7 +71,7 @@ export default function CreateClassPage() {
         const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
 
         if (!userInfoCookie) {
-          alert(" Vui lòng đăng nhập để thực hiện chức năng này!");
+          alert("⚠️ Vui lòng đăng nhập để thực hiện chức năng này!");
           router.push("/login");
           return;
         }
@@ -80,23 +85,19 @@ export default function CreateClassPage() {
           return;
         }
 
-        // Gọi API lấy hồ sơ tutor
-        const res = await fetch(`http://localhost:3007/tutors?user_id=${userInfo.user_id}`);
-        if (res.ok) {
-          const data = await res.json();
-          const tutor = data[0];
+        const tutors = await tutorService.getByUserId(userInfo.user_id);
+        const tutor = Array.isArray(tutors) ? tutors[0] : tutors;
 
-          if (!tutor || (tutor.verification_status !== "approved" && tutor.verification_status !== "Đã xác minh")) {
-            if (isMounted) {
-              alert("⚠️ Hồ sơ gia sư của bạn chưa được xét duyệt thành công. Bạn chưa thể tạo lớp học mới!");
-              router.push("/classroom-management");
-            }
-            return;
-          }
-
+        if (!tutor || (tutor.verification_status !== "approved" && tutor.verification_status !== "Đã xác minh")) {
           if (isMounted) {
-            setIsAllowed(true);
+            alert("⚠️ Hồ sơ gia sư của bạn chưa được xét duyệt thành công. Bạn chưa thể tạo lớp học mới!");
+            router.push("/classroom-management");
           }
+          return;
+        }
+
+        if (isMounted) {
+          setIsAllowed(true);
         }
       } catch (error) {
         console.error("Lỗi kiểm tra quyền hạn gia sư:", error);
@@ -115,23 +116,21 @@ export default function CreateClassPage() {
     };
   }, [router]);
 
-  // Tự động gọi API lấy danh mục động khi màn hình load thành công
+  // Lấy danh mục động thông qua categoryService
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:3007/categories");
-        if (res.ok) {
-          const data = await res.json();
+        const data = await categoryService.getCategories();
+        if (data) {
           setCategoriesList(data);
         }
       } catch (error) {
-        console.error("Lỗi lấy danh mục môn học từ JSON Server:", error);
+        console.error("Lỗi lấy danh mục môn học:", error);
       }
     };
     fetchCategories();
   }, []);
 
-  // Hàm kiểm tra ngày bắt đầu có hợp lệ không
   const validateStartDate = (dateString) => {
     if (!dateString) return true;
     
@@ -165,7 +164,7 @@ export default function CreateClassPage() {
     endDate = end.toISOString().split("T")[0];
   }
 
-  // Logic kiểm tra trùng lịch Real-time
+// Kiểm tra trùng lịch Real-time
   useEffect(() => {
     const checkScheduleConflict = async () => {
       if (!startDate || !endDate || selectedDays.length === 0 || !startTime || !endTime) {
@@ -179,23 +178,23 @@ export default function CreateClassPage() {
 
       try {
         const timeSlot = `${startTime}-${endTime}`;
-        const queryParams = new URLSearchParams({
+        const params = {
           start: startDate,
           end: endDate,
           days: selectedDays.join(","),
           slot: timeSlot,
-        });
+        };
 
-        const res = await fetch(`/api/classes/check-conflict?${queryParams}`);
-        const result = await res.json();
+        // 💡 Gọi trực tiếp qua courseService thay vì dùng fetch thô dẫn đến sai đường dẫn API
+        const result = await courseService.checkScheduleConflict(params);
 
-        if (!result.success && result.isConflict) {
+        if (result && !result.success && result.isConflict) {
           setConflictMessage(`⚠️ ${result.message}`);
         } else {
           setConflictMessage("");
         }
       } catch (err) {
-        console.error("Lỗi kiểm tra trùng lịch trùng:", err);
+        console.error("Lỗi kiểm tra trùng lịch:", err);
       }
     };
 
@@ -237,10 +236,10 @@ export default function CreateClassPage() {
     }
   };
 
+  // Submit tạo khóa học / lớp học qua courseService
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🛡️ BẢO VỆ LẦN CUỐI KHI SUBMIT: Kiểm tra lại quyền hạn trước khi gửi API
     if (!isAllowed) {
       alert("⚠️ Bạn không có quyền thực hiện chức năng này!");
       return;
@@ -259,12 +258,35 @@ export default function CreateClassPage() {
       return;
     }
 
+    // ➕ Lấy user_id từ cookie user_info để gửi kèm lên backend
+    let currentUserId = null;
+    try {
+      const cookies = document.cookie.split("; ");
+      const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
+      if (userInfoCookie) {
+        const cookieValue = decodeURIComponent(userInfoCookie.split("=")[1]);
+        const userInfo = JSON.parse(cookieValue);
+        currentUserId = userInfo.user_id || userInfo.id;
+      }
+    } catch (err) {
+      console.error("Lỗi đọc cookie user_info:", err);
+    }
+
+    if (!currentUserId) {
+      alert("⚠️ Không tìm thấy thông tin định danh tài khoản. Vui lòng đăng nhập lại!");
+      router.push("/login");
+      return;
+    }
+
     setIsSubmitting(true);
+    
+    // Gói dữ liệu kèm theo user_id để backend nhận diện chính xác gia sư
     const payload = {
-      class_name: className,
-      category,
-      level,
-      description,
+      user_id: currentUserId, // 👈 Bổ sung user_id vào đây
+      title: className,           
+      category_id: category,     
+      level,                     
+      description,               
       max_students: parseInt(maxStudents),
       hourly_rate: parseInt(hourlyRate),
       start_date: startDate,
@@ -277,21 +299,16 @@ export default function CreateClassPage() {
     };
 
     try {
-      const response = await fetch("/api/classes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        alert("🎉 Tạo lớp học thành công! Hệ thống đã hiển thị công khai để học sinh tuyển sinh.");
+      const data = await courseService.createCourse(payload);
+      if (data) {
+        alert("🎉 Tạo lớp học (khóa học) thành công! Hệ thống đã hiển thị công khai.");
         router.push("/classroom-management");
       } else {
-        alert(`Lỗi: ${data.message}`);
+        alert("Lỗi khi tạo lớp học. Vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Lỗi gửi dữ liệu lên server:", error);
+      alert("Đã xảy ra lỗi hệ thống khi kết nối cơ sở dữ liệu.");
     } finally {
       setIsSubmitting(false);
     }
@@ -302,16 +319,14 @@ export default function CreateClassPage() {
     return today.toISOString().split("T")[0];
   };
 
-  // Trả về màn hình chờ đang kiểm tra quyền
   if (!isPermissionChecked) {
     return (
       <div style={{ textAlign: "center", padding: "120px 20px", fontSize: "16px", color: "#666" }}>
-         Đang kiểm tra quyền hạn tài khoản gia sư...
+        Đang kiểm tra quyền hạn tài khoản gia sư...
       </div>
     );
   }
 
-  // Nếu không đủ quyền, không hiển thị Form tạo lớp
   if (!isAllowed) {
     return null;
   }

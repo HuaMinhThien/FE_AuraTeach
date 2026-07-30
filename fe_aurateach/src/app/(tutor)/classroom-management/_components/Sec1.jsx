@@ -23,10 +23,11 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
         if (userInfoCookie) {
           const cookieValue = decodeURIComponent(userInfoCookie.split("=")[1]);
           const userInfo = JSON.parse(cookieValue);
+          const userId = userInfo.id || userInfo.user_id;
 
-          if (userInfo && userInfo.user_id) {
-            // 💡 Gọi qua service chuẩn của dự án
-            const data = await tutorService.getByUserId(userInfo.user_id);
+          if (userInfo && userId) {
+              // 💡 Gọi qua service chuẩn của dự án
+            const data = await tutorService.getByUserId(userId);
             
             // 🔍 DÁN CÁC DÒNG LOG NÀY VÀO ĐÂY ĐỂ KIỂM TRA
             console.log("🔍 Dữ liệu tutor trả về từ Laravel:", data);
@@ -36,10 +37,10 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
 
             if (tutors.length > 0) {
               console.log("📌 Status thực tế trong DB:", tutors[0].verification_status);
-              const status = tutors[0].verification_status;
+              const status = tutors[0]?.verification_status?.toLowerCase().trim();
               
-              // Cho phép tạo lớp nếu status là approved hoặc Đã xác minh
-              if (status === "approved" || status === "Đã xác minh") {
+              // Chuyển về chữ thường để so sánh an toàn tuyệt đối
+              if (status === "approved" || status === "đã xác minh" || status === "da xac minh") {
                 setIsApproved(true);
               }
             } else {
