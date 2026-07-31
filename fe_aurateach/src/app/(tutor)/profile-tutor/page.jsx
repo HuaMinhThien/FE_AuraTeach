@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./TutorProfile.module.css"; 
 
+const API_BASE = "http://localhost:3007";
+
 const getUserIdFromCookie = () => {
   try {
     const cookies = document.cookie.split("; ");
@@ -11,7 +13,7 @@ const getUserIdFromCookie = () => {
       const cookieValue = userInfoCookie.split("=")[1];
       const decodedValue = decodeURIComponent(cookieValue);
       const userInfo = JSON.parse(decodedValue);
-      return userInfo.id || null;
+      return userInfo.user_id || null;
     }
   } catch (error) {
     console.error("Lỗi đọc cookie:", error);
@@ -19,19 +21,19 @@ const getUserIdFromCookie = () => {
   return null;
 };
 
+// ✅ HÀM LẤY TÊN CATEGORY - ĐẶT BÊN NGOÀI COMPONENT
+const getCategoryName = (cat) => {
+  if (typeof cat === "string") return cat.trim();
+  return (cat.category_name || cat.name || "").trim();
+};
+
 export default function TutorProfile() {
   const [tutorData, setTutorData] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
-  
-  // Trạng thái kiểm tra xem gia sư có yêu cầu chưa được duyệt hay không
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
-
-  // Trạng thái bật/tắt bảng chọn Category
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Trạng thái bật/tắt chế độ chỉnh sửa hồ sơ
   const [isEditing, setIsEditing] = useState(false);
   const [editFields, setEditFields] = useState({
     phone: "",
@@ -40,6 +42,38 @@ export default function TutorProfile() {
     cv_link: "",
     expertise: []
   });
+
+  // ✅ HÀM KIỂM TRA CATEGORY ĐÃ CHỌN
+  const isCategorySelected = (catName) => {
+    if (!catName) return false;
+    const cleanCat = catName.toLowerCase().trim();
+    return editFields.expertise.some(
+      (item) => item.toLowerCase().trim() === cleanCat
+    );
+  };
+
+  // ✅ HÀM TOGGLE CATEGORY
+  const handleToggleCategory = (catName) => {
+    const cleanCatName = catName.trim();
+    if (!cleanCatName) return;
+
+    setEditFields((prev) => {
+      const exists = isCategorySelected(cleanCatName);
+      if (exists) {
+        return {
+          ...prev,
+          expertise: prev.expertise.filter(
+            (item) => item.toLowerCase().trim() !== cleanCatName.toLowerCase()
+          ),
+        };
+      } else {
+        return {
+          ...prev,
+          expertise: [...prev.expertise, cleanCatName],
+        };
+      }
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,9 +87,9 @@ export default function TutorProfile() {
 
       try {
         const [users, tutors, catList] = await Promise.all([
-          fetch("http://localhost:3007/users").then((res) => res.json()),
-          fetch("http://localhost:3007/tutors").then((res) => res.json()),
-          fetch("http://localhost:3007/categories").then((res) => res.json()).catch(() => [])
+          fetch(`${API_BASE}/users`).then((res) => res.json()),
+          fetch(`${API_BASE}/tutors`).then((res) => res.json()),
+          fetch(`${API_BASE}/categories`).then((res) => res.json()).catch(() => [])
         ]);
 
         setCategories(catList || []);
@@ -79,7 +113,6 @@ export default function TutorProfile() {
             expertise: expArray
           });
 
-          // GOI API KIỂM TRA XEM GIA SƯ ĐÃ CÓ YÊU CẦU CHỜ DUYỆT CHƯA
           const currentTutorId = tutorObj.id || tutorObj.tutor_id;
           const checkRes = await fetch(`/api/admin-tutor-update-requests?tutor_id=${currentTutorId}`);
           const checkData = await checkRes.json();
@@ -101,41 +134,7 @@ export default function TutorProfile() {
     fetchData();
   }, []);
 
-  const getCategoryName = (cat) => {
-    if (typeof cat === "string") return cat.trim();
-    return (cat.category_name || cat.name || "").trim();
-  };
-
-  const isCategorySelected = (catName) => {
-    if (!catName) return false;
-    const cleanCat = catName.toLowerCase().trim();
-    return editFields.expertise.some(
-      (item) => item.toLowerCase().trim() === cleanCat
-    );
-  };
-
-  const handleToggleCategory = (catName) => {
-    const cleanCatName = catName.trim();
-    if (!cleanCatName) return;
-
-    setEditFields((prev) => {
-      const exists = isCategorySelected(cleanCatName);
-      if (exists) {
-        return {
-          ...prev,
-          expertise: prev.expertise.filter(
-            (item) => item.toLowerCase().trim() !== cleanCatName.toLowerCase()
-          ),
-        };
-      } else {
-        return {
-          ...prev,
-          expertise: [...prev.expertise, cleanCatName],
-        };
-      }
-    });
-  };
-
+  // ✅ HÀM LƯU - DUY NHẤT
   const handleSave = async () => {
     try {
       const oldPayload = {
@@ -169,7 +168,7 @@ export default function TutorProfile() {
       if (result.success) {
         setIsEditing(false);
         setIsDropdownOpen(false);
-        setHasPendingRequest(true); // Đánh dấu đã gửi yêu cầu chờ duyệt
+        setHasPendingRequest(true);
         alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
       } else {
         alert(`❌ ${result.message || "Gửi yêu cầu thất bại, vui lòng thử lại"}`);
@@ -184,16 +183,14 @@ export default function TutorProfile() {
   if (errorMsg || !tutorData) return <div className={styles.errorContainer}>{errorMsg}</div>;
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount || 0);
   };
 
   return (
     <div className={styles.profileContainer}>
-      {/* Tiêu đề trang quản lý và nút Chỉnh sửa */}
       <div className={styles.pageHeaderActions}>
         <h2>Hồ sơ cá nhân</h2>
         
-        {/* NẾU ĐÃ CÓ YÊU CẦU CHỜ DUYỆT THÌ DISABLE NÚT SỬA */}
         {hasPendingRequest ? (
           <button 
             className={styles.btnEdit} 
@@ -214,13 +211,14 @@ export default function TutorProfile() {
         )}
       </div>
 
-      {/* Khối Thông Tin Đầu Trang */}
+      {/* Header Card */}
       <div className={styles.headerCard}>
         <div className={styles.avatarWrapper}>
           <img
-            src={tutorData.avatar}
+            src={tutorData.avatar || "/img/default-avatar.svg"}
             alt={tutorData.full_name}
             className={styles.avatar}
+            onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
           />
           <span className={`${styles.statusBadge} ${tutorData.status === "active" ? styles.statusActive : styles.statusLocked}`}>
             {tutorData.status === "active" ? "Đang hoạt động" : "Tạm khóa"}
@@ -250,20 +248,29 @@ export default function TutorProfile() {
               </span>
             )}
 
-            <span className={`${styles.badge} ${tutorData.verification_status === "approved" ? styles.badgeVerifyVerified : styles.badgeVerifyPending}`}>
-              ✔️ {tutorData.verification_status === "approved" ? "Đã xác minh" : "Chưa xác minh"}
+            <span className={`${styles.badge} ${tutorData.verification_status === "Đã xác minh" || tutorData.verification_status === "approved" ? styles.badgeVerifyVerified : styles.badgeVerifyPending}`}>
+              ✔️ {tutorData.verification_status || "Chưa xác minh"}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Grid Số Dư & Liên Hệ */}
+      {/* Balance Cards */}
       <div className={styles.gridContainer}>
         <div className={styles.balanceCardMain}>
           <p className={styles.balanceLabelMain}>Số dư khả dụng</p>
           <div className={styles.balanceRow}>
             <p className={styles.balanceAmountMain}>{formatCurrency(tutorData.available_balance || 0)}</p>
-            <button className={styles.btnPayout}>Rút tiền về ví</button>
+            <button 
+              className={styles.btnPayout}
+              disabled={(tutorData.available_balance || 0) <= 0}
+              style={{
+                opacity: (tutorData.available_balance || 0) <= 0 ? 0.5 : 1,
+                cursor: (tutorData.available_balance || 0) <= 0 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {tutorData.available_balance > 0 ? "Rút tiền về ví" : "Chưa có tiền"}
+            </button>
           </div>
         </div>
 
@@ -284,7 +291,7 @@ export default function TutorProfile() {
                 onChange={e => setEditFields({...editFields, phone: e.target.value})}
               />
             ) : (
-              tutorData.phone
+              tutorData.phone || "Chưa cập nhật"
             )}
           </div>
 
@@ -334,7 +341,7 @@ export default function TutorProfile() {
                   ? editFields.expertise.join(", ") 
                   : "Chọn lĩnh vực chuyên môn"}
               </span>
-              <span style={{ fontSize: "0.8rem", color: "#64748b" }}>▲</span>
+              <span style={{ fontSize: "0.8rem", color: "#64748b" }}>▼</span>
             </div>
 
             {isDropdownOpen && (

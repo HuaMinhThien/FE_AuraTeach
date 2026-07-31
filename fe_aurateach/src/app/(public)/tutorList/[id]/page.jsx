@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './TutorDetail.module.css';
 import data from '../../../api/data.json';
+import BookingModal from '@/components/users/BookingModal';
 
 const API_BASE = "http://localhost:3007";
 
@@ -16,6 +17,8 @@ export default function TutorDetailPage({ params }) {
   const [relatedTutorsList, setRelatedTutorsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   // Lấy thông tin user hiện tại từ cookie
   useEffect(() => {
@@ -215,6 +218,54 @@ export default function TutorDetailPage({ params }) {
     }
   };
 
+  // ===== HÀM XỬ LÝ ĐĂNG KÝ KHÓA HỌC =====
+  const handleRegisterCourse = async (notes, paymentMethod) => {
+    try {
+      const studentId = currentUser?.user_id || currentUser?.id;
+      if (!studentId) {
+        return { success: false, message: "Vui lòng đăng nhập để đăng ký" };
+      }
+
+      const tutorId = tutorDetails?.tutor_id;
+      const courseId = selectedCourse?.course_id;
+
+      console.log("📝 Đăng ký khóa học:", { courseId, studentId, tutorId, notes, paymentMethod });
+
+      const res = await fetch(`/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId,
+          studentId,
+          tutorId,
+          notes,
+          paymentMethod: paymentMethod || 'qr',
+        }),
+      });
+
+      const result = await res.json();
+      console.log("📝 Kết quả đăng ký:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ Lỗi đăng ký:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  // ===== HÀM MỞ BOOKING MODAL =====
+  const handleOpenBooking = (course) => {
+    if (!currentUser) {
+      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      return;
+    }
+    if (currentUser.role !== 'student') {
+      alert('Chỉ học viên mới có thể đăng ký học!');
+      return;
+    }
+    setSelectedCourse(course);
+    setShowBooking(true);
+  };
+
   // Hiển thị loading
   if (isLoading) {
     return (
@@ -334,7 +385,7 @@ export default function TutorDetailPage({ params }) {
                       <span className={styles.coursePrice}>
                         {course.price_per_session || 'Liên hệ'}
                       </span>
-                      <button className={styles.registerBtn}>Đăng ký học</button>
+                      <button className={styles.registerBtn} onClick={() => handleOpenBooking(course)}>Đăng ký học</button>
                     </div>
                   </div>
                 ))}
@@ -477,6 +528,24 @@ export default function TutorDetailPage({ params }) {
         </div>
 
       </div>
+
+      {/* ===== BOOKING MODAL ===== */}
+      {showBooking && selectedCourse && (
+        <BookingModal
+          course={{
+            ...selectedCourse,
+            student_id: currentUser?.user_id || currentUser?.id,
+          }}
+          tutorName={accountUser?.full_name || "Gia sư"}
+          onClose={() => {
+            setShowBooking(false);
+            setSelectedCourse(null);
+          }}
+          onConfirm={handleRegisterCourse}
+          loading={false}
+        />
+      )}
     </div>
   );
 }
+

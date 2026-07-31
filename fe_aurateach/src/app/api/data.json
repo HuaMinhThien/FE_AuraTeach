@@ -56,8 +56,8 @@
       "user_id": "u-01",
       "email": "thien@gmail.com",
       "password": "thien123",
-      "full_name": "Thiện đây nè ",
-      "phone": "0912345678",
+      "full_name": "Thiện đây nè",
+      "phone": "09106761390",
       "avatar": "/img/avt/thien.jpg",
       "role": "tutor",
       "status": "active",
@@ -107,7 +107,7 @@
       "full_name": "Liêm Tran",
       "phone": "0909123123",
       "birth_date": "2000-05-15",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-01-20T11:00:00Z",
@@ -132,7 +132,7 @@
       "password": "123123",
       "full_name": "MAI THÁI TUẤN",
       "phone": "0345646979",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-06-30T21:42:05.159Z",
@@ -144,7 +144,7 @@
       "password": "123123",
       "full_name": "lửa nè",
       "phone": "0345646979",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-06-30T21:43:35.606Z",
@@ -157,7 +157,7 @@
       "password": "123123",
       "full_name": "Nguyễn Văn Liêm",
       "phone": "0909123123",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "student",
       "status": "active",
       "created_at": "2026-07-01T08:13:04.178Z"
@@ -191,9 +191,9 @@
       "user_id": "user_1784195250277_zprx34",
       "email": "sangnguyen@gmail.com",
       "password": "123123",
-      "full_name": " Nguyễn Văn Sáng",
+      "full_name": "Nguyễn Văn Sáng",
       "phone": "0909890098",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T09:47:30.277Z"
@@ -205,7 +205,7 @@
       "password": "123123",
       "full_name": "Trần Thanh Tâm",
       "phone": "0932176859",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "banned",
       "created_at": "2026-07-16T09:59:51.700Z"
@@ -217,7 +217,7 @@
       "password": "123123",
       "full_name": "Hoàng Yến Linh",
       "phone": "0967867812",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T10:43:18.761Z"
@@ -229,7 +229,7 @@
       "password": "123123",
       "full_name": "Huỳnh Như Ngọc",
       "phone": "0945645678",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-16T11:10:32.434Z"
@@ -241,7 +241,7 @@
       "password": "123123",
       "full_name": "Gia sư 1",
       "phone": "0906761390",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-17T08:49:56.023Z"
@@ -253,10 +253,70 @@
       "password": "123123",
       "full_name": "Hứa Minh Thiện",
       "phone": "0906761390",
-      "avatar": "/img/default-avatar.svg",
+      "avatar": "/img/avt/avt.jpg",
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-22T09:36:48.253Z"
+    },
+    {
+      "id": "e54d",
+      "user_id": "user_1785245366797_7df24g",
+      "email": "haha@gmail.com",
+      "password": "123123",
+      "full_name": "haha",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-28T13:29:26.797Z"
+    },
+    {
+      "id": "e09b",
+      "user_id": "user_1785245928354_lwwbbd",
+      "email": "hehe@gmail.com",
+      "password": "123123",
+      "full_name": "hehe",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-28T13:38:48.354Z"
+    },
+    {
+      "id": "bb6a",
+      "user_id": "user_1785310832917_7hkim6",
+      "email": "liemtran3107@gmail.com",
+      "password": "123123",
+      "full_name": "thanhliem",
+      "phone": "09091898751",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-29T07:40:32.917Z"
+    },
+    {
+      "id": "user_1785316486801_xrhwby",
+      "user_id": "user_1785316486801_kvbbi7",
+      "email": "huhu@gmail.com",
+      "password": "123123",
+      "full_name": "huhu",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-07-29T09:14:46.801Z"
+    },
+    {
+      "id": "user_1785318296404_vob36q",
+      "user_id": "user_1785318296404_4tdrq7",
+      "email": "al@gmail.com",
+      "password": "123123",
+      "full_name": "Anh Long",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-29T09:44:56.404Z"
     }
   ],
   "admins": [
@@ -281,11 +341,13 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
-      "pending_balance": 1200000,
+      "pending_balance": 1500000,
       "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
+      "total_earnings": 3201500,
+      "updated_at": "2026-07-29T10:00:00.000Z",
       "rejection_reason": null
     },
     {
@@ -454,6 +516,35 @@
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-22T09:36:48.264Z",
       "rejection_reason": "Không liên hệ được với ứng viên"
+    },
+    {
+      "id": "0639",
+      "tutor_id": "tutor_1785245366805",
+      "user_id": "user_1785245366797_7df24g",
+      "bio": "",
+      "expertise": "Toán học",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "http://localhost:3000/register/teacher",
+      "created_at": "2026-07-28T13:29:26.805Z",
+      "rejection_reason": null
+    },
+    {
+      "id": "tutor_1785318296422",
+      "tutor_id": "tutor_1785318296422",
+      "user_id": "user_1785318296404_4tdrq7",
+      "bio": "",
+      "qualification": "Toán học",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://vn.linkedin.com",
+      "created_at": "2026-07-29T09:44:56.422Z"
     }
   ],
   "students": [
@@ -486,6 +577,30 @@
       "grade": "",
       "school_name": "",
       "created_at": "2026-07-01T08:13:04.219Z"
+    },
+    {
+      "id": "e8cd",
+      "student_id": "student_1785245928367",
+      "user_id": "user_1785245928354_lwwbbd",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-28T13:38:48.367Z"
+    },
+    {
+      "id": "4183",
+      "student_id": "student_1785310832931",
+      "user_id": "user_1785310832917_7hkim6",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-29T07:40:32.931Z"
+    },
+    {
+      "id": "student_1785316486813",
+      "student_id": "student_1785316486813",
+      "user_id": "user_1785316486801_kvbbi7",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-07-29T09:14:46.813Z"
     }
   ],
   "courses": [
@@ -511,7 +626,9 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1785245928354_lwwbbd"
+      ]
     },
     {
       "id": "8ab5",
@@ -534,30 +651,9 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "fad2",
-      "course_id": "c-03",
-      "category_id": "cat-04",
-      "tutor_id": "tutor_01",
-      "title": "Gia sư Tiếng Anh chuẩn quốc tế",
-      "level": "Cấp 3",
-      "description": "Học tiếng Anh chuẩn quốc tế, nâng cao kỹ năng giao tiếp và luyện thi chứng chỉ.",
-      "max_students": 2,
-      "hourly_rate": 200000,
-      "start_date": "2026-07-10",
-      "end_date": "2026-09-04",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 4",
-        "Chủ Nhật"
-      ],
-      "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-2.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [
+        "user_1782855725159_tqroz6"
+      ]
     },
     {
       "id": "1493",
@@ -751,146 +847,6 @@
       "students": []
     },
     {
-      "id": "649d",
-      "course_id": "c-12",
-      "category_id": "cat-06",
-      "tutor_id": "tutor_01",
-      "title": "Hóa Học Hữu Cơ Lớp 11-12 Đột Phá",
-      "level": "Cấp 3",
-      "description": "Làm chủ chuỗi phản ứng Ankan, Anken, Đơn chức, Đa chức Este Lipit và phương pháp dồn chất giải toán cực khó.",
-      "max_students": 3,
-      "hourly_rate": 150000,
-      "start_date": "2026-07-10",
-      "end_date": "2026-09-04",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 4",
-        "Chủ Nhật"
-      ],
-      "time_slot": "17:00-19:00",
-      "thumbnail": "/img/class/default-class-7.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "fbf7",
-      "course_id": "course-1782228975646",
-      "tutor_id": "u-01",
-      "title": "Ôn toán cấp tốc",
-      "level": "Cấp 3",
-      "description": "ôn tập luyện thi chất lượng cao",
-      "max_students": 5,
-      "hourly_rate": 250000,
-      "start_date": "2026-06-25",
-      "end_date": "2026-08-20",
-      "total_weeks": 8,
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 4",
-        "Thứ 6"
-      ],
-      "time_slot": "19:00-01:00",
-      "thumbnail": "/img/class/default-class-9.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "718f",
-      "course_id": "course-1782717829149",
-      "tutor_id": "u-01",
-      "title": "học văn ",
-      "category_id": "cat-03",
-      "level": "Cấp 2",
-      "description": "sssss",
-      "max_students": 2,
-      "hourly_rate": 120000,
-      "start_date": "2026-06-30",
-      "end_date": "2026-07-14",
-      "total_weeks": 2,
-      "schedule_days": [
-        "Thứ 5",
-        "Thứ 3"
-      ],
-      "time_slot": "21:00-23:00",
-      "thumbnail": "/img/class/default-class-8.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "067c",
-      "course_id": "course-1782737175419",
-      "tutor_id": "u-01",
-      "title": "Dạy vẽ cơ bản",
-      "category_id": "cat-11",
-      "level": "Cấp 1",
-      "description": "Dạy vẽ cơ bản",
-      "max_students": 3,
-      "hourly_rate": 120000,
-      "start_date": "2026-07-05",
-      "end_date": "2026-07-26",
-      "total_weeks": 3,
-      "schedule_days": [
-        "Thứ 7",
-        "Chủ Nhật",
-        "Thứ 5"
-      ],
-      "time_slot": "19:00-20:00",
-      "thumbnail": "/img/class/default-class-10.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "c3c6",
-      "course_id": "course-1782825797683",
-      "tutor_id": "u-01",
-      "title": "sinh hoc",
-      "category_id": "cat-06",
-      "level": "Cấp 1",
-      "description": "aaaas",
-      "max_students": 15,
-      "hourly_rate": 150000,
-      "start_date": "2026-07-06",
-      "end_date": "2026-09-14",
-      "total_weeks": 10,
-      "schedule_days": [
-        "Thứ 2",
-        "Thứ 4",
-        "Thứ 6"
-      ],
-      "time_slot": "18:00-20:00",
-      "thumbnail": "/img/class/default-class-5.png",
-      "status": "closed",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
-      "id": "course-1782895610088",
-      "course_id": "course-1782895610088",
-      "tutor_id": "u-01",
-      "title": "anh văn",
-      "category_id": "cat-02",
-      "level": "Cấp 3",
-      "description": "âsdads",
-      "max_students": 15,
-      "hourly_rate": 150000,
-      "start_date": "2026-07-24",
-      "end_date": "2026-09-25",
-      "total_weeks": 9,
-      "schedule_days": [
-        "Thứ 3",
-        "Thứ 6"
-      ],
-      "time_slot": "18:00-20:00",
-      "thumbnail": "blob:http://localhost:3000/f31cf9f2-869c-438d-8758-9aa82c2daa9b",
-      "status": "closed",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
-    },
-    {
       "id": "5nyoHgVuYIk",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
@@ -912,7 +868,8 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1",
-        "user_1782855725159_tqroz6"
+        "user_1782855725159_tqroz6",
+        "user_1785245928354_lwwbbd"
       ]
     },
     {
@@ -922,7 +879,7 @@
       "title": "thể dục nâng cao",
       "category_id": "cat-11",
       "level": "Cấp 3",
-      "description": "thể dục thôi mà ",
+      "description": "thể dục thôi mà",
       "max_students": 3,
       "hourly_rate": 150000,
       "start_date": "2026-07-03",
@@ -961,7 +918,8 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "user_1782855725159_tqroz6"
+        "user_1782855725159_tqroz6",
+        "u-student-1"
       ]
     },
     {
@@ -986,8 +944,80 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "u-student-1"
+        "u-student-1",
+        "user_1782855725159_tqroz6"
       ]
+    },
+    {
+      "id": "course-1785319823221",
+      "course_id": "course-1785319823221",
+      "tutor_id": "tutor_01",
+      "title": "Tiếng Anh lớp 1",
+      "category_id": "cat-09",
+      "level": "Cấp 1",
+      "description": "TA cơ bản",
+      "max_students": 11,
+      "hourly_rate": 300000,
+      "start_date": "2026-08-01",
+      "end_date": "2026-08-15",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 7",
+        "Thứ 6"
+      ],
+      "time_slot": "21:00-22:00",
+      "thumbnail": "/img/class/default-class-9.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
+    },
+    {
+      "id": "course-1785425982093",
+      "course_id": "course-1785425982093",
+      "tutor_id": "tutor_01",
+      "title": "Lập trình",
+      "category_id": "cat-10",
+      "level": "Cấp 2",
+      "description": "",
+      "max_students": 2,
+      "hourly_rate": 100000,
+      "start_date": "2026-07-31",
+      "end_date": "2026-08-07",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 6",
+        "Thứ 7",
+        "Chủ Nhật"
+      ],
+      "time_slot": "16:00-17:00",
+      "thumbnail": "/img/class/default-class-10.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
+    },
+    {
+      "id": "course-1785435401738",
+      "course_id": "course-1785435401738",
+      "tutor_id": "tutor_01",
+      "title": "toán hình cơ bản",
+      "category_id": "cat-02",
+      "level": "Cấp 1",
+      "description": "toán hình cấp 1 cho học sinh mất gốc ",
+      "max_students": 15,
+      "hourly_rate": 150000,
+      "start_date": "2026-08-02",
+      "end_date": "2026-08-16",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "13:00-14:00",
+      "thumbnail": "/img/class/default-class-9.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
     }
   ],
   "reviews": [
@@ -1043,10 +1073,10 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-07-01T10:00:00Z",
       "created_at": "2026-07-01T10:00:00Z",
-      "updated_at": "2026-07-01T10:00:00Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "Học viên đã đăng ký thành công",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1059,15 +1089,15 @@
       "student_id": "u-student-1",
       "course_id": "c-02",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-06-30T20:42:52.004Z",
       "created_at": "2026-06-30T20:42:52.004Z",
-      "updated_at": "2026-06-30T20:42:52.004Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 120000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000000",
       "id": "TVt4v5vvMxM"
     },
     {
@@ -1075,15 +1105,15 @@
       "student_id": "u-student-1",
       "course_id": "c-01",
       "tutor_id": "tutor_01",
-      "status": "cancelled",
+      "status": "confirmed",
       "booking_date": "2026-06-30T23:20:49.566Z",
       "created_at": "2026-06-30T23:20:49.566Z",
-      "updated_at": "2026-06-30T23:20:49.566Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000001",
       "id": "rA_YHb4Z_lU"
     },
     {
@@ -1094,12 +1124,12 @@
       "status": "confirmed",
       "booking_date": "2026-06-30T23:30:29.275Z",
       "created_at": "2026-06-30T23:30:29.275Z",
-      "updated_at": "2026-06-30T23:30:29.275Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 180000,
-      "payment_method": null,
-      "transaction_id": null,
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000002",
       "id": "KVlWv2aShoo"
     },
     {
@@ -1111,12 +1141,12 @@
       "status": "confirmed",
       "booking_date": "2026-07-01T05:50:00.460Z",
       "created_at": "2026-07-01T05:50:00.460Z",
-      "updated_at": "2026-07-01T05:50:00.460Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 130000,
-      "payment_method": null,
-      "transaction_id": null
+      "payment_method": "wallet",
+      "transaction_id": "txn_fix_1743000000003"
     },
     {
       "booking_id": "bk-1783023994671",
@@ -1126,7 +1156,7 @@
       "status": "confirmed",
       "booking_date": "2026-07-02T20:26:34.672Z",
       "created_at": "2026-07-02T20:26:34.672Z",
-      "updated_at": "2026-07-02T20:26:34.672Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
       "payment_status": "paid",
       "payment_amount": 150000,
@@ -1139,12 +1169,12 @@
       "student_id": "u-student-1",
       "course_id": "course-1783032321908",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:46:59.478Z",
       "created_at": "2026-07-02T22:46:59.478Z",
-      "updated_at": "2026-07-02T22:46:59.478Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,
@@ -1155,12 +1185,12 @@
       "student_id": "user_1782855725159_tqroz6",
       "course_id": "course-1783023956388",
       "tutor_id": "tutor_01",
-      "status": "pending",
+      "status": "confirmed",
       "booking_date": "2026-07-02T22:50:29.904Z",
       "created_at": "2026-07-02T22:50:29.904Z",
-      "updated_at": "2026-07-02T22:50:29.904Z",
+      "updated_at": "2026-07-29T10:00:00Z",
       "notes": "",
-      "payment_status": "unpaid",
+      "payment_status": "paid",
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null,
@@ -1208,6 +1238,38 @@
       "booking_date": "2026-07-17T09:20:10.980Z",
       "created_at": "2026-07-17T09:20:10.980Z",
       "updated_at": "2026-07-17T09:20:10.980Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    },
+    {
+      "id": "0cc5",
+      "booking_id": "bk-1785246485874",
+      "student_id": "user_1785245928354_lwwbbd",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T13:48:05.874Z",
+      "created_at": "2026-07-28T13:48:05.874Z",
+      "updated_at": "2026-07-28T13:48:05.874Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 150000,
+      "payment_method": "qr",
+      "transaction_id": null
+    },
+    {
+      "id": "848b",
+      "booking_id": "bk-1785246669276",
+      "student_id": "user_1785245928354_lwwbbd",
+      "course_id": "course-1783023956388",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-07-28T13:51:09.276Z",
+      "created_at": "2026-07-28T13:51:09.276Z",
+      "updated_at": "2026-07-28T13:51:09.276Z",
       "notes": "",
       "payment_status": "unpaid",
       "payment_amount": 150000,
@@ -1287,6 +1349,729 @@
       "id": "pay_007"
     }
   ],
+  "conversations": [
+    {
+      "id": "conv_001",
+      "participants": [
+        "u-student-1",
+        "u-01"
+      ],
+      "last_message": "hihi",
+      "last_message_time": "2026-07-23T19:24:10.325Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_002",
+      "participants": [
+        "u-student-1",
+        "tutor_02"
+      ],
+      "last_message": "Thầy ơi, em muốn hỏi về lịch học",
+      "last_message_time": "2026-07-19T15:30:00Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_003",
+      "participants": [
+        "u-student-2",
+        "u-01"
+      ],
+      "last_message": "Cảm ơn thầy đã tư vấn ạ",
+      "last_message_time": "2026-07-18T09:20:00Z",
+      "unread_count": 0
+    },
+    {
+      "id": "FvtVRh7m5So",
+      "participants": [
+        "user_1782855725159_tqroz6",
+        "tutor_01"
+      ],
+      "last_message": "ăedsfawedf",
+      "last_message_time": "2026-07-29T12:31:44.633Z",
+      "unread_count": 0
+    }
+  ],
+  "messages": [
+    {
+      "id": "BQ7s5fs0kTE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hello",
+      "created_at": "2026-07-23T14:08:41.947Z",
+      "is_read": false
+    },
+    {
+      "id": "HYF7yRcAnkI",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hello",
+      "created_at": "2026-07-23T14:11:39.778Z",
+      "is_read": false
+    },
+    {
+      "id": "muUZjYn5YQ8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "xin chào",
+      "created_at": "2026-07-23T14:35:56.223Z",
+      "is_read": false
+    },
+    {
+      "id": "qUBkNQuudvc",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T14:40:30.967Z",
+      "is_read": false
+    },
+    {
+      "id": "EplJlHWUm9M",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T14:46:31.709Z",
+      "is_read": false
+    },
+    {
+      "id": "NSUW5iLzvZE",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T15:48:06.936Z",
+      "is_read": false
+    },
+    {
+      "id": "3R-FJ468YSs",
+      "conversation_id": "conv_001",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "u-student-1",
+      "receiver_role": "student",
+      "content": "tôi nghe",
+      "created_at": "2026-07-23T15:48:35.626Z",
+      "is_read": false
+    },
+    {
+      "id": "2Sppemwa3xU",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "tôi cần tư vấn",
+      "created_at": "2026-07-23T19:23:20.638Z",
+      "is_read": false
+    },
+    {
+      "id": "-mUzkqwIWCQ",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hihi",
+      "created_at": "2026-07-23T19:24:10.304Z",
+      "is_read": false
+    },
+    {
+      "id": "sv0kZJB8iGc",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:24:32.609Z",
+      "is_read": false
+    },
+    {
+      "id": "qtYwkWFNInw",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hello",
+      "created_at": "2026-07-23T19:33:23.501Z",
+      "is_read": false
+    },
+    {
+      "id": "Hi8i3X-yi78",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:33:37.977Z",
+      "is_read": false
+    },
+    {
+      "id": "vHlpko-HoHM",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:40:20.948Z",
+      "is_read": false
+    },
+    {
+      "id": "8u0A8Bs3SN0",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "heloo",
+      "created_at": "2026-07-23T19:40:39.278Z",
+      "is_read": false
+    },
+    {
+      "id": "4nArWE0yOV4",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:58:10.048Z",
+      "is_read": false
+    },
+    {
+      "id": "28ExVEfWJd8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "hello",
+      "created_at": "2026-07-23T19:58:30.112Z",
+      "is_read": false
+    },
+    {
+      "id": "jHYya2tf6gQ",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "xin chào>???",
+      "created_at": "2026-07-23T19:59:05.972Z",
+      "is_read": false
+    },
+    {
+      "id": "kAAAtt1u2RM",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "xin chào",
+      "created_at": "2026-07-23T19:59:18.215Z",
+      "is_read": false
+    },
+    {
+      "id": "aC1lPKKQTHY",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "hihihihihih",
+      "created_at": "2026-07-23T19:59:49.717Z",
+      "is_read": false
+    },
+    {
+      "id": "oI2ElkxT3cs",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "hehe",
+      "created_at": "2026-07-23T20:09:25.344Z",
+      "is_read": false
+    },
+    {
+      "id": "YEfXGmEIlFU",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "huhu",
+      "created_at": "2026-07-23T20:09:31.231Z",
+      "is_read": false
+    },
+    {
+      "id": "QVevwU0a6Cs",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "kaka",
+      "created_at": "2026-07-23T20:09:36.665Z",
+      "is_read": false
+    },
+    {
+      "id": "7JYVfHQaipI",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "kkkk",
+      "created_at": "2026-07-23T20:09:45.047Z",
+      "is_read": false
+    },
+    {
+      "id": "qohtXU9PV1o",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "huhuhu",
+      "created_at": "2026-07-23T20:12:32.222Z",
+      "is_read": false
+    },
+    {
+      "id": "08k07JkM4DU",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "heheh",
+      "created_at": "2026-07-23T20:12:36.311Z",
+      "is_read": false
+    },
+    {
+      "id": "JXxmV064SPE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "hoho",
+      "created_at": "2026-07-23T20:12:42.325Z",
+      "is_read": false
+    },
+    {
+      "id": "CV1j7GpXENI",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "sdasdagf",
+      "created_at": "2026-07-23T20:13:17.106Z",
+      "is_read": false
+    },
+    {
+      "id": "zGKZTRBKHYw",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "fghsthgszfrg",
+      "created_at": "2026-07-23T20:18:16.674Z",
+      "is_read": false
+    },
+    {
+      "id": "YveKtut4SzA",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "ádfgZADSFgbZFg",
+      "created_at": "2026-07-23T20:18:20.266Z",
+      "is_read": false
+    },
+    {
+      "id": "tVX_OhyS7w8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "zfgzfrg",
+      "created_at": "2026-07-23T20:18:33.741Z",
+      "is_read": false
+    },
+    {
+      "id": "Zdy8dfHBIXA",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "adfaefĂEF",
+      "created_at": "2026-07-23T20:23:46.334Z",
+      "is_read": false
+    },
+    {
+      "id": "bIV-VIZvHJg",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sdfasregr",
+      "created_at": "2026-07-23T20:23:57.794Z",
+      "is_read": false
+    },
+    {
+      "id": "7RrUAxhbYac",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "adsfagzdfavgfdfvadr",
+      "created_at": "2026-07-23T20:24:06.976Z",
+      "is_read": false
+    },
+    {
+      "id": "lk_XShLbnOM",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "adoih ởig",
+      "created_at": "2026-07-23T20:29:28.071Z",
+      "is_read": false
+    },
+    {
+      "id": "EYe9Uh6AiX0",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ewarfwer",
+      "created_at": "2026-07-23T20:29:41.380Z",
+      "is_read": false
+    },
+    {
+      "id": "qEyWfTS1ufE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "eqrrfedF",
+      "created_at": "2026-07-23T20:29:46.076Z",
+      "is_read": false
+    },
+    {
+      "id": "rZ6PQU0569A",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "ádgarg",
+      "created_at": "2026-07-23T20:30:16.479Z",
+      "is_read": false
+    },
+    {
+      "id": "SGLGkAMG_1U",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "DSEDfvSEDfSD",
+      "created_at": "2026-07-23T20:33:58.130Z",
+      "is_read": false
+    },
+    {
+      "id": "EUfFiaSnITY",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sadgfsdargareg",
+      "created_at": "2026-07-23T20:36:06.799Z",
+      "is_read": false
+    },
+    {
+      "id": "8Ksb8xevgMk",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "dfAEdfased",
+      "created_at": "2026-07-23T20:37:51.492Z",
+      "is_read": false
+    },
+    {
+      "id": "OQm7IRddnQ0",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "SDFESfedfaedf",
+      "created_at": "2026-07-23T20:37:58.187Z",
+      "is_read": false
+    },
+    {
+      "id": "8CiMBO2uApA",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sdFASEDf",
+      "created_at": "2026-07-23T20:42:16.038Z",
+      "is_read": false
+    },
+    {
+      "id": "iVDfEe04h5Q",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ádfỀ",
+      "created_at": "2026-07-23T20:43:46.829Z",
+      "is_read": false
+    },
+    {
+      "id": "ltW5Js5_d3U",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-07-23T20:45:49.240Z",
+      "is_read": false
+    },
+    {
+      "id": "n040LHiZR68",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ảgasergasregafdgadfr",
+      "created_at": "2026-07-23T21:17:35.306Z",
+      "is_read": false
+    },
+    {
+      "id": "B6UNu2Gt-Sk",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "nè",
+      "created_at": "2026-07-23T21:25:31.117Z",
+      "is_read": false
+    },
+    {
+      "id": "wh2qzc0JQ-E",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "dsfaEDF",
+      "created_at": "2026-07-23T21:38:16.370Z",
+      "is_read": false
+    },
+    {
+      "id": "R9chnujsn08",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "SADFắedf",
+      "created_at": "2026-07-23T21:38:25.273Z",
+      "is_read": false
+    },
+    {
+      "id": "PEqbmMsdar8",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "íuhgdroiaer",
+      "created_at": "2026-07-28T14:07:08.411Z",
+      "is_read": false
+    },
+    {
+      "id": "YWNWTAW-ZzQ",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ÀDWERFư",
+      "created_at": "2026-07-28T14:08:06.167Z",
+      "is_read": false
+    },
+    {
+      "id": "Wi9UfP41Pxc",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "user_1782855725159_tqroz6",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "sdfhsrhgehthsh",
+      "created_at": "2026-07-29T12:16:56.863Z",
+      "is_read": false
+    },
+    {
+      "id": "Vi7E0xT7E2M",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "sADgREGAREG",
+      "created_at": "2026-07-29T12:17:21.652Z",
+      "is_read": false
+    },
+    {
+      "id": "6T1FURIkCLk",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "dgxfhsxdfhsr",
+      "created_at": "2026-07-29T12:31:37.598Z",
+      "is_read": false
+    },
+    {
+      "id": "licmTGqjV6I",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "dsafaesdf",
+      "created_at": "2026-07-29T12:31:42.195Z",
+      "is_read": false
+    },
+    {
+      "id": "u0tXxB2yEmE",
+      "conversation_id": "FvtVRh7m5So",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "content": "ăedsfawedf",
+      "created_at": "2026-07-29T12:31:44.620Z",
+      "is_read": false
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_1743000000000_abc123",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Gia sư môn Toán học'.",
+      "related_id": "bk-001",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000001_def456",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Gia sư môn Toán học' với gia sư.",
+      "related_id": "bk-001",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000002_ghi789",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Toán hình học không gian nâng cao'.",
+      "related_id": "bk-1782862229275",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000003_jkl012",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học 'Toán hình học không gian nâng cao' với gia sư.",
+      "related_id": "bk-1782862229275",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-07-29T10:00:00.000Z"
+    },
+    {
+      "id": "notif_1743000000004_test123",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "payment",
+      "title": "💰 Thanh toán thành công",
+      "message": "Học viên đã thanh toán 150,000đ cho khóa học 'Gia sư môn Toán học'.",
+      "related_id": "bk-001",
+      "related_type": "payment",
+      "is_read": true,
+      "created_at": "2026-07-29T10:05:00.000Z"
+    },
+    {
+      "id": "notif_1743000000005_test456",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "payment",
+      "title": "💰 Thanh toán mới",
+      "message": "Học viên đã thanh toán 150,000đ cho khóa học 'Gia sư môn Toán học'.",
+      "related_id": "bk-001",
+      "related_type": "payment",
+      "is_read": true,
+      "created_at": "2026-07-29T10:05:00.000Z"
+    }
+  ],
   "tutor_update_requests": [
     {
       "id": "2078",
@@ -1331,6 +2116,76 @@
       "reject_reason": null,
       "created_at": "2026-07-27T11:16:19.358Z",
       "updated_at": "2026-07-27T11:23:18.541Z"
+    },
+    {
+      "id": "aa96",
+      "tutor_id": "1f17",
+      "old_data": {
+        "phone": "09106761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình, Ngữ văn"
+      },
+      "new_data": {
+        "phone": "09106761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình"
+      },
+      "status": "pending",
+      "reject_reason": null,
+      "created_at": "2026-07-29T09:33:58.620Z"
+    }
+  ],
+  "lesson_confirmations": [
+    {
+      "comfirmation_id": "c-01_2026-08-01",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "lesson_number": 3,
+      "lesson_date": "2026-08-01",
+      "evidence_url": "https://drive.google.com/file/d/1xABCxyz...",
+      "note": "Đã dạy xong bài...",
+      "submitted_at": "2026-08-01T20:00:00.000Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-08-02T20:00:00.000Z",
+      "status": "pending_review",
+      "lesson_amount": 300000,
+      "payout_status": "holding"
+    },
+    {
+      "id": "937b",
+      "comfirmation_id": "c-02_2026-07-27",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "lesson_number": 1,
+      "lesson_date": "2026-07-27",
+      "evidence_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "note": "ôn tập",
+      "submitted_at": "2026-07-30T13:16:37.233Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-07-31T13:16:37.233Z",
+      "status": "pending_review",
+      "lesson_amount": 0,
+      "payout_status": "holding"
+    },
+    {
+      "id": "55ed",
+      "comfirmation_id": "c-01_2026-07-29",
+      "course_id": "c-01",
+      "tutor_id": "tutor_01",
+      "lesson_number": 1,
+      "lesson_date": "2026-07-29",
+      "evidence_url": "localhost:3000/tutor-dashboard",
+      "note": "",
+      "submitted_at": "2026-07-30T14:49:19.781Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-07-31T14:49:19.781Z",
+      "status": "pending_review",
+      "lesson_amount": 300000,
+      "payout_status": "holding"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

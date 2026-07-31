@@ -23,6 +23,67 @@ export default function TeacherRegisterPage() {
   
   const dropdownRef = useRef(null);
 
+  // Hàm kiểm tra email Gmail
+  const isValidGmail = (email) => {
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  };
+
+  // Hàm kiểm tra số điện thoại Việt Nam
+  const isValidPhone = (phone) => {
+    const phoneRegex = /^0[0-9]{9}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // Hàm kiểm tra link CV/Portfolio hợp lệ
+  const isValidCvLink = (link) => {
+    if (!link) return true; // Cho phép để trống
+    
+    try {
+      const url = new URL(link);
+      const hostname = url.hostname.toLowerCase();
+      
+      // Danh sách domain được phép
+      const allowedDomains = [
+        // Linkedin
+        'linkedin.com',
+        'www.linkedin.com',
+        // TopCV
+        'topcv.vn',
+        'www.topcv.vn',
+        // Google Drive
+        'drive.google.com',
+        'www.drive.google.com',
+        // Portfolio phổ biến
+        'portfolio.com',
+        'www.portfolio.com',
+        'myportfolio.com',
+        'www.myportfolio.com',
+        // Github
+        'github.com',
+        'www.github.com',
+        // Behance
+        'behance.net',
+        'www.behance.net',
+        // Dribbble
+        'dribbble.com',
+        'www.dribbble.com',
+        // Các domain khác
+        'docs.google.com',
+        'www.docs.google.com',
+      ];
+      
+      // Kiểm tra xem hostname có trong danh sách cho phép không
+      const isAllowed = allowedDomains.some(domain => 
+        hostname === domain || hostname.endsWith('.' + domain)
+      );
+      
+      return isAllowed;
+    } catch {
+      return false; // URL không hợp lệ
+    }
+  };
+
   const expertiseOptions = [
     "Toán học",
     "Ngữ văn",
@@ -86,6 +147,24 @@ export default function TeacherRegisterPage() {
       !confirmPassword
     ) {
       setError("Vui lòng nhập đầy đủ thông tin và chọn ít nhất 1 lĩnh vực");
+      return;
+    }
+
+    // Kiểm tra email phải là Gmail
+    if (!isValidGmail(email)) {
+      setError("Vui lòng sử dụng email Gmail (@gmail.com)");
+      return;
+    }
+
+    // Kiểm tra số điện thoại
+    if (!isValidPhone(phone)) {
+      setError("Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số");
+      return;
+    }
+
+    // Kiểm tra link CV/Portfolio (nếu có nhập)
+    if (cvLink && !isValidCvLink(cvLink)) {
+      setError("Link CV/Portfolio không hợp lệ. Chỉ hỗ trợ: LinkedIn, TopCV, Google Drive, Github, Behance, Portfolio");
       return;
     }
 
@@ -213,7 +292,7 @@ export default function TeacherRegisterPage() {
                 )}
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="fullName">Họ và tên</label>
+                  <label htmlFor="fullName">Họ và tên <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="text"
                     id="fullName"
@@ -226,20 +305,23 @@ export default function TeacherRegisterPage() {
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="email">Email liên hệ</label>
+                  <label htmlFor="email">Email liên hệ <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="email"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@example.com"
+                    placeholder="example@gmail.com"
                     className="aurateach-form-input"
                     required
                   />
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Chỉ hỗ trợ email Gmail (@gmail.com)
+                  </small>
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="phone">Số điện thoại</label>
+                  <label htmlFor="phone">Số điện thoại <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="tel"
                     id="phone"
@@ -249,6 +331,9 @@ export default function TeacherRegisterPage() {
                     className="aurateach-form-input"
                     required
                   />
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Nhập số điện thoại bắt đầu bằng 0 và có 10 chữ số
+                  </small>
                 </div>
 
                 {/* Lĩnh vực chuyên môn - Dropdown */}
@@ -325,10 +410,13 @@ export default function TeacherRegisterPage() {
                     placeholder="https://linkedin.com/in/username"
                     className="aurateach-form-input"
                   />
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Hỗ trợ: LinkedIn, TopCV, Google Drive, Github, Behance, Portfolio
+                  </small>
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="password">Mật khẩu</label>
+                  <label htmlFor="password">Mật khẩu <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="password"
                     id="password"
@@ -341,7 +429,7 @@ export default function TeacherRegisterPage() {
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                  <label htmlFor="confirmPassword">Xác nhận mật khẩu <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="password"
                     id="confirmPassword"

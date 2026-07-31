@@ -1,3 +1,4 @@
+// /src/app/(admin)/admin-dashboard/page.jsx - PHIÊN BẢN ĐÚNG
 'use client';
 
 import { useEffect, useState } from 'react';
