@@ -2104,7 +2104,7 @@
       "message": "Học viên Liêm Tran đã đăng ký khóa học 'Gia sư môn Toán học' với gia sư.",
       "related_id": "bk-001",
       "related_type": "booking",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-07-29T10:00:00.000Z"
     },
     {
@@ -2128,7 +2128,7 @@
       "message": "Học viên Liêm Tran đã đăng ký khóa học 'Toán hình học không gian nâng cao' với gia sư.",
       "related_id": "bk-1782862229275",
       "related_type": "booking",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-07-29T10:00:00.000Z"
     },
     {
@@ -2152,7 +2152,7 @@
       "message": "Học viên đã thanh toán 150,000đ cho khóa học 'Gia sư môn Toán học'.",
       "related_id": "bk-001",
       "related_type": "payment",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-07-29T10:05:00.000Z"
     }
   ],

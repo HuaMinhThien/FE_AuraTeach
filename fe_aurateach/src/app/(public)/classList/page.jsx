@@ -22,7 +22,7 @@ export default function ClassListPage() {
   const [sortOption, setSortOption] = useState('students-asc');
   const [currentPage, setCurrentPage] = useState(1);
   
-  const itemsPerPage = 8; // 2 hàng x 4 cột
+  const itemsPerPage = 8;
 
   // Fetch dữ liệu từ API
   useEffect(() => {
@@ -66,14 +66,12 @@ export default function ClassListPage() {
     fetchData();
   }, []);
 
-  // Parse giá - FIX: Xử lý an toàn cho mọi loại dữ liệu
+  // Parse giá
   const parsePrice = useCallback((priceStr) => {
     if (priceStr === undefined || priceStr === null || priceStr === '') {
       return 0;
     }
-    // Nếu là number, chuyển thành string
     const str = String(priceStr);
-    // Lấy tất cả số từ string
     const numbers = str.replace(/[^0-9]/g, '');
     return parseInt(numbers) || 0;
   }, []);
@@ -92,6 +90,12 @@ export default function ClassListPage() {
       const tutor = tutors.find(t => t.tutor_id === course.tutor_id);
       const user = tutor ? users.find(u => u.user_id === tutor.user_id) : null;
 
+      // Format thời gian học
+      const formatScheduleDays = (days) => {
+        if (!days || !Array.isArray(days)) return 'Chưa cập nhật';
+        return days.join(', ');
+      };
+
       return {
         ...course,
         tutor_name: user?.full_name || 'Gia sư AuraTeach',
@@ -101,8 +105,10 @@ export default function ClassListPage() {
         experience: tutor?.Experience || 'Chưa cập nhật',
         students_count: course.current_students || course.students_count || 0,
         category_name: categories.find(c => c.category_id === course.category_id)?.category_name || 'Chưa phân loại',
-        // Thêm trường price_number để sử dụng cho filter
         price_number: getSafePrice(course),
+        // Thêm thông tin thời gian học
+        schedule_display: formatScheduleDays(course.schedule_days),
+        time_slot_display: course.time_slot || 'Chưa cập nhật',
       };
     });
   }, [courses, tutors, users, categories, getSafePrice]);
@@ -111,7 +117,6 @@ export default function ClassListPage() {
   const filteredCourses = useMemo(() => {
     let result = [...coursesWithDetails];
 
-    // Tìm kiếm
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       result = result.filter(course =>
@@ -121,7 +126,6 @@ export default function ClassListPage() {
       );
     }
 
-    // Lọc theo danh mục
     if (selectedCategory !== 'Tất cả') {
       const category = categories.find(c => c.category_name === selectedCategory);
       if (category) {
@@ -129,7 +133,6 @@ export default function ClassListPage() {
       }
     }
 
-    // Lọc theo giá - SỬ DỤNG price_number đã được tính sẵn
     if (priceRange !== 'all') {
       result = result.filter(course => {
         const priceNum = course.price_number || 0;
@@ -140,7 +143,6 @@ export default function ClassListPage() {
       });
     }
 
-    // Sắp xếp - SỬ DỤNG price_number đã được tính sẵn
     if (sortOption === 'students-asc') {
       result = [...result].sort((a, b) => (a.students_count || 0) - (b.students_count || 0));
     } else if (sortOption === 'students-desc') {
@@ -368,6 +370,20 @@ export default function ClassListPage() {
                 </div>
 
                 <h3 className={styles.tutorSubject}>{course.title}</h3>
+
+                {/* ✅ THÊM THÔNG TIN THỜI GIAN HỌC */}
+                <div className={styles.scheduleInfo}>
+                  <div className={styles.scheduleItem}>
+                    <span className={styles.scheduleText}>
+                      {course.schedule_display}
+                    </span>
+                  </div>
+                  <div className={styles.scheduleItem}>
+                    <span className={styles.scheduleText}>
+                      {course.time_slot_display}
+                    </span>
+                  </div>
+                </div>
 
                 <div className={styles.tutorInfo}>
                   <div className={styles.tutorAvatar}>
