@@ -108,7 +108,7 @@ export default function Sidebar() {
     { name: "Thu nhập & Ví", path: "/admin-revenue" },
     { name: "Thông báo", path: "/admin-notifications", badge: unreadNotifCount },
     // { name: "Cấu hình hồ sơ", path: "/admin-profile" },
-    // { name: "Lịch sử báo cáo", path: "/admin-report-history" },
+    // { name: "Lịch sử báo cáo", path: "/admin-report-history"},
   ];
 
   if (!mounted || !adminData) {
@@ -120,6 +120,7 @@ export default function Sidebar() {
           </div>
           <div className={styles.logoText}>
             <h3>AuraTeach</h3>
+
             <span>Hệ thống Admin</span>
           </div>
         </div>
