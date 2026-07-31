@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
@@ -29,6 +30,18 @@ export default function RegisterPage() {
     }
   }, [isTermsOpen]);
 
+  // Hàm kiểm tra email Gmail
+  const isValidGmail = (email) => {
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  };
+
+  // Hàm kiểm tra số điện thoại Việt Nam
+  const isValidPhone = (phone) => {
+    const phoneRegex = /^0[0-9]{9}$/;
+    return phoneRegex.test(phone);
+  };
+
   const handleTermsScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     // Thêm sai số 15px để bù trừ độ lệch trên các trình duyệt khác nhau
@@ -39,8 +52,62 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
+    setErrors({});
+
+    let hasError = false;
+    const newErrors = {};
+
+    // Kiểm tra từng field
+    if (!fullName) {
+      newErrors.fullName = "Vui lòng nhập họ và tên";
+      hasError = true;
+    }
+
+    if (!email) {
+      newErrors.email = "Vui lòng nhập email";
+      hasError = true;
+    } else if (!isValidGmail(email)) {
+      newErrors.email = "Vui lòng sử dụng email Gmail (@gmail.com)";
+      hasError = true;
+    }
+
+    if (phone && !isValidPhone(phone)) {
+      newErrors.phone = "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số";
+      hasError = true;
+    }
+
+    if (!password) {
+      newErrors.password = "Vui lòng nhập mật khẩu";
+      hasError = true;
+    } else if (password.length < 6) {
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+      hasError = true;
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+      hasError = true;
+    }
+
+    if (!hasScrolledToBottom) {
+      newErrors.terms = "Vui lòng đọc hết điều khoản trước khi đăng ký";
+      hasError = true;
+      setIsTermsOpen(true);
+    } else if (!agreeTerms) {
+      newErrors.terms = "Vui lòng đồng ý với điều khoản dịch vụ";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const result = await authService.registerStudent({
@@ -49,8 +116,8 @@ export default function RegisterPage() {
         password: password,
         phone: phone,
         role: "student",
-        grade: "",         // Không cần dùng state, truyền trực tiếp chuỗi rỗng
-        schoolName: ""     // Không cần dùng state, truyền trực tiếp chuỗi rỗng
+        grade: "",        // Không cần dùng state, truyền trực tiếp chuỗi rỗng
+        schoolName: ""    // Không cần dùng state, truyền trực tiếp chuỗi rỗng
       });
 
       if (result.success) {
@@ -58,7 +125,7 @@ export default function RegisterPage() {
         router.push("/login");
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || "Đăng ký thất bại");
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +136,6 @@ export default function RegisterPage() {
       <Headers />
       <div className="aurateach-register-page">
         <div className="aurateach-register-container">
-          {/* Phần bên trái - Hình ảnh minh họa (sticky) */}
           <div className="aurateach-register-left">
             <div className="aurateach-register-hero">
               <img
@@ -92,7 +158,6 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Phần bên phải - Form đăng ký */}
           <div className="aurateach-register-right">
             <div className="aurateach-register-card">
               <h1 className="aurateach-register-title">
@@ -108,29 +173,48 @@ export default function RegisterPage() {
                 )}
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="fullName">Họ và Tên</label>
+                  <label htmlFor="fullName">Họ và Tên <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="text"
                     id="fullName"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      if (errors.fullName) {
+                        setErrors(prev => ({ ...prev, fullName: '' }));
+                      }
+                    }}
                     placeholder="Nguyễn Văn A"
-                    className="aurateach-form-input"
+                    className={`aurateach-form-input ${errors.fullName ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.fullName && (
+                    <span className="error-text">{errors.fullName}</span>
+                  )}
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="email">Địa chỉ Email</label>
+                  <label htmlFor="email">Địa chỉ Email <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="email"
                     id="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@aurateach.vn"
-                    className="aurateach-form-input"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) {
+                        setErrors(prev => ({ ...prev, email: '' }));
+                      }
+                    }}
+                    placeholder="example@gmail.com"
+                    className={`aurateach-form-input ${errors.email ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.email && (
+                    <span className="error-text">{errors.email}</span>
+                  )}
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Chỉ hỗ trợ email Gmail (@gmail.com)
+                  </small>
                 </div>
 
                 <div className="aurateach-form-group">
@@ -139,40 +223,67 @@ export default function RegisterPage() {
                     type="tel"
                     id="phone"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="090 123 4567"
-                    className="aurateach-form-input"
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (errors.phone) {
+                        setErrors(prev => ({ ...prev, phone: '' }));
+                      }
+                    }}
+                    placeholder="0901234567"
+                    className={`aurateach-form-input ${errors.phone ? 'input-error' : ''}`}
                   />
+                  {errors.phone && (
+                    <span className="error-text">{errors.phone}</span>
+                  )}
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Nhập số điện thoại bắt đầu bằng 0 và có 10 chữ số
+                  </small>
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="password">Mật khẩu</label>
+                  <label htmlFor="password">Mật khẩu <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="password"
                     id="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) {
+                        setErrors(prev => ({ ...prev, password: '' }));
+                      }
+                    }}
                     placeholder="********"
-                    className="aurateach-form-input"
+                    className={`aurateach-form-input ${errors.password ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.password && (
+                    <span className="error-text">{errors.password}</span>
+                  )}
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                  <label htmlFor="confirmPassword">Xác nhận mật khẩu <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="password"
                     id="confirmPassword"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) {
+                        setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                      }
+                    }}
                     placeholder="********"
-                    className="aurateach-form-input"
+                    className={`aurateach-form-input ${errors.confirmPassword ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.confirmPassword && (
+                    <span className="error-text">{errors.confirmPassword}</span>
+                  )}
                 </div>
 
                 {/* Điều khoản dịch vụ */}
-                <div className="aurateach-terms-section">
+                <div className={`aurateach-terms-section ${errors.terms ? 'has-error' : ''}`}>
                   <button
                     type="button"
                     className="aurateach-terms-toggle"
@@ -226,7 +337,12 @@ export default function RegisterPage() {
                       <input
                         type="checkbox"
                         checked={agreeTerms}
-                        onChange={(e) => setAgreeTerms(e.target.checked)}
+                        onChange={(e) => {
+                          setAgreeTerms(e.target.checked);
+                          if (errors.terms) {
+                            setErrors(prev => ({ ...prev, terms: '' }));
+                          }
+                        }}
                         disabled={!hasScrolledToBottom}
                       />
                       <span>
@@ -242,6 +358,9 @@ export default function RegisterPage() {
                       </span>
                     </label>
                   </div>
+                  {errors.terms && (
+                    <span className="error-text">{errors.terms}</span>
+                  )}
                   {!hasScrolledToBottom && isTermsOpen && (
                     <p className="aurateach-terms-hint">
                       ⚠️ Vui lòng kéo xuống hết nội dung điều khoản để có thể đồng ý

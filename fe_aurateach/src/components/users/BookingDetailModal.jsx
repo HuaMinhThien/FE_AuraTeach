@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import apiClient from "@/services/apiClient";
 import "../../css/student-style/bookingDetailModal.css";
 
 export default function BookingDetailModal({ 
@@ -12,6 +13,7 @@ export default function BookingDetailModal({
   onJoinClass
 }) {
   const [imageError, setImageError] = useState(false);
+  const [joining, setJoining] = useState(false);
 
   const formatPrice = (price) => {
     if (!price) return "0";
@@ -34,6 +36,36 @@ export default function BookingDetailModal({
       'pending': 'Chờ duyệt'
     };
     return statusMap[status] || status;
+  };
+
+  // 🚀 Xử lý gọi API ghi nhận học viên vào phòng học / gọi link meet từ Backend
+  const handleJoinClick = async () => {
+    try {
+      setJoining(true);
+      const courseId = course?.course_id || course?.id;
+      
+      // Gọi API báo cáo hành động tham gia lớp học lên Laravel Backend (nếu cần log lịch sử học tập)
+      await apiClient.post(`/courses/${courseId}/join`).catch(() => {
+        // Bỏ qua lỗi ngầm nếu backend chưa dựng sẵn endpoint log này, vẫn cho mở link học
+      });
+
+      // Lấy URL phòng học (ưu tiên permanent_room_url hoặc meeting_url)
+      const meetUrl = course?.permanent_room_url || course?.meeting_url;
+      if (meetUrl) {
+        if (typeof onJoinClass === 'function') {
+          onJoinClass(meetUrl);
+        } else {
+          window.open(meetUrl, '_blank');
+        }
+      } else {
+        alert("Phòng học trực tuyến chưa được cập nhật đường dẫn!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tham gia lớp học:", error);
+      alert("Không thể kết nối tới phòng học lúc này.");
+    } finally {
+      setJoining(false);
+    }
   };
 
   if (!course) {
@@ -98,7 +130,7 @@ export default function BookingDetailModal({
                 </div>
                 <div className="tutor-info-item">
                   <span className="tutor-info-label">Kinh nghiệm</span>
-                  <span className="tutor-info-value">{tutorInfo.Experience || "Chưa cập nhật"}</span>
+                  <span className="tutor-info-value">{tutorInfo.Experience || tutorInfo.experience || "Chưa cập nhật"}</span>
                 </div>
                 <div className="tutor-info-item">
                   <span className="tutor-info-label">Đánh giá</span>
@@ -124,7 +156,7 @@ export default function BookingDetailModal({
             <div className="detail-info-grid">
               <div className="detail-info-item">
                 <span className="detail-info-label">Mã lớp</span>
-                <span className="detail-info-value">{course?.course_id || "N/A"}</span>
+                <span className="detail-info-value">{course?.course_id || course?.id || "N/A"}</span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Trình độ</span>
@@ -132,31 +164,52 @@ export default function BookingDetailModal({
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Học phí / giờ</span>
-                <span className="detail-info-value price">{formatPrice(course?.hourly_rate)}</span>
+                <span className="detail-info-value price">{formatPrice(course?.hourly_rate || course?.price)}</span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Số buổi</span>
-                <span className="detail-info-value">{course?.total_weeks || 0} buổi</span>
+                <span className="detail-info-value">{course?.total_weeks || course?.total_sessions || course?.schedules?.length || 0} buổi</span>
               </div>
+
+              {/* Lấy từ bảng course_schedules (thường là phần tử đầu tiên hoặc map ra) */}
               <div className="detail-info-item">
                 <span className="detail-info-label">Thời gian</span>
-                <span className="detail-info-value">{course?.time_slot || "Chưa cập nhật"}</span>
+                <span className="detail-info-value">
+                  {course?.schedules?.[0]?.time_slot || course?.time_slot || "Chưa cập nhật"}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Lịch học</span>
-                <span className="detail-info-value">{course?.schedule_days?.join(", ") || "Chưa cập nhật"}</span>
+                <span className="detail-info-value">
+                  {course?.day_of_week || course?.schedules?.[0]?.day_of_week || "Chưa cập nhật"}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Ngày bắt đầu</span>
-                <span className="detail-info-value">{course?.start_date ? new Date(course.start_date).toLocaleDateString('vi-VN') : "Chưa cập nhật"}</span>
+                <span className="detail-info-value">
+                  {course?.start_time 
+                    ? new Date(course.start_time).toLocaleDateString('vi-VN') 
+                    : (course?.schedules?.[0]?.start_time 
+                        ? new Date(course.schedules[0].start_time).toLocaleDateString('vi-VN') 
+                        : "Chưa cập nhật")}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Ngày kết thúc</span>
-                <span className="detail-info-value">{course?.end_date ? new Date(course.end_date).toLocaleDateString('vi-VN') : "Chưa cập nhật"}</span>
+                <span className="detail-info-value">
+                  {course?.end_time 
+                    ? new Date(course.end_time).toLocaleDateString('vi-VN') 
+                    : (course?.schedules?.[0]?.end_time 
+                        ? new Date(course.schedules[0].end_time).toLocaleDateString('vi-VN') 
+                        : "Chưa cập nhật")}
+                </span>
               </div>
+
               <div className="detail-info-item full-width">
                 <span className="detail-info-label">Số lượng học viên</span>
-                <span className="detail-info-value">{course?.students?.length || 0}/{course?.max_students || 0}</span>
+                <span className="detail-info-value">
+                  {Array.isArray(course?.students) ? course.students.length : (course?.current_students || 0)}/{course?.max_students || 0}
+                </span>
               </div>
               <div className="detail-info-item full-width">
                 <span className="detail-info-label">Mô tả</span>
@@ -170,12 +223,13 @@ export default function BookingDetailModal({
             <button className="detail-close-btn" onClick={onClose}>
               Đóng
             </button>
-            {course?.permanent_room_url && course?.status === 'active' && (
+            {(course?.permanent_room_url || course?.meeting_url) && course?.status === 'active' && (
               <button 
                 className="detail-join-btn"
-                onClick={() => onJoinClass(course.permanent_room_url)}
+                onClick={handleJoinClick}
+                disabled={joining}
               >
-                🎯 Tham gia lớp học
+                {joining ? "⏳ Đang kết nối..." : "🎯 Tham gia lớp học"}
               </button>
             )}
             {course?.status !== 'active' && (

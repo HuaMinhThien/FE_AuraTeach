@@ -13,18 +13,50 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Hàm kiểm tra email Gmail
+  const isValidGmail = (email) => {
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setErrors({});
+
+    let hasError = false;
+    const newErrors = {};
+
+    // Kiểm tra email
+    if (!email) {
+      newErrors.email = "Vui lòng nhập email";
+      hasError = true;
+    } else if (!isValidGmail(email)) {
+      newErrors.email = "Vui lòng sử dụng email Gmail (@gmail.com)";
+      hasError = true;
+    }
+
+    // Kiểm tra password
+    if (!password) {
+      newErrors.password = "Vui lòng nhập mật khẩu";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       console.log("=== LOGIN SUBMIT ===");
       console.log("Email:", email);
 
-      // 👇 Gọi qua authService để trỏ đúng sang Laravel (cổng 8000)
+      // Gọi qua authService để trỏ đúng sang Laravel
       const data = await authService.login({ email, password });
       console.log("Response data:", data);
 
@@ -32,27 +64,29 @@ export default function LoginPage() {
         throw new Error(data?.message || "Dữ liệu đăng nhập không hợp lệ từ máy chủ");
       }
 
-      // Tạo userInfo với cấu trúc chuẩn
+      // Tạo userInfo với cấu trúc chuẩn (hỗ trợ cả user_id và id)
       const userInfo = {
-        id: data.user.user_id || data.user.id,
+        user_id: data.user.user_id || data.user.id,
         name: data.user.full_name || data.user.name,
         email: data.user.email,
         role: data.user.role,
-        avatar: data.user.avatar || "/img/default-avatar.png",
+        avatar: data.user.avatar || "/img/avt.jpg",
       };
 
       console.log("✅ UserInfo to save:", userInfo);
 
-      // Lưu cookie thời gian theo rememberMe
+      // Tính toán thời gian hết hạn cookie theo rememberMe
       const expires = rememberMe ? 30 : 1;
       const maxAgeSeconds = expires * 24 * 60 * 60;
 
+      // Lưu cookie thông tin user và role
       document.cookie = `user_info=${encodeURIComponent(
         JSON.stringify(userInfo)
       )}; path=/; max-age=${maxAgeSeconds}`;
 
       document.cookie = `role=${data.user.role}; path=/; max-age=${maxAgeSeconds}`;
 
+      // Lưu token xác thực từ main (nếu có trả về từ server)
       if (data.token) {
         document.cookie = `token=${data.token}; path=/; max-age=${maxAgeSeconds}`;
       }
@@ -99,29 +133,48 @@ export default function LoginPage() {
                 )}
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Email <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="email"
                     id="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    className="aurateach-form-input"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) {
+                        setErrors(prev => ({ ...prev, email: '' }));
+                      }
+                    }}
+                    placeholder="example@gmail.com"
+                    className={`aurateach-form-input ${errors.email ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.email && (
+                    <span className="error-text">{errors.email}</span>
+                  )}
+                  <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
+                    Chỉ hỗ trợ email Gmail (@gmail.com)
+                  </small>
                 </div>
 
                 <div className="aurateach-form-group">
-                  <label htmlFor="password">Mật khẩu</label>
+                  <label htmlFor="password">Mật khẩu <span style={{color: '#ef4444'}}>*</span></label>
                   <input
                     type="password"
                     id="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) {
+                        setErrors(prev => ({ ...prev, password: '' }));
+                      }
+                    }}
                     placeholder="••••••"
-                    className="aurateach-form-input"
+                    className={`aurateach-form-input ${errors.password ? 'input-error' : ''}`}
                     required
                   />
+                  {errors.password && (
+                    <span className="error-text">{errors.password}</span>
+                  )}
                 </div>
 
                 <div className="aurateach-form-options">

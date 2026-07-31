@@ -66,11 +66,22 @@ const apiClient = {
     return handleResponse(response);
   },
 
-  // Phương thức PATCH / PUT
+  // Phương thức PATCH
   patch: async (endpoint, body, options = {}) => {
     const isFormData = body instanceof FormData;
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "PATCH",
+      headers: getHeaders(options.headers, isFormData),
+      body: isFormData ? body : JSON.stringify(body),
+    });
+    return handleResponse(response);
+  },
+
+  // 👈 Bổ sung thêm phương thức PUT vào đây
+  put: async (endpoint, body, options = {}) => {
+    const isFormData = body instanceof FormData;
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "PUT",
       headers: getHeaders(options.headers, isFormData),
       body: isFormData ? body : JSON.stringify(body),
     });

@@ -64,10 +64,16 @@ export default function ClassListPage() {
         // Xử lý dữ liệu trả về theo chuẩn phân trang Laravel API Resource/LengthAwarePaginator
         const coursesList = Array.isArray(response) ? response : (response?.data || []);
         
-        // Map lại dữ liệu khớp với cấu trúc hiển thị của giao diện cũ
+        // Map lại dữ liệu khớp với cấu trúc hiển thị của giao diện
         const formattedCourses = coursesList.map(course => {
           const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
           const user = course.tutor?.user;
+
+          // Format thời gian học nếu có
+          const formatScheduleDays = (days) => {
+            if (!days || !Array.isArray(days)) return 'Chưa cập nhật';
+            return days.join(', ');
+          };
 
           return {
             ...course,
@@ -76,6 +82,8 @@ export default function ClassListPage() {
             experience: course.tutor?.Experience || 'Chưa cập nhật',
             category_name: course.category?.category_name || 'Chưa phân loại',
             students_count: course.current_students || 0,
+            schedule_display: formatScheduleDays(course.schedule_days),
+            time_slot_display: course.time_slot || 'Chưa cập nhật',
           };
         });
 
@@ -294,6 +302,20 @@ export default function ClassListPage() {
                   </div>
 
                   <h3 className={styles.tutorSubject}>{course.title}</h3>
+
+                  {/* THÔNG TIN THỜI GIAN HỌC */}
+                  <div className={styles.scheduleInfo}>
+                    <div className={styles.scheduleItem}>
+                      <span className={styles.scheduleText}>
+                        📅 {course.schedule_display}
+                      </span>
+                    </div>
+                    <div className={styles.scheduleItem}>
+                      <span className={styles.scheduleText}>
+                        ⏰ {course.time_slot_display}
+                      </span>
+                    </div>
+                  </div>
 
                   <div className={styles.tutorInfo}>
                     <div className={styles.tutorAvatar}>

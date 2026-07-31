@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import Avatar from "@/components/common/Avatar.jsx";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
+import { studentService } from "@/services/studentService";
 import "./profile.css";
 
 export default function ProfilePage() {
@@ -26,13 +27,15 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const API_BASE = "http://localhost:3007";
-
-  // Lấy thông tin student
+  // Hàm lấy thông tin học sinh từ API dựa vào user_id
   const fetchStudentInfo = async (userId) => {
     try {
-      const studentRes = await fetch(`${API_BASE}/students?user_id=${userId}`);
-      const students = await studentRes.json();
+      console.log("👉 Đang gọi API lấy student với user_id:", userId);
+      const response = await studentService.getStudents({ user_id: userId });
+      console.log("📦 Dữ liệu học sinh trả về từ API:", response);
+      
+      const students = Array.isArray(response) ? response : (response?.data || []);
+      
       if (students.length > 0) {
         setStudentInfo(students[0]);
         setFormData(prev => ({
@@ -40,19 +43,23 @@ export default function ProfilePage() {
           grade: students[0].grade || "",
           school_name: students[0].school_name || "",
         }));
+      } else {
+        console.warn("⚠️ Không tìm thấy bản ghi student nào khớp với user_id này!");
       }
     } catch (error) {
-      console.error("Lỗi tải thông tin student:", error);
+      console.error("❌ Lỗi tải thông tin student:", error);
     }
   };
 
+  // Khởi tạo dữ liệu trang một lần duy nhất
   useEffect(() => {
     const initPage = async () => {
       try {
         setLoading(true);
         const currentUser = await authService.getCurrentUser();
-        
-        // Kiểm tra cookie dự phòng
+        console.log("👤 Thông tin user hiện tại từ authService:", currentUser);
+
+        // Kiểm tra cookie role dự phòng
         const getCookie = (name) => {
           if (typeof window === "undefined") return null;
           const value = `; ${document.cookie}`;
@@ -62,26 +69,43 @@ export default function ProfilePage() {
         };
         const role = getCookie("role");
 
-        if (!currentUser || role !== "student") {
+        if (!currentUser || (role && role !== "student" && !currentUser.user)) {
+          // Cho phép qua nếu có cấu trúc user hợp lệ
+        }
+
+        // 1. Trích xuất chuẩn xác object user bên trong (hỗ trợ cả dạng bọc { user: {...} } lẫn object phẳng)
+        const userData = currentUser?.user || currentUser;
+
+        if (!userData) {
+          console.warn("⚠️ Không có dữ liệu user, chuyển hướng về login");
           router.push("/login");
           return;
         }
 
-        setUser(currentUser);
+        setUser(userData);
+
+        // 2. Đổ dữ liệu ban đầu vào form
         setFormData({
-          full_name: currentUser.full_name || "",
-          phone: currentUser.phone || "",
-          avatar: currentUser.avatar || "",
-          birth_date: currentUser.birth_date || "",
+          full_name: userData.full_name || "",
+          phone: userData.phone || "",
+          avatar: userData.avatar || "",
+          birth_date: userData.birth_date || "",
           grade: "",
           school_name: "",
         });
 
-        // Lấy thông tin student
-        await fetchStudentInfo(currentUser.user_id);
+        // 3. Trích xuất user_id an toàn
+        const currentUserId = userData.user_id || userData.id;
+        console.log("🔑 ID được trích xuất để gọi API student:", currentUserId);
+
+        if (currentUserId && currentUserId !== 'undefined') {
+          await fetchStudentInfo(currentUserId);
+        } else {
+          console.error("🚨 Không tìm thấy ID hợp lệ trong object user!");
+        }
 
       } catch (error) {
-        console.error("Lỗi tải thông tin profile:", error);
+        console.error("❌ Lỗi tải thông tin profile:", error);
       } finally {
         setLoading(false);
       }
@@ -90,31 +114,27 @@ export default function ProfilePage() {
     initPage();
   }, [router]);
 
-  // Xử lý thay đổi input
+  // Xử lý thay đổi input trên form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
-    // Xóa thông báo lỗi khi user bắt đầu nhập
     if (error) setError("");
     if (success) setSuccess("");
   };
 
-  // Bật chế độ chỉnh sửa
   const handleEdit = () => {
     setIsEditing(true);
     setError("");
     setSuccess("");
   };
 
-  // Hủy chỉnh sửa
   const handleCancel = () => {
     setIsEditing(false);
     setError("");
     setSuccess("");
-    // Reset form về dữ liệu cũ
     setFormData({
       full_name: user?.full_name || "",
       phone: user?.phone || "",
@@ -125,14 +145,12 @@ export default function ProfilePage() {
     });
   };
 
-  // Lưu thay đổi
   const handleSave = async () => {
     try {
       setError("");
       setSuccess("");
       setIsSaving(true);
 
-      // Validate
       if (!formData.full_name.trim()) {
         setError("Họ và tên không được để trống");
         setIsSaving(false);
@@ -145,47 +163,30 @@ export default function ProfilePage() {
         return;
       }
 
-      // Validate phone (10 số)
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(formData.phone.trim())) {
-        setError("Số điện thoại phải có 10 chữ số");
-        setIsSaving(false);
-        return;
-      }
+      const userIdToUpdate = user.user_id || user.id;
 
-      // Chuẩn bị dữ liệu gửi lên
+      // Gom tất cả dữ liệu (User + Student) vào chung một object gửi lên Backend
       const updateData = {
         full_name: formData.full_name.trim(),
         phone: formData.phone.trim(),
         avatar: formData.avatar.trim() || "/img/default-avatar.svg",
         birth_date: formData.birth_date || "",
-        grade: formData.grade.trim(),
-        school_name: formData.school_name.trim(),
+        grade: formData.grade ? formData.grade.trim() : "",          // 👈 Gửi kèm grade
+        school_name: formData.school_name ? formData.school_name.trim() : "", // 👈 Gửi kèm school_name
       };
 
-      // Gọi API cập nhật
-      const result = await authService.updateProfile(user.user_id, updateData);
+      const result = await studentService.updateProfile(userIdToUpdate, updateData);
 
-      if (result.success) {
+      if (result.success || result) {
         setSuccess("Cập nhật thông tin thành công!");
+        const updatedUser = result.user || result.data || result;
         
-        // Cập nhật state user
-        setUser(result.user);
-        setFormData({
-          full_name: result.user.full_name || "",
-          phone: result.user.phone || "",
-          avatar: result.user.avatar || "",
-          birth_date: result.user.birth_date || "",
-          grade: formData.grade.trim(),
-          school_name: formData.school_name.trim(),
-        });
-
-        // Cập nhật lại studentInfo
-        if (result.user.user_id) {
-          await fetchStudentInfo(result.user.user_id);
+        setUser(updatedUser);
+        
+        if (userIdToUpdate) {
+          await fetchStudentInfo(userIdToUpdate); // Tải lại thông tin student mới nhất
         }
 
-        // Tắt chế độ chỉnh sửa sau 1.5 giây
         setTimeout(() => {
           setIsEditing(false);
           setSuccess("");
@@ -218,11 +219,8 @@ export default function ProfilePage() {
       <Header />
       <div className="profile-page" style={{ marginTop: "80px" }}>
         <div className="profile-container">
-          
-          {/* Student Sidebar */}
           <StudentSidebar />
 
-          {/* Profile Content */}
           <div className="profile-content">
             <div className="profile-header">
               <div className="profile-header-left">
@@ -236,17 +234,8 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Thông báo */}
-            {error && (
-              <div className="alert alert-error">
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="alert alert-success">
-                {success}
-              </div>
-            )}
+            {error && <div className="alert alert-error">{error}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
 
             <div className="profile-card">
               <div className="profile-avatar-section">
@@ -359,7 +348,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Action buttons khi đang chỉnh sửa */}
               {isEditing && (
                 <div className="profile-actions">
                   <button 

@@ -5,7 +5,8 @@ import Link from "next/link";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import BookingDetailModal from "@/components/users/BookingDetailModal.jsx";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
+import { courseService } from "@/services/courseService";
 import "../profile/profile.css";
 import "./lich-su-book.css";
 
@@ -13,117 +14,104 @@ export default function StudentBookingHistoryPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [bookedClasses, setBookedClasses] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [allTutors, setAllTutors] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
-  const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTutor, setSelectedTutor] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  const API_BASE = "http://localhost:3007";
-
   useEffect(() => {
     const initPage = async () => {
       try {
         setLoading(true);
-        const user = await authService.getCurrentUser();
+        console.log("📌 [1] Bắt đầu khởi tạo trang, đang gọi authService.getCurrentUser()...");
+        const rawUserResponse = await authService.getCurrentUser();
+        console.log("🔍 [DEBUG USER RESPONSE]:", rawUserResponse);
         
-        const getCookie = (name) => {
-          if (typeof window === "undefined") return null;
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(';').shift();
-          return null;
-        };
-        const role = getCookie("role");
+        // Bóc tách chuẩn xác vào object user bên trong response
+        const baseData = rawUserResponse?.data || rawUserResponse;
+        const user = baseData?.user || baseData; 
 
-        if (!user || role !== "student") {
-          router.push("/login");
+        if (!user) {
+          console.warn("⚠️ [DEBUG] Không tìm thấy thông tin user từ authService!");
+          setLoading(false);
           return;
         }
+
         setCurrentUser(user);
-        const studentId = user.user_id || user.id;
-
-        const [coursesRes, tutorsRes, usersRes, bookingsRes] = await Promise.all([
-          fetch(`${API_BASE}/courses`),
-          fetch(`${API_BASE}/tutors`),
-          fetch(`${API_BASE}/users`),
-          fetch(`${API_BASE}/bookings?studentId=${studentId}`)
-        ]);
-
-        const allCoursesData = await coursesRes.json();
-        const tutorsData = await tutorsRes.json();
-        const usersData = await usersRes.json();
-        const bookingsData = await bookingsRes.json();
-
-        setAllCourses(allCoursesData);
-        setAllTutors(tutorsData);
-        setAllUsers(usersData);
-
-        const bookingList = bookingsData.data || [];
-        setBookings(bookingList);
-
-        const filteredClasses = allCoursesData.filter(course => 
-          course.students && course.students.includes(studentId)
-        );
-        setBookedClasses(filteredClasses);
         
+        // Lấy chính xác user_id (ví dụ: 'u-YdQ8WuFQ') để truyền vào API khóa học
+        const userId = user?.user_id || user?.id || user?.sub;
+        console.log("📌 [2] ID người dùng xác định được (user_id):", userId);
+
+        if (!userId) {
+          console.error("❌ [DEBUG] Không thể tìm thấy user_id trong object user:", user);
+          setLoading(false);
+          return;
+        }
+
+        // Gọi API lấy danh sách lớp đã đăng ký bằng user_id
+        console.log(`📌 [3] Đang gọi courseService.getSubscribedCourses(${userId})...`);
+        const response = await courseService.getSubscribedCourses(userId);
+        
+        console.log("📥 [DEBUG RAW API RESPONSE]:", response);
+
+        // Chuẩn hóa mảng dữ liệu trả về từ API
+        let listClasses = [];
+        if (Array.isArray(response)) {
+          listClasses = response;
+        } else if (response && Array.isArray(response.data)) {
+          listClasses = response.data;
+        } else if (response && typeof response === 'object') {
+          listClasses = response.courses || response.result || [];
+        }
+
+        console.log("🎯 [DEBUG FINAL LIST CLASSES]:", listClasses);
+        setBookedClasses(listClasses);
+
       } catch (error) {
-        console.error("Lỗi khi tải lịch sử đăng ký lớp học:", error);
+        console.error("❌ [DEBUG LỖI TẠI INITPAGE]:", error);
       } finally {
         setLoading(false);
+        console.log("🏁 [Hoàn tất] Quá trình tải trang kết thúc.");
       }
     };
 
     initPage();
   }, [router]);
 
-  const getTutorName = (tutorId) => {
-    const tutor = allTutors.find(t => t.tutor_id === tutorId);
-    if (!tutor) return "Đang cập nhật";
-    const user = allUsers.find(u => u.user_id === tutor.user_id);
-    return user ? user.full_name : "Gia sư AuraTeach";
+  const getTutorName = (item) => {
+    const name = item?.tutor?.user?.full_name || item?.tutor_name || item?.tutorName;
+    console.log(`🔍 [DEBUG TUTOR NAME cho khóa ${item?.course_id || item?.id}]:`, name, item);
+    return name || "Gia sư AuraTeach";
   };
 
-  const getTutorInfo = (tutorId) => {
-    const tutor = allTutors.find(t => t.tutor_id === tutorId);
-    if (!tutor) return null;
-    const user = allUsers.find(u => u.user_id === tutor.user_id);
+  const getTutorInfo = (item) => {
+    if (!item?.tutor) return null;
     return {
-      ...tutor,
-      full_name: user ? user.full_name : "Gia sư AuraTeach"
+      ...item.tutor,
+      full_name: item?.tutor?.user?.full_name || "Gia sư AuraTeach"
     };
   };
 
-  const getBookingStatus = (courseId) => {
-    const booking = bookings.find(b => b.course_id === courseId);
-    if (!booking) {
-      return { label: 'Đã xác nhận', className: 'status-confirmed' };
-    }
-    
+  const getBookingStatus = (statusKey) => {
+    console.log("🔍 [DEBUG BOOKING STATUS KEY]:", statusKey);
     const statusMap = {
       'pending': { label: '⏳ Chờ xác nhận', className: 'status-pending' },
       'confirmed': { label: '✅ Đã xác nhận', className: 'status-confirmed' },
       'completed': { label: '🎓 Đã hoàn thành', className: 'status-completed' },
       'cancelled': { label: '❌ Đã hủy', className: 'status-cancelled' }
     };
-    
-    return statusMap[booking.status] || { label: booking.status, className: '' };
+    return statusMap[statusKey] || { label: statusKey || 'Đã xác nhận', className: 'status-confirmed' };
   };
 
-  const getPaymentStatus = (courseId) => {
-    const booking = bookings.find(b => b.course_id === courseId);
-    if (!booking) return null;
-    
+  const getPaymentStatus = (paymentKey) => {
+    console.log("🔍 [DEBUG PAYMENT STATUS KEY]:", paymentKey);
     const statusMap = {
       'unpaid': { label: '⏳ Chưa thanh toán', className: 'payment-unpaid' },
       'paid': { label: '✅ Đã thanh toán', className: 'payment-paid' },
       'refunded': { label: '↩️ Đã hoàn tiền', className: 'payment-refunded' }
     };
-    
-    return statusMap[booking.payment_status] || null;
+    return statusMap[paymentKey] || null;
   };
 
   const formatPrice = (price) => {
@@ -132,14 +120,10 @@ export default function StudentBookingHistoryPage() {
     return cleanStr.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
   };
 
-  const handleViewDetail = (courseId) => {
-    const course = allCourses.find(c => c.course_id === courseId || c.id === courseId);
-    if (course) {
-      setSelectedCourse(course);
-      const tutorInfo = getTutorInfo(course.tutor_id);
-      setSelectedTutor(tutorInfo);
-      setShowDetailModal(true);
-    }
+  const handleViewDetail = (item) => {
+    setSelectedCourse(item);
+    setSelectedTutor(getTutorInfo(item));
+    setShowDetailModal(true);
   };
 
   const handleJoinClass = (meetUrl) => {
@@ -204,20 +188,22 @@ export default function StudentBookingHistoryPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookedClasses.map((item) => {
-                        const status = getBookingStatus(item.course_id);
-                        const payment = getPaymentStatus(item.course_id);
+                      {bookedClasses.map((item, index) => {
+                        const courseId = item.course_id || item.id;
+                        const status = getBookingStatus(item.booking_status);
+                        const payment = getPaymentStatus(item.payment_status);
+                        
                         return (
-                          <tr key={item.course_id || item.id}>
-                            <td className="text-bold">{item.course_id || "N/A"}</td>
+                          <tr key={courseId || index}>
+                            <td className="text-bold">{courseId || "N/A"}</td>
                             <td>
                               <div className="class-title-cell">
                                 <span className="class-name-text">{item.title}</span>
                                 <span className="class-flow-badge">{item.level || "Tiêu chuẩn"}</span>
                               </div>
                             </td>
-                            <td className="tutor-name-cell">👨‍🏫 {getTutorName(item.tutor_id)}</td>
-                            <td className="price-cell">{formatPrice(item.hourly_rate)}</td>
+                            <td className="tutor-name-cell">👨‍🏫 {getTutorName(item)}</td>
+                            <td className="price-cell">{formatPrice(item.hourly_rate || item.price)}</td>
                             <td>
                               <span className={`status-badge ${status.className}`}>
                                 {status.label}
@@ -235,7 +221,7 @@ export default function StudentBookingHistoryPage() {
                             <td>
                               <button 
                                 className="view-detail-btn"
-                                onClick={() => handleViewDetail(item.course_id || item.id)}
+                                onClick={() => handleViewDetail(item)}
                               >
                                 Chi tiết ➜
                               </button>
@@ -256,7 +242,7 @@ export default function StudentBookingHistoryPage() {
       {showDetailModal && selectedCourse && (
         <BookingDetailModal
           course={selectedCourse}
-          tutorName={selectedTutor?.full_name || getTutorName(selectedCourse.tutor_id)}
+          tutorName={selectedTutor?.full_name || getTutorName(selectedCourse)}
           tutorInfo={selectedTutor}
           onClose={handleCloseModal}
           onJoinClass={handleJoinClass}
