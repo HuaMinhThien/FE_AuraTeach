@@ -3,6 +3,8 @@
 import styles from "./page.module.css";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+import { tutorService } from "@/services/tutorService"; // Đường dẫn tuỳ chỉnh theo cấu trúc project của ông em
+import { userService } from "@/services/userService";     // Đường dẫn tuỳ chỉnh theo cấu trúc project của ông em
 
 const quickFilters = ["Tất cả", "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh"];
 
@@ -23,59 +25,67 @@ export default function TeacherListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState("newest");
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTutors, setTotalTutors] = useState(0);
   const tutorsPerPage = 8;
 
-  // Call API từ JSON Server khi component mount
+  // Call API qua Service khi component mount
   useEffect(() => {
     let isMounted = true;
 
-    const fetchTutorsFromApi = async () => {
+    const fetchFilteredTutors = async () => {
+      setIsLoading(true);
       try {
-        const [tutorsRes, usersRes] = await Promise.all([
-          fetch("http://localhost:3007/tutors"),
-          fetch("http://localhost:3007/users"),
-        ]);
+        // Đóng gói các tham số để gửi lên Backend
+        const params = {
+          search: searchTerm,
+          filter: activeFilter,
+          sort: sortOption,
+          page: currentPage,
+          per_page: 8
+        };
 
-        const tutorsData = await tutorsRes.json();
-        const usersData = await usersRes.json();
+        // Gọi API qua service (giả sử tutorService.getTutors hỗ trợ nhận params)
+        const res = await tutorService.getTutors(params);
 
         if (isMounted) {
-          // Map và gộp dữ liệu giữa tutors và users
+          // Xử lý dữ liệu trả về từ Laravel Paginator
+          const responseData = res.data !== undefined ? res : { data: res, last_page: 1, total: res.length };
+          
+          const tutorsData = responseData.data || [];
+          
+          // Map dữ liệu hiển thị giống như cũ của ông em
           const formattedTutors = tutorsData.map((tutor) => {
-            const user = usersData.find((u) => u.user_id === tutor.user_id);
+            // Xử lý user tuỳ theo cấu trúc dữ liệu trả về từ quan hệ Eloquent
+            const user = tutor.user || {}; 
 
-            let avatar = user?.avatar || "";
+            let avatar = user.avatar || "";
             if (!avatar || avatar.trim() === "") {
-              avatar =
-                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+              avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
             }
 
             const bioText = tutor.bio || "";
-            const qualificationText = tutor.qualification || "";
+            const expertiseText = tutor.expertise || ""; // 👈 Đổi từ qualification thành expertise
 
             return {
               id: tutor.tutor_id || tutor.id,
-              name: user?.full_name || "Gia sư AuraTeach",
+              name: user.full_name || "Gia sư AuraTeach",
               rating: Number(tutor.rating) || 5.0,
-              reviews: Math.floor(Math.random() * 80) + 20, // Giả lập lượt review
+              reviews: Math.floor(Math.random() * 80) + 20,
               location: "Hà Nội",
-              desc:
-                bioText.length > 135
-                  ? bioText.substring(0, 132) + "..."
-                  : bioText || "Chưa có thông tin giới thiệu.",
-              qualification: qualificationText,
-              tags: ["Gia sư", qualificationText].filter(Boolean),
+              desc: bioText.length > 135 ? bioText.substring(0, 132) + "..." : bioText || "Chưa có thông tin giới thiệu.",
+              expertise: expertiseText, // 👈 Đổi tên thuộc tính cho khớp
+              tags: ["Gia sư", expertiseText].filter(Boolean),
               avatar: avatar,
-              createdAt: tutor.created_at
-                ? new Date(tutor.created_at)
-                : new Date(),
             };
           });
 
           setTutors(formattedTutors);
+          setTotalPages(responseData.last_page || 1);
+          setTotalTutors(responseData.total || formattedTutors.length);
         }
       } catch (error) {
-        console.error("Lỗi khi tải danh sách gia sư từ API:", error);
+        console.error("Lỗi khi lọc gia sư từ Backend:", error);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -83,56 +93,16 @@ export default function TeacherListPage() {
       }
     };
 
-    fetchTutorsFromApi();
+    // Thêm debounce nhẹ cho ô tìm kiếm để khỏi gọi API liên tục mỗi khi gõ phím
+    const timeoutId = setTimeout(() => {
+      fetchFilteredTutors();
+    }, 300);
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
-  }, []);
-
-  // Lọc và sắp xếp tutor
-  const filteredAndSortedTutors = useMemo(() => {
-    let filtered = tutors.filter((tutor) => {
-      const nameMatch = (tutor.name || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const descMatch = (tutor.desc || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const qualMatch = (tutor.qualification || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-
-      const matchesSearch = nameMatch || descMatch || qualMatch;
-
-      const matchesFilter =
-        activeFilter === "Tất cả" ||
-        (tutor.qualification || "")
-          .toLowerCase()
-          .includes(activeFilter.toLowerCase()) ||
-        tutor.tags.some((tag) =>
-          tag.toLowerCase().includes(activeFilter.toLowerCase())
-        );
-
-      return matchesSearch && matchesFilter;
-    });
-
-    // Sắp xếp
-    if (sortOption === "newest") {
-      filtered.sort((a, b) => b.createdAt - a.createdAt);
-    } else if (sortOption === "oldest") {
-      filtered.sort((a, b) => a.createdAt - b.createdAt);
-    }
-
-    return filtered;
-  }, [tutors, searchTerm, activeFilter, sortOption]);
-
-  // Phân trang
-  const totalPages = Math.ceil(filteredAndSortedTutors.length / tutorsPerPage);
-  const currentTutors = filteredAndSortedTutors.slice(
-    (currentPage - 1) * tutorsPerPage,
-    currentPage * tutorsPerPage
-  );
+  }, [searchTerm, activeFilter, sortOption, currentPage]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -201,7 +171,7 @@ export default function TeacherListPage() {
 
       <section className={`container-center ${styles.listSection}`}>
         <div className={styles.listHead}>
-          <h2>{filteredAndSortedTutors.length} gia sư phù hợp</h2>
+          <h2>{totalTutors} gia sư phù hợp</h2>
 
           {/* Dropdown Sort */}
           <div className={styles.sortWrapper}>
@@ -242,8 +212,8 @@ export default function TeacherListPage() {
           </div>
         ) : (
           <div className={styles.grid}>
-            {currentTutors.length > 0 ? (
-              currentTutors.map((tutor) => (
+            {tutors.length > 0 ? (
+              tutors.map((tutor) => (
                 <article className={styles.card} key={tutor.id}>
                   <div className={styles.cardTop}>
                     <img

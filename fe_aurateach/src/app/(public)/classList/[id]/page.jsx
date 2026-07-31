@@ -4,11 +4,14 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import styles from "./ClassDetail.module.css";
-import authService from "@/services/authService";
 import BookingModal from "@/components/users/BookingModal";
 import Avatar from "@/components/common/Avatar";
+
+// Import đầy đủ các service
+import { authService } from "@/services/authService";
+import { courseService } from "@/services/courseService";
+import { courseSubscriptionService } from "@/services/courseSubscriptionService";
 
 export default function ClassDetailPage({ params }) {
   const router = useRouter();
@@ -20,8 +23,6 @@ export default function ClassDetailPage({ params }) {
   const [tutorInfo, setTutorInfo] = useState(null);
   const [userTutor, setUserTutor] = useState(null);
   const [courseReviews, setCourseReviews] = useState([]);
-  const [allUsers, setAllUsers] = useState([]); 
-  const [allStudents, setAllStudents] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
 
   const [isBooked, setIsBooked] = useState(false);
@@ -30,8 +31,6 @@ export default function ClassDetailPage({ params }) {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
-  const API_BASE = "http://localhost:3007";
-
   useEffect(() => {
     let isMounted = true;
 
@@ -39,63 +38,38 @@ export default function ClassDetailPage({ params }) {
       try {
         setPageLoading(true);
 
-        const courseRes = await fetch(`${API_BASE}/courses?course_id=${courseId}`);
-        const coursesData = await courseRes.json();
-        
-        if (!isMounted) return;
+        const [courseData, userData] = await Promise.all([
+          courseService.getCourseDetail(courseId),
+          authService.getCurrentUser().catch(() => null)
+        ]);
 
-        if (!coursesData || coursesData.length === 0) {
+        const user = userData?.user || userData;
+        setCurrentUser(user);
+
+        if (!courseData) {
           setCourse(null);
           setPageLoading(false);
           return;
         }
-        const currentCourse = coursesData[0];
-        setCourse(currentCourse);
 
-        const categoriesRes = await fetch(`${API_BASE}/categories`);
-        const categoriesData = await categoriesRes.json();
-        if (isMounted) setAllCategories(categoriesData);
+        setCourse(courseData.course || courseData);
+        setAllCategories(courseData.categories || courseData.allCategories || []);
+        setCourseReviews(courseData.reviews || []);
 
-        if (currentCourse.tutor_id) {
-          const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${currentCourse.tutor_id}`);
-          const tutorsData = await tutorRes.json();
-          
-          if (tutorsData.length > 0 && isMounted) {
-            const currentTutor = tutorsData[0];
-            setTutorInfo(currentTutor);
+        const currentTutor = courseData.tutor || courseData.course?.tutor || null;
+        setTutorInfo(currentTutor);
 
-            const userTutorRes = await fetch(`${API_BASE}/users?user_id=${currentTutor.user_id}`);
-            const usersTutorData = await userTutorRes.json();
-            if (usersTutorData.length > 0 && isMounted) {
-              setUserTutor(usersTutorData[0]);
-            }
-          }
-        }
+        const currentUserTutor = courseData.userTutor || currentTutor?.user || null;
+        setUserTutor(currentUserTutor);
 
-        const reviewsRes = await fetch(`${API_BASE}/reviews?course_id=${courseId}`);
-        const reviewsData = await reviewsRes.json();
-        if (isMounted) setCourseReviews(reviewsData);
-
-        const [usersRes, studentsRes] = await Promise.all([
-          fetch(`${API_BASE}/users`),
-          fetch(`${API_BASE}/students`)
-        ]);
-        
-        if (isMounted) {
-          setAllUsers(await usersRes.json());
-          setAllStudents(await studentsRes.json());
-
-          const user = await authService.getCurrentUser();
-          setCurrentUser(user);
-          
-          const studentId = user?.user_id || user?.id;
-          if (studentId && currentCourse.students?.includes(studentId)) {
-            setIsBooked(true);
-          }
+        const studentId = user?.user_id || user?.id;
+        const currentCourseStudents = courseData.course?.students || courseData.students || [];
+        if (studentId && currentCourseStudents.includes(studentId)) {
+          setIsBooked(true);
         }
 
       } catch (error) {
-        console.error("Lỗi khi tải dữ liệu từ Fetch API:", error);
+        console.error("Lỗi khi tải dữ liệu trang chi tiết:", error);
       } finally {
         if (isMounted) setPageLoading(false);
       }
@@ -142,39 +116,21 @@ export default function ClassDetailPage({ params }) {
     const studentId = currentUser.user_id || currentUser.id;
 
     try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId: course.course_id,
-          studentId: studentId,
-          tutorId: course.tutor_id,
-          notes: notes,
-          paymentMethod: paymentMethod
-        }),
+      const result = await courseSubscriptionService.createBooking({
+        courseId: course.course_id || course.id,
+        studentId: studentId,
+        notes: notes,
+        paymentMethod: paymentMethod
       });
 
-      const result = await response.json();
+      return {
+        success: true,
+        data: result.data || result
+      };
 
-      if (response.ok) {
-        // ✅ Trả về data để tiếp tục xử lý thanh toán
-        return {
-          success: true,
-          data: result.data
-        };
-      } else {
-        // ✅ Hiển thị lỗi chi tiết
-        alert(result.message || "Đăng ký thất bại, vui lòng thử lại.");
-        return {
-          success: false,
-          message: result.message
-        };
-      }
     } catch (error) {
       console.error("Lỗi liên kết API Booking:", error);
-      alert("Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
+      alert(error.message || "Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
       return {
         success: false,
         message: error.message
@@ -184,7 +140,6 @@ export default function ClassDetailPage({ params }) {
     }
   };
 
-  // ✅ Xử lý khi booking thành công (sau khi thanh toán)
   const handleBookingSuccess = () => {
     setIsBooked(true);
     setCourse(prev => ({
@@ -194,17 +149,21 @@ export default function ClassDetailPage({ params }) {
     setShowBookingModal(false);
   };
 
-  const handleJoinClass = () => {
-    if (course?.permanent_room_url) {
-      window.open(course.permanent_room_url, '_blank');
-    } else {
-      alert("Lớp học chưa có link phòng học. Vui lòng liên hệ gia sư để được hỗ trợ.");
-    }
-  };
-
+  // 🛠️ Đã sửa lỗi danh mục "Chưa phân loại" bằng cách kiểm tra linh hoạt hơn giữa các thuộc tính
   const getCategoryName = (categoryId) => {
-    const category = allCategories.find(c => c.category_id === categoryId);
-    return category ? category.category_name : "Chưa phân loại";
+    if (!categoryId) return course?.category_name || "Chưa phân loại";
+    
+    // Tìm trong danh sách categories đổ về từ API
+    const category = allCategories.find(c => 
+      String(c.category_id || c.id) === String(categoryId)
+    );
+    
+    if (category) {
+      return category.category_name || category.name;
+    }
+    
+    // Fallback nếu course trả về sẵn tên danh mục lồng bên trong
+    return course?.category_name || course?.category?.category_name || "Chưa phân loại";
   };
 
   const formatPrice = (priceStr) => {
@@ -223,28 +182,6 @@ export default function ClassDetailPage({ params }) {
     });
   };
 
-  const averageRating = courseReviews.length > 0 
-    ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
-    : tutorInfo?.rating || 4.8;
-
-  // Kiểm tra quyền xem link Google Meet
-  const canViewMeetLink = () => {
-    if (!currentUser) return false;
-    
-    if (currentUser.role === 'tutor') return true;
-    
-    if (currentUser.role === 'student') {
-      const studentId = currentUser.user_id || currentUser.id;
-      return isBooked || (course?.students && course.students.includes(studentId));
-    }
-    
-    return false;
-  };
-
-  // Kiểm tra có link meet hợp lệ không
-  const hasMeetLink = course?.permanent_room_url && course.permanent_room_url.trim() !== "";
-  const showMeetLink = canViewMeetLink() && hasMeetLink;
-
   if (pageLoading) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Đang tải thông tin lớp học từ Server...</div>;
   }
@@ -253,12 +190,60 @@ export default function ClassDetailPage({ params }) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
 
-  const currentStudentsCount = course.students ? course.students.length : 0;
+  const schedulesList = Array.isArray(course?.schedules) ? course.schedules : [];
+  
+  const dayOrder = { "Thứ 2": 1, "Thứ 3": 2, "Thứ 4": 3, "Thứ 5": 4, "Thứ 6": 5, "Thứ 7": 6, "Chủ Nhật": 7, "CN": 7 };
+
+  const displayScheduleDays = schedulesList.length > 0 
+    ? [...new Set(schedulesList.map(s => s.day_of_week || s.days).filter(Boolean))]
+        .sort((a, b) => (dayOrder[a] || 99) - (dayOrder[b] || 99))
+        .join(", ") 
+    : (course.schedule_days || "Chưa cập nhật");
+
+  // 🛠️ TÍNH TOÁN SỐ BUỔI VÀ HỌC PHÍ CHUẨN XÁC
+  const sessionsPerWeek = schedulesList.length > 0 
+    ? schedulesList.length 
+    : (Array.isArray(course.schedule_days) ? course.schedule_days.length : 1);
+
+  const totalWeeks = course?.total_weeks || 12;
+  const totalSessions = sessionsPerWeek * totalWeeks;
+
+  const firstSchedule = schedulesList.length > 0 ? schedulesList[0] : {};
+  const displayTimeSlot = firstSchedule.time_slot || course.time_slot || "Chưa cập nhật";
+  const displayStartDate = firstSchedule.start_time || firstSchedule.start_date || course.start_date;
+  const displayEndDate = firstSchedule.end_time || firstSchedule.end_date || course.end_date;
+  const roomUrl = firstSchedule.meeting_platform || firstSchedule.room_url || course.permanent_room_url;
+
+  const handleJoinClass = () => {
+    if (roomUrl) {
+      window.open(roomUrl, '_blank');
+    } else {
+      alert("Lớp học chưa có link phòng học. Vui lòng liên hệ gia sư để được hỗ trợ.");
+    }
+  };
+
+  const averageRating = courseReviews.length > 0 
+    ? (courseReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / courseReviews.length).toFixed(1)
+    : tutorInfo?.rating || 4.8;
+
+  const canViewMeetLink = () => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'tutor') return true;
+    if (currentUser.role === 'student') {
+      const studentId = currentUser.user_id || currentUser.id;
+      return isBooked || (course?.students && course.students.includes(studentId));
+    }
+    return false;
+  };
+
+  const hasMeetLink = roomUrl && roomUrl.trim() !== "";
+  const showMeetLink = canViewMeetLink() && hasMeetLink;
+
+  const currentStudentsCount = course.students ? course.students.length : (course.current_students || 0);
   const isFull = currentStudentsCount >= course.max_students;
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
-
       {/* Breadcrumb */}
       <nav className={styles.breadcrumb}>
         <Link href="/">Trang chủ</Link>
@@ -303,7 +288,6 @@ export default function ClassDetailPage({ params }) {
       <div className={styles.content}>
         {/* Left Column */}
         <div className={styles.mainContent}>
-          {/* Introduction Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>📖 Giới thiệu chương trình</h2>
             <div className={styles.description}>
@@ -311,13 +295,12 @@ export default function ClassDetailPage({ params }) {
             </div>
           </section>
 
-          {/* Course Details Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>📋 Thông tin chi tiết</h2>
             <div className={styles.detailsGrid}>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Mã lớp</span>
-                <span className={styles.detailValue}>{course.course_id}</span>
+                <span className={styles.detailValue}>{course.course_id || course.id}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Trình độ</span>
@@ -330,28 +313,30 @@ export default function ClassDetailPage({ params }) {
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Học phí</span>
                 <span className={`${styles.detailValue} ${styles.priceValue}`}>
-                  {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ/giờ` : 'Liên hệ'}
+                  {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ/buổi` : 'Liên hệ'}
                 </span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Số buổi</span>
-                <span className={styles.detailValue}>{course.total_weeks || 0} buổi</span>
+                <span className={styles.detailValue}>{totalSessions} buổi ({sessionsPerWeek} buổi/tuần x {totalWeeks} tuần)</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Thời gian học</span>
-                <span className={styles.detailValue}>{course.time_slot || "Chưa cập nhật"}</span>
+                <span className={styles.detailValue}>{displayTimeSlot}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Lịch học</span>
-                <span className={styles.detailValue}>{course.schedule_days?.join(", ") || "Chưa cập nhật"}</span>
+                <span className={styles.detailValue}>
+                  {Array.isArray(displayScheduleDays) ? displayScheduleDays.join(", ") : displayScheduleDays}
+                </span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Ngày bắt đầu</span>
-                <span className={styles.detailValue}>{formatDate(course.start_date)}</span>
+                <span className={styles.detailValue}>{formatDate(displayStartDate)}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Ngày kết thúc</span>
-                <span className={styles.detailValue}>{formatDate(course.end_date)}</span>
+                <span className={styles.detailValue}>{formatDate(displayEndDate)}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Sĩ số</span>
@@ -361,12 +346,7 @@ export default function ClassDetailPage({ params }) {
                 <span className={styles.detailLabel}>Phòng học</span>
                 <span className={styles.detailValue}>
                   {showMeetLink ? (
-                    <a 
-                      href={course.permanent_room_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className={styles.meetLink}
-                    >
+                    <a href={roomUrl} target="_blank" rel="noopener noreferrer" className={styles.meetLink}>
                       🔗 Google Meet
                     </a>
                   ) : hasMeetLink ? (
@@ -398,24 +378,19 @@ export default function ClassDetailPage({ params }) {
 
             <div className={styles.reviewsList}>
               {courseReviews.length > 0 ? (
-                courseReviews.map((review) => {
-                  const student = allStudents.find(s => s.student_id === review.student_id);
-                  const studentUser = allUsers.find(u => u.user_id === student?.user_id);
-                  
-                  return (
-                    <div key={review.review_id} className={styles.reviewCard}>
-                      <div className={styles.reviewAuthor}>
-                        <span className={styles.reviewName}>
-                          {studentUser?.full_name || "Học viên ẩn danh"}
-                        </span>
-                        <span className={styles.reviewRating}>
-                          {'⭐'.repeat(review.rating)}
-                        </span>
-                      </div>
-                      <p className={styles.reviewContent}>{review.comment}</p>
+                courseReviews.map((review) => (
+                  <div key={review.review_id || review.id} className={styles.reviewCard}>
+                    <div className={styles.reviewAuthor}>
+                      <span className={styles.reviewName}>
+                        {review.student_name || review.user?.full_name || "Học viên ẩn danh"}
+                      </span>
+                      <span className={styles.reviewRating}>
+                        {'⭐'.repeat(review.rating || 5)}
+                      </span>
                     </div>
-                  );
-                })
+                    <p className={styles.reviewContent}>{review.comment}</p>
+                  </div>
+                ))
               ) : (
                 <p className={styles.noReviews}>Chưa có đánh giá nào cho khóa học này.</p>
               )}
@@ -428,11 +403,9 @@ export default function ClassDetailPage({ params }) {
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
               <span className={styles.price}>
-                {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ` : 'Liên hệ'}
+                {course.hourly_rate ? `${formatPrice(course.hourly_rate * totalSessions)}đ` : 'Liên hệ'}
               </span>
-              {course.hourly_rate && (
-                <span className={styles.priceUnit}>/giờ</span>
-              )}
+              {course.hourly_rate && <span className={styles.priceUnit}>/trọn gói</span>}
             </div>
 
             <div className={styles.priceDetails}>
@@ -442,48 +415,24 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>📅</span>
-                <span>{course.schedule_days?.join(", ")}</span>
+                <span>{Array.isArray(displayScheduleDays) ? displayScheduleDays.join(", ") : displayScheduleDays}</span>
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>⏰</span>
-                <span>{course.time_slot}</span>
+                <span>{displayTimeSlot}</span>
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>📚</span>
-                <span>{course.total_weeks || 0} buổi học</span>
-              </div>
-              <div className={styles.detailRow}>
-                <span className={styles.detailIcon}>🔗</span>
-                <span>
-                  {showMeetLink ? (
-                    <a 
-                      href={course.permanent_room_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className={styles.meetLink}
-                    >
-                      Phòng học Google Meet
-                    </a>
-                  ) : hasMeetLink ? (
-                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký</span>
-                  ) : (
-                    "Chưa có link"
-                  )}
-                </span>
+                <span>{totalSessions} buổi học ({sessionsPerWeek} buổi/tuần)</span>
               </div>
             </div>
 
-            {/* Nút tham gia lớp học - chỉ hiển thị khi đã đăng ký và có link meet */}
             {showMeetLink && course.status === 'active' && (
-              <button 
-                onClick={handleJoinClass} 
-                className={styles.joinButton}
-              >
+              <button onClick={handleJoinClass} className={styles.joinButton}>
                 🎯 Tham gia lớp học
               </button>
             )}
 
-            {/* Nút đăng ký */}
             <button 
               onClick={handleBooking} 
               className={isBooked || isFull || course.status !== 'active' ? styles.bookedButton : styles.bookButton}
@@ -512,17 +461,17 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.tutorDetails}>
                 <h4 className={styles.tutorName}>{userTutor?.full_name || "Đang tải tên..."}</h4>
-                <p className={styles.tutorTitle}>{tutorInfo?.qualification}</p>
+                <p className={styles.tutorTitle}>{tutorInfo?.expertise || "Gia sư chuyên môn"}</p>
                 <p className={styles.tutorDescription}>
-                  {tutorInfo?.bio || "Gia sư giàu kinh nghiệm."}
+                  {tutorInfo?.bio || "Gia sư giàu kinh nghiệm giảng dạy."}
                 </p>
                 <div className={styles.tutorExtra}>
-                  <span>⭐ {tutorInfo?.rating || 0}/5</span>
+                  <span>⭐ {tutorInfo?.rating || 5.0}/5</span>
                   <span className={styles.tutorDivider}>•</span>
-                  <span>{tutorInfo?.Experience || "Chưa cập nhật"}</span>
+                  <span>{tutorInfo?.Experience || tutorInfo?.experience || "Chưa cập nhật"}</span>
                 </div>
                 <Link 
-                  href={`/tutorList/${tutorInfo?.tutor_id}`} 
+                  href={`/tutorList/${tutorInfo?.tutor_id || tutorInfo?.id}`} 
                   className={styles.tutorProfileLink}
                 >
                   Xem hồ sơ chi tiết →
@@ -536,7 +485,11 @@ export default function ClassDetailPage({ params }) {
       {/* Booking Modal */}
       {showBookingModal && (
         <BookingModal
-          course={course}
+          course={{
+            ...course,
+            sessionsPerWeek,
+            totalSessions
+          }}
           tutorName={userTutor?.full_name || "Gia sư"}
           onClose={() => setShowBookingModal(false)}
           onConfirm={confirmBooking}

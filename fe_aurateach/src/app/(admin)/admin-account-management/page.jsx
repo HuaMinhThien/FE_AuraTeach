@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './AccountManager.module.css';
+import { adminService } from '@/services/adminService';
 
 export default function AccountManager() {
   const [users, setUsers] = useState([]);
@@ -12,21 +13,14 @@ export default function AccountManager() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Hàm load dữ liệu ở ngoài (Phục vụ cho tính năng làm mới sau khi tương tác nút bấm)
+  // Hàm load dữ liệu từ API tập trung của Admin
   const loadDataFromServer = async () => {
     setIsLoading(true);
     try {
-      const [studentRes, tutorRes] = await Promise.all([
-        fetch('/api/admin-account-management/student-management'),
-        fetch('/api/admin-account-management/tutor-management')
-      ]);
-
-      const studentsJson = await studentRes.json();
-      const tutorsJson = await tutorRes.json();
-
-      if (studentsJson.success && tutorsJson.success) {
-        setUsers([...studentsJson.data, ...tutorsJson.data]);
-      }
+      const res = await adminService.getAllAccounts();
+      // Hứng dữ liệu linh hoạt theo cấu trúc trả về của Laravel ({ success: true, data: [...] } hoặc mảng trực tiếp)
+      const list = Array.isArray(res) ? res : (res?.data || []);
+      setUsers(list);
     } catch (error) {
       console.error("Lỗi kết nối API:", error);
     } finally {
@@ -34,22 +28,16 @@ export default function AccountManager() {
     }
   };
 
-  // Khởi tạo dữ liệu ban đầu an toàn thông qua biến cờ hiệu cô lập
   useEffect(() => {
     let isMounted = true;
 
     const initializeData = async () => {
       try {
-        const [studentRes, tutorRes] = await Promise.all([
-          fetch('/api/admin-account-management/student-management'),
-          fetch('/api/admin-account-management/tutor-management')
-        ]);
-        
-        const studentsJson = await studentRes.json();
-        const tutorsJson = await tutorRes.json();
+        const res = await adminService.getAllAccounts();
+        const list = Array.isArray(res) ? res : (res?.data || []);
 
-        if (isMounted && studentsJson.success && tutorsJson.success) {
-          setUsers([...studentsJson.data, ...tutorsJson.data]);
+        if (isMounted) {
+          setUsers(list);
         }
       } catch (error) {
         console.error("Lỗi tải dữ liệu khởi tạo:", error);
@@ -86,52 +74,46 @@ export default function AccountManager() {
     });
   }, [users, searchTerm, roleFilter, statusFilter]);
 
-  // Kích hoạt cập nhật trạng thái Block qua API trung gian
+  // Kích hoạt cập nhật trạng thái Block qua adminService
   const handleToggleBlock = async (user) => {
     const nextStatus = user.status === 'active' ? 'banned' : 'active';
     if (!window.confirm(`Bạn muốn thay đổi trạng thái của ${user.full_name} thành ${nextStatus === 'banned' ? 'Khóa' : 'Mở khóa'}?`)) return;
 
-    const endpoint = user.role === 'student' 
-      ? '/api/admin-account-management/student-management'
-      : '/api/admin-account-management/tutor-management';
-
     try {
-      const res = await fetch(endpoint, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.user_id, status: nextStatus })
-      });
-      const result = await res.json();
+      let result;
+      if (user.role === 'student') {
+        result = await adminService.updateStudentStatus(user.user_id, nextStatus);
+      } else {
+        result = await adminService.updateTutorStatus({ userId: user.user_id, status: nextStatus });
+      }
 
-      if (result.success) {
-        alert(result.message);
+      if (result && (result.success !== false)) {
+        alert(result.message || "Cập nhật trạng thái thành công!");
         loadDataFromServer();
         if (selectedUser && selectedUser.user_id === user.user_id) {
           setSelectedUser(prev => ({ ...prev, status: nextStatus }));
         }
       }
     } catch (error) {
-      alert("Lỗi thực thi API!");
+      alert(error.message || "Lỗi thực thi API!");
     }
   };
 
-  // Kích hoạt Duyệt hồ sơ Gia sư lên API trung gian
+  // Kích hoạt Duyệt hồ sơ Gia sư qua adminService
   const handleVerifyTutor = async (tutor) => {
     try {
-      const res = await fetch('/api/admin-account-management/tutor-management', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tutorId: tutor.tutor_id, verificationStatus: 'Đã xác minh' })
+      const result = await adminService.updateTutorStatus({ 
+        tutorId: tutor.tutor_id, 
+        verificationStatus: 'Đã xác minh' 
       });
-      const result = await res.json();
 
-      if (result.success) {
+      if (result && (result.success !== false)) {
         alert("Phê duyệt hồ sơ thành công!");
         loadDataFromServer();
         setSelectedUser(prev => ({ ...prev, verification_status: 'Đã xác minh' }));
       }
     } catch (error) {
-      alert("Lỗi khi gửi yêu cầu duyệt!");
+      alert(error.message || "Lỗi khi gửi yêu cầu duyệt!");
     }
   };
 
@@ -164,7 +146,7 @@ export default function AccountManager() {
 
       {/* Bảng kết quả */}
       {isLoading ? (
-        <div className={styles.noData}>Đang lấy dữ liệu thời gian thực từ JSON Server...</div>
+        <div className={styles.noData}>Đang lấy dữ liệu thời gian thực từ Backend...</div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
@@ -180,14 +162,14 @@ export default function AccountManager() {
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.user_id} className={styles.tableRow} onClick={() => setSelectedUser(user)}>
+                filteredUsers.map((user, index) => (
+                  <tr key={user.user_id || user.id || index} className={styles.tableRow} onClick={() => setSelectedUser(user)}>
                     <td className={styles.boldText}>{user.full_name}</td>
                     <td>{user.email}</td>
                     <td>{user.phone}</td>
                     <td>
                       <span className={`${styles.badge} ${user.role === 'tutor' ? styles.badgeTutor : styles.badgeStudent}`}>
-                        {user.role.toUpperCase()}
+                        {user.role ? user.role.toUpperCase() : 'USER'}
                       </span>
                     </td>
                     <td>
@@ -223,7 +205,7 @@ export default function AccountManager() {
             <div className={styles.modalHeader}>
               <h2>{selectedUser.full_name}</h2>
               <span className={`${styles.badge} ${selectedUser.role === 'tutor' ? styles.badgeTutor : styles.badgeStudent}`}>
-                {selectedUser.role.toUpperCase()}
+                {selectedUser.role ? selectedUser.role.toUpperCase() : 'USER'}
               </span>
             </div>
 

@@ -1,167 +1,100 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import { courseService } from '@/services/courseService';
+import { categoryService } from '@/services/categoryService';
 
 export default function ClassListPage() {
   const router = useRouter();
   
-  // State cho dữ liệu từ API
+  // State lưu danh sách dữ liệu hiển thị từ API
   const [courses, setCourses] = useState([]);
-  const [tutors, setTutors] = useState([]);
-  const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
+  
+  // State phân trang từ Laravel trả về
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // State quản lý trạng thái tải và lỗi
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State cho filter và pagination
+  // State cho bộ lọc (Filters & Sorting)
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [priceRange, setPriceRange] = useState('all');
-  const [sortOption, setSortOption] = useState('students-asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  const itemsPerPage = 8; // 2 hàng x 4 cột
+  const [sortOption, setSortOption] = useState('students-desc');
 
-  // Fetch dữ liệu từ API
+  // Fetch danh mục (categories) một lần khi load trang
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesData = await categoryService.getCategories();
+        const categoriesList = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || []);
+        setCategories(categoriesList);
+      } catch (err) {
+        console.error('Lỗi tải danh mục:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Gọi API lấy danh sách khóa học mỗi khi thay đổi bộ lọc hoặc trang
+  useEffect(() => {
+    const fetchCourses = async () => {
       try {
         setLoading(true);
         setError(null);
+
+        // Chuẩn bị các tham số gửi lên API Laravel CourseController@index
+        const params = {
+          page: currentPage,
+          per_page: 8, // 2 hàng x 4 cột
+          search: searchTerm,
+          category: selectedCategory,
+          price_range: priceRange,
+          sort_by: sortOption,
+        };
+
+        const response = await courseService.getCourses(params);
+
+        // Xử lý dữ liệu trả về theo chuẩn phân trang Laravel API Resource/LengthAwarePaginator
+        const coursesList = Array.isArray(response) ? response : (response?.data || []);
         
-        const [coursesRes, tutorsRes, usersRes, categoriesRes] = await Promise.all([
-          fetch('http://localhost:3007/courses'),
-          fetch('http://localhost:3007/tutors'),
-          fetch('http://localhost:3007/users'),
-          fetch('http://localhost:3007/categories')
-        ]);
+        // Map lại dữ liệu khớp với cấu trúc hiển thị của giao diện cũ
+        const formattedCourses = coursesList.map(course => {
+          const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
+          const user = course.tutor?.user;
 
-        if (!coursesRes.ok || !tutorsRes.ok || !usersRes.ok || !categoriesRes.ok) {
-          throw new Error('Không thể kết nối đến máy chủ. Vui lòng thử lại sau!');
-        }
+          return {
+            ...course,
+            tutor_name: user?.full_name || 'Gia sư AuraTeach',
+            tutor_avatar: (user?.avatar && user.avatar !== '/img/tutors/default.png') ? user.avatar : defaultAvatar,
+            experience: course.tutor?.Experience || 'Chưa cập nhật',
+            category_name: course.category?.category_name || 'Chưa phân loại',
+            students_count: course.current_students || 0,
+          };
+        });
 
-        const coursesData = await coursesRes.json();
-        const tutorsData = await tutorsRes.json();
-        const usersData = await usersRes.json();
-        const categoriesData = await categoriesRes.json();
+        setCourses(formattedCourses);
+        setCurrentPage(response?.current_page || 1);
+        setTotalPages(response?.last_page || 1);
+        setTotalItems(response?.total || formattedCourses.length);
 
-        setCourses(Array.isArray(coursesData) ? coursesData : []);
-        setTutors(Array.isArray(tutorsData) ? tutorsData : []);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      } catch (error) {
-        console.error('Lỗi gọi API trong ClassListPage:', error);
-        setError(error.message || 'Có lỗi xảy ra khi tải dữ liệu');
+      } catch (err) {
+        console.error('Lỗi tải danh sách lớp học:', err);
+        setError(err.message || 'Có lỗi xảy ra khi tải dữ liệu');
         setCourses([]);
-        setTutors([]);
-        setUsers([]);
-        setCategories([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
-
-  // Parse giá - FIX: Xử lý an toàn cho mọi loại dữ liệu
-  const parsePrice = useCallback((priceStr) => {
-    if (priceStr === undefined || priceStr === null || priceStr === '') {
-      return 0;
-    }
-    // Nếu là number, chuyển thành string
-    const str = String(priceStr);
-    // Lấy tất cả số từ string
-    const numbers = str.replace(/[^0-9]/g, '');
-    return parseInt(numbers) || 0;
-  }, []);
-
-  // Lấy giá trị an toàn
-  const getSafePrice = useCallback((course) => {
-    const price = course?.hourly_rate || course?.price_per_session || 0;
-    return typeof price === 'number' ? price : parsePrice(price);
-  }, [parsePrice]);
-
-  // Kết hợp dữ liệu
-  const coursesWithDetails = useMemo(() => {
-    const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
-
-    return courses.map(course => {
-      const tutor = tutors.find(t => t.tutor_id === course.tutor_id);
-      const user = tutor ? users.find(u => u.user_id === tutor.user_id) : null;
-
-      return {
-        ...course,
-        tutor_name: user?.full_name || 'Gia sư AuraTeach',
-        tutor_avatar: (user?.avatar && user.avatar !== '/img/tutors/default.png') 
-          ? user.avatar 
-          : defaultAvatar,
-        experience: tutor?.Experience || 'Chưa cập nhật',
-        students_count: course.current_students || course.students_count || 0,
-        category_name: categories.find(c => c.category_id === course.category_id)?.category_name || 'Chưa phân loại',
-        // Thêm trường price_number để sử dụng cho filter
-        price_number: getSafePrice(course),
-      };
-    });
-  }, [courses, tutors, users, categories, getSafePrice]);
-
-  // Lọc và sắp xếp
-  const filteredCourses = useMemo(() => {
-    let result = [...coursesWithDetails];
-
-    // Tìm kiếm
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(course =>
-        course.title.toLowerCase().includes(term) ||
-        course.tutor_name.toLowerCase().includes(term) ||
-        course.category_name.toLowerCase().includes(term)
-      );
-    }
-
-    // Lọc theo danh mục
-    if (selectedCategory !== 'Tất cả') {
-      const category = categories.find(c => c.category_name === selectedCategory);
-      if (category) {
-        result = result.filter(course => course.category_id === category.category_id);
-      }
-    }
-
-    // Lọc theo giá - SỬ DỤNG price_number đã được tính sẵn
-    if (priceRange !== 'all') {
-      result = result.filter(course => {
-        const priceNum = course.price_number || 0;
-        if (priceRange === 'under200') return priceNum < 200000;
-        if (priceRange === '200-300') return priceNum >= 200000 && priceNum <= 300000;
-        if (priceRange === 'over300') return priceNum > 300000;
-        return true;
-      });
-    }
-
-    // Sắp xếp - SỬ DỤNG price_number đã được tính sẵn
-    if (sortOption === 'students-asc') {
-      result = [...result].sort((a, b) => (a.students_count || 0) - (b.students_count || 0));
-    } else if (sortOption === 'students-desc') {
-      result = [...result].sort((a, b) => (b.students_count || 0) - (a.students_count || 0));
-    } else if (sortOption === 'price-low') {
-      result = [...result].sort((a, b) => (a.price_number || 0) - (b.price_number || 0));
-    } else if (sortOption === 'price-high') {
-      result = [...result].sort((a, b) => (b.price_number || 0) - (a.price_number || 0));
-    }
-
-    return result;
-  }, [coursesWithDetails, searchTerm, selectedCategory, priceRange, sortOption, categories]);
-
-  // Phân trang
-  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;
-  const paginatedCourses = useMemo(() => {
-    return filteredCourses.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    );
-  }, [filteredCourses, currentPage]);
+    fetchCourses();
+  }, [currentPage, searchTerm, selectedCategory, priceRange, sortOption]);
 
   // Điều hướng đến trang chi tiết
   const handleCardClick = useCallback((course) => {
@@ -172,14 +105,13 @@ export default function ClassListPage() {
   const handleImageError = useCallback((e) => {
     const img = e.target;
     const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
-    
     if (img.src !== defaultAvatar) {
       img.src = defaultAvatar;
       img.onerror = null;
     }
   }, []);
 
-  // Handlers
+  // Handlers thay đổi bộ lọc (đưa về trang 1 khi đổi điều kiện lọc)
   const handleSearchChange = useCallback((e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
@@ -200,27 +132,15 @@ export default function ClassListPage() {
     setCurrentPage(1);
   }, []);
 
-  // Format giá an toàn
+  // Format giá tiền hiển thị VNĐ
   const formatPrice = useCallback((price) => {
     if (price === undefined || price === null || price === '') return '0';
-    const num = typeof price === 'number' ? price : parsePrice(price);
+    const num = Number(price) || 0;
     return num.toLocaleString('vi-VN');
-  }, [parsePrice]);
+  }, []);
 
-  // Hiển thị loading
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-          <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
-          <div style={{ fontSize: '18px', color: '#666' }}>Đang tải danh sách lớp học...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Hiển thị lỗi
-  if (error) {
+  // Hiển thị lỗi kết nối API
+  if (error && courses.length === 0) {
     return (
       <div className={styles.container}>
         <div style={{ textAlign: 'center', padding: '80px 20px' }}>
@@ -308,8 +228,8 @@ export default function ClassListPage() {
             onChange={handleSortChange}
             className={styles.filterDropdown}
           >
-            <option value="students-asc">Học viên tăng dần</option>
             <option value="students-desc">Học viên giảm dần</option>
+            <option value="students-asc">Học viên tăng dần</option>
             <option value="price-low">Giá tăng dần</option>
             <option value="price-high">Giá giảm dần</option>
           </select>
@@ -340,78 +260,86 @@ export default function ClassListPage() {
           <div>
             <h2 className={styles.listTitle}>Danh Sách Lớp Học</h2>
             <p className={styles.listCount}>
-              Tìm thấy <strong>{filteredCourses.length}</strong> lớp học phù hợp
+              Tìm thấy <strong>{totalItems}</strong> lớp học phù hợp
             </p>
           </div>
         </div>
 
-        <div className={styles.tutorGrid}>
-          {paginatedCourses.length > 0 ? (
-            paginatedCourses.map((course) => (
-              <div 
-                key={course.course_id} 
-                className={styles.tutorCard}
-                onClick={() => handleCardClick(course)}
-              >
-                <div className={styles.cardImage}>
-                  <img 
-                    src={course.thumbnail || "/img/default-class-1.jpg"} 
-                    alt={course.title}
-                    className={styles.cardThumbnail}
-                    onError={(e) => {
-                      e.target.src = "/img/default-class-1.jpg";
-                    }}
-                  />
-                  <span className={styles.cardBadge}>
-                    {course.category_name} - {course.level || 'N/A'}
-                  </span>
-                </div>
-
-                <h3 className={styles.tutorSubject}>{course.title}</h3>
-
-                <div className={styles.tutorInfo}>
-                  <div className={styles.tutorAvatar}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', gridColumn: '1 / -1' }}>
+            <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
+            <div style={{ fontSize: '18px', color: '#666' }}>Đang tải danh sách lớp học...</div>
+          </div>
+        ) : (
+          <div className={styles.tutorGrid}>
+            {courses.length > 0 ? (
+              courses.map((course) => (
+                <div 
+                  key={course.course_id} 
+                  className={styles.tutorCard}
+                  onClick={() => handleCardClick(course)}
+                >
+                  <div className={styles.cardImage}>
                     <img 
-                      src={course.tutor_avatar} 
-                      alt={course.tutor_name}
-                      width={40}
-                      height={40}
-                      onError={handleImageError}
+                      src={course.thumbnail || "/img/default-class-1.jpg"} 
+                      alt={course.title}
+                      className={styles.cardThumbnail}
+                      onError={(e) => {
+                        e.target.src = "/img/default-class-1.jpg";
+                      }}
                     />
-                  </div>
-                  <div className={styles.tutorDetails}>
-                    <p className={styles.tutorName}>{course.tutor_name}</p>
-                    <p className={styles.tutorStats}>
-                      {course.experience}
-                    </p>
-                  </div>
-                </div>
-
-                <p className={styles.cardDescription}>{course.description}</p>
-
-                <div className={styles.tutorFooter}>
-                  <div className={styles.tutorPrice}>
-                    <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
-                    <span className={styles.priceValue}>
-                      {formatPrice(course.hourly_rate || course.price_per_session)} đ/h
+                    <span className={styles.cardBadge}>
+                      {course.category_name} - {course.level || 'N/A'}
                     </span>
                   </div>
-                  <div className={styles.studentCount}>
-                    <span>👥 {course.current_students || 0}/{course.max_students || 0} HS</span>
+
+                  <h3 className={styles.tutorSubject}>{course.title}</h3>
+
+                  <div className={styles.tutorInfo}>
+                    <div className={styles.tutorAvatar}>
+                      <img 
+                        src={course.tutor_avatar} 
+                        alt={course.tutor_name}
+                        width={40}
+                        height={40}
+                        onError={handleImageError}
+                      />
+                    </div>
+                    <div className={styles.tutorDetails}>
+                      <p className={styles.tutorName}>{course.tutor_name}</p>
+                      <p className={styles.tutorStats}>
+                        {course.experience}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className={styles.cardDescription}>{course.description}</p>
+
+                  <div className={styles.tutorFooter}>
+                    <div className={styles.tutorPrice}>
+                      <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
+                      <span className={styles.priceValue}>
+                        {formatPrice(course.hourly_rate)} đ/h
+                      </span>
+                    </div>
+                    <div className={styles.studentCount}>
+                      <span>👥 {course.current_students || 0}/{course.max_students || 0} HS</span>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
+                <div style={{ fontSize: '18px', color: '#666' }}>
+                  Không tìm thấy lớp học nào phù hợp với tiêu chí tìm kiếm.
+                </div>
               </div>
-            ))
-          ) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
-              <div style={{ fontSize: '18px', color: '#666' }}>
-                Không tìm thấy lớp học nào phù hợp với tiêu chí tìm kiếm.
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
+        {/* PAGINATION */}
         {totalPages > 1 && (
           <div className={styles.pagination}>
             <button 

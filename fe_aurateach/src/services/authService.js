@@ -71,5 +71,22 @@ export const authService = {
     } finally {
       localStorage.removeItem("access_token");
     }
+  },
+
+  async getCurrentUser() {
+    try {
+      // 👈 Gọi đúng endpoint /auth/me đã khai báo trong routes/api.php của Laravel
+      const response = await apiClient.get("/auth/me");
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  isAuthenticated() {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem("access_token");
+    }
+    return false;
   }
 };

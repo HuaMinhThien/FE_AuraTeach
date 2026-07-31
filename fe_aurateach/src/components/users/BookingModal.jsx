@@ -15,7 +15,7 @@ export default function BookingModal({
   loading 
 }) {
   const [notes, setNotes] = useState("");
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false); 
   const [bookingData, setBookingData] = useState(null);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -80,6 +80,11 @@ export default function BookingModal({
     onClose();
   };
 
+  // 🛠️ Lấy tổng số buổi đã được tính toán chuẩn xác từ component cha truyền sang
+  const totalSessions = course?.totalSessions || (course?.total_weeks || 12) * (course?.sessionsPerWeek || 1);
+  const hourlyRate = course?.hourly_rate || course?.price_per_session || 0;
+  const calculatedTotalPrice = hourlyRate * totalSessions;
+
   return (
     <>
       <div className="booking-modal-overlay" onClick={handleClose}>
@@ -123,8 +128,18 @@ export default function BookingModal({
               <h3 className="booking-course-name">{course?.title}</h3>
               <p className="booking-course-tutor">👨‍🏫 {tutorName || "Gia sư"}</p>
               <div className="booking-course-meta">
-                <span className="booking-meta-item">📅 {course?.schedule_days?.join(", ")}</span>
-                <span className="booking-meta-item">⏰ {course?.time_slot}</span>
+                <span className="booking-meta-item">
+                  📅 {
+                    Array.isArray(course?.schedules) && course.schedules.length > 0
+                      ? [...new Set(course.schedules.map(s => s.day_of_week || s.days).filter(Boolean))].join(", ")
+                      : (course?.schedule_days || "Chưa cập nhật lịch")
+                  }
+                </span>
+                <span className="booking-meta-item">
+                  ⏰ {
+                    course?.schedules?.[0]?.time_slot || course?.time_slot || "Chưa cập nhật giờ"
+                  }
+                </span>
               </div>
             </div>
           </div>
@@ -153,17 +168,17 @@ export default function BookingModal({
           {/* Price Summary */}
           <div className="booking-price-summary">
             <div className="booking-price-row">
-              <span>Học phí / giờ</span>
-              <span className="booking-price-value">{formatPrice(course?.hourly_rate || course?.price_per_session)}</span>
+              <span>Học phí / buổi</span>
+              <span className="booking-price-value">{formatPrice(hourlyRate)}</span>
             </div>
             <div className="booking-price-row">
               <span>Số buổi dự kiến</span>
-              <span>{course?.total_weeks || 12} buổi</span>
+              <span>{totalSessions} buổi</span>
             </div>
             <div className="booking-price-row total">
               <span>Tổng cộng</span>
               <span className="booking-total-price">
-                {formatPrice((course?.hourly_rate || course?.price_per_session || 0) * (course?.total_weeks || 12))}
+                {formatPrice(calculatedTotalPrice)}
               </span>
             </div>
           </div>
@@ -216,10 +231,15 @@ export default function BookingModal({
       {/* Payment Modal */}
       {showPaymentModal && bookingData && (
         <PaymentModal
-          course={course}
-          bookingId={bookingData.booking_id}
+          course={{
+            ...course,
+            totalSessions,
+            calculatedTotalPrice
+          }}
+          // ✅ Truyền chính xác payment_id (chuỗi pay-xxxx) làm tham số định danh để Polling check status
+          subscriptionId={bookingData.payment_id || bookingData.subscription_id} 
           studentId={bookingData.student_id || course?.student_id}
-          amount={bookingData.amount || course?.hourly_rate}
+          amount={bookingData.amount || calculatedTotalPrice}
           onClose={handlePaymentClose}
           onSuccess={handlePaymentSuccess}
           paymentService={paymentService}

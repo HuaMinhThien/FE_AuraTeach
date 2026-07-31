@@ -6,7 +6,7 @@ import '@/css/student-style/paymentModal.css';
 
 export default function PaymentModal({ 
   course, 
-  bookingId, 
+  subscriptionId, 
   studentId, 
   amount,
   onClose, 
@@ -19,12 +19,15 @@ export default function PaymentModal({
   const [expiryTime, setExpiryTime] = useState(null);
   const [countdown, setCountdown] = useState('');
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState(null);
-  const [pollCount, setPollCount] = useState(0);
-  const [isManualPay, setIsManualPay] = useState(false);
+
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
   const pollIntervalRef = useRef(null);
   const countdownIntervalRef = useRef(null);
-  const isMountedRef = useRef(true);
+  const hasInitializedRef = useRef(false); // 🛡️ Chống chạy hàm createQR 2 lần
 
   const formatPrice = (price) => {
     if (!price) return '0đ';
@@ -41,137 +44,147 @@ export default function PaymentModal({
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handleCreateQR = async () => {
-    if (!isMountedRef.current) return;
-    
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await paymentService.createQR(bookingId, studentId, amount);
-      
-      if (!isMountedRef.current) return;
-      
-      if (result.success) {
-        const data = result.data;
-        setQrCode(data.qr_code);
-        setPaymentId(data.payment_id);
-        setStatus(data.status);
-        setExpiryTime(data.expiry_at);
-        setCountdown(formatCountdown(data.expiry_at));
-
-        // Bắt đầu poll check status
-        startPolling(data.payment_id);
-      } else {
-        setError(result.message || 'Không thể tạo mã QR');
-      }
-    } catch (err) {
-      if (!isMountedRef.current) return;
-      setError(err.message || 'Có lỗi xảy ra');
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-      }
-    }
-  };
-
-  const startPolling = (paymentId) => {
+  const clearAllIntervals = () => {
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
     }
-
-    pollIntervalRef.current = setInterval(async () => {
-      try {
-        if (!isMountedRef.current) return;
-        
-        setPollCount(prev => prev + 1);
-        
-        const result = await paymentService.checkStatus(paymentId);
-        
-        if (!isMountedRef.current) return;
-        
-        if (result.success) {
-          setStatus(result.status);
-          
-          if (result.status === 'paid') {
-            // Thanh toán thành công
-            clearInterval(pollIntervalRef.current);
-            clearInterval(countdownIntervalRef.current);
-            onSuccess();
-          } else if (result.status === 'expired') {
-            // Hết hạn
-            clearInterval(pollIntervalRef.current);
-            clearInterval(countdownIntervalRef.current);
-            setError('Mã QR đã hết hạn. Vui lòng thử lại.');
-          }
-        }
-      } catch (err) {
-        console.error('Poll error:', err);
-      }
-    }, 5000);
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
   };
 
-  // Cập nhật countdown mỗi giây
+  // Khởi tạo QR độc lập, dùng useRef chống gọi lại lần 2
   useEffect(() => {
-    if (expiryTime) {
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
+    const initQR = async () => {
+      if (!subscriptionId) {
+        setError("Mã đăng ký khóa học không hợp lệ.");
+        setLoading(false);
+        return;
       }
 
-      countdownIntervalRef.current = setInterval(() => {
-        if (!isMountedRef.current) return;
+      setLoading(true);
+      setError(null);
+
+      try {
+        console.log("🚀 [Init] Đang gọi API tạo QR...");
+        const result = await paymentService.createQR(subscriptionId, studentId, amount);
+        console.log("✅ [Init] Kết quả tạo QR:", result);
         
-        const newCountdown = formatCountdown(expiryTime);
-        setCountdown(newCountdown);
-        
-        if (newCountdown === 'Đã hết hạn' && status === 'pending') {
-          clearInterval(countdownIntervalRef.current);
-          clearInterval(pollIntervalRef.current);
-          setError('Mã QR đã hết hạn. Vui lòng thử lại.');
+        if (result && result.success) {
+          const data = result.data;
+          setQrCode(data.qr_url);
+          setPaymentId(data.payment_id);
+          setStatus(data.status || 'pending');
+          
+          const expiry = data.expiry_at || new Date(Date.now() + 15 * 60000).toISOString();
+          setExpiryTime(expiry);
+          setCountdown(formatCountdown(expiry));
+
+          if (data.payment_id) {
+            startPolling(data.payment_id);
+          }
+        } else {
+          setError(result?.message || 'Không thể tạo mã QR');
         }
-      }, 1000);
-    }
+      } catch (err) {
+        console.error("❌ [Init Error]:", err);
+        setError(err.response?.data?.message || err.message || 'Có lỗi xảy ra');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initQR();
 
     return () => {
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      clearAllIntervals();
+    };
+  }, [subscriptionId, studentId, amount, paymentService]);
+
+  // Vòng lặp đếm ngược thời gian hết hạn QR
+  useEffect(() => {
+    if (!expiryTime) return;
+
+    countdownIntervalRef.current = setInterval(() => {
+      const newCountdown = formatCountdown(expiryTime);
+      setCountdown(newCountdown);
+      
+      if (newCountdown === 'Đã hết hạn' && statusRef.current === 'pending') {
+        clearAllIntervals();
+        setError('Mã QR đã hết hạn. Vui lòng thử lại.');
+      }
+    }, 1000);
+
+    return () => {
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, [expiryTime]);
 
-  // Tạo QR khi mount
-  useEffect(() => {
-    isMountedRef.current = true;
-    handleCreateQR();
-    
-    return () => {
-      isMountedRef.current = false;
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    };
-  }, []);
+  // Vòng lặp Polling kiểm tra trạng thái thanh toán chuẩn xác
+  const startPolling = (currentPaymentId) => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+    }
 
-  // Xử lý test payment (chỉ dùng dev)
-  const handleTestPayment = async () => {
-    if (!paymentId || isManualPay) return;
-    
-    setIsManualPay(true);
-    try {
-      const result = await paymentService.manualPay(paymentId);
-      if (result.success && result.status === 'paid') {
-        setStatus('paid');
-        clearInterval(pollIntervalRef.current);
-        clearInterval(countdownIntervalRef.current);
-        setTimeout(() => {
-          onSuccess();
-        }, 1000);
-      } else {
-        alert('Không thể mô phỏng thanh toán. Vui lòng thử lại.');
-        setIsManualPay(false);
+    console.log("🔄 [Polling Started] Kích hoạt vòng lặp checkStatus mỗi 3s cho ID:", currentPaymentId);
+
+    pollIntervalRef.current = setInterval(async () => {
+      if (statusRef.current === 'paid' || statusRef.current === 'expired') {
+        console.log("⚠️ [Polling] Trạng thái đã là:", statusRef.current, "-> Hủy vòng lặp.");
+        clearAllIntervals();
+        return;
       }
-    } catch (error) {
-      console.error('Test payment error:', error);
-      alert('Có lỗi xảy ra khi test payment');
-      setIsManualPay(false);
+
+      try {
+        console.log(`⏳ [Polling Tick] Đang gọi checkStatus lúc ${new Date().toLocaleTimeString()}...`);
+        const response = await paymentService.checkStatus(currentPaymentId);
+        const result = response?.data?.success !== undefined ? response.data : response;
+        
+        console.log("📥 [Polling Response]:", result);
+        
+        if (result && result.success) {
+          const currentStatus = result.status;
+          setStatus(currentStatus);
+          
+          if (currentStatus === 'paid') {
+            console.log("🎉 [SUCCESS] Thanh toán thành công! Dừng polling và gọi onSuccess.");
+            clearAllIntervals();
+            if (typeof onSuccess === 'function') {
+              onSuccess();
+            }
+          } else if (currentStatus === 'expired') {
+            console.log("⏰ [EXPIRED] Giao dịch hết hạn.");
+            clearAllIntervals();
+            setError('Mã QR đã hết hạn. Vui lòng thử lại.');
+          }
+        }
+      } catch (err) {
+        console.error('❌ [Polling Error]:', err?.response?.data || err.message);
+      }
+    }, 3000);
+  };
+
+  const handleCancelPayment = async () => {
+    clearAllIntervals();
+    if (!paymentId) {
+      onClose();
+      return;
+    }
+
+    try {
+      setCancelling(true);
+      if (paymentService.cancelPayment) {
+        await paymentService.cancelPayment(paymentId);
+      }
+    } catch (err) {
+      console.error('Lỗi khi hủy giao dịch:', err);
+    } finally {
+      onClose();
     }
   };
 
@@ -181,148 +194,133 @@ export default function PaymentModal({
     setQrCode(null);
     setPaymentId(null);
     setExpiryTime(null);
-    setCountdown('');
-    setPollCount(0);
-    setIsManualPay(false);
-    handleCreateQR();
+    hasInitializedRef.current = false;
+    window.location.reload(); // Hoặc gọi lại hàm khởi tạo
   };
 
   const getStatusMessage = () => {
     if (status === 'paid') {
-      return {
-        icon: '✅',
-        text: 'Thanh toán thành công!',
-        className: 'status-success'
-      };
-    } else if (status === 'pending') {
-      return {
-        icon: '⏳',
-        text: `Đang chờ thanh toán...`,
-        className: 'status-pending'
-      };
+      return { icon: '✅', text: 'Thanh toán thành công!', className: 'status-success' };
     } else if (status === 'expired') {
-      return {
-        icon: '⏰',
-        text: 'Mã QR đã hết hạn',
-        className: 'status-expired'
-      };
+      return { icon: '⏰', text: 'Mã QR đã hết hạn', className: 'status-expired' };
     }
-    return {
-      icon: 'ℹ️',
-      text: 'Đang xử lý...',
-      className: 'status-loading'
-    };
+    return { icon: '⏳', text: 'Đang chờ thanh toán...', className: 'status-pending' };
   };
 
   const statusInfo = getStatusMessage();
 
   return (
-    <div className="payment-modal-overlay" onClick={onClose}>
+    <div className="payment-modal-overlay" onClick={handleCancelPayment}>
       <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="payment-modal-header">
           <h2 className="payment-modal-title">💳 Thanh toán QR Code</h2>
           <button 
             className="payment-modal-close" 
-            onClick={onClose} 
-            disabled={status === 'paid' || loading}
+            onClick={handleCancelPayment} 
+            disabled={status === 'paid' || loading || cancelling}
           >
             ✕
           </button>
         </div>
 
-        {/* Loading */}
-        {loading && (
+        {loading ? (
           <div className="payment-loading">
             <div className="payment-spinner"></div>
             <p>Đang tạo mã QR...</p>
           </div>
-        )}
-
-        {/* Error */}
-        {error && !loading && (
+        ) : error ? (
           <div className="payment-error">
             <p className="payment-error-icon">❌</p>
             <p className="payment-error-text">{error}</p>
-            <button className="payment-retry-btn" onClick={handleRetry}>
-              Thử lại
-            </button>
+            <div className="payment-error-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' }}>
+              <button className="payment-retry-btn" onClick={handleRetry}>
+                Thử lại
+              </button>
+              <button className="payment-cancel-btn" onClick={handleCancelPayment} style={{ background: '#e0e0e0', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                Đóng / Hủy
+              </button>
+            </div>
           </div>
-        )}
-
-        {/* QR Display */}
-        {!loading && !error && qrCode && (
-          <>
-            <div className="payment-course-info">
-              <h3 className="payment-course-title">{course?.title || 'Khóa học'}</h3>
-              <p className="payment-amount">Số tiền: <strong>{formatPrice(amount)}</strong></p>
-              {bookingId && (
-                <p className="payment-booking-id">Mã đăng ký: <strong>{bookingId}</strong></p>
-              )}
-            </div>
-
-            <div className="payment-qr-container">
-              <div className="payment-qr-wrapper">
-                <img 
-                  src={qrCode} 
-                  alt="QR Code thanh toán" 
-                  className="payment-qr-image"
-                  onError={(e) => {
-                    e.target.src = '/img/qr-placeholder.png';
-                  }}
-                />
+        ) : (
+          qrCode && (
+            <>
+              <div className="payment-course-info">
+                <h3 className="payment-course-title">{course?.title || 'Khóa học'}</h3>
+                <p className="payment-amount">Số tiền: <strong>{formatPrice(amount)}</strong></p>
+                {subscriptionId && (
+                  <p className="payment-booking-id">Mã đăng ký: <strong>{subscriptionId}</strong></p>
+                )}
               </div>
 
-              <div className={`payment-status ${statusInfo.className}`}>
-                <span className="payment-status-icon">{statusInfo.icon}</span>
-                <span className="payment-status-text">{statusInfo.text}</span>
+              <div className="payment-qr-container">
+                <div className="payment-qr-wrapper">
+                  <img 
+                    src={qrCode} 
+                    alt="QR Code thanh toán" 
+                    className="payment-qr-image"
+                    onError={(e) => {
+                      e.target.src = '/img/qr-placeholder.png';
+                    }}
+                  />
+                </div>
+
+                <div className={`payment-status ${statusInfo.className}`}>
+                  <span className="payment-status-icon">{statusInfo.icon}</span>
+                  <span className="payment-status-text">{statusInfo.text}</span>
+                </div>
+
+                {status !== 'paid' && (
+                  <div className="payment-countdown">
+                    <span>⏱️ Thời gian còn lại: </span>
+                    <span className="payment-countdown-timer">{countdown}</span>
+                  </div>
+                )}
+
+                {status !== 'paid' && (
+                  <div className="payment-action-buttons" style={{ margin: '15px 0', display: 'flex', justifyContent: 'center' }}>
+                    <button 
+                      onClick={handleCancelPayment}
+                      disabled={cancelling}
+                      style={{
+                        backgroundColor: '#ff4d4f',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        transition: 'background 0.2s'
+                      }}
+                    >
+                      {cancelling ? 'Đang hủy...' : '🚫 Hủy giao dịch / Để sau'}
+                    </button>
+                  </div>
+                )}
+
+                {status !== 'paid' && (
+                  <div className="payment-instructions">
+                    <p>📌 <strong>Hướng dẫn thanh toán:</strong></p>
+                    <ol>
+                      <li>Mở ứng dụng ngân hàng trên điện thoại</li>
+                      <li>Chọn chức năng quét mã QR</li>
+                      <li>Quét mã QR hiển thị bên trên</li>
+                      <li>Xác nhận thanh toán số tiền <strong>{formatPrice(amount)}</strong></li>
+                      <li>Hệ thống sẽ tự động xác nhận sau khi chuyển khoản thành công</li>
+                      <li>⚠️ <em>Không đóng tab này cho đến khi hệ thống xác nhận hoàn tất</em></li>
+                    </ol>
+                  </div>
+                )}
+
+                {status === 'paid' && (
+                  <div className="payment-success-actions">
+                    <button className="payment-done-btn" onClick={onSuccess}>
+                      ✅ Hoàn tất
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {status === 'pending' && (
-                <div className="payment-countdown">
-                  <span>⏱️ Thời gian còn lại: </span>
-                  <span className="payment-countdown-timer">{countdown}</span>
-                </div>
-              )}
-
-              {status === 'pending' && (
-                <div className="payment-instructions">
-                  <p>📌 <strong>Hướng dẫn thanh toán:</strong></p>
-                  <ol>
-                    <li>Mở ứng dụng ngân hàng trên điện thoại</li>
-                    <li>Chọn chức năng quét mã QR</li>
-                    <li>Quét mã QR hiển thị bên trên</li>
-                    <li>Xác nhận thanh toán số tiền <strong>{formatPrice(amount)}</strong></li>
-                    <li>Hệ thống sẽ tự động xác nhận sau khi thanh toán</li>
-                    <li>⚠️ <em>Không đóng tab này cho đến khi thanh toán hoàn tất</em></li>
-                  </ol>
-                </div>
-              )}
-
-              {status === 'pending' && process.env.NODE_ENV === 'development' && (
-                <div className="payment-dev-actions">
-                  <button 
-                    className="payment-test-btn"
-                    onClick={handleTestPayment}
-                    disabled={isManualPay}
-                  >
-                    {isManualPay ? '⏳ Đang xử lý...' : '🧪 Test: Mô phỏng thanh toán thành công'}
-                  </button>
-                  <p className="payment-dev-note">
-                    ⚠️ Chỉ dùng trong môi trường phát triển
-                  </p>
-                </div>
-              )}
-
-              {status === 'paid' && (
-                <div className="payment-success-actions">
-                  <button className="payment-done-btn" onClick={onSuccess}>
-                    ✅ Hoàn tất
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
+            </>
+          )
         )}
       </div>
     </div>
