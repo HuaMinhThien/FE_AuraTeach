@@ -349,7 +349,7 @@
       "tutor_id": "tutor_01",
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-      "expertise": "Toán, Tin học & Lập trình, Ngữ văn",
+      "expertise": "Toán, Tin học & Lập trình",
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
@@ -557,12 +557,13 @@
       "bio": "",
       "expertise": "Toán học, Hóa học, Vật lý, Ngữ văn",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "approved",
       "experience": "",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
-      "created_at": "2026-07-31T09:21:25.273Z"
+      "created_at": "2026-07-31T09:21:25.273Z",
+      "rejection_reason": null
     }
   ],
   "students": [
@@ -2134,27 +2135,6 @@
       "reject_reason": null,
       "created_at": "2026-07-27T11:16:19.358Z",
       "updated_at": "2026-07-27T11:23:18.541Z"
-    },
-    {
-      "id": "aa96",
-      "tutor_id": "1f17",
-      "old_data": {
-        "phone": "09106761390",
-        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-        "experience": "Dưới 1 năm",
-        "cv_link": "https://example.com/cv/tutor_01/profile",
-        "expertise": "Toán, Tin học & Lập trình, Ngữ văn"
-      },
-      "new_data": {
-        "phone": "09106761390",
-        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-        "experience": "Dưới 1 năm",
-        "cv_link": "https://example.com/cv/tutor_01/profile",
-        "expertise": "Toán, Tin học & Lập trình"
-      },
-      "status": "pending",
-      "reject_reason": null,
-      "created_at": "2026-07-29T09:33:58.620Z"
     }
   ],
   "lesson_confirmations": [
