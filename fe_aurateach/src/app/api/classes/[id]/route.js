@@ -1,22 +1,46 @@
 // src/app/api/classes/[id]/route.js
 import { NextResponse } from "next/server";
-import laravelApi from "@/lib/laravelApi";
 
+const API_BASE = "http://localhost:3007";
+
+// PATCH: Cập nhật lớp học
 export async function PATCH(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
 
-    console.log(`📡 PATCH /api/classes/${id} -> Laravel API`);
+    console.log(`📡 PATCH /api/classes/${id}`);
     console.log("📝 Update data:", body);
 
-    // Gọi Laravel API để cập nhật course
-    const response = await laravelApi.patch(`/courses/${id}`, body);
+    // Tìm course trong JSON Server
+    const findRes = await fetch(`${API_BASE}/courses?course_id=${id}`, { cache: "no-store" });
+    const courses = await findRes.json();
+    const course = courses[0];
+
+    if (!course) {
+      return NextResponse.json(
+        { success: false, message: "Không tìm thấy lớp học" },
+        { status: 404 }
+      );
+    }
+
+    // Cập nhật course
+    const updateRes = await fetch(`${API_BASE}/courses/${course.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if (!updateRes.ok) {
+      throw new Error("Không thể cập nhật lớp học");
+    }
+
+    const updatedCourse = await updateRes.json();
 
     return NextResponse.json({
       success: true,
       message: "Cập nhật thành công!",
-      data: response.data?.data || response.data,
+      data: updatedCourse,
     });
 
   } catch (error) {
@@ -24,22 +48,40 @@ export async function PATCH(request, { params }) {
     return NextResponse.json(
       { 
         success: false, 
-        message: error.response?.data?.message || "Lỗi cập nhật" 
+        message: error.message || "Lỗi cập nhật" 
       },
-      { status: error.response?.status || 500 }
+      { status: error.status || 500 }
     );
   }
 }
 
+// GET: Lấy chi tiết lớp học
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
 
-    const response = await laravelApi.get(`/courses/${id}`);
+    const res = await fetch(`${API_BASE}/courses?course_id=${id}`, { cache: "no-store" });
+    
+    if (!res.ok) {
+      return NextResponse.json(
+        { success: false, message: "Không thể lấy thông tin lớp học" },
+        { status: 500 }
+      );
+    }
+
+    const courses = await res.json();
+    const course = courses[0];
+
+    if (!course) {
+      return NextResponse.json(
+        { success: false, message: "Không tìm thấy lớp học" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      data: response.data?.data || response.data,
+      data: course,
     });
 
   } catch (error) {
@@ -47,9 +89,9 @@ export async function GET(request, { params }) {
     return NextResponse.json(
       { 
         success: false, 
-        message: error.response?.data?.message || "Không tìm thấy khóa học" 
+        message: error.message || "Không tìm thấy khóa học" 
       },
-      { status: error.response?.status || 404 }
+      { status: error.status || 404 }
     );
   }
 }

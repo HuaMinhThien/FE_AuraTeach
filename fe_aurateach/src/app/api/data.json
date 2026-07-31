@@ -883,7 +883,7 @@
       ],
       "time_slot": "13:00-13:30",
       "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "active",
+      "status": "closed",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1",
