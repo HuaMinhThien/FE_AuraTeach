@@ -102,13 +102,13 @@ export default function Sidebar() {
   const menuItems = [
     { name: "Bảng điều khiển", path: "/admin-dashboard" },
     { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
-    { name: "Quản lý lớp học", path: "/admin-classes" },
+    // { name: "Quản lý lớp học", path: "/admin-classes" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Lịch trình dạy", path: "/admin-schedule" },
     { name: "Thu nhập & Ví", path: "/admin-revenue" },
     { name: "Thông báo", path: "/admin-notifications", badge: unreadNotifCount },
-    { name: "Cấu hình hồ sơ", path: "/admin-profile" },
-    { name: "Lịch sử báo cáo", path: "/admin-report-history" },
+    // { name: "Cấu hình hồ sơ", path: "/admin-profile" },
+    // { name: "Lịch sử báo cáo", path: "/admin-report-history" },
   ];
 
   if (!mounted || !adminData) {

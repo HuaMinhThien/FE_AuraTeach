@@ -317,6 +317,18 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-29T09:44:56.404Z"
+    },
+    {
+      "id": "b527",
+      "user_id": "user_1785489685235_kl7eih",
+      "email": "kkkk@gmail.com",
+      "password": "123123",
+      "full_name": "kkkk",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-31T09:21:25.235Z"
     }
   ],
   "admins": [
@@ -537,6 +549,20 @@
       "available_balance": 0,
       "cv_link": "https://vn.linkedin.com",
       "created_at": "2026-07-29T09:44:56.422Z"
+    },
+    {
+      "id": "4bb7",
+      "tutor_id": "tutor_1785489685273",
+      "user_id": "user_1785489685235_kl7eih",
+      "bio": "",
+      "expertise": "Toán học, Hóa học, Vật lý, Ngữ văn",
+      "rating": 0,
+      "verification_status": "pending",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "created_at": "2026-07-31T09:21:25.273Z"
     }
   ],
   "students": [
