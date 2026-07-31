@@ -536,3 +536,44 @@
     padding: 10px 16px;
   }
 }
+
+/* Schedule Info - Thêm vào cuối file */
+.scheduleInfo {
+  padding: 0 16px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.scheduleIcon {
+  font-size: 13px;
+  flex-shrink: 0;
+  width: 18px;
+}
+
+.scheduleText {
+  font-size: 12px;
+  color: #4b5563;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive - Thêm vào cuối file */
+@media (max-width: 768px) {
+  .scheduleItem {
+    font-size: 11px;
+  }
+  
+  .scheduleText {
+    font-size: 11px;
+  }
+}
