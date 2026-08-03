@@ -32,11 +32,16 @@ export default function ClassListPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        console.log('📂 [DEBUG Categories] Đang gọi API lấy danh mục...');
         const categoriesData = await categoryService.getCategories();
+        console.log('📂 [DEBUG Categories] Dữ liệu thô nhận về:', categoriesData);
+
         const categoriesList = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || []);
+        console.log('📂 [DEBUG Categories] Danh sách categories sau khi xử lý:', categoriesList);
+
         setCategories(categoriesList);
       } catch (err) {
-        console.error('Lỗi tải danh mục:', err);
+        console.error('❌ [DEBUG Categories ERROR] Lỗi tải danh mục:', err);
       }
     };
     fetchCategories();
@@ -59,19 +64,30 @@ export default function ClassListPage() {
           sort_by: sortOption,
         };
 
+        console.log('🚀 [DEBUG Courses REQUEST] Đang gửi params lên API /courses:', params);
+
         const response = await courseService.getCourses(params);
+        console.log('📦 [DEBUG Courses RESPONSE] Dữ liệu thô từ API trả về:', response);
 
         // Xử lý dữ liệu trả về theo chuẩn phân trang Laravel API Resource/LengthAwarePaginator
         const coursesList = Array.isArray(response) ? response : (response?.data || []);
-        
+        console.log('📋 [DEBUG Courses LIST] Số lượng khóa học lấy được:', coursesList.length);
+
         // Map lại dữ liệu khớp với cấu trúc hiển thị của giao diện
-        const formattedCourses = coursesList.map(course => {
+        const formattedCourses = coursesList.map((course, index) => {
+          console.log(`🔍 [DEBUG Course Item #${index}] ID: ${course.course_id} - Title: ${course.title}`, {
+            schedule_days_raw: course.schedule_days,
+            time_slot_raw: course.time_slot,
+            tutor: course.tutor
+          });
+
           const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
           const user = course.tutor?.user;
 
           // Format thời gian học nếu có
           const formatScheduleDays = (days) => {
-            if (!days || !Array.isArray(days)) return 'Chưa cập nhật';
+            console.log(`🗓️ [DEBUG Format Schedule] Input days:`, days);
+            if (!days || !Array.isArray(days) || days.length === 0) return 'Chưa cập nhật';
             return days.join(', ');
           };
 
@@ -87,13 +103,16 @@ export default function ClassListPage() {
           };
         });
 
+        console.log('✨ [DEBUG Formatted Courses] Dữ liệu sau khi map hoàn chỉnh:', formattedCourses);
+
         setCourses(formattedCourses);
         setCurrentPage(response?.current_page || 1);
         setTotalPages(response?.last_page || 1);
         setTotalItems(response?.total || formattedCourses.length);
 
       } catch (err) {
-        console.error('Lỗi tải danh sách lớp học:', err);
+        console.error('❌ [DEBUG Courses ERROR] Lỗi tải danh sách lớp học:', err);
+        console.error('❌ [DEBUG Courses ERROR Details]:', err.response || err.message);
         setError(err.message || 'Có lỗi xảy ra khi tải dữ liệu');
         setCourses([]);
       } finally {
@@ -106,11 +125,13 @@ export default function ClassListPage() {
 
   // Điều hướng đến trang chi tiết
   const handleCardClick = useCallback((course) => {
+    console.log('🖱️ [DEBUG Navigation] Click chuyển sang trang chi tiết course_id:', course.course_id);
     router.push(`/classList/${course.course_id}`);
   }, [router]);
 
   // Xử lý lỗi ảnh
   const handleImageError = useCallback((e) => {
+    console.warn('⚠️ [DEBUG Image Error] Ảnh lỗi, đang chuyển về ảnh mặc định:', e.target.src);
     const img = e.target;
     const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
     if (img.src !== defaultAvatar) {
@@ -121,21 +142,25 @@ export default function ClassListPage() {
 
   // Handlers thay đổi bộ lọc (đưa về trang 1 khi đổi điều kiện lọc)
   const handleSearchChange = useCallback((e) => {
+    console.log('🔍 [DEBUG Filter Search] Giá trị tìm kiếm thay đổi:', e.target.value);
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   }, []);
 
   const handlePriceChange = useCallback((e) => {
+    console.log('💰 [DEBUG Filter Price] Khoảng giá thay đổi:', e.target.value);
     setPriceRange(e.target.value);
     setCurrentPage(1);
   }, []);
 
   const handleSortChange = useCallback((e) => {
+    console.log('📊 [DEBUG Filter Sort] Cách sắp xếp thay đổi:', e.target.value);
     setSortOption(e.target.value);
     setCurrentPage(1);
   }, []);
 
   const handleCategoryClick = useCallback((categoryName) => {
+    console.log('🏷️ [DEBUG Filter Category] Danh mục được chọn:', categoryName);
     setSelectedCategory(categoryName);
     setCurrentPage(1);
   }, []);

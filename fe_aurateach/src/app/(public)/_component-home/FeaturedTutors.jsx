@@ -2,32 +2,35 @@
 
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
-import { userService } from '@/services/userService';
-import { tutorService } from '@/services/tutorService';
-import { courseService } from '@/services/courseService';
+import { tutorService } from '@/services/tutorService'; // Import service vừa thêm
 
 function FeaturedTutors() {
   const [tutorsList, setTutorsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTutors = async () => {
+    const fetchFeatured = async () => {
       try {
-        // Truyền thêm { get_all: true } để lấy toàn bộ danh sách khóa học không bị phân trang
-        const [resUsers, resTutors, resCourses] = await Promise.all([
-          userService.getUsers(),
-          tutorService.getTutors(),
-          courseService.getCourses({ get_all: true }) 
-        ]);
+        // Gọi thẳng qua tutorService đã định nghĩa
+        const res = await tutorService.getFeaturedTutors();
+        const tutorsData = Array.isArray(res) ? res : (res?.data || []);
 
-        // Chuẩn hóa dữ liệu: Đảm bảo luôn lấy được mảng bất kể API trả về kiểu gì
-        const usersData = Array.isArray(resUsers) ? resUsers : (resUsers?.data || []);
-        const tutorsData = Array.isArray(resTutors) ? resTutors : (resTutors?.data || []);
-        const coursesData = Array.isArray(resCourses) ? resCourses : (resCourses?.data || []);
+        const mappedTutors = tutorsData.map((tutor) => {
+          const matchedUser = tutor.user || {};
+          const tutorCourses = tutor.courses || [];
 
-        const mergedTutors = tutorsData.map((tutor) => {
-          const matchedUser = usersData.find(u => u.user_id === tutor.user_id) || {};
-          const matchedCourse = coursesData.find(c => c.tutor_id === tutor.tutor_id) || {};
+          // Tìm mức giá thấp nhất từ danh sách khóa học của gia sư
+          let lowestPriceText = "Đang cập nhật";
+          if (tutorCourses.length > 0) {
+            const validPrices = tutorCourses
+              .map(c => Number(c.hourly_rate || c.price))
+              .filter(price => !isNaN(price) && price > 0);
+
+            if (validPrices.length > 0) {
+              const minPrice = Math.min(...validPrices);
+              lowestPriceText = `${minPrice.toLocaleString('vi-VN')}đ/h`;
+            }
+          }
 
           const ratingNum = tutor.rating !== undefined && tutor.rating !== null ? Number(tutor.rating) : 0.0;
 
@@ -35,25 +38,24 @@ function FeaturedTutors() {
             id: tutor.tutor_id,
             name: matchedUser.full_name || "Gia sư AuraTeach",
             avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
-            subject: matchedCourse.title || "Gia sư tự do",
+            subject: tutor.expertise || "Gia sư tự do",
             rating: isNaN(ratingNum) ? 5.0 : ratingNum,
             experience: tutor.Experience || "Chưa cập nhật",
             bio: tutor.bio || "",
-            price: matchedCourse.hourly_rate ? `${parseInt(matchedCourse.hourly_rate).toLocaleString('vi-VN')}đ/h` : "Đang cập nhật",
-            reviews: tutor.tutor_id === "tutor_01" ? 120 : 45 
+            price: lowestPriceText,
+            reviews: tutor.reviews || 0 
           };
         });
 
-        // Chỉ lấy 4 gia sư đầu tiên
-        setTutorsList(mergedTutors.slice(0, 4));
+        setTutorsList(mappedTutors);
       } catch (error) {
-        console.error('Lỗi gọi hoặc map API Section 5:', error);
+        console.error('Lỗi tải gia sư nổi bật:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTutors();
+    fetchFeatured();
   }, []);
 
   if (loading) {
@@ -62,7 +64,6 @@ function FeaturedTutors() {
 
   return (
     <section className="featured-teachers">
-      
       <div className="featured-teachers__header">
         <h2 className="featured-teachers__title">Đội Ngũ Gia Sư Tiêu Biểu</h2>
         <p className="featured-teachers__desc">Học hỏi từ những chuyên gia, giáo viên có kinh nghiệm và tràn đầy nhiệt huyết.</p>
@@ -103,7 +104,7 @@ function FeaturedTutors() {
 
               <div className="featured-teachers__footer">
                 <div>
-                  <div className="featured-teachers__price-label">Học phí trung bình</div>
+                  <div className="featured-teachers__price-label">Có thể đặt lịch gia sư với giá</div>
                   <div className="featured-teachers__price-value">{tutor.price}</div>
                 </div>
                 <span className="featured-teachers__btn">
@@ -115,7 +116,6 @@ function FeaturedTutors() {
           </Link>
         ))}
       </div>
-
     </section>
   );
 }

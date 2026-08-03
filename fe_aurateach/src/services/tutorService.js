@@ -19,4 +19,19 @@ export const tutorService = {
       throw error;
     }
   },
+
+  getFeaturedTutors: async () => {
+    const response = await apiClient.get('/featured-tutors');
+    return response.data;
+  },
+
+  getDetail: async (id) => {
+    try {
+      const response = await apiClient.get(`/tutors/${id}`);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error(`Lỗi khi lấy chi tiết gia sư ID ${id}:`, error);
+      throw error;
+    }
+  },
 };
