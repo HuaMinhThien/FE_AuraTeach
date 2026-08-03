@@ -4,16 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
-import ClassCalendar from "./_components/ClassCalendar";
-import authService from "@/services/authService";
+import ClassCalendar from "./_components/ClassCalendar"; 
+import { authService } from "@/services/authService";
+import { courseScheduleService } from "@/services/courseScheduleService"; // 👈 Sử dụng đúng service của bạn ở đây
 import styles from "./page.module.css";
-
-const API_BASE = "http://localhost:3007";
 
 export default function MyClassesPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [courses, setCourses] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -22,32 +21,32 @@ export default function MyClassesPage() {
       try {
         setLoading(true);
         
-        // Lấy user từ cookie
-        const currentUser = await authService.getCurrentUser();
-        console.log("👤 Current user:", currentUser);
-        
+        // 1. Lấy thông tin user hiện tại
+        const rawUserResponse = await authService.getCurrentUser();
+        const baseData = rawUserResponse?.data || rawUserResponse;
+        const currentUser = baseData?.user || baseData;
+
         if (!currentUser) {
-          console.warn("⚠️ Không tìm thấy user, chuyển hướng login");
           router.push("/login");
           return;
         }
 
-        // Lấy studentId từ user
-        const studentId = currentUser.user_id || currentUser.id;
-        console.log("📌 Student ID:", studentId);
+        setUser(currentUser);
+
+        // 2. Lấy định danh học viên (student_id hoặc user_id)
+        const userId = currentUser.student_id || currentUser.user_id || currentUser.id;
         
-        if (!studentId) {
-          console.error("❌ Không có student_id trong user data");
+        if (!userId) {
           setError("Không tìm thấy ID học viên");
           setLoading(false);
           return;
         }
 
-        setUser(currentUser);
-        await fetchMyCourses(studentId);
+        // 3. Gọi API lấy danh sách buổi học thực tế từ Backend qua courseScheduleService
+        await fetchStudentSessions(userId);
         
-      } catch (error) {
-        console.error("❌ Lỗi tải trang:", error);
+      } catch (err) {
+        console.error("❌ Lỗi tải trang:", err);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
@@ -57,86 +56,35 @@ export default function MyClassesPage() {
     initPage();
   }, [router]);
 
-  const fetchMyCourses = async (studentId) => {
+  const fetchStudentSessions = async (userId) => {
     try {
-      console.log(`📡 Fetching courses for student: ${studentId}`);
+      console.log(`📡 Fetching actual session schedule for student: ${userId}`);
       
-      // Lấy tất cả bookings
-      const bookingsRes = await fetch(`${API_BASE}/bookings`);
-      const allBookings = await bookingsRes.json();
-      
-      console.log(`📋 Tổng bookings: ${allBookings.length}`);
-      
-      // Lọc bookings của student này (so sánh student_id)
-      const studentBookings = allBookings.filter(
-        b => b.student_id === studentId
-      );
-      
-      console.log(`📋 Bookings của student ${studentId}: ${studentBookings.length}`);
-      
-      // Lọc các booking có status confirmed hoặc pending
-      const activeBookings = studentBookings.filter(
-        b => b.status === "confirmed" || b.status === "pending"
-      );
-      
-      console.log(`📋 Active bookings: ${activeBookings.length}`);
-      
-      if (activeBookings.length === 0) {
-        console.warn("⚠️ Không có booking nào đang active");
-        setCourses([]);
-        return;
+      // 👇 Gọi qua courseScheduleService
+      const response = await courseScheduleService.getStudentScheduleSessions(userId);
+      console.log("📥 Dữ liệu các buổi học trả về từ API:", response);
+
+      let sessionsList = [];
+      const resData = response.data || response;
+      if (Array.isArray(resData)) {
+        sessionsList = resData;
+      } else if (resData && Array.isArray(resData.data)) {
+        sessionsList = resData.data;
       }
+
+      setSessions(sessionsList);
       
-      // Lấy thông tin chi tiết từng course
-      const coursePromises = activeBookings.map(async (booking) => {
-        try {
-          const courseRes = await fetch(`${API_BASE}/courses?course_id=${booking.course_id}`);
-          const courses = await courseRes.json();
-          const course = courses[0];
-          
-          if (!course) {
-            console.warn(`⚠️ Không tìm thấy course ${booking.course_id}`);
-            return null;
-          }
-          
-          // Lấy thông tin tutor
-          let tutorName = "Chưa có thông tin";
-          if (course.tutor_id) {
-            const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${course.tutor_id}`);
-            const tutors = await tutorRes.json();
-            const tutor = tutors[0];
-            if (tutor) {
-              const userRes = await fetch(`${API_BASE}/users?user_id=${tutor.user_id}`);
-              const users = await userRes.json();
-              const tutorUser = users[0];
-              tutorName = tutorUser?.full_name || "Gia sư";
-            }
-          }
-          
-          return {
-            ...course,
-            tutor_name: tutorName,
-            booking_status: booking.status,
-            booking_id: booking.booking_id,
-          };
-        } catch (err) {
-          console.error(`❌ Lỗi lấy course ${booking.course_id}:`, err);
-          return null;
-        }
-      });
-      
-      const coursesList = (await Promise.all(coursePromises)).filter(c => c !== null);
-      console.log(`📚 Danh sách courses: ${coursesList.length}`);
-      setCourses(coursesList);
-      
-    } catch (error) {
-      console.error("❌ Lỗi lấy danh sách lớp học:", error);
-      setError("Không thể tải danh sách lớp học");
+    } catch (err) {
+      console.error("❌ Lỗi lấy lịch học:", err);
+      setError("Không thể tải danh sách lịch học");
     }
   };
 
-  const handleDateClick = (course) => {
-    router.push(`/my-classes/${course.course_id}`);
+  const handleDateClick = (sessionItem) => {
+    const courseId = sessionItem.course_id;
+    if (courseId) {
+      router.push(`/my-classes/${courseId}`);
+    }
   };
 
   if (loading) {
@@ -176,27 +124,27 @@ export default function MyClassesPage() {
             <div className={styles.header}>
               <h2>Lịch học của tôi</h2>
               <p className={styles.subtitle}>
-                Xem lịch học các lớp bạn đã đăng ký
+                Xem chi tiết các buổi học trong lịch trình của bạn
               </p>
               <div className={styles.statsBadge}>
                 <span className={styles.totalClasses}>
-                  📖 {courses.length} lớp đang học
+                  📖 {sessions.length} buổi học đã lên lịch
                 </span>
               </div>
             </div>
 
-            {courses.length === 0 ? (
+            {sessions.length === 0 ? (
               <div className={styles.emptyState}>
                 <span className={styles.emptyIcon}></span>
                 <h3>Chưa có lịch học</h3>
-                <p>Bạn chưa đăng ký lớp học nào. Hãy tìm lớp ngay!</p>
+                <p>Bạn chưa có buổi học nào được kích hoạt. Hãy đăng ký lớp học ngay!</p>
                 <a href="/classList" className={styles.findClassBtn}>
                   Tìm lớp học ngay
                 </a>
               </div>
             ) : (
               <ClassCalendar
-                courses={courses}
+                courses={sessions} 
                 onDateClick={handleDateClick}
               />
             )}

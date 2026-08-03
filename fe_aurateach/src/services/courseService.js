@@ -11,6 +11,15 @@ export const courseService = {
     return response.data; 
   },
 
+  // 🚀 Lấy danh sách lớp học dành riêng cho trang quản lý của gia sư (Hiển thị tất cả trạng thái)
+  getTutorManagedCourses: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = `/tutor/courses-manage${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await apiClient.get(endpoint);
+    return response.data !== undefined ? response.data : response;
+  },
+
   // 🚀 Lấy chi tiết 1 khóa học (Trỏ tới endpoint /detail đã được tối ưu gom data ở Backend)
   getCourseDetail: async (id) => {
     const response = await apiClient.get(`/courses/${id}/detail`);

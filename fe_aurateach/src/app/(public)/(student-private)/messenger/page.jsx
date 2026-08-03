@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import ConversationList from "./_components/ConversationList";
 import ChatWindow from "./_components/ChatWindow";
 import WelcomeBanner from "./_components/WelcomeBanner";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 import styles from "./page.module.css";
 
 const API_BASE = "http://localhost:3007";
 
-export default function MessengerPage() {
+function MessengerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const conversationIdFromUrl = searchParams.get('conversationId');
@@ -358,71 +358,73 @@ export default function MessengerPage() {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className={styles.loadingContainer}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Đang tải tin nhắn...</p>
-        </div>
-      </>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <p>Đang tải tin nhắn...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Header />
-        <div className={styles.errorContainer}>
-          <p>❌ {error}</p>
-          <button onClick={() => window.location.reload()}>Thử lại</button>
-        </div>
-      </>
+      <div className={styles.errorContainer}>
+        <p>❌ {error}</p>
+        <button onClick={() => window.location.reload()}>Thử lại</button>
+      </div>
     );
   }
 
   return (
-    <>
-      <Header />
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <StudentSidebar 
-            studentId={user?.user_id || user?.id}
-            unreadCount={unreadCount}
-          />
-          <div className={styles.messengerContainer}>
-            <div className={styles.messengerWrapper}>
-              <div className={styles.conversationListWrapper}>
-                <ConversationList
-                  conversations={conversations}
-                  selectedId={selectedConversation?.id}
-                  onSelect={handleSelectConversation}
-                  currentUserId={user?.user_id || user?.id}
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <StudentSidebar 
+          studentId={user?.user_id || user?.id}
+          unreadCount={unreadCount}
+        />
+        <div className={styles.messengerContainer}>
+          <div className={styles.messengerWrapper}>
+            <div className={styles.conversationListWrapper}>
+              <ConversationList
+                conversations={conversations}
+                selectedId={selectedConversation?.id}
+                onSelect={handleSelectConversation}
+                currentUserId={user?.user_id || user?.id}
+              />
+            </div>
+            <div className={styles.chatWrapper}>
+              {selectedConversation ? (
+                <ChatWindow
+                  conversation={selectedConversation}
+                  messages={messages}
+                  currentUser={user}
+                  onSendMessage={sendMessage}
+                  onLoadMore={loadMoreMessages}
+                  hasMore={hasMore}
+                  sending={sending}
+                  isInitialLoad={isInitialLoadRef}
                 />
-              </div>
-              <div className={styles.chatWrapper}>
-                {selectedConversation ? (
-                  <ChatWindow
-                    conversation={selectedConversation}
-                    messages={messages}
-                    currentUser={user}
-                    onSendMessage={sendMessage}
-                    onLoadMore={loadMoreMessages}
-                    hasMore={hasMore}
-                    sending={sending}
-                    isInitialLoad={isInitialLoadRef}
-                  />
-                ) : (
-                  <WelcomeBanner 
-                    userName={user?.full_name?.split(' ').pop() || "bạn"}
-                    unreadCount={unreadCount}
-                    conversationCount={conversations.length}
-                  />
-                )}
-              </div>
+              ) : (
+                <WelcomeBanner 
+                  userName={user?.full_name?.split(' ').pop() || "bạn"}
+                  unreadCount={unreadCount}
+                  conversationCount={conversations.length}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export default function MessengerPage() {
+  return (
+    <>
+      <Header />
+      <Suspense fallback={<div className={styles.loadingContainer}><div className={styles.loadingSpinner}></div><p>Đang tải...</p></div>}>
+        <MessengerContent />
+      </Suspense>
     </>
   );
 }

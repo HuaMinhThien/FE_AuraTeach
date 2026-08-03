@@ -12,7 +12,6 @@ export const tutorService = {
       const response = await apiClient.get(`/tutors`, {
         params: { user_id: userId }
       });
-      // 💡 Nếu response đã là data thì trả về luôn, nếu có .data thì lấy .data
       return response.data !== undefined ? response.data : response;
     } catch (error) {
       console.error("Lỗi khi lấy thông tin tutor:", error);
@@ -22,7 +21,18 @@ export const tutorService = {
 
   getFeaturedTutors: async () => {
     const response = await apiClient.get('/featured-tutors');
-    return response.data;
+    return response.data !== undefined ? response.data : response;
+  },
+
+  // 💡 MỚI: Gọi API lấy danh sách gia sư liên quan từ Backend
+  getRelatedTutors: async (id) => {
+    try {
+      const response = await apiClient.get(`/tutors/${id}/related`);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error(`Lỗi khi lấy gia sư liên quan ID ${id}:`, error);
+      return [];
+    }
   },
 
   getDetail: async (id) => {

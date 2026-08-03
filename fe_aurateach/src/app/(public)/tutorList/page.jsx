@@ -56,7 +56,6 @@ export default function TeacherListPage() {
           
           // Map dữ liệu hiển thị giống như cũ của ông em
           const formattedTutors = tutorsData.map((tutor) => {
-            // Xử lý user tuỳ theo cấu trúc dữ liệu trả về từ quan hệ Eloquent
             const user = tutor.user || {}; 
 
             let avatar = user.avatar || "";
@@ -65,16 +64,20 @@ export default function TeacherListPage() {
             }
 
             const bioText = tutor.bio || "";
-            const expertiseText = tutor.expertise || ""; // 👈 Đổi từ qualification thành expertise
+            const expertiseText = tutor.expertise || "";
 
             return {
               id: tutor.tutor_id || tutor.id,
               name: user.full_name || "Gia sư AuraTeach",
-              rating: Number(tutor.rating) || 5.0,
-              reviews: Math.floor(Math.random() * 80) + 20,
+              // Lấy rating từ BE, nếu null/undefined thì fallback về 0 hoặc 5.0
+              rating: tutor.rating !== null && tutor.rating !== undefined ? Number(tutor.rating) : 0,
+              
+              // Lấy số lượng review từ BE (ưu tiên các tên biến phổ biến như reviews_count, total_reviews, hoặc reviews)
+              reviews: tutor.reviews_count ?? tutor.total_reviews ?? tutor.reviews ?? 0,
+              
               location: "Hà Nội",
               desc: bioText.length > 135 ? bioText.substring(0, 132) + "..." : bioText || "Chưa có thông tin giới thiệu.",
-              expertise: expertiseText, // 👈 Đổi tên thuộc tính cho khớp
+              expertise: expertiseText,
               tags: ["Gia sư", expertiseText].filter(Boolean),
               avatar: avatar,
             };

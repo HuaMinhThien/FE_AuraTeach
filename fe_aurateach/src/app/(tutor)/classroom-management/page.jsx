@@ -37,13 +37,13 @@ export default function ClassroomManagementPage() {
           }
         }
 
-        // Gọi qua courseService.getCourses với các tham số lọc kèm theo tutor_id
-        const resData = await courseService.getCourses({
+        // 🚀 Gọi qua courseService.getTutorManagedCourses để hiển thị tất cả trạng thái của gia sư
+        const resData = await courseService.getTutorManagedCourses({
           page: currentPage,
           limit: 6,
           status: statusFilter,
           search: search,
-          tutor_id: currentUserId // 👈 Đã được định nghĩa chính xác
+          tutor_id: currentUserId // 👈 Lọc chính xác theo gia sư hiện tại
         });
         
         if (isMounted && resData) {
@@ -104,7 +104,7 @@ export default function ClassroomManagementPage() {
   const getStatusBadge = (status) => {
     switch (status) {
       case "active": return <span className={`${styles.badge} ${styles.badgeActive}`}>Đang tuyển sinh</span>;
-      case "closed": return <span className={`${styles.badge} ${styles.badgeClosed}`}>Lớp đã đóng (Đủ chỗ)</span>;
+      case "closed": return <span className={`${styles.badge} ${styles.badgeClosed}`}>Lớp đã đóng</span>;
       case "completed": return <span className={`${styles.badge} ${styles.badgeCompleted}`}>Đã hoàn thành</span>;
       default: return null;
     }

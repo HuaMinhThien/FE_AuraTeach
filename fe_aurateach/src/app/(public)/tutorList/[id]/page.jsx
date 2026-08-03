@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './TutorDetail.module.css';
 import BookingModal from '@/components/users/BookingModal';
 import { tutorService } from '@/services/tutorService';
+import { reviewService } from '@/services/reviewService';
 import { courseSubscriptionService } from '@/services/courseSubscriptionService';
 import apiClient from '@/services/apiClient';
 
@@ -67,41 +68,41 @@ export default function TutorDetailPage({ params }) {
         setTutorDetails(tutorData);
         setAccountUser(tutorData.user || null);
 
-        // 2. Lấy danh sách khóa học của gia sư này
+        // 2. Lấy danh sách khóa học của gia sư này trước
+        let coursesList = [];
         try {
           const coursesRes = await apiClient.get(`/courses?tutor_id=${currentTutorId}`);
-          const coursesList = Array.isArray(coursesRes) ? coursesRes : (coursesRes.data || []);
+          coursesList = Array.isArray(coursesRes) ? coursesRes : (coursesRes.data || []);
           setTutorCourses(coursesList);
         } catch (err) {
           console.error("Lỗi tải khóa học:", err);
           setTutorCourses([]);
         }
 
-        // 3. Lấy đánh giá và danh sách gia sư liên quan
+        // 3. Sau khi đã có danh sách khóa học, tiến hành lấy review thông qua reviewService và gia sư liên quan
         try {
-          const [reviewsRes, allTutorsRes] = await Promise.all([
-            apiClient.get('/reviews').catch(() => []),
-            tutorService.getTutors().catch(() => [])
+          const [reviewsRes, relatedRes] = await Promise.all([
+            reviewService.getReviews().catch(() => []),
+            tutorService.getRelatedTutors(currentTutorId).catch(() => [])
           ]);
 
           const reviewsList = Array.isArray(reviewsRes) ? reviewsRes : (reviewsRes.data || []);
-          // Lọc review thuộc các khóa học của gia sư này
-          const courseIds = (tutorCourses || []).map(c => c.course_id || c.id);
-          const matchedReviews = reviewsList.filter(r => courseIds.includes(r.course_id));
+          
+          // Lấy chính xác mảng course_id thuộc gia sư này để lọc đánh giá khớp với database của bạn
+          const courseIds = coursesList.map(c => String(c.course_id || c.id));
+          const matchedReviews = reviewsList.filter(r => courseIds.includes(String(r.course_id)));
           setTutorReviews(matchedReviews);
 
-          // Xử lý danh sách gia sư liên quan
-          const tutorsList = Array.isArray(allTutorsRes) ? allTutorsRes : (allTutorsRes.data || []);
-          const related = tutorsList
-            .filter(t => String(t.tutor_id || t.id) !== String(currentTutorId))
-            .slice(0, 4)
-            .map(other => ({
-              id: other.tutor_id || other.id,
-              name: other.user?.full_name || "Gia sư AuraTeach",
-              avatar: other.user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-              subject: other.expertise || other.bio || "Gia sư chuyên môn",
-              rating: other.rating || 4.5
-            }));
+          // Xử lý dữ liệu trả về từ tutorService.getRelatedTutors
+          const relatedListRaw = Array.isArray(relatedRes) ? relatedRes : (relatedRes.data || []);
+          const related = relatedListRaw.map(other => ({
+            id: other.tutor_id || other.id,
+            name: other.user?.full_name || "Gia sư AuraTeach",
+            avatar: other.user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+            subject: other.expertise || other.bio || "Gia sư chuyên môn",
+            rating: other.rating || 4.5
+          }));
+          
           setRelatedTutorsList(related);
 
         } catch (subErr) {
@@ -121,8 +122,6 @@ export default function TutorDetailPage({ params }) {
   // ===== HÀM TÌM HOẶC TẠO CONVERSATION =====
   const findOrCreateConversation = async (studentId, userId, tutorId) => {
     try {
-      console.log(`🔍 Tìm conversation: student=${studentId}, user_id=${userId}, tutor_id=${tutorId}`);
-
       const response = await apiClient.get("/conversations");
       const conversations = Array.isArray(response) ? response : (response.data || []);
       
@@ -181,7 +180,7 @@ export default function TutorDetailPage({ params }) {
     }
   };
 
-  // ===== HÀM XỬ LÝ ĐĂNG KÝ KHÓA HỌC QUA COURSE SUBSCRIPTION SERVICE =====
+  // ===== HÀM XỬ LÝ ĐĂNG KÝ KHÓA HỌC =====
   const handleRegisterCourse = async (notes, paymentMethod) => {
     try {
       const studentId = currentUser?.user_id || currentUser?.id;
@@ -245,6 +244,11 @@ export default function TutorDetailPage({ params }) {
     );
   }
 
+  // Lấy trực tiếp điểm rating chuẩn từ bảng tutors (tutorDetails.rating)
+  const displayRating = tutorDetails.rating !== undefined && tutorDetails.rating !== null 
+    ? Number(tutorDetails.rating).toFixed(1) 
+    : '0.0';
+
   return (
     <div className={styles.tutorProfilePage}>
       <div className={styles.mainLayout}>
@@ -264,19 +268,24 @@ export default function TutorDetailPage({ params }) {
                 <span className={styles.verifiedCheck}>✓</span>
               </div>
               <div className={styles.ratingMeta}>
-                ⭐ {tutorDetails.rating ? Number(tutorDetails.rating).toFixed(1) : '4.5'} 
+                ⭐ {displayRating} 
                 <span>({tutorReviews.length} đánh giá)</span>
               </div>
-              
               <div className={styles.statsContainer}>
                 <div className={styles.statBox}>
-                  <div className={styles.statValue}>120</div>
+                  <div className={styles.statValue}>
+                    {tutorDetails.search_views_count ?? tutorDetails.view ?? 0}
+                  </div>
                   <div className={styles.statLabel}>Lượt tìm kiếm</div>
                 </div>
+                
                 <div className={styles.statBox}>
-                  <div className={styles.statValue}>45</div>
-                  <div className={styles.statLabel}>Lớp đã dạy</div>
+                  <div className={styles.statValue}>
+                    {tutorDetails.classes_taught_count || tutorCourses.length || 0}
+                  </div>
+                  <div className={styles.statLabel}>Học viên đã dạy</div>
                 </div>
+                
                 <div className={styles.statBox}>
                   <div className={styles.statValue}>{tutorCourses.length}</div>
                   <div className={styles.statLabel}>Khóa học mở sẵn</div>
@@ -335,42 +344,48 @@ export default function TutorDetailPage({ params }) {
             <div className={styles.ratingSummary}>
               <div style={{ textAlign: 'center' }}>
                 <div className={styles.bigScore}>
-                  {tutorDetails.rating ? Number(tutorDetails.rating).toFixed(1) : '4.5'}
+                  {displayRating}
                 </div>
                 <div className={styles.starsRow}>⭐⭐⭐⭐⭐</div>
                 <div className={styles.voteCount}>{tutorReviews.length} bình chọn</div>
               </div>
+
               <div className={styles.progressContainer}>
-                <div className={styles.progressRow}>
-                  <span>5 sao</span>
-                  <div className={styles.progressBarTrack}>
-                    <div className={styles.progressBarFill5}></div>
-                  </div>
-                </div>
-                <div className={styles.progressRow}>
-                  <span>4 sao</span>
-                  <div className={styles.progressBarTrack}>
-                    <div className={styles.progressBarFill4}></div>
-                  </div>
-                </div>
-                <div className={styles.progressRow}>
-                  <span>3 sao</span>
-                  <div className={styles.progressBarTrack}></div>
-                </div>
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const totalReviews = tutorReviews.length;
+                  const count = tutorReviews.filter((r) => Number(r.rating) === star).length;
+                  const percent = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+
+                  return (
+                    <div className={styles.progressRow} key={star}>
+                      <span>{star} sao</span>
+                      <div className={styles.progressBarTrack}>
+                        <div 
+                          className={styles.progressBarFill} 
+                          style={{ width: `${percent}%`, height: '100%', backgroundColor: '#f59e0b', borderRadius: '4px', transition: 'width 0.3s ease' }}
+                        ></div>
+                      </div>
+                      <span className={styles.progressCount}>{count}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {tutorReviews.length > 0 ? (
               <div className={styles.commentsList}>
-                {tutorReviews.map((reviewItem) => (
-                  <div key={reviewItem.review_id || reviewItem.id} className={styles.commentItem}>
-                    <div className={styles.studentName}>{reviewItem.studentName || "Học viên"}</div>
-                    <div className={styles.commentStars}>
-                      {"★".repeat(Math.min(reviewItem.rating || 0, 5))}
+                {tutorReviews.map((reviewItem) => {
+                  const studentName = reviewItem.student?.user?.full_name || reviewItem.studentName || "Học viên";                
+                  return (
+                    <div key={reviewItem.review_id || reviewItem.id} className={styles.commentItem}>
+                      <div className={styles.studentName}>{studentName}</div>
+                      <div className={styles.commentStars}>
+                        {"★".repeat(Math.min(reviewItem.rating || 0, 5))}
+                      </div>
+                      <p className={styles.commentText}>“{reviewItem.comment}”</p>
                     </div>
-                    <p className={styles.commentText}>“{reviewItem.comment}”</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>

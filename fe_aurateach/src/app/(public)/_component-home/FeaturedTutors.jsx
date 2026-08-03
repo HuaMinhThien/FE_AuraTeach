@@ -28,7 +28,7 @@ function FeaturedTutors() {
 
             if (validPrices.length > 0) {
               const minPrice = Math.min(...validPrices);
-              lowestPriceText = `${minPrice.toLocaleString('vi-VN')}đ/h`;
+              lowestPriceText = `${minPrice.toLocaleString('vi-VN')}đ / buổi`;
             }
           }
 

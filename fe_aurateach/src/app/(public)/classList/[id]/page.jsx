@@ -1,7 +1,7 @@
 // src/app/(public)/classList/[id]/page.jsx
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./ClassDetail.module.css";
@@ -31,58 +31,57 @@ export default function ClassDetailPage({ params }) {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  // Hàm tải và đồng bộ hóa toàn bộ dữ liệu lớp học từ Server
+  const fetchClassData = useCallback(async (isInitial = false) => {
+    try {
+      if (isInitial) setPageLoading(true);
 
-    const fetchClassData = async () => {
-      try {
-        setPageLoading(true);
+      const [courseData, userData] = await Promise.all([
+        courseService.getCourseDetail(courseId),
+        authService.getCurrentUser().catch(() => null)
+      ]);
 
-        const [courseData, userData] = await Promise.all([
-          courseService.getCourseDetail(courseId),
-          authService.getCurrentUser().catch(() => null)
-        ]);
+      const user = userData?.user || userData;
+      setCurrentUser(user);
 
-        const user = userData?.user || userData;
-        setCurrentUser(user);
-
-        if (!courseData) {
-          setCourse(null);
-          setPageLoading(false);
-          return;
-        }
-
-        setCourse(courseData.course || courseData);
-        setAllCategories(courseData.categories || courseData.allCategories || []);
-        setCourseReviews(courseData.reviews || []);
-
-        const currentTutor = courseData.tutor || courseData.course?.tutor || null;
-        setTutorInfo(currentTutor);
-
-        const currentUserTutor = courseData.userTutor || currentTutor?.user || null;
-        setUserTutor(currentUserTutor);
-
-        const studentId = user?.user_id || user?.id;
-        const currentCourseStudents = courseData.course?.students || courseData.students || [];
-        if (studentId && currentCourseStudents.includes(studentId)) {
-          setIsBooked(true);
-        }
-
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu trang chi tiết:", error);
-      } finally {
-        if (isMounted) setPageLoading(false);
+      if (!courseData) {
+        setCourse(null);
+        return;
       }
-    };
 
-    if (courseId) {
-      fetchClassData();
+      const courseObj = courseData.course || courseData;
+      setCourse(courseObj);
+      setAllCategories(courseData.categories || courseData.allCategories || []);
+      setCourseReviews(courseData.reviews || []);
+
+      const currentTutor = courseData.tutor || courseObj?.tutor || null;
+      setTutorInfo(currentTutor);
+
+      const currentUserTutor = courseData.userTutor || currentTutor?.user || null;
+      setUserTutor(currentUserTutor);
+
+      const studentId = user?.user_id || user?.id;
+      const currentCourseStudents = courseData.students || courseObj?.students || [];
+
+      // Kiểm tra xem học viên hiện tại đã nằm trong danh sách đăng ký hay chưa
+      if (studentId && currentCourseStudents.map(String).includes(String(studentId))) {
+        setIsBooked(true);
+      } else {
+        setIsBooked(false);
+      }
+
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu trang chi tiết:", error);
+    } finally {
+      if (isInitial) setPageLoading(false);
     }
-
-    return () => {
-      isMounted = false;
-    };
   }, [courseId]);
+
+  useEffect(() => {
+    if (courseId) {
+      fetchClassData(true);
+    }
+  }, [courseId, fetchClassData]);
 
   const handleBooking = async () => {
     if (!currentUser) {
@@ -103,7 +102,7 @@ export default function ClassDetailPage({ params }) {
     }
 
     const studentId = currentUser.user_id || currentUser.id;
-    if (currentStudents.includes(studentId)) {
+    if (currentStudents.map(String).includes(String(studentId))) {
       alert("Bạn đã đăng ký lớp học này rồi!");
       return;
     }
@@ -140,20 +139,18 @@ export default function ClassDetailPage({ params }) {
     }
   };
 
-  const handleBookingSuccess = () => {
+  // 🔥 Đã cập nhật: Tự động gọi lại fetchClassData(false) để làm mới dữ liệu ngay sau khi thanh toán thành công
+  const handleBookingSuccess = async () => {
     setIsBooked(true);
-    setCourse(prev => ({
-      ...prev,
-      students: [...(prev.students || []), currentUser.user_id || currentUser.id]
-    }));
     setShowBookingModal(false);
+    
+    // Đồng bộ lại dữ liệu mới từ backend (Cập nhật sĩ số, danh sách học viên và quyền mở link Google Meet)
+    await fetchClassData(false);
   };
 
-  // 🛠️ Đã sửa lỗi danh mục "Chưa phân loại" bằng cách kiểm tra linh hoạt hơn giữa các thuộc tính
   const getCategoryName = (categoryId) => {
     if (!categoryId) return course?.category_name || "Chưa phân loại";
     
-    // Tìm trong danh sách categories đổ về từ API
     const category = allCategories.find(c => 
       String(c.category_id || c.id) === String(categoryId)
     );
@@ -162,7 +159,6 @@ export default function ClassDetailPage({ params }) {
       return category.category_name || category.name;
     }
     
-    // Fallback nếu course trả về sẵn tên danh mục lồng bên trong
     return course?.category_name || course?.category?.category_name || "Chưa phân loại";
   };
 
@@ -191,7 +187,6 @@ export default function ClassDetailPage({ params }) {
   }
 
   const schedulesList = Array.isArray(course?.schedules) ? course.schedules : [];
-  
   const dayOrder = { "Thứ 2": 1, "Thứ 3": 2, "Thứ 4": 3, "Thứ 5": 4, "Thứ 6": 5, "Thứ 7": 6, "Chủ Nhật": 7, "CN": 7 };
 
   const displayScheduleDays = schedulesList.length > 0 
@@ -200,7 +195,6 @@ export default function ClassDetailPage({ params }) {
         .join(", ") 
     : (course.schedule_days || "Chưa cập nhật");
 
-  // 🛠️ TÍNH TOÁN SỐ BUỔI VÀ HỌC PHÍ CHUẨN XÁC
   const sessionsPerWeek = schedulesList.length > 0 
     ? schedulesList.length 
     : (Array.isArray(course.schedule_days) ? course.schedule_days.length : 1);
@@ -231,7 +225,7 @@ export default function ClassDetailPage({ params }) {
     if (currentUser.role === 'tutor') return true;
     if (currentUser.role === 'student') {
       const studentId = currentUser.user_id || currentUser.id;
-      return isBooked || (course?.students && course.students.includes(studentId));
+      return isBooked || (course?.students && course.students.map(String).includes(String(studentId)));
     }
     return false;
   };
@@ -439,7 +433,7 @@ export default function ClassDetailPage({ params }) {
               disabled={bookingLoading || isBooked || isFull || course.status !== 'active'}
             >
               {bookingLoading ? "Đang xử lý..." : 
-               isBooked ? "✅ Bạn đã đăng ký" : 
+               isBooked ? "✅ Đã đăng ký khóa học" : 
                isFull ? "🔴 Lớp đã đủ học viên" :
                course.status !== 'active' ? "🔴 Lớp đã đóng" : 
                "📝 Đăng ký học ngay"}

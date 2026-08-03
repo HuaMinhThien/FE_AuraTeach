@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
+import { courseService } from "@/services/courseService";
+import { courseScheduleService } from "@/services/courseScheduleService";
 import styles from "./ClassDetail.module.css";
-
-const API_BASE = "http://localhost:3007";
 
 export default function ClassDetailPage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function ClassDetailPage() {
 
   const [user, setUser] = useState(null);
   const [course, setCourse] = useState(null);
+  const [classSessions, setClassSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -31,7 +32,7 @@ export default function ClassDetailPage() {
         }
 
         setUser(currentUser);
-        await fetchCourseDetail(courseId);
+        await fetchCourseDetail(courseId, currentUser.user_id);
       } catch (error) {
         console.error("❌ Lỗi tải trang:", error);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
@@ -45,47 +46,40 @@ export default function ClassDetailPage() {
     }
   }, [router, courseId]);
 
-  const fetchCourseDetail = async (id) => {
+  const fetchCourseDetail = async (id, currentUserId) => {
     try {
       console.log(`📡 Fetching course detail: ${id}`);
       
-      const courseRes = await fetch(`${API_BASE}/courses?course_id=${id}`);
-      const courses = await courseRes.json();
-      const courseData = courses[0];
+      // 1. Lấy thông tin chi tiết khóa học kèm các quan hệ từ Backend
+      const courseData = await courseService.getCourseDetail(id);
       
       if (!courseData) {
         setError("Không tìm thấy lớp học");
         return;
       }
 
-      // Lấy thông tin tutor
-      let tutorName = "Chưa có thông tin";
-      if (courseData.tutor_id) {
-        const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${courseData.tutor_id}`);
-        const tutors = await tutorRes.json();
-        const tutor = tutors[0];
-        if (tutor) {
-          const userRes = await fetch(`${API_BASE}/users?user_id=${tutor.user_id}`);
-          const users = await userRes.json();
-          const tutorUser = users[0];
-          tutorName = tutorUser?.full_name || "Gia sư";
+      // 2. Lấy danh sách các buổi học trực tiếp từ dữ liệu backend trả về (ưu tiên hàng đầu)
+      let sessions = courseData.class_sessions || courseData.classSessions || [];
+
+      // Dự phòng: Nếu API courseDetail chưa gom sẵn, mới gọi service phụ để lọc
+      if (sessions.length === 0) {
+        try {
+          const allSessions = await courseScheduleService.getCourseSchedules();
+          sessions = (Array.isArray(allSessions) ? allSessions : allSessions.data || [])
+            .filter(session => String(session.course_id) === String(id));
+        } catch (err) {
+          console.warn("⚠️ Không thể tải danh sách buổi học phụ:", err);
         }
       }
 
-      // Lấy booking status
-      let bookingStatus = "confirmed";
-      const bookingsRes = await fetch(`${API_BASE}/bookings?course_id=${id}`);
-      const bookings = await bookingsRes.json();
-      const booking = bookings.find(b => b.student_id === user?.user_id);
-      if (booking) {
-        bookingStatus = booking.status;
-      }
+      // Sắp xếp các buổi học theo thời gian tăng dần
+      sessions.sort((a, b) => new Date(a.actual_date) - new Date(b.actual_date));
+      setClassSessions(sessions);
 
       setCourse({
         ...courseData,
-        tutor_name: tutorName,
-        booking_status: bookingStatus,
-        booking_id: booking?.booking_id,
+        tutor_name: courseData.tutor_name || "Gia sư",
+        booking_status: courseData.booking_status || "confirmed",
       });
       
     } catch (error) {
@@ -166,7 +160,7 @@ export default function ClassDetailPage() {
               <div className={styles.cardHeader}>
                 <h3>{course.title}</h3>
                 <span className={`${styles.status} ${course.booking_status === "active" ? styles.statusActive : styles.statusConfirmed}`}>
-                  {course.booking_status === "active" ? "✅ Đang học" : "✅ Đã xác nhận"}
+                  {course.booking_status === "active" ? " Đang học" : " Đã xác nhận"}
                 </span>
               </div>
 
@@ -184,15 +178,15 @@ export default function ClassDetailPage() {
                   <p>{formatDate(course.end_date)}</p>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>⏰ Thời gian</label>
+                  <label>⏰ Khung giờ</label>
                   <p>{course.time_slot || "Chưa cập nhật"}</p>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>📚 Lịch học</label>
-                  <p>{course.schedule_days?.join(", ") || "Chưa cập nhật"}</p>
+                  <label>📚 Lịch học định kỳ</label>
+                  <p>{Array.isArray(course.schedule_days) ? course.schedule_days.join(", ") : (course.schedule_days || "Chưa cập nhật")}</p>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>💰 Học phí/giờ</label>
+                  <label>💰 Học phí / buổi</label>
                   <p>{formatCurrency(course.hourly_rate)}</p>
                 </div>
                 <div className={`${styles.infoItem} ${styles.fullWidth}`}>
@@ -200,7 +194,7 @@ export default function ClassDetailPage() {
                   <p>{course.description || "Không có mô tả"}</p>
                 </div>
                 <div className={`${styles.infoItem} ${styles.fullWidth}`}>
-                  <label>🔗 Link phòng học</label>
+                  <label>🔗 Link phòng học cố định</label>
                   <p>
                     {course.permanent_room_url ? (
                       <a 
@@ -218,7 +212,55 @@ export default function ClassDetailPage() {
                 </div>
               </div>
 
-              <div className={styles.actions}>
+              {/* Danh sách các buổi học cụ thể (Class Sessions) */}
+              <div className={styles.sessionsSection} style={{ marginTop: "24px" }}>
+                <h4 style={{ marginBottom: "12px", fontSize: "1.1rem", color: "#1f2937" }}>
+                  📋 Danh sách các buổi học ({classSessions.length})
+                </h4>
+                {classSessions.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {classSessions.map((session, index) => (
+                      <div 
+                        key={session.session_id || index}
+                        style={{
+                          padding: "12px 16px",
+                          background: "#f9fafb",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: "8px"
+                        }}
+                      >
+                        <div>
+                          <strong>Buổi {index + 1}: {session.lesson_title || "Nội dung đang cập nhật"}</strong>
+                          <div style={{ fontSize: "0.875rem", color: "#6b7280", marginTop: "4px" }}>
+                            📅 Ngày: {formatDate(session.actual_date)} | ⏰ Giờ: {session.start_time?.substring(0, 5)} - {session.end_time?.substring(0, 5)}
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ 
+                            padding: "4px 8px", 
+                            borderRadius: "4px", 
+                            fontSize: "0.75rem", 
+                            fontWeight: "600",
+                            background: session.status === "completed" ? "#d1fae5" : "#dbeafe",
+                            color: session.status === "completed" ? "#065f46" : "#1e40af"
+                          }}>
+                            {session.status === "completed" ? "Đã học" : "Sắp tới"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: "#6b7280", fontSize: "0.95rem" }}>Chưa có thông tin chi tiết về các buổi học.</p>
+                )}
+              </div>
+
+              <div className={styles.actions} style={{ marginTop: "24px" }}>
                 {course.permanent_room_url && (
                   <button 
                     className={styles.joinBtn}

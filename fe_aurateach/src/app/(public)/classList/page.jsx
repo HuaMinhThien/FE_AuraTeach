@@ -32,12 +32,9 @@ export default function ClassListPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log('📂 [DEBUG Categories] Đang gọi API lấy danh mục...');
         const categoriesData = await categoryService.getCategories();
-        console.log('📂 [DEBUG Categories] Dữ liệu thô nhận về:', categoriesData);
 
         const categoriesList = Array.isArray(categoriesData) ? categoriesData : (categoriesData?.data || []);
-        console.log('📂 [DEBUG Categories] Danh sách categories sau khi xử lý:', categoriesList);
 
         setCategories(categoriesList);
       } catch (err) {
@@ -64,12 +61,8 @@ export default function ClassListPage() {
           sort_by: sortOption,
         };
 
-        console.log('🚀 [DEBUG Courses REQUEST] Đang gửi params lên API /courses:', params);
-
         const response = await courseService.getCourses(params);
-        console.log('📦 [DEBUG Courses RESPONSE] Dữ liệu thô từ API trả về:', response);
 
-        // Xử lý dữ liệu trả về theo chuẩn phân trang Laravel API Resource/LengthAwarePaginator
         const coursesList = Array.isArray(response) ? response : (response?.data || []);
         console.log('📋 [DEBUG Courses LIST] Số lượng khóa học lấy được:', coursesList.length);
 
@@ -215,8 +208,8 @@ export default function ClassListPage() {
           </p>
 
           <div className={styles.heroTags}>
-            <span className={styles.tag}>✅ Gia sư xác thực</span>
-            <span className={styles.tag}>👥 Học nhóm nhỏ</span>
+            <span className={styles.tag}> Gia sư xác thực</span>
+            <span className={styles.tag}> Học nhóm nhỏ</span>
           </div>
 
           <div className={styles.heroButtons}>
@@ -332,12 +325,12 @@ export default function ClassListPage() {
                   <div className={styles.scheduleInfo}>
                     <div className={styles.scheduleItem}>
                       <span className={styles.scheduleText}>
-                        📅 {course.schedule_display}
+                         {course.schedule_display}
                       </span>
                     </div>
                     <div className={styles.scheduleItem}>
                       <span className={styles.scheduleText}>
-                        ⏰ {course.time_slot_display}
+                         {course.time_slot_display}
                       </span>
                     </div>
                   </div>
@@ -366,11 +359,11 @@ export default function ClassListPage() {
                     <div className={styles.tutorPrice}>
                       <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
                       <span className={styles.priceValue}>
-                        {formatPrice(course.hourly_rate)} đ/h
+                        {formatPrice(course.hourly_rate)}đ / buổi
                       </span>
                     </div>
                     <div className={styles.studentCount}>
-                      <span>👥 {course.current_students || 0}/{course.max_students || 0} HS</span>
+                      <span> {course.current_students || 0}/{course.max_students || 0} HS</span>
                     </div>
                   </div>
                 </div>

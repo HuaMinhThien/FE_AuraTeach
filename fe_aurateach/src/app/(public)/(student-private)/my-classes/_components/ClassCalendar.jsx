@@ -16,41 +16,45 @@ export default function ClassCalendar({ courses, onDateClick }) {
   const rowRefs = useRef({});
   const hasScrolledRef = useRef(false);
 
-  // Tạo map các ngày có lớp học
+  // 1. Tạo danh sách các khóa học duy nhất (chỉ lấy các khóa không có trạng thái completed)
+  const uniqueCourses = useMemo(() => {
+    const map = new Map();
+    courses.forEach(item => {
+      // ⚠️ Kiểm tra trạng thái của khóa học (nếu status hoặc course_status là "completed" thì bỏ qua)
+      if (item.status === "completed" || item.course_status === "completed") return;
+
+      const id = item.course_id;
+      if (id && !map.has(id)) {
+        map.set(id, {
+          course_id: id,
+          title: item.title || "Khóa học chưa đặt tên"
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [courses]);
+
+  // 2. Tạo map các ngày có buổi học thực tế (chỉ lấy từ các khóa học chưa completed)
   const classDates = useMemo(() => {
     const dates = {};
-    courses.forEach(course => {
-      if (course.schedule_days && course.schedule_days.length > 0) {
-        const startDate = new Date(course.start_date);
-        const endDate = new Date(course.end_date);
-        const daysOfWeek = course.schedule_days.map(day => {
-          const dayMap = {
-            "Thứ 2": 1,
-            "Thứ 3": 2,
-            "Thứ 4": 3,
-            "Thứ 5": 4,
-            "Thứ 6": 5,
-            "Thứ 7": 6,
-            "Chủ Nhật": 0,
-          };
-          return dayMap[day];
-        });
+    courses.forEach(session => {
+      // ⚠️ Bỏ qua toàn bộ buổi học thuộc khóa học đã hoàn thành
+      if (session.status === "completed" || session.course_status === "completed") return;
 
-        let current = new Date(startDate);
-        while (current <= endDate) {
-          const dayOfWeek = current.getDay();
-          if (daysOfWeek.includes(dayOfWeek)) {
-            const dateKey = current.toISOString().split("T")[0];
-            if (!dates[dateKey]) {
-              dates[dateKey] = [];
-            }
-            dates[dateKey].push({
-              course: course,
-              time: course.time_slot || "Chưa có giờ",
-            });
-          }
-          current.setDate(current.getDate() + 1);
+      const sessionDate = session.actual_date; 
+      if (sessionDate) {
+        const dateKey = sessionDate.split("T")[0]; // Định dạng YYYY-MM-DD
+        if (!dates[dateKey]) {
+          dates[dateKey] = [];
         }
+        
+        const startTime = session.start_time ? session.start_time.substring(0, 5) : "00:00";
+        const endTime = session.end_time ? session.end_time.substring(0, 5) : "00:00";
+        
+        dates[dateKey].push({
+          course: session,
+          timeSlot: `${startTime} - ${endTime}`,
+        });
       }
     });
     return dates;
@@ -75,21 +79,22 @@ export default function ClassCalendar({ courses, onDateClick }) {
   const timeToMinutes = (timeStr) => {
     if (!timeStr) return 0;
     const parts = timeStr.split(':');
-    if (parts.length !== 2) return 0;
+    if (parts.length < 2) return 0;
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
   };
 
-  // Chuyển đổi khung giờ của lớp sang danh sách các slot 30 phút
-  const getCourseSlots = (timeSlot) => {
-    if (!timeSlot || timeSlot === "Chưa có giờ") return [];
-    const [start, end] = timeSlot.split('-').map(t => t.trim());
-    if (!start || !end) return [];
+  // Chuyển đổi khung giờ của buổi học sang danh sách các slot 30 phút để hiển thị trên bảng
+  const getSessionSlots = (timeSlotStr) => {
+    if (!timeSlotStr || timeSlotStr.includes("undefined")) return [];
+    const parts = timeSlotStr.split('-').map(t => t.trim());
+    if (parts.length < 2) return [];
     
-    const startMin = timeToMinutes(start);
-    const endMin = timeToMinutes(end);
+    const startMin = timeToMinutes(parts[0]);
+    const endMin = timeToMinutes(parts[1]);
     
     const slots = [];
-    for (let t = startMin; t < endMin; t += 30) {
+    // ✅ Sửa thành <= để bao gồm cả mốc giờ kết thúc (ví dụ đến đúng 20:00)
+    for (let t = startMin; t <= endMin; t += 30) {
       const h = Math.floor(t / 60);
       const m = t % 60;
       slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
@@ -134,6 +139,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
   };
 
   const formatDate = (dateStr) => {
+    if (!dateStr) return "";
     const date = new Date(dateStr);
     return date.toLocaleDateString("vi-VN", {
       weekday: "short",
@@ -152,14 +158,14 @@ export default function ClassCalendar({ courses, onDateClick }) {
     );
   };
 
-  // Kiểm tra có lớp tại slot này không
+  // Kiểm tra có buổi học tại slot này không
   const getClassesAtSlot = (date, timeSlot) => {
     const dateKey = date.toISOString().split("T")[0];
     const dayClasses = classDates[dateKey] || [];
     const result = [];
     
     dayClasses.forEach(cls => {
-      const slots = getCourseSlots(cls.time);
+      const slots = getSessionSlots(cls.timeSlot);
       if (slots.includes(timeSlot)) {
         if (selectedCourseIds.length > 0 && !selectedCourseIds.includes(cls.course.course_id)) {
           return;
@@ -222,10 +228,11 @@ export default function ClassCalendar({ courses, onDateClick }) {
 
   // Chọn tất cả
   const handleSelectAll = () => {
-    if (selectedCourseIds.length === courses.length) {
+    const allIds = uniqueCourses.map(c => c.course_id);
+    if (selectedCourseIds.length === allIds.length) {
       setSelectedCourseIds([]);
     } else {
-      setSelectedCourseIds(courses.map(c => c.course_id));
+      setSelectedCourseIds(allIds);
     }
     hasScrolledRef.current = false;
   };
@@ -246,7 +253,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
       let targetRowIndex = -1;
       let maxClassCount = 0;
 
-      // Duyệt qua tất cả các hàng (slot giờ)
       allTimeSlots.forEach((slot, index) => {
         let classCount = 0;
         weekDays.forEach(date => {
@@ -255,7 +261,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
           }
         });
 
-        // Nếu đang lọc 1 lớp cụ thể
         if (selectedCourseIds.length === 1) {
           const targetCourseId = selectedCourseIds[0];
           let hasTargetClass = false;
@@ -269,9 +274,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
             targetRowIndex = index;
             return;
           }
-        } 
-        // Nếu không lọc hoặc lọc nhiều lớp
-        else {
+        } else {
           if (classCount > maxClassCount) {
             maxClassCount = classCount;
             targetRowIndex = index;
@@ -279,17 +282,15 @@ export default function ClassCalendar({ courses, onDateClick }) {
         }
       });
 
-      // Nếu không tìm thấy, cuộn lên đầu
       if (targetRowIndex === -1) {
         targetRowIndex = 0;
       }
 
-      // Tìm phần tử DOM của hàng cần cuộn đến
       const targetRow = rowRefs.current[targetRowIndex];
       if (targetRow) {
         const wrapperRect = wrapper.getBoundingClientRect();
         const rowRect = targetRow.getBoundingClientRect();
-        const offset = rowRect.top - wrapperRect.top - 60; // Cách top 60px
+        const offset = rowRect.top - wrapperRect.top - 60;
         
         wrapper.scrollTo({
           top: wrapper.scrollTop + offset,
@@ -306,7 +307,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
     return (
       <div className={styles.emptySchedule}>
         <span className={styles.emptyIcon}></span>
-        <p>Bạn chưa đăng ký lớp học nào</p>
+        <p>Bạn chưa có lịch học nào</p>
       </div>
     );
   }
@@ -327,9 +328,9 @@ export default function ClassCalendar({ courses, onDateClick }) {
         >
           <div className={styles.tooltipContent}>
             <h4>{hoveredCourse.title}</h4>
-            <p>{hoveredCourse.time_slot || "Chưa có giờ"}</p>
-            <p>{hoveredCourse.tutor_name || "Chưa có thông tin"}</p>
-            <p>{formatDate(hoveredCourse.start_date)}</p>
+            <p><strong>Bài học:</strong> {hoveredCourse.lesson_title || "Chưa cập nhật"}</p>
+            <p><strong>Thời gian:</strong> {hoveredCourse.start_time?.substring(0, 5)} - {hoveredCourse.end_time?.substring(0, 5)}</p>
+            <p><strong>Gia sư:</strong> {hoveredCourse.tutor_name || "Chưa có thông tin"}</p>
             <small>Nhấn để xem chi tiết</small>
           </div>
         </div>
@@ -357,13 +358,13 @@ export default function ClassCalendar({ courses, onDateClick }) {
             className={styles.selectAllBtn}
             onClick={handleSelectAll}
           >
-            {selectedCourseIds.length === courses.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+            {selectedCourseIds.length === uniqueCourses.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
           </button>
         </div>
         <div className={styles.filterOptions}>
-          {courses.map(course => (
+          {uniqueCourses.map((course, index) => (
             <label 
-              key={course.course_id} 
+              key={course.course_id || `unique-course-${index}`} 
               className={`${styles.filterTag} ${selectedCourseIds.includes(course.course_id) ? styles.filterTagActive : ""}`}
             >
               <input
@@ -376,19 +377,9 @@ export default function ClassCalendar({ courses, onDateClick }) {
             </label>
           ))}
         </div>
-        {selectedCourseIds.length > 0 && selectedCourseIds.length < courses.length && (
+        {selectedCourseIds.length > 0 && selectedCourseIds.length < uniqueCourses.length && (
           <div className={styles.filterStatus}>
-            Đang hiển thị <strong>{selectedCourseIds.length}</strong>/{courses.length} lớp
-          </div>
-        )}
-        {selectedCourseIds.length === 1 && (
-          <div className={styles.filterStatus} style={{ color: '#4f46e5' }}>
-            Đã cuộn đến lớp được chọn
-          </div>
-        )}
-        {selectedCourseIds.length === 0 && (
-          <div className={styles.filterStatus} style={{ color: '#6b7280' }}>
-            Đã cuộn đến vùng có nhiều lớp nhất
+            Đang hiển thị <strong>{selectedCourseIds.length}</strong>/{uniqueCourses.length} lớp
           </div>
         )}
       </div>
@@ -461,22 +452,16 @@ export default function ClassCalendar({ courses, onDateClick }) {
       <div className={styles.calendarLegend}>
         <div className={styles.legendItem}>
           <span className={styles.legendDotGreen}></span>
-          <span>Có lớp học</span>
+          <span>Có buổi học</span>
         </div>
         <div className={styles.legendItem}>
           <span className={styles.legendDotGray}></span>
-          <span>Không có lớp</span>
+          <span>Trống</span>
         </div>
         <div className={styles.legendItem}>
           <span className={styles.legendDotBlue}></span>
           <span>Hôm nay</span>
         </div>
-        {selectedCourseIds.length > 0 && (
-          <div className={styles.legendItem}>
-            <span className={styles.legendDotPurple}></span>
-            <span>Đang lọc {selectedCourseIds.length} lớp</span>
-          </div>
-        )}
       </div>
     </div>
   );

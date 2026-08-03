@@ -93,23 +93,34 @@ export default function StudentBookingHistoryPage() {
     };
   };
 
-  const getBookingStatus = (statusKey) => {
+  // Cập nhật hàm nhận toàn bộ item để check trạng thái tiến độ lớp học
+  const getBookingStatus = (item) => {
+    const courseStatus = item?.status;
+    if (courseStatus === 'completed') {
+      return { label: '🎓 Đã hoàn thành', className: 'status-completed' };
+    }
+    if (courseStatus === 'closed') {
+      return { label: '🔒 Đã đóng', className: 'status-cancelled' };
+    }
+
+    const statusKey = item?.booking_status;
     console.log("🔍 [DEBUG BOOKING STATUS KEY]:", statusKey);
     const statusMap = {
       'pending': { label: '⏳ Chờ xác nhận', className: 'status-pending' },
-      'confirmed': { label: '✅ Đã xác nhận', className: 'status-confirmed' },
-      'completed': { label: '🎓 Đã hoàn thành', className: 'status-completed' },
-      'cancelled': { label: '❌ Đã hủy', className: 'status-cancelled' }
+      'confirmed': { label: ' Đã xác nhận', className: 'status-confirmed' },
+      'active': { label: ' Đã xác nhận', className: 'status-confirmed' },
+      'completed': { label: ' Đã hoàn thành', className: 'status-completed' },
+      'cancelled': { label: ' Đã hủy', className: 'status-cancelled' }
     };
-    return statusMap[statusKey] || { label: statusKey || 'Đã xác nhận', className: 'status-confirmed' };
+    return statusMap[statusKey] || { label: ' Đã xác nhận', className: 'status-confirmed' };
   };
 
   const getPaymentStatus = (paymentKey) => {
     console.log("🔍 [DEBUG PAYMENT STATUS KEY]:", paymentKey);
     const statusMap = {
-      'unpaid': { label: '⏳ Chưa thanh toán', className: 'payment-unpaid' },
-      'paid': { label: '✅ Đã thanh toán', className: 'payment-paid' },
-      'refunded': { label: '↩️ Đã hoàn tiền', className: 'payment-refunded' }
+      'unpaid': { label: ' Chưa thanh toán', className: 'payment-unpaid' },
+      'paid': { label: ' Đã thanh toán', className: 'payment-paid' },
+      'refunded': { label: ' Đã hoàn tiền', className: 'payment-refunded' }
     };
     return statusMap[paymentKey] || null;
   };
@@ -181,7 +192,7 @@ export default function StudentBookingHistoryPage() {
                         <th>Mã lớp</th>
                         <th>Tên lớp học</th>
                         <th>Gia sư giảng dạy</th>
-                        <th>Học phí / Giờ</th>
+                        <th>Học phí / Buổi</th>
                         <th>Trạng thái</th>
                         <th>Thanh toán</th>
                         <th>Hành động</th>
@@ -190,7 +201,7 @@ export default function StudentBookingHistoryPage() {
                     <tbody>
                       {bookedClasses.map((item, index) => {
                         const courseId = item.course_id || item.id;
-                        const status = getBookingStatus(item.booking_status);
+                        const status = getBookingStatus(item); // Truyền nguyên object item vào
                         const payment = getPaymentStatus(item.payment_status);
                         
                         return (
@@ -202,7 +213,7 @@ export default function StudentBookingHistoryPage() {
                                 <span className="class-flow-badge">{item.level || "Tiêu chuẩn"}</span>
                               </div>
                             </td>
-                            <td className="tutor-name-cell">👨‍🏫 {getTutorName(item)}</td>
+                            <td className="tutor-name-cell"> {getTutorName(item)}</td>
                             <td className="price-cell">{formatPrice(item.hourly_rate || item.price)}</td>
                             <td>
                               <span className={`status-badge ${status.className}`}>
