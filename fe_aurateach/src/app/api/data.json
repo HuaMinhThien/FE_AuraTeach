@@ -329,6 +329,30 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-31T09:21:25.235Z"
+    },
+    {
+      "id": "509e",
+      "user_id": "user_1785774015940_bn2etd",
+      "email": "thanhliem147789@gmail.com",
+      "password": "123456",
+      "full_name": "Liemtran",
+      "phone": "0966713806",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-08-03T16:20:15.940Z"
+    },
+    {
+      "id": "2296",
+      "user_id": "user_1785775170840_q3ptft",
+      "email": "mqituqn1502@gmail.com",
+      "password": "123123",
+      "full_name": "TuanMai",
+      "phone": "0909678678",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-08-03T16:39:30.840Z"
     }
   ],
   "admins": [
@@ -620,6 +644,14 @@
       "grade": "",
       "school_name": "",
       "created_at": "2026-07-29T09:14:46.813Z"
+    },
+    {
+      "id": "6551",
+      "student_id": "student_1785775170854",
+      "user_id": "user_1785775170840_q3ptft",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-08-03T16:39:30.854Z"
     }
   ],
   "courses": [

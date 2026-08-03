@@ -45,7 +45,7 @@ export const authOptions = {
   },
   pages: {
     signIn: "/login",
-    signOut: "/login",  // ✅ Đổi thành /login thay vì /
+    signOut: "/login",
     error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
@@ -53,8 +53,14 @@ export const authOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
   },
-  // ✅ Thêm debug để xem lỗi
   debug: process.env.NODE_ENV === "development",
+  // 🔥 QUAN TRỌNG: Xóa session khi logout
+  events: {
+    async signOut({ token, session }) {
+      // Session sẽ bị xóa khi gọi /api/auth/signout
+      console.log("🔓 User signed out:", token?.email);
+    }
+  }
 };
 
 const handler = NextAuth(authOptions);

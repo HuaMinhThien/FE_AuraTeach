@@ -260,11 +260,8 @@ export default function LoginPage() {
                     />
                     <span>Ghi nhớ đăng nhập</span>
                   </label>
-                  <Link
-                    href="/forgot-password"
-                    className="aurateach-forgot-link"
-                  >
-                    Quên mật khẩu?
+                  <Link href="/forgot-password" className="aurateach-forgot-link">
+                      Quên mật khẩu?
                   </Link>
                 </div>
 

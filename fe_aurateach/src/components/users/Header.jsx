@@ -97,32 +97,43 @@ export default function Header() {
     }, []);
 
 // ✅ SỬA LẠI HÀM LOGOUT - XÓA HẾT COOKIE
-const handleLogout = () => {
+const handleLogout = async () => {
     console.log("=== LOGOUT ===");
     
-    // 1. Xóa tất cả cookie liên quan đến user và NextAuth
-    const cookiesToRemove = [
-        "user_info",
-        "role", 
-        "next-auth.session-token",
-        "next-auth.csrf-token",
-        "next-auth.callback-url"
-    ];
-    
-    cookiesToRemove.forEach(name => {
-        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0`;
-        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; domain=localhost`;
-    });
-    
-    // 2. Xóa localStorage
-    localStorage.removeItem("user");
-    
-    // 3. Reset state
-    setUser(null);
-    setIsDropdownOpen(false);
-    
-    // 4. Chuyển hướng về trang login (không qua NextAuth signout)
-    window.location.href = "/login";
+    try {
+        // 1. Gọi API logout của NextAuth để xóa session trên server
+        const response = await fetch("/api/auth/signout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        
+        // 2. Xóa cookie user_info và role
+        document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        
+        // 3. Xóa localStorage
+        localStorage.removeItem("user");
+        
+        // 4. Reset state
+        setUser(null);
+        setIsDropdownOpen(false);
+        
+        // 5. Chuyển hướng về trang login
+        window.location.href = "/login";
+    } catch (error) {
+        console.error("Logout error:", error);
+        // Fallback: xóa cookie và chuyển hướng
+        document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        document.cookie = "next-auth.session-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        document.cookie = "next-auth.csrf-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        document.cookie = "next-auth.callback-url=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+        localStorage.removeItem("user");
+        setUser(null);
+        window.location.href = "/login";
+    }
 };
 
     // ✅ Kiểm tra JSON Server có hoạt động không (chỉ 1 lần)
@@ -286,7 +297,7 @@ const handleLogout = () => {
                             </Link>
                         </>
                     ) : (
-                        <SearchComponent />
+                        <div/>
                     )}
 
                     {isMounted ? (
