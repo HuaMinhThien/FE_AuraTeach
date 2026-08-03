@@ -303,6 +303,61 @@
   display: block;
 }
 
+/* ========= DIVIDER ========= */
+.aurateach-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.aurateach-divider::before,
+.aurateach-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.aurateach-divider span {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+/* ========= GOOGLE BUTTON ========= */
+.aurateach-google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  background: white;
+  color: #374151;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.aurateach-google-button:hover {
+  background: #f8fafc;
+  border-color: #1565c0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.aurateach-google-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.aurateach-google-button .google-icon {
+  flex-shrink: 0;
+}
+
 /* Responsive */
 @media (max-width: 1100px) {
   .aurateach-login-container {
