@@ -8,7 +8,10 @@ import SearchComponent from "./SearchInput";
 import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
 import NotificationBell from "@/components/common/NotificationBell";
 
+// ✅ Thêm flag để kiểm tra JSON Server đã sẵn sàng chưa
 const API_BASE = "http://localhost:3007";
+let isJsonServerReady = false;
+let hasCheckedJsonServer = false;
 
 export default function Header() {
     const pathname = usePathname(); 
@@ -93,33 +96,111 @@ export default function Header() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
-        document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        setUser(null);
-        setIsDropdownOpen(false);
-        router.push("/login");
-    };
+// ✅ SỬA LẠI HÀM LOGOUT - XÓA HẾT COOKIE
+const handleLogout = () => {
+    console.log("=== LOGOUT ===");
+    
+    // 1. Xóa tất cả cookie liên quan đến user và NextAuth
+    const cookiesToRemove = [
+        "user_info",
+        "role", 
+        "next-auth.session-token",
+        "next-auth.csrf-token",
+        "next-auth.callback-url"
+    ];
+    
+    cookiesToRemove.forEach(name => {
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0`;
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; domain=localhost`;
+    });
+    
+    // 2. Xóa localStorage
+    localStorage.removeItem("user");
+    
+    // 3. Reset state
+    setUser(null);
+    setIsDropdownOpen(false);
+    
+    // 4. Chuyển hướng về trang login (không qua NextAuth signout)
+    window.location.href = "/login";
+};
 
-    // ✅ Fetch unread count từ conversations
+    // ✅ Kiểm tra JSON Server có hoạt động không (chỉ 1 lần)
+    const checkJsonServer = useCallback(async () => {
+        if (hasCheckedJsonServer) return isJsonServerReady;
+        hasCheckedJsonServer = true;
+        
+        try {
+            const res = await fetch(`${API_BASE}/conversations`, {
+                method: 'HEAD',
+                signal: AbortSignal.timeout(2000) // Timeout 2s
+            });
+            isJsonServerReady = res.ok;
+            console.log(`📡 JSON Server status: ${isJsonServerReady ? '✅ Ready' : '❌ Not ready'}`);
+            return isJsonServerReady;
+        } catch {
+            isJsonServerReady = false;
+            console.log('📡 JSON Server: ❌ Not reachable');
+            return false;
+        }
+    }, []);
+
+    // ✅ Fetch unread count - CHỈ GỌI KHI JSON SERVER SẴN SÀNG
     const fetchUnreadCount = useCallback(async (userId) => {
+        // Kiểm tra JSON Server trước khi gọi
+        const isReady = await checkJsonServer();
+        if (!isReady) {
+            // Không log để tránh spam
+            return;
+        }
+        
         try {
             const res = await fetch(`${API_BASE}/conversations`);
-            const allConversations = await res.json();
+            
+            if (!res.ok) {
+                // Nếu lỗi, đánh dấu JSON Server không sẵn sàng để lần sau bỏ qua
+                if (res.status === 404) {
+                    isJsonServerReady = false;
+                }
+                return;
+            }
+            
+            const text = await res.text();
+            if (!text) return;
+            
+            let allConversations;
+            try {
+                allConversations = JSON.parse(text);
+            } catch (parseError) {
+                return;
+            }
+            
             if (!Array.isArray(allConversations)) return;
 
+            // Fetch tutors
             const tutorsRes = await fetch(`${API_BASE}/tutors`);
-            const allTutors = await tutorsRes.json();
+            if (!tutorsRes.ok) return;
+            
+            const tutorsText = await tutorsRes.text();
+            if (!tutorsText) return;
+            
+            let allTutors;
+            try {
+                allTutors = JSON.parse(tutorsText);
+            } catch (parseError) {
+                return;
+            }
+            
+            if (!Array.isArray(allTutors)) return;
+            
             const tutorToUserMap = {};
             const userToTutorMap = {};
-            if (Array.isArray(allTutors)) {
-                allTutors.forEach(t => {
-                    if (t.tutor_id && t.user_id) {
-                        tutorToUserMap[t.tutor_id] = t.user_id;
-                        userToTutorMap[t.user_id] = t.tutor_id;
-                    }
-                });
-            }
+            allTutors.forEach(t => {
+                if (t.tutor_id && t.user_id) {
+                    tutorToUserMap[t.tutor_id] = t.user_id;
+                    userToTutorMap[t.user_id] = t.tutor_id;
+                }
+            });
 
             const myIds = [userId];
             if (userToTutorMap[userId]) {
@@ -133,19 +214,29 @@ export default function Header() {
             const totalUnread = myConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
             setUnreadCount(totalUnread);
         } catch (error) {
-            console.error("❌ Header: Lỗi fetch unread count:", error);
+            // Bỏ qua lỗi
         }
-    }, []);
+    }, [checkJsonServer]);
 
-    // ✅ Polling unread count mỗi 3 giây
+    // ✅ Polling unread count - CHỈ CHẠY KHI CÓ USER
     useEffect(() => {
         if (!user?.user_id) return;
         
         const userId = user.user_id || user.id;
-        fetchUnreadCount(userId);
         
-        const interval = setInterval(() => fetchUnreadCount(userId), 3000);
-        return () => clearInterval(interval);
+        // Delay 2s trước khi fetch lần đầu
+        const timeout = setTimeout(() => {
+            fetchUnreadCount(userId);
+        }, 2000);
+        
+        const interval = setInterval(() => {
+            fetchUnreadCount(userId);
+        }, 10000); // Giảm tần suất xuống 10s
+        
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(interval);
+        };
     }, [user, fetchUnreadCount]);
 
     const handleProfileClick = () => {
@@ -205,7 +296,6 @@ export default function Header() {
                                 ref={dropdownRef}
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
                             >
-                                {/* ✅ Sử dụng Avatar component đã fix */}
                                 <Avatar 
                                     src={user.avatar}
                                     alt={user.full_name || user.name}
