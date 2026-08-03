@@ -1,14 +1,12 @@
 import apiClient from './apiClient';
-import axios from 'axios'; // Import axios gốc
 
 export const courseService = {
   // Lấy danh sách khóa học
   getCourses: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const endpoint = `http://127.0.0.1:8000/api/courses${queryString ? `?${queryString}` : ''}`; 
+    const endpoint = `/courses${queryString ? `?${queryString}` : ''}`;
     
-    const response = await axios.get(endpoint);
-    return response.data; 
+    return await apiClient.get(endpoint);
   },
 
   // 🚀 Lấy danh sách lớp học dành riêng cho trang quản lý của gia sư (Hiển thị tất cả trạng thái)
