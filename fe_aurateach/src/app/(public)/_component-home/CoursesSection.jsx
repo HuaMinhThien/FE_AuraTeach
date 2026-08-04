@@ -20,8 +20,9 @@ function CoursesSection() {
     const fetchCategories = async () => {
       try {
         const response = await categoryService.getCategories();
-        const categoriesData = response.data || response; 
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        // Vì response.data từ axios đã là mảng trực tiếp rồi:
+        const categoriesData = Array.isArray(response) ? response : (response.data || []);
+        setCategories(categoriesData);
       } catch (error) {
         console.error('Lỗi tải danh mục:', error);
         setCategories([]);
