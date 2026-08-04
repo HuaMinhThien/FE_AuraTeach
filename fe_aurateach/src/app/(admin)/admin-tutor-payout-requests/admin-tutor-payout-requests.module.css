@@ -1,6 +1,7 @@
 .page {
   padding: 24px;
   max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
@@ -171,73 +172,76 @@
   font-size: 13px;
 }
 
-.tutorId {
+.requestCode {
   margin: 0;
   font-size: 11px;
-  color: #9ca3af;
+  color: #6b7280;
+  font-family: monospace;
 }
 
-.pendingBadge {
+.statusBadge {
   display: inline-block;
   padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.statusPending {
   background: #fffbeb;
   color: #d97706;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 13px;
 }
 
-.availableBadge {
-  display: inline-block;
-  padding: 4px 10px;
+.statusApproved {
   background: #f0fdf4;
   color: #16a34a;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 13px;
+}
+
+.statusRejected {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .actionButtons {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
-.releaseBtn {
+.detailBtn {
   padding: 6px 14px;
-  border: none;
-  background: #4f46e5;
-  color: white;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #4f46e5;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s;
 }
 
-.releaseBtn:hover:not(:disabled) {
-  background: #4338ca;
+.detailBtn:hover {
+  background: #e0e7ff;
 }
 
-.releaseBtn:disabled {
-  opacity: 0.4;
+.rejectBtn {
+  padding: 6px 14px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.rejectBtn:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.rejectBtn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-}
-
-.historyBtn {
-  padding: 6px 14px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  color: #6b7280;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.historyBtn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
 }
 
 .emptyCell {
@@ -264,7 +268,7 @@
 .modal {
   background: white;
   border-radius: 12px;
-  width: 440px;
+  width: 480px;
   max-width: 90vw;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
 }
@@ -306,105 +310,58 @@
   padding: 20px;
 }
 
-.modalTutorInfo {
+.infoGrid {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-  margin-bottom: 16px;
 }
 
-.modalAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.modalTutorName {
-  margin: 0;
-  font-weight: 600;
-  font-size: 14px;
-  color: #1a1a2e;
-}
-
-.modalTutorId {
-  margin: 0;
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-.balanceInfo {
-  margin-bottom: 16px;
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #f3f4f6;
   font-size: 13px;
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
   color: #6b7280;
 }
 
-.pendingText {
-  color: #d97706;
-}
-
-.formGroup {
-  margin-bottom: 0;
-}
-
-.formGroup label {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 6px;
-}
-
-.inputGroup {
-  display: flex;
-  gap: 6px;
-}
-
-.input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 14px;
+.infoValue {
   font-weight: 600;
   color: #1a1a2e;
-  outline: none;
-  transition: border-color 0.2s;
+  text-align: right;
 }
 
-.input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.maxBtn {
-  padding: 10px 14px;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
+.bankHighlight {
+  background: #f8fafc;
+  padding: 14px;
   border-radius: 8px;
-  color: #4f46e5;
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
 }
 
-.maxBtn:hover:not(:disabled) {
-  background: #e0e7ff;
+.textarea {
+  width: 95%;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  margin-top: 6px;
 }
 
-.maxBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.inputHint {
-  margin: 8px 0 0;
-  font-size: 11px;
-  color: #9ca3af;
+.textarea:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 .modalFooter {
@@ -430,15 +387,10 @@
   background: #f3f4f6;
 }
 
-.cancelBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.confirmBtn {
+.approveBtn {
   padding: 8px 20px;
   border: none;
-  background: #4f46e5;
+  background: #16a34a;
   color: white;
   border-radius: 8px;
   cursor: pointer;
@@ -450,11 +402,31 @@
   transition: all 0.2s;
 }
 
-.confirmBtn:hover:not(:disabled) {
-  background: #4338ca;
+.approveBtn:hover:not(:disabled) {
+  background: #15803d;
 }
 
-.confirmBtn:disabled {
+.confirmRejectBtn {
+  padding: 8px 20px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.confirmRejectBtn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.confirmRejectBtn:disabled,
+.approveBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -495,4 +467,3 @@
   color: #6b7280;
   font-size: 14px;
 }
-
