@@ -170,7 +170,7 @@ export default function AdminClassesManagement() {
                         {lesson.note ? lesson.note : <em>(Không có ghi chú)</em>}
                       </p>
                       <p className={styles.statusText}>
-                        Trạng thái: <span>{lesson.status}</span> | Thanh toán: <span>{lesson.payout_status}</span>
+                        Trạng thái: <span>{lesson.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span> | Thanh toán: <span>{lesson.payout_status === 'transferred' ? 'Đã thanh toán' : 'Chờ thanh toán'}</span>
                       </p>
                     </div>
                   </div>
