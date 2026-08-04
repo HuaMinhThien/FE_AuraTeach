@@ -377,8 +377,8 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
-      "pending_balance": 900000,
-      "available_balance": 53990000,
+      "pending_balance": 1500000,
+      "available_balance": 53390000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
@@ -1069,28 +1069,6 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
-    },
-    {
-      "id": "course-1785824128324",
-      "course_id": "course-1785824128324",
-      "tutor_id": "tutor_01",
-      "title": "JS ",
-      "category_id": "cat-02",
-      "level": "Cấp 3",
-      "description": "",
-      "max_students": 1,
-      "hourly_rate": 1000000,
-      "start_date": "2026-08-04",
-      "end_date": "2026-08-11",
-      "total_weeks": 1,
-      "schedule_days": [
-        "Chủ Nhật"
-      ],
-      "time_slot": "08:00-09:30",
-      "thumbnail": "/img/class/default-class-10.png",
-      "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
     }
   ],
   "reviews": [
@@ -1429,8 +1407,8 @@
         "u-student-1",
         "u-01"
       ],
-      "last_message": "hihi",
-      "last_message_time": "2026-07-23T19:24:10.325Z",
+      "last_message": "😒",
+      "last_message_time": "2026-08-04T12:19:08.266Z",
       "unread_count": 0
     },
     {
@@ -2079,6 +2057,28 @@
       "content": "ăedsfawedf",
       "created_at": "2026-07-29T12:31:44.620Z",
       "is_read": false
+    },
+    {
+      "id": "msg_1785845925838",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "bug một đống không lo fix",
+      "created_at": "2026-08-04T12:18:45.838Z",
+      "is_read": false
+    },
+    {
+      "id": "msg_1785845948231",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "😒",
+      "created_at": "2026-08-04T12:19:08.231Z",
+      "is_read": false
     }
   ],
   "notifications": [
@@ -2208,14 +2208,14 @@
       "tutor_id": "tutor_01",
       "lesson_number": 3,
       "lesson_date": "2026-08-01",
-      "record_url": "https://drive.google.com/file/d/1xABCxyz...",
+      "evidence_url": "https://drive.google.com/file/d/1xABCxyz...",
       "note": "Đã dạy xong bài...",
       "submitted_at": "2026-08-01T20:00:00.000Z",
       "holding_hours": 24,
       "payout_available_at": "2026-08-02T20:00:00.000Z",
-      "status": "approved",
+      "status": "pending_review",
       "lesson_amount": 300000,
-      "payout_status": "transferred",
+      "payout_status": "holding",
       "id": "f225"
     },
     {
@@ -2225,14 +2225,14 @@
       "tutor_id": "tutor_01",
       "lesson_number": 1,
       "lesson_date": "2026-07-27",
-      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "evidence_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
       "note": "ôn tập",
       "submitted_at": "2026-07-30T13:16:37.233Z",
       "holding_hours": 24,
       "payout_available_at": "2026-07-31T13:16:37.233Z",
-      "status": "approved",
+      "status": "pending_review",
       "lesson_amount": 0,
-      "payout_status": "transferred"
+      "payout_status": "holding"
     },
     {
       "id": "55ed",
@@ -2241,14 +2241,14 @@
       "tutor_id": "tutor_01",
       "lesson_number": 1,
       "lesson_date": "2026-07-29",
-      "record_url": "localhost:3000/tutor-dashboard",
+      "evidence_url": "localhost:3000/tutor-dashboard",
       "note": "",
       "submitted_at": "2026-07-30T14:49:19.781Z",
       "holding_hours": 24,
       "payout_available_at": "2026-07-31T14:49:19.781Z",
-      "status": "approved",
+      "status": "pending_review",
       "lesson_amount": 300000,
-      "payout_status": "transferred"
+      "payout_status": "holding"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
