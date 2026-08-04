@@ -1,5 +1,4 @@
 .container {
-  
   max-width: 1200px;
   margin: 0 auto;
   font-family: system-ui, -apple-system, sans-serif;
@@ -38,7 +37,7 @@
 /* Các khối nội dung dạng Thẻ */
 .card {
   background: #ffffff;
-  border: 1fr solid #e2e8f0;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -143,7 +142,6 @@
   background: #eff6ff;
   color: #1e40af;
   font-weight: 600;
-  /* border: 1px solid #1e40af; */
 }
 
 /* Khu vực chọn hình ảnh đại diện */
@@ -214,16 +212,7 @@
   background: #eff6ff;
 }
 
-/* Lịch học & Báo lỗi trùng lịch */
-.addSessionBtn {
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
+/* Lịch học & Báo lỗi */
 .endDateNotification {
   background-color: #f1f5f9;
   border-left: 4px solid #64748b;
@@ -263,7 +252,6 @@
   font-weight: 500;
 }
 
-/* Container bọc ngoài vùng chọn giờ */
 .timePickerContainer {
   display: flex;
   flex-direction: column;
@@ -277,7 +265,6 @@
   margin: 0;
 }
 
-/* Hàng chứa 2 ô chọn giờ */
 .timePickerRow {
   display: flex;
   align-items: center;
@@ -285,7 +272,6 @@
   flex-wrap: wrap;
 }
 
-/* Khối bọc từng ô input time để hiển thị chữ "Từ:" hoặc "Đến:" */
 .timeInputWrapper {
   display: flex;
   align-items: center;
@@ -301,7 +287,6 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Chữ tiêu đề nhỏ đứng trước ô nhập */
 .timeInputIcon {
   font-size: 14px;
   font-weight: 500;
@@ -310,7 +295,6 @@
   user-select: none;
 }
 
-/* Ô input time nguyên bản */
 .timeInput {
   border: none;
   background: transparent;
@@ -323,16 +307,11 @@
   font-family: inherit;
 }
 
-/* Mũi tên kết nối ở giữa */
 .timeArrowDivider {
   font-size: 18px;
   color: #94a3b8;
   user-select: none;
 }
-
-
-
-
 
 .errorAlert {
   background-color: #fef2f2;
@@ -345,7 +324,7 @@
   font-weight: 500;
 }
 
-/* CỘT PHẢI STICKY (Học phí & Mẹo) */
+/* CỘT PHẢI STICKY (Sửa lại màu sắc tương phản cao, chữ cực kỳ rõ) */
 .rightColumn {
   position: relative;
 }
@@ -359,48 +338,124 @@
 }
 
 .feeEstimateCard {
-  background: #1e62ec;
+  background: #1d4ed8;
   color: #ffffff;
   padding: 24px;
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
 }
 
 .feeEstimateCard h3 {
-  font-size: 18px;
-  margin-bottom: 12px;
-  font-weight: 600;
+  font-size: 20px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #ffffff;
 }
 
-.feeEstimateCard p {
+.feeSubHeader {
   font-size: 13px;
-  opacity: 0.85;
+  color: #e2e8f0;
   line-height: 1.5;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .feeDisplay {
-  background: rgba(255, 255, 255, 0.15);
-  padding: 16px;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 14px 16px;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .feeLabel {
   display: block;
   font-size: 13px;
-  opacity: 0.9;
+  color: #f1f5f9;
   margin-bottom: 4px;
 }
 
 .feeValue {
-  font-size: 24px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Khung giá gợi ý */
+.suggestedBox {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.suggestedTitle {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.suggestedValue {
+  font-size: 15px;
+  color: #1d4ed8;
   font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Vùng tính toán chi tiết */
+.calculationSection {
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  padding-top: 14px;
+}
+
+.calcRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.calcLabel {
+  color: #e2e8f0;
+}
+
+.calcValue {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.calcValueHighlight {
+  font-weight: 700;
+  color: #86efac; /* Xanh lá tươi nổi bật trên nền xanh dương */
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.totalLabel {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.totalValue {
+  font-weight: 800;
+  color: #ffeb3b; /* Vàng sáng rực rỡ, nhìn rõ 100% */
+  font-size: 20px;
 }
 
 .feeFootnote {
-  font-size: 12px !important;
-  margin-bottom: 0 !important;
-  opacity: 0.75 !important;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-top: 14px;
+  margin-bottom: 0;
+  line-height: 1.4;
 }
 
 .tipsCard {
@@ -456,27 +511,3 @@
   color: #94a3b8;
   cursor: not-allowed;
 }
-
-.saveDraftBtn {
-  background: none;
-  border: none;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: center;
-  width: 100%;
-  margin-top: -8px;
-}
-
-.saveDraftBtn:hover {
-  color: #334155;
-  text-decoration: underline;
-}
-
-.ngayDay{
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  padding: 12px 16px;
-}
-

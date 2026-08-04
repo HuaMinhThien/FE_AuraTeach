@@ -18,6 +18,20 @@ const DEFAULT_IMAGES = [
   "/img/class/default-class-10.png",
 ];
 
+// Định nghĩa khung giá chi tiết theo cấp học & quy mô lớp (min - max)
+const PRICE_LIMITS = {
+  greaterThan3: { // Lớp >= 3 học sinh
+    "Cấp 1": { min: 100000, max: 150000, label: "100.000đ - 150.000đ / giờ" },
+    "Cấp 2": { min: 150000, max: 300000, label: "150.000đ - 300.000đ / giờ" },
+    "Cấp 3": { min: 250000, max: 500000, label: "250.000đ - 500.000đ / giờ" },
+  },
+  lessThan3: { // Lớp < 3 học sinh
+    "Cấp 1": { min: 200000, max: 350000, label: "200.000đ - 350.000đ / giờ" },
+    "Cấp 2": { min: 300000, max: 500000, label: "300.000đ - 500.000đ / giờ" },
+    "Cấp 3": { min: 450000, max: 1000000, label: "450.000đ - 1.000.000đ / giờ" },
+  },
+};
+
 export default function CreateClassPage() {
   const router = useRouter();
 
@@ -33,7 +47,7 @@ export default function CreateClassPage() {
   const [description, setDescription] = useState("");
   const [maxStudents, setMaxStudents] = useState(15);
   const [hourlyRate, setHourlyRate] = useState(150000);
-  
+
   // State quản lý link Google Meet
   const [meetLink, setMeetLink] = useState("");
   const [meetError, setMeetError] = useState("");
@@ -57,6 +71,18 @@ export default function CreateClassPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
   const [tutorId, setTutorId] = useState("");
+
+  // Tự động lấy cấu hình min/max giá hiện tại
+  const numStudents = parseInt(maxStudents || 0);
+  const currentPriceConfig = numStudents >= 3 
+    ? PRICE_LIMITS.greaterThan3[level] 
+    : PRICE_LIMITS.lessThan3[level];
+
+  // Tính toán giá trị lỗi kiểm tra giá
+  const currentRate = parseInt(hourlyRate || 0);
+  const priceError = (currentPriceConfig && (currentRate < currentPriceConfig.min || currentRate > currentPriceConfig.max))
+    ? `⚠️ Mức phí cho ${level} (${numStudents >= 3 ? "Lớp ≥ 3 HS" : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`
+    : "";
 
   // 1. Tự động gọi API lấy toàn bộ danh mục môn học
   useEffect(() => {
@@ -115,7 +141,6 @@ export default function CreateClassPage() {
           if (isMounted) {
             setTutorId(tutor.tutor_id);
 
-            // Tách các chuyên môn gia sư đã đăng ký (ví dụ: "Toán, Tin học & Lập trình, Ngữ văn")
             const registeredExpertise = tutor.expertise
               ? tutor.expertise.split(",").map((exp) => exp.trim().toLowerCase())
               : [];
@@ -141,7 +166,6 @@ export default function CreateClassPage() {
     };
   }, [router]);
 
-  // Hàm kiểm tra ngày bắt đầu có hợp lệ không
   const validateStartDate = (dateString) => {
     if (!dateString) return true;
     
@@ -175,7 +199,6 @@ export default function CreateClassPage() {
     endDate = end.toISOString().split("T")[0];
   }
 
-  // Logic kiểm tra trùng lịch Real-time
   useEffect(() => {
     const checkScheduleConflict = async () => {
       if (!startDate || !endDate || selectedDays.length === 0 || !startTime || !endTime) {
@@ -248,10 +271,46 @@ export default function CreateClassPage() {
     }
   };
 
+  // --- LOGIC TÍNH TOÁN DỰ TOÁN HỌC PHÍ & KIỂM TRA GIỜ HỌC ---
+  const calculateHoursPerSession = () => {
+    if (!startTime || !endTime) return 0;
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const durationInMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+    return durationInMinutes / 60;
+  };
+
+  const hoursPerSession = calculateHoursPerSession();
+
+  // ✅ KIỂM TRA ĐIỀU KIỆN MIN - MAX TỪ 07:00 ĐẾN 23:00 VÀ TỐI THIỂU 1 TIẾNG / BUỔI
+  const getTimeError = () => {
+    if (!startTime || !endTime) return "";
+    
+    // Kiểm tra giới hạn khung giờ cho phép từ 07:00 đến 23:00
+    if (startTime < "07:00" || startTime > "23:00" || endTime < "07:00" || endTime > "23:00") {
+      return "⚠️ Thời gian học chỉ được phép chọn trong khoảng từ 07:00 sáng đến 23:00 đêm.";
+    }
+
+    // Kiểm tra thời lượng tối thiểu 1 tiếng
+    if (hoursPerSession < 1) {
+      return "⚠️ Thời gian buổi học phải kéo dài tối thiểu 1 tiếng (60 phút).";
+    }
+
+    return "";
+  };
+
+  const timeError = getTimeError();
+
+  const pricePerHour = parseInt(hourlyRate || 0);
+  const costPerSession = (hoursPerSession > 0 ? hoursPerSession : 0) * pricePerHour;
+  const daysPerWeekCount = selectedDays.length;
+  const totalWeeksCount = parseInt(totalWeeks || 0);
+  const totalCourseSessions = daysPerWeekCount * totalWeeksCount;
+  const totalCourseCost = costPerSession * totalCourseSessions;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🛡️ BẢO VỆ KHI SUBMIT
     if (!isAllowed) {
       alert("⚠️ Bạn không có quyền thực hiện chức năng này!");
       return;
@@ -262,6 +321,16 @@ export default function CreateClassPage() {
       return;
     }
     
+    if (priceError) {
+      alert("⚠️ Học phí nhập vào không nằm trong khoảng giá quy định. Vui lòng kiểm tra lại!");
+      return;
+    }
+
+    if (timeError) {
+      alert(timeError);
+      return;
+    }
+
     if (!validateStartDate(startDate)) {
       alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (từ hôm nay trở đi)!");
       return;
@@ -319,7 +388,6 @@ export default function CreateClassPage() {
     return today.toISOString().split("T")[0];
   };
 
-  // Trả về màn hình chờ đang kiểm tra quyền
   if (!isPermissionChecked) {
     return (
       <div style={{ textAlign: "center", padding: "120px 20px", fontSize: "16px", color: "#666" }}>
@@ -328,12 +396,10 @@ export default function CreateClassPage() {
     );
   }
 
-  // Nếu không đủ quyền, không hiển thị Form tạo lớp
   if (!isAllowed) {
     return null;
   }
 
-  // Lọc danh sách danh mục chỉ chứa các môn học gia sư đã đăng ký chuyên môn (`expertise`)
   const filteredCategories = categoriesList.filter((cat) =>
     allowedCategories.some((allowed) => allowed === cat.category_name.toLowerCase())
   );
@@ -436,11 +502,17 @@ export default function CreateClassPage() {
                 <input 
                   type="number" 
                   step="10000"
-                  min="0"
+                  min={currentPriceConfig?.min}
+                  max={currentPriceConfig?.max}
                   value={hourlyRate}
                   onChange={(e) => setHourlyRate(e.target.value)}
                   required
                 />
+                {priceError && (
+                  <p className={styles.errorAlert} style={{ marginTop: "6px", fontSize: "13px", padding: "8px 12px" }}>
+                    {priceError}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -534,13 +606,15 @@ export default function CreateClassPage() {
             </div>
 
             <div className={styles.timePickerContainer}>
-              <label className={styles.subLabel}>Chọn mốc thời gian bắt đầu và kết thúc (Tối thiểu 2 tiếng / buổi)</label>
+              <label className={styles.subLabel}>Chọn mốc thời gian bắt đầu và kết thúc (Từ 07:00 đến 23:00, tối thiểu 1 tiếng / buổi)</label>
               
               <div className={styles.timePickerRow}>
                 <div className={styles.timeInputWrapper}>
                   <span className={styles.timeInputIcon}>Từ:</span>
                   <input 
                     type="time" 
+                    min="07:00"
+                    max="23:00"
                     value={startTime} 
                     onChange={(e) => setStartTime(e.target.value)} 
                     className={styles.timeInput}
@@ -553,28 +627,76 @@ export default function CreateClassPage() {
                   <span className={styles.timeInputIcon}>Đến:</span>
                   <input 
                     type="time" 
+                    min="07:00"
+                    max="23:00"
                     value={endTime} 
                     onChange={(e) => setEndTime(e.target.value)} 
                     className={styles.timeInput}
                   />
                 </div>
               </div>
+
+              {/* THÔNG BÁO BÁO LỖI THỜI GIAN KHÔNG HỢP LỆ */}
+              {timeError && (
+                <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "13px", padding: "8px 12px" }}>
+                  {timeError}
+                </p>
+              )}
             </div>
 
             {conflictMessage && <div className={styles.errorAlert}>{conflictMessage}</div>}
           </section>
         </div>
 
+        {/* CỘT BÊN PHẢI HỌC PHÍ DỰ KIẾN */}
         <div className={styles.rightColumn}>
           <div className={styles.stickyWrapper}>
             <div className={styles.feeEstimateCard}>
               <h3>💵 Học phí dự kiến</h3>
-              <p>Mức giá này được hiển thị công khai cho phụ huynh và học sinh khi thực hiện đăng ký tìm kiếm giảng viên.</p>
+              <p className={styles.feeSubHeader}>Mức giá này được hiển thị công khai cho phụ huynh và học sinh khi thực hiện đăng ký tìm kiếm giảng viên.</p>
+              
               <div className={styles.feeDisplay}>
                 <span className={styles.feeLabel}>Mức phí mỗi giờ:</span>
-                <span className={styles.feeValue}>{parseInt(hourlyRate || 0).toLocaleString("vi-VN")}đ/ giờ</span>
+                <span className={styles.feeValue}>{pricePerHour.toLocaleString("vi-VN")}đ / giờ</span>
               </div>
-              <p className={styles.feeFootnote}>ℹ️ Mức phí tự điền này đảm bảo tính chủ động và tối ưu thu nhập theo đúng năng lực kinh nghiệm.</p>
+
+              {/* KHUNG GIÁ GỢI Ý DỰA THEO CẤP HỌC VÀ SỐ LƯỢNG HỌC SINH */}
+              <div className={styles.suggestedBox}>
+                <div className={styles.suggestedTitle}>
+                  💡 Khung giá cho phép ({level} - {numStudents >= 3 ? "Lớp ≥ 3 học sinh" : "Lớp < 3 học sinh"}):
+                </div>
+                <div className={styles.suggestedValue}>
+                  {currentPriceConfig?.label}
+                </div>
+              </div>
+
+              {/* TÍNH TOÁN TIỀN TỪNG BUỔI VÀ TỔNG KHÓA HỌC */}
+              <div className={styles.calculationSection}>
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Thời lượng 1 buổi:</span>
+                  <span className={styles.calcValue}>{hoursPerSession >= 1 ? `${hoursPerSession} tiếng` : "Chưa hợp lệ (< 1h)"}</span>
+                </div>
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Thành tiền / Buổi:</span>
+                  <span className={styles.calcValueHighlight}>{costPerSession.toLocaleString("vi-VN")}đ / buổi</span>
+                </div>
+                
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Tổng số buổi học:</span>
+                  <span className={styles.calcValue}>{totalCourseSessions} buổi ({daysPerWeekCount} buổi/tuần × {totalWeeksCount} tuần)</span>
+                </div>
+
+                <div className={styles.totalRow}>
+                  <span className={styles.totalLabel}>Tổng tiền cả lớp:</span>
+                  <span className={styles.totalValue}>
+                    {totalCourseCost > 0 ? `${totalCourseCost.toLocaleString("vi-VN")}đ` : "0đ"}
+                  </span>
+                </div>
+              </div>
+
+              <p className={styles.feeFootnote}>
+                ℹ️ Mức phí tự điền phải nằm trong khung quy định nhằm đảm bảo cân bằng thị trường gia sư.
+              </p>
             </div>
 
             <div className={styles.tipsCard}>
@@ -588,7 +710,7 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || filteredCategories.length === 0}
+              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || filteredCategories.length === 0 || !!priceError || !!timeError}
             >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tạo lớp ➔"}
             </button>
