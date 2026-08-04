@@ -15,58 +15,45 @@ function CoursesSection() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // 1. Lấy danh mục 1 lần khi load trang
+  // 🚀 Gộp chung việc tải Danh mục và Khóa học vào 1 useEffect duy nhất
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryService.getCategories();
-        // Vì response.data từ axios đã là mảng trực tiếp rồi:
-        const categoriesData = Array.isArray(response) ? response : (response.data || []);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error('Lỗi tải danh mục:', error);
-        setCategories([]);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // 2. Lấy danh sách khóa học theo Tab và Phân trang từ Backend
-  useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const params = {
-          // Nếu là 'All' thì không truyền category_id để lấy tất cả
-          category_id: activeTabId === 'All' ? 'all' : activeTabId,
-          page: currentPage,
-          per_page: 8,
-          sort_by: 'current_students',
-          direction: 'asc'
-        };
+        // Gọi song song cả 2 API để tối ưu tốc độ tải trang
+        const [catResponse, courseResponse] = await Promise.all([
+          categoryService.getCategories().catch(() => []),
+          courseService.getCourses({
+            category_id: activeTabId === 'All' ? 'all' : activeTabId,
+            page: currentPage,
+            per_page: 8,
+            sort_by: 'current_students',
+            direction: 'asc'
+          }).catch(() => [])
+        ]);
 
-        const res = await courseService.getCourses(params);
+        // 1. Xử lý dữ liệu danh mục (chỉ cần lấy 1 lần hoặc cập nhật lại nếu muốn)
+        const categoriesData = Array.isArray(catResponse) ? catResponse : (catResponse.data || []);
+        setCategories(categoriesData);
 
-        if (Array.isArray(res)) {
-            setCourses(res);
-            setTotalPages(1);
+        // 2. Xử lý dữ liệu khóa học & phân trang theo Tab / Page hiện tại
+        if (Array.isArray(courseResponse)) {
+          setCourses(courseResponse);
+          setTotalPages(1);
         } else {
-            const coursesList = res.data || [];
-            setCourses(coursesList);
-            
-            const pages = res.last_page || res.meta?.last_page || 1;
-            setTotalPages(pages);
+          setCourses(courseResponse.data || []);
+          setTotalPages(courseResponse.last_page || courseResponse.meta?.last_page || 1);
         }
+
       } catch (error) {
-        console.error('Lỗi tải danh sách lớp học:', error);
-        setCourses([]);
+        console.error('Lỗi tải dữ liệu trang:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourses();
-  }, [activeTabId, currentPage]);
+    fetchData();
+  }, [activeTabId, currentPage]); // Sẽ tự động chạy lại khi người dùng đổi tab hoặc chuyển trang
 
   const goToPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -130,7 +117,6 @@ function CoursesSection() {
           ) : (
             <div className="teacher-sec3__grid">
               {courses.map((course) => {
-                // Lấy tên danh mục an toàn từ quan hệ category hoặc fallback sang text mặc định
                 const categoryName = course.category?.category_name || 'Chưa phân loại';
 
                 return (
