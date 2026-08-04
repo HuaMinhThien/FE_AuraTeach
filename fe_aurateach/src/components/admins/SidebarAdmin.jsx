@@ -7,6 +7,7 @@ import styles from "./Sidebar.module.css";
 import Image from "next/image";
 
 const API_BASE = "http://localhost:3007";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -15,6 +16,9 @@ export default function Sidebar() {
   const [mounted, setMounted] = useState(false);
   const [adminData, setAdminData] = useState(null);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  
+  // State quản lý src của Avatar để tránh lặp vô hạn khi lỗi link
+  const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);
 
   useEffect(() => {
     setMounted(true);
@@ -29,23 +33,21 @@ export default function Sidebar() {
         const userInfo = JSON.parse(decodedValue);
 
         if (userInfo) {
+          const userAvatar = userInfo.avatar || DEFAULT_AVATAR;
           setAdminData({
             name: userInfo.full_name || userInfo.name || "Admin",
-            avatar: userInfo.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80",
+            avatar: userAvatar,
           });
+          setAvatarSrc(userAvatar);
         }
       } catch (error) {
         console.error("Lỗi parse cookie:", error);
-        setAdminData({
-          name: "Admin",
-          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80",
-        });
+        setAdminData({ name: "Admin", avatar: DEFAULT_AVATAR });
+        setAvatarSrc(DEFAULT_AVATAR);
       }
     } else {
-      setAdminData({
-        name: "Admin",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80",
-      });
+      setAdminData({ name: "Admin", avatar: DEFAULT_AVATAR });
+      setAvatarSrc(DEFAULT_AVATAR);
     }
   }, []);
 
@@ -53,19 +55,14 @@ export default function Sidebar() {
   useEffect(() => {
     const fetchUnread = async () => {
       try {
-        console.log("📡 [Admin Sidebar] Fetching unread notifications...");
-        
         const res = await fetch(`${API_BASE}/notifications?receiver_id=u-admin-1&is_read=false`);
         
         if (!res.ok) {
-          console.warn(`⚠️ [Admin Sidebar] API returned ${res.status}`);
           setUnreadNotifCount(0);
           return;
         }
         
         const data = await res.json();
-        console.log("📊 [Admin Sidebar] Unread count:", data.length);
-        
         if (Array.isArray(data)) {
           setUnreadNotifCount(data.length);
         } else {
@@ -84,7 +81,7 @@ export default function Sidebar() {
     }
   }, [mounted]);
 
-  // ✅ Reset unread count khi vào trang notifications
+  // Reset unread count khi vào trang notifications
   useEffect(() => {
     if (pathname === "/admin-notifications") {
       setUnreadNotifCount(0);
@@ -99,70 +96,24 @@ export default function Sidebar() {
     router.push('/login');
   };
 
+  // Xử lý khi ảnh lỗi: Chỉ set lại 1 lần về DEFAULT_AVATAR
+  const handleImageError = () => {
+    if (avatarSrc !== DEFAULT_AVATAR) {
+      setAvatarSrc(DEFAULT_AVATAR);
+    }
+  };
+
   const menuItems = [
     { name: "Bảng điều khiển", path: "/admin-dashboard" },
     { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
     { name: "Quản lý lớp học", path: "/admin-classes-management" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
-    // { name: "Lịch trình dạy", path: "/admin-schedule" },
     { name: "Thu nhập & Ví", path: "/admin-revenue" },
     { name: "Thông báo", path: "/admin-notifications", badge: unreadNotifCount },
-    // { name: "Cấu hình hồ sơ", path: "/admin-profile" },
-    // { name: "Lịch sử báo cáo", path: "/admin-report-history" },
   ];
 
   if (!mounted || !adminData) {
-    return (
-      <div className={styles.sidebar}>
-        <div className={styles.logoSection}>
-          <div className={styles.logoIcon}>
-            <Image src="/img/logo-aurateach.png" alt="AuraTeach Logo" width={60} height={50} priority />
-          </div>
-          <div className={styles.logoText}>
-            <h3>AuraTeach</h3>
-            <span>Hệ thống Admin</span>
-          </div>
-        </div>
-        <nav className={styles.navigation}>
-          <ul className={styles.menuList}>
-            {menuItems.map((item, index) => {
-              const isActive = pathname === item.path;
-              return (
-                <li key={index}>
-                  <Link
-                    href={item.path}
-                    className={`${styles.menuLink} ${isActive ? styles.active : ""}`}
-                  >
-                    <span className={styles.linkText}>{item.name}</span>
-                    {item.badge > 0 && <span className={styles.badge}>{item.badge}</span>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-        <div className={styles.footerSection}>
-          <div className={styles.adminMiniProfile}>
-            <div className={styles.avatarWrapper}>
-              <Image 
-                src={adminData?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80"}
-                alt="Admin Avatar"
-                width={36}
-                height={36}
-                className={styles.miniAvatar}
-              />
-            </div>
-            <div className={styles.adminInfo}>
-              <p className={styles.adminName}>{adminData?.name || "Admin"}</p>
-              <p className={styles.adminRole}>Quản trị viên</p>
-            </div>
-          </div>
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            <span>🚪</span> Đăng xuất
-          </button>
-        </div>
-      </div>
-    );
+    return null; // Hoặc render Skeleton UI đơn giản
   }
 
   return (
@@ -200,14 +151,13 @@ export default function Sidebar() {
         <div className={styles.adminMiniProfile}>
           <div className={styles.avatarWrapper}>
             <Image 
-              src={adminData.avatar}
+              src={avatarSrc}
               alt="Admin Avatar"
               width={36}
               height={36}
               className={styles.miniAvatar}
-              onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80";
-              }}
+              onError={handleImageError}
+              unoptimized={avatarSrc.startsWith("http")} // Cho phép load ảnh URL ngoài không cần config domain trong next.config.js
             />
           </div>
           <div className={styles.adminInfo}>
