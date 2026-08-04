@@ -139,16 +139,6 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
         })
       });
 
-      // b. Cộng tiền vào ví chờ duyệt (pending_balance) của Gia sư
-      const newPendingBalance = (session.tutor_pending_balance || 0) + lessonAmount;
-      await fetch(`http://localhost:3007/tutors/${session.tutor_db_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pending_balance: newPendingBalance
-        })
-      });
-
       alert(`Xác nhận hoàn thành thành công! ${lessonAmount.toLocaleString("vi-VN")}đ đã chuyển vào ví chờ duyệt.`);
       
       setActiveConfirmSession(null);
