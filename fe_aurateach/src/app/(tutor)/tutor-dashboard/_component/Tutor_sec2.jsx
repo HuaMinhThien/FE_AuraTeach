@@ -128,7 +128,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
           tutor_id: session.tutor_id,
           lesson_number: session.lesson_number || 1,
           lesson_date: session.lesson_date,
-          evidence_url: driveLink,
+          record_url: driveLink,
           note: sessionNote,
           submitted_at: submittedAtIso,
           holding_hours: 24,
