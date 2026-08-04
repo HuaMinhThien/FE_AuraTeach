@@ -378,12 +378,12 @@
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
       "pending_balance": 900000,
-      "available_balance": 53990000,
+      "available_balance": 38090000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-07-29T10:00:00.000Z",
+      "updated_at": "2026-08-04T18:12:23.889Z",
       "rejection_reason": null
     },
     {
@@ -2157,7 +2157,7 @@
   ],
   "tutor_update_requests": [
     {
-      "id": "2078",
+      "tutor_update_req_id": "2078",
       "tutor_id": "1f17",
       "old_data": {
         "phone": "0912345678",
@@ -2176,10 +2176,11 @@
       "status": "rejected",
       "reject_reason": "Không đạt yêu cầu",
       "created_at": "2026-07-27T10:02:22.838Z",
-      "updated_at": "2026-07-27T11:15:45.401Z"
+      "updated_at": "2026-07-27T11:15:45.401Z",
+      "id": "c208"
     },
     {
-      "id": "1c26",
+      "tutor_update_req_id": "1c26",
       "tutor_id": "1f17",
       "old_data": {
         "phone": "0912345678",
@@ -2198,7 +2199,8 @@
       "status": "approved",
       "reject_reason": null,
       "created_at": "2026-07-27T11:16:19.358Z",
-      "updated_at": "2026-07-27T11:23:18.541Z"
+      "updated_at": "2026-07-27T11:23:18.541Z",
+      "id": "12fd"
     }
   ],
   "lesson_confirmations": [
@@ -2265,6 +2267,110 @@
       "status": "pending_review",
       "lesson_amount": 240000,
       "payout_status": "holding"
+    }
+  ],
+  "payout_requests": [
+    {
+      "id": "ab34",
+      "payout_req_id": "pr_1785863906022",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-906022",
+      "amount": 3000000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T17:56:33.405Z",
+      "created_at": "2026-08-04T17:18:26.022Z"
+    },
+    {
+      "id": "1f33",
+      "payout_req_id": "pr_1785866491162",
+      "bank_account_id": "bank_1785863781558",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-491162",
+      "amount": 2000000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T18:02:05.923Z",
+      "created_at": "2026-08-04T18:01:31.162Z"
+    },
+    {
+      "id": "114a",
+      "payout_req_id": "pr_1785866548852",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-548852",
+      "amount": 4500000,
+      "status": "rejected",
+      "rejection_reason": "stk sai",
+      "processed_at": "2026-08-04T18:04:11.923Z",
+      "created_at": "2026-08-04T18:02:28.852Z"
+    },
+    {
+      "id": "3848",
+      "payout_req_id": "pr_1785866689849",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-689849",
+      "amount": 600000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T18:05:22.451Z",
+      "created_at": "2026-08-04T18:04:49.849Z"
+    },
+    {
+      "id": "897d",
+      "payout_req_id": "pr_1785867074456",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "admin_system",
+      "request_code": "PR-074456",
+      "amount": 499998,
+      "status": "rejected",
+      "rejection_reason": "không tồn tại",
+      "processed_at": "2026-08-04T18:12:23.879Z",
+      "created_at": "2026-08-04T18:11:14.456Z"
+    },
+    {
+      "id": "9760",
+      "payout_req_id": "pr_1785867171201",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "admin_system",
+      "request_code": "PR-171201",
+      "amount": 200000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T18:16:12.268Z",
+      "created_at": "2026-08-04T18:12:51.201Z"
+    }
+  ],
+  "tutor_bank_accounts": [
+    {
+      "id": "72b4",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "bank_name": "Ngân hàng TMCP Đại Chúng Việt Nam",
+      "bank_code": "PVCB",
+      "account_number": "105002712102",
+      "account_holder_name": "HUA MINH THIEN",
+      "is_default": true,
+      "created_at": "2026-08-04T17:16:01.157Z"
+    },
+    {
+      "id": "d9f9",
+      "bank_account_id": "bank_1785863781558",
+      "tutor_id": "tutor_01",
+      "bank_name": "Ngân hàng TMCP Ngoại Thương Việt Nam",
+      "bank_code": "VCB",
+      "account_number": "1231234512323",
+      "account_holder_name": "HUA MINH THIEN",
+      "is_default": false,
+      "created_at": "2026-08-04T17:16:21.558Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
