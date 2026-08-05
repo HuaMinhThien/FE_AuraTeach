@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./schedule.module.css";
-
-const API_BASE = "http://localhost:3007";
+import { tutorService } from "@/services/tutorService";
+import { courseService } from "@/services/courseService";
 
 const CLASS_COLORS = [
   { bg: "#e0f2fe", text: "#0369a1", border: "#0ea5e9" },
@@ -47,48 +47,46 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchActiveClasses() {
+    async function loadSchedule() {
       try {
         setLoading(true);
-        
         const userId = getUserIdFromCookie();
         if (!userId) {
           setLoading(false);
           return;
         }
 
-        // Lấy tất cả tutors để tìm tutor_id
-        const tutorsRes = await fetch(`${API_BASE}/tutors`);
-        const tutors = await tutorsRes.json();
-        const tutor = tutors.find(t => t.user_id === userId);
+        // 1. Gọi hàm getByUserId có sẵn trong tutorService
+        const tutorData = await tutorService.getByUserId(userId);
         
-        if (!tutor) {
+        // Trích xuất tutor_id từ kết quả trả về (hỗ trợ cả dạng mảng lẫn object)
+        const tutor = Array.isArray(tutorData) ? tutorData[0] : tutorData;
+        const tutorId = tutor?.tutor_id || tutor?.id || tutor?._id;
+
+        if (!tutorId) {
           setLoading(false);
           return;
         }
 
-        // Lấy courses của tutor
-        const res = await fetch(`${API_BASE}/courses?tutor_id=${tutor.tutor_id}`);
-        const data = await res.json();
-        const courses = Array.isArray(data) ? data : [];
+        // 2. Gọi hàm getCourses có sẵn trong courseService
+        const coursesData = await courseService.getCourses({ tutor_id: tutorId });
+        const courses = Array.isArray(coursesData) ? coursesData : (coursesData.data || []);
         
-        // Lọc chỉ lấy lớp active
-        const activeClasses = courses.filter(c => c.status === "active");
-        setClasses(activeClasses);
-        
+        // Lọc các lớp active
+        setClasses(courses.filter(c => c.status === "active"));
       } catch (error) {
-        console.error("Lỗi khi fetch lớp học:", error);
+        console.error("Lỗi tải lịch học:", error);
       } finally {
         setLoading(false);
       }
     }
-    fetchActiveClasses();
+
+    loadSchedule();
   }, []);
 
-  // TÍNH TOÁN CÁC NGÀY TRONG TUẦN
+  // Các phần logic hiển thị lịch và giao diện giữ nguyên...
   const todayString = new Date().toDateString();
   const currentDay = currentDate.getDay(); 
-  
   const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
   const monday = new Date(currentDate);
   monday.setDate(currentDate.getDate() + mondayOffset);
@@ -134,7 +132,6 @@ export default function SchedulePage() {
 
   const ROW_HEIGHT = 75; 
 
-  // Tính tổng số giờ dạy thực tế
   const renderClassCards = () => {
     const cards = [];
 
@@ -150,6 +147,8 @@ export default function SchedulePage() {
       const topPosition = startHour * ROW_HEIGHT;
       const cardHeight = duration * ROW_HEIGHT - 8; 
 
+      if (!cls.schedule_days || !Array.isArray(cls.schedule_days)) return;
+
       cls.schedule_days.forEach((dayStr) => {
         const dayIdx = mapScheduleDayIndex[dayStr];
         if (dayIdx === undefined) return;
@@ -157,17 +156,8 @@ export default function SchedulePage() {
         const targetDayInstance = currentWeekDays[dayIdx].dateObj;
         const targetDateKey = new Date(targetDayInstance.getFullYear(), targetDayInstance.getMonth(), targetDayInstance.getDate());
 
-        if (cls.start_date) {
-          const startLimit = new Date(cls.start_date);
-          startLimit.setHours(0,0,0,0);
-          if (targetDateKey < startLimit) return;
-        }
-
-        if (cls.end_date) {
-          const endLimit = new Date(cls.end_date);
-          endLimit.setHours(0,0,0,0);
-          if (targetDateKey > endLimit) return;
-        }
+        if (cls.start_date && targetDateKey < new Date(cls.start_date).setHours(0,0,0,0)) return;
+        if (cls.end_date && targetDateKey > new Date(cls.end_date).setHours(0,0,0,0)) return;
 
         const leftPosition = (dayIdx * 100) / 7;
 
@@ -220,9 +210,8 @@ export default function SchedulePage() {
 
   const renderCards = renderClassCards();
   
-  // Tính tổng số giờ dạy dự kiến trong tuần này
   const totalHoursThisWeek = classes.reduce((total, cls) => {
-    if (!cls.time_slot || !cls.time_slot.includes("-")) return total;
+    if (!cls.time_slot || !cls.time_slot.includes("-") || !cls.schedule_days) return total;
     const [start, end] = cls.time_slot.split("-");
     const diff = parseInt(end.split(":")[0]) - parseInt(start.split(":")[0]);
 
@@ -262,7 +251,6 @@ export default function SchedulePage() {
       </div>
 
       <div className={styles.calendarOuterWrapper}>
-        
         <div className={styles.stickyHeaderRow}>
           <div className={styles.gridHeader} style={{ fontWeight: "700" }}>GMT+7</div>
           {currentWeekDays.map((day, idx) => (
@@ -287,7 +275,6 @@ export default function SchedulePage() {
             </div>
           ) : (
             <div className={styles.mainGridBody}>
-              
               <div className={styles.timetableGridBackground}>
                 {full24Hours.map((hour) => (
                   <React.Fragment key={hour}>
@@ -298,15 +285,12 @@ export default function SchedulePage() {
                   </React.Fragment>
                 ))}
               </div>
-
               <div className={styles.cardsOverlayArea}>
                 {renderCards}
               </div>
-
             </div>
           )}
         </div>
-
       </div>
 
       <div className={styles.statsBar}>

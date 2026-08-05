@@ -31,12 +31,17 @@ export default function Header() {
 
             try {
                 const userData = JSON.parse(decodeURIComponent(userCookie));
+                console.log("📦 Dữ liệu user đọc từ cookie Header:", userData); // Xem nó in ra cấu trúc gì ở F12 -> Console
                 
-                // Cập nhật state user nếu có thay đổi
                 setUser((prev) => JSON.stringify(prev) === JSON.stringify(userData) ? prev : userData);
 
-                const tutorId = userData?.user_id || userData?.tutor_id || userData?.id;
-                if (!tutorId) return;
+                // Mở rộng tìm kiếm tất cả các khả năng tên biến ID có thể xuất hiện trong cookie
+                const tutorId = userData?.user_id || userData?.tutor_id || userData?.id || userData?.userId || userData?.account_id;
+                
+                if (!tutorId) {
+                    console.warn("⚠️ Cookie user_info không tìm thấy trường ID nào phù hợp! Các trường hiện có:", Object.keys(userData));
+                    return;
+                }
 
                 // Gọi API lấy thông tin gia sư qua tutorService
                 const data = await tutorService.getByUserId(tutorId);
@@ -55,14 +60,12 @@ export default function Header() {
                     });
                 }
             } catch (error) {
-                console.error("Lỗi khi đồng bộ thông tin user hoặc ví:", error);
+                console.error("🔴 Lỗi khi đồng bộ thông tin user hoặc ví ở Header:", error);
             }
         };
 
-        // Chạy ngay lần đầu mount component
         fetchUserDataAndWallet();
 
-        // Thiết lập 1 vòng lặp duy nhất (ví dụ mỗi 10 giây cập nhật lại số dư ví và cookie)
         const interval = setInterval(fetchUserDataAndWallet, 10000);
         return () => clearInterval(interval);
     }, []);

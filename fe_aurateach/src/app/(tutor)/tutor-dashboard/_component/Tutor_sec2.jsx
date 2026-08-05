@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import styles from "../_css/sec2.module.css";
+import { lessonConfirmationService } from "@/services/lessonConfirmationService";
+import { courseService } from "@/services/courseService";
 
 export default function Tutor_sec2({ classesData, pendingConfirmations = [], onRefreshData }) {
   const list = classesData || [];
@@ -27,29 +29,23 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
 
   /**
    * Helper kiểm tra xem thời điểm hiện tại đã vượt qua giờ kết thúc buổi học hay chưa.
-   * Format lessonDateStr: "YYYY-MM-DD"
-   * Format timeSlotStr: "18:00-20:00" hoặc "18:00 - 20:00"
    */
   const isSessionEnded = (lessonDateStr, timeSlotStr) => {
     if (!lessonDateStr || !timeSlotStr) return false;
 
     try {
-      // 1. Tách lấy ngày YYYY-MM-DD từ lessonDateStr (chuẩn hóa local YYYY-MM-DD)
       const pureDateStr = lessonDateStr.includes("T") 
         ? lessonDateStr.split("T")[0] 
         : lessonDateStr;
       
       const [year, month, day] = pureDateStr.split("-").map(Number);
 
-      // 2. Tách lấy giờ kết thúc (ví dụ "18:00-20:00" -> lấy "20:00")
       const parts = timeSlotStr.split("-");
       const endTimeStr = parts.length > 1 ? parts[1].trim() : parts[0].trim();
       const [hours, minutes] = endTimeStr.split(":").map(Number);
 
-      // 3. Khởi tạo đối tượng Date theo giờ kết thúc cụ thể của buổi học
       const endDateTime = new Date(year, month - 1, day, hours || 0, minutes || 0, 0, 0);
 
-      // 4. So sánh với thời gian thực của hệ thống
       return new Date() >= endDateTime;
     } catch (err) {
       console.error("Lỗi parse ngày giờ:", err);
@@ -58,25 +54,22 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
   };
 
   /**
-   * Xử lý khi nhấn nút "Xác nhận buổi học"
+   * Xử lý khi nhấn nút "Xác nhận buổi học" (dùng courseService thay fetch)
    */
   const handleOpenConfirmModal = async (pendingSession) => {
     try {
       let timeSlot = pendingSession.time_slot;
 
-      // Nếu trong pendingSession chưa có time_slot, fetch API để lấy thông tin khóa học
+      // Sử dụng courseService để lấy chi tiết khóa học thay vì fetch thô
       if (!timeSlot) {
-        const res = await fetch(`http://localhost:3007/courses/${pendingSession.course_id}`);
-        if (res.ok) {
-          const courseData = await res.json();
+        const courseRes = await courseService.getCourseDetail(pendingSession.course_id);
+        const courseData = courseRes?.data || courseRes;
+        if (courseData) {
           timeSlot = courseData.time_slot;
         }
       }
 
-      // Làm sạch chuỗi thời gian
       const cleanTimeSlot = (timeSlot || "").replace(/[^0-9:\-\s]/g, "").trim();
-
-      // Kiểm tra xem đã qua giờ kết thúc chưa
       const hasEnded = isSessionEnded(pendingSession.lesson_date, cleanTimeSlot);
 
       if (!hasEnded) {
@@ -84,7 +77,6 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
         return;
       }
 
-      // Mở Modal xác nhận
       setActiveConfirmSession({
         ...pendingSession,
         time_slot: cleanTimeSlot || pendingSession.time_slot
@@ -95,7 +87,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
     }
   };
 
-  // 1. Gia sư nhấn nút "Xác nhận hoàn thành buổi học"
+  // 1. Gia sư nhấn nút "Xác nhận hoàn thành buổi học" (dùng lessonComfirmationService thay fetch)
   const handleConfirmCompletion = async (e) => {
     e.preventDefault();
     if (!driveLink.trim()) {
@@ -108,35 +100,30 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
     try {
       const session = activeConfirmSession;
       
-      // Công thức: Học phí 1 giờ * Số giờ dạy * Số học sinh
       const lessonAmount = Math.round(
         session.hourly_rate * session.duration_hours * session.students_count
       );
 
       const now = new Date();
       const submittedAtIso = now.toISOString();
-      // Cộng 24 giờ để ra thời điểm nhả tiền về ví khả dụng
       const payoutAvailableAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
 
-      // a. Lưu bản ghi xác nhận hoàn thành
-      await fetch("http://localhost:3007/lesson_confirmations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          comfirmation_id: session.comfirmation_id,
-          course_id: session.course_id,
-          tutor_id: session.tutor_id,
-          lesson_number: session.lesson_number || 1,
-          lesson_date: session.lesson_date,
-          record_url: driveLink,
-          note: sessionNote,
-          submitted_at: submittedAtIso,
-          holding_hours: 24,
-          payout_available_at: payoutAvailableAt,
-          status: "pending_review",
-          lesson_amount: lessonAmount,
-          payout_status: "holding"
-        })
+      // Sử dụng lessonComfirmationService để tạo bản ghi (thay vì fetch URL cứng)
+      // Lưu ý: Dùng phương thức tùy chỉnh hoặc cập nhật service nếu cần truyền đủ payload
+      await lessonConfirmationService.updateLessonConfirmation(session.comfirmation_id, {
+        comfirmation_id: session.comfirmation_id,
+        course_id: session.course_id,
+        tutor_id: session.tutor_id,
+        lesson_number: session.lesson_number || 1,
+        lesson_date: session.lesson_date,
+        record_url: driveLink,
+        note: sessionNote,
+        submitted_at: submittedAtIso,
+        holding_hours: 24,
+        payout_available_at: payoutAvailableAt,
+        status: "pending_review",
+        lesson_amount: lessonAmount,
+        payout_status: "holding"
       });
 
       alert(`Xác nhận hoàn thành thành công! ${lessonAmount.toLocaleString("vi-VN")}đ đã chuyển vào ví chờ duyệt.`);
@@ -169,7 +156,6 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
       ) : (
         <div className={styles.list}>
           {list.map((item) => {
-            // Kiểm tra xem lớp này có buổi học cần xác nhận hoàn thành không
             const pendingSession = pendingConfirmations.find(p => p.course_id === item.id);
 
             const rawTimeSlot = pendingSession?.time_slot || item.time_slot || item.time || "";

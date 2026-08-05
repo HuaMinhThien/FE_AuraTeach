@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./TutorProfile.module.css"; 
-
-const API_BASE = "http://localhost:3007";
+import { tutorService } from "@/services/tutorService";
+import { userService } from "@/services/userService";
+import { categoryService } from "@/services/categoryService";
+import { adminService } from '@/services/adminService';
 
 const getUserIdFromCookie = () => {
   try {
@@ -21,7 +23,6 @@ const getUserIdFromCookie = () => {
   return null;
 };
 
-// ✅ HÀM LẤY TÊN CATEGORY - ĐẶT BÊN NGOÀI COMPONENT
 const getCategoryName = (cat) => {
   if (typeof cat === "string") return cat.trim();
   return (cat.category_name || cat.name || "").trim();
@@ -43,7 +44,9 @@ export default function TutorProfile() {
     expertise: []
   });
 
-  // ✅ HÀM KIỂM TRA CATEGORY ĐÃ CHỌN
+  // 🛡️ Dùng useRef để đánh dấu request check update đã được gọi hay chưa, tránh lặp lại
+  const hasCheckedRequest = useRef(false);
+
   const isCategorySelected = (catName) => {
     if (!catName) return false;
     const cleanCat = catName.toLowerCase().trim();
@@ -52,7 +55,6 @@ export default function TutorProfile() {
     );
   };
 
-  // ✅ HÀM TOGGLE CATEGORY
   const handleToggleCategory = (catName) => {
     const cleanCatName = catName.trim();
     if (!cleanCatName) return;
@@ -76,21 +78,31 @@ export default function TutorProfile() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       const currentUserId = getUserIdFromCookie();
       
       if (!currentUserId) {
-        setErrorMsg("Không tìm thấy thông tin đăng nhập.");
-        setLoading(false);
+        if (isMounted) {
+          setErrorMsg("Không tìm thấy thông tin đăng nhập.");
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        const [users, tutors, catList] = await Promise.all([
-          fetch(`${API_BASE}/users`).then((res) => res.json()),
-          fetch(`${API_BASE}/tutors`).then((res) => res.json()),
-          fetch(`${API_BASE}/categories`).then((res) => res.json()).catch(() => [])
+        const [usersRes, tutorsRes, catRes] = await Promise.all([
+          userService.getUsers(),
+          tutorService.getTutors(),
+          categoryService.getCategories().catch(() => [])
         ]);
+
+        if (!isMounted) return;
+
+        const users = usersRes.data || usersRes;
+        const tutors = tutorsRes.data || tutorsRes;
+        const catList = catRes.data || catRes;
 
         setCategories(catList || []);
 
@@ -99,42 +111,61 @@ export default function TutorProfile() {
 
         if (userObj && tutorObj) {
           const mergedData = { ...userObj, ...tutorObj };
-          setTutorData(mergedData);
+          
+          if (isMounted) {
+            setTutorData(mergedData);
 
-          const expArray = mergedData.expertise 
-            ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
-            : [];
+            const expArray = mergedData.expertise 
+              ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
+              : [];
 
-          setEditFields({
-            phone: mergedData.phone || "",
-            bio: mergedData.bio || "",
-            experience: mergedData.experience || "",
-            cv_link: mergedData.cv_link || "",
-            expertise: expArray
-          });
+            setEditFields({
+              phone: mergedData.phone || "",
+              bio: mergedData.bio || "",
+              experience: mergedData.experience || "",
+              cv_link: mergedData.cv_link || "",
+              expertise: expArray
+            });
+          }
 
           const currentTutorId = tutorObj.id || tutorObj.tutor_id;
-          const checkRes = await fetch(`/api/admin-tutor-update-requests?tutor_id=${currentTutorId}`);
-          const checkData = await checkRes.json();
-          
-          if (checkData.success && checkData.hasPending) {
-            setHasPendingRequest(true);
+          const requestKey = `called_update_req_${currentTutorId}`;
+
+          // 🛡️ Chỉ gọi API check update nếu có ID và chưa từng gọi trước đó
+          if (currentTutorId && !sessionStorage.getItem(requestKey)) {
+            // Đánh dấu đã gọi ngay lập tức trước khi await để chặn các request song song/dồn dập
+            sessionStorage.setItem(requestKey, "true"); 
+
+            try {
+              const checkData = await adminService.getUpdateRequests(currentTutorId);
+              
+              if (isMounted && checkData?.success && checkData?.hasPending) {
+                setHasPendingRequest(true);
+              }
+            } catch (apiErr) {
+              // Nếu lỗi thì xóa key để có thể retry sau nếu cần
+              sessionStorage.removeItem(requestKey);
+              console.error("Lỗi gọi API update requests:", apiErr);
+            }
           }
         } else {
-          setErrorMsg("Không tìm thấy dữ liệu gia sư.");
+          if (isMounted) setErrorMsg("Không tìm thấy dữ liệu gia sư.");
         }
       } catch (err) {
         console.error(err);
-        setErrorMsg("Lỗi kết nối server.");
+        if (isMounted) setErrorMsg("Lỗi kết nối server.");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // ✅ HÀM LƯU - DUY NHẤT
   const handleSave = async () => {
     try {
       const oldPayload = {
@@ -153,30 +184,30 @@ export default function TutorProfile() {
         expertise: editFields.expertise.join(", ")
       };
 
-      const response = await fetch("/api/admin-tutor-update-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tutor_update_req_id: `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          tutor_id: tutorData.id || tutorData.tutor_id,
-          old_data: oldPayload,
-          new_data: newPayload
-        })
+      const tutorId = tutorData.id || tutorData.tutor_id;
+      if (!tutorId) {
+        alert("❌ Không tìm thấy ID gia sư để gửi yêu cầu.");
+        return;
+      }
+
+      const result = await adminService.sendUpdateEvaluationRequest({
+        tutor_update_req_id: `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        tutor_id: tutorId,
+        old_data: oldPayload,
+        new_data: newPayload
       });
 
-      const result = await response.json();
+      console.log("Response từ server:", result);
 
-      if (result.success) {
-        setIsEditing(false);
-        setIsDropdownOpen(false);
-        setHasPendingRequest(true);
-        alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
-      } else {
-        alert(`❌ ${result.message || "Gửi yêu cầu thất bại, vui lòng thử lại"}`);
-      }
+      // 🛠️ Đã lưu DB thành công ở backend, chạy đến đây không throw lỗi là thành công tuyệt đối
+      setIsEditing(false);
+      setIsDropdownOpen(false);
+      setHasPendingRequest(true);
+      alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
+
     } catch (error) {
       console.error("Lỗi gửi yêu cầu cập nhật:", error);
-      alert("Không thể kết nối đến máy chủ.");
+      alert("❌ Gửi yêu cầu thất bại do lỗi kết nối hoặc máy chủ.");
     }
   };
 
@@ -216,7 +247,7 @@ export default function TutorProfile() {
       <div className={styles.headerCard}>
         <div className={styles.avatarWrapper}>
           <img
-            src={tutorData.avatar || "/img/default-avatar.svg"}
+            src={tutorData.avatar || "/img/avt/avt.jpg"}
             alt={tutorData.full_name}
             className={styles.avatar}
             onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
@@ -317,7 +348,7 @@ export default function TutorProfile() {
         </div>
       </div>
 
-      {/* KHỐI LĨNH VỰC CHUYÊN MÔN */}
+      {/* LĨNH VỰC CHUYÊN MÔN */}
       <div className={styles.bioCard} style={{ marginBottom: "1.5rem" }}>
         <h3 className={styles.bioTitle}>Lĩnh vực chuyên môn <span style={{ color: "red" }}>*</span></h3>
         
@@ -451,7 +482,7 @@ export default function TutorProfile() {
         )}
       </div>
 
-      {/* KHỐI GIỚI THIỆU (BIO) */}
+      {/* GIỚI THIỆU BẢN THÂN */}
       <div className={styles.bioCard}>
         <h3 className={styles.bioTitle}>Giới thiệu bản thân</h3>
         {isEditing ? (

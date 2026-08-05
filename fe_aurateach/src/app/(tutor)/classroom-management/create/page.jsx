@@ -646,11 +646,13 @@ export default function CreateClassPage() {
             <div className={styles.feeEstimateCard}>
               <h3>💵 Học phí dự kiến</h3>
               <p className={styles.feeSubHeader}>Mức giá này được hiển thị công khai cho phụ huynh và học sinh khi thực hiện đăng ký tìm kiếm giảng viên.</p>
+              
               <div className={styles.feeDisplay}>
                 <span className={styles.feeLabel}>Mức phí mỗi giờ:</span>
                 <span className={styles.feeValue}>{pricePerHour.toLocaleString("vi-VN")}đ / giờ</span>
               </div>
 
+              {/* KHUNG GIÁ GỢI Ý DỰA THEO CẤP HỌC VÀ SỐ LƯỢNG HỌC SINH */}
               <div className={styles.suggestedBox}>
                 <div className={styles.suggestedTitle}>
                   💡 Khung giá cho phép ({level} - {numStudents >= 3 ? "Lớp ≥ 3 học sinh" : "Lớp < 3 học sinh"}):
@@ -659,34 +661,35 @@ export default function CreateClassPage() {
                   {currentPriceConfig?.label}
                 </div>
               </div>
+
+              {/* TÍNH TOÁN TIỀN TỪNG BUỔI VÀ TỔNG KHÓA HỌC */}
+              <div className={styles.calculationSection}>
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Thời lượng 1 buổi:</span>
+                  <span className={styles.calcValue}>{hoursPerSession >= 1 ? `${hoursPerSession} tiếng` : "Chưa hợp lệ (< 1h)"}</span>
+                </div>
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Thành tiền / Buổi:</span>
+                  <span className={styles.calcValueHighlight}>{costPerSession.toLocaleString("vi-VN")}đ / buổi</span>
+                </div>
+                
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Tổng số buổi học:</span>
+                  <span className={styles.calcValue}>{totalCourseSessions} buổi ({daysPerWeekCount} buổi/tuần × {totalWeeksCount} tuần)</span>
+                </div>
+
+                <div className={styles.totalRow}>
+                  <span className={styles.totalLabel}>Tổng tiền cả lớp:</span>
+                  <span className={styles.totalValue}>
+                    {totalCourseCost > 0 ? `${totalCourseCost.toLocaleString("vi-VN")}đ` : "0đ"}
+                  </span>
+                </div>
+              </div>
+
+              <p className={styles.feeFootnote}>
+                ℹ️ Mức phí tự điền phải nằm trong khung quy định nhằm đảm bảo cân bằng thị trường gia sư.
+              </p>
             </div>
-
-            <div className={styles.calculationSection}>
-              <div className={styles.calcRow}>
-                <span className={styles.calcLabel}>Thời lượng 1 buổi:</span>
-                <span className={styles.calcValue}>{hoursPerSession >= 1 ? `${hoursPerSession} tiếng` : "Chưa hợp lệ (< 1h)"}</span>
-              </div>
-              <div className={styles.calcRow}>
-                <span className={styles.calcLabel}>Thành tiền / Buổi:</span>
-                <span className={styles.calcValueHighlight}>{costPerSession.toLocaleString("vi-VN")}đ / buổi</span>
-              </div>
-              
-              <div className={styles.calcRow}>
-                <span className={styles.calcLabel}>Tổng số buổi học:</span>
-                <span className={styles.calcValue}>{totalCourseSessions} buổi ({daysPerWeekCount} buổi/tuần × {totalWeeksCount} tuần)</span>
-              </div>
-
-              <div className={styles.totalRow}>
-                <span className={styles.totalLabel}>Tổng tiền cả lớp:</span>
-                <span className={styles.totalValue}>
-                  {totalCourseCost > 0 ? `${totalCourseCost.toLocaleString("vi-VN")}đ` : "0đ"}
-                </span>
-              </div>
-            </div>
-
-            <p className={styles.feeFootnote}>
-              ℹ️ Mức phí tự điền phải nằm trong khung quy định nhằm đảm bảo cân bằng thị trường gia sư.
-            </p>
 
             <div className={styles.tipsCard}>
               <h4>💡 Mẹo dành cho bạn</h4>

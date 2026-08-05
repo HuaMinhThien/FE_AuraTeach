@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { adminService } from '@/services/adminService'; // 👈 Import adminService (điều chỉnh đường dẫn phù hợp với project của bạn)
 import styles from './AdminClassesManagement.module.css';
 
 export default function AdminClassesManagement() {
@@ -11,7 +12,6 @@ export default function AdminClassesManagement() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourse, setSelectedCourse] = useState(null);
-  // Đã bật sẵn loading true từ đầu
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,17 +19,21 @@ export default function AdminClassesManagement() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/admin-classes-management');
-        const result = await res.json();
+        // 🚀 Gọi API thông qua adminService
+        const response = await adminService.getClassesManagementData();
+        
+        // Tùy thuộc vào cấu trúc trả về của API Laravel (response.data hoặc trực tiếp response)
+        const resultData = response.data !== undefined ? response.data : response;
 
-        if (isMounted && result.success) {
-          setCourses(result.data.courses || []);
-          setTutors(result.data.tutors || []);
-          setUsers(result.data.users || []);
-          setConfirmations(result.data.confirmations || []);
+        if (isMounted && (resultData.success || resultData)) {
+          const payload = resultData.data || resultData;
+          setCourses(payload.courses || []);
+          setTutors(payload.tutors || []);
+          setUsers(payload.users || []);
+          setConfirmations(payload.confirmations || []);
         }
       } catch (error) {
-        console.error('Lỗi khi tải dữ liệu từ API Route:', error);
+        console.error('Lỗi khi tải dữ liệu từ Backend:', error);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -46,9 +50,9 @@ export default function AdminClassesManagement() {
 
   // Tra cứu thông tin gia sư
   const getTutorInfo = (tutorId) => {
-    const tutor = tutors.find((t) => t.tutor_id === tutorId);
+    const tutor = tutors.find((t) => t.tutor_id === tutorId || t.id === tutorId);
     if (!tutor) return { full_name: 'N/A', email: 'N/A', phone: 'N/A' };
-    const user = users.find((u) => u.user_id === tutor.user_id);
+    const user = users.find((u) => u.user_id === tutor.user_id || u.id === tutor.user_id);
     return {
       full_name: user ? user.full_name : 'Chưa cập nhật',
       email: user ? user.email : 'Chưa cập nhật',
@@ -67,7 +71,7 @@ export default function AdminClassesManagement() {
 
   // Lấy các xác nhận buổi học thuộc về khóa học đang chọn
   const currentCourseConfirmations = selectedCourse
-    ? confirmations.filter((c) => c.course_id === selectedCourse.course_id)
+    ? confirmations.filter((c) => c.course_id === selectedCourse.course_id || c.course_id === selectedCourse.id)
     : [];
 
   return (
@@ -87,7 +91,7 @@ export default function AdminClassesManagement() {
 
       {/* Danh sách lớp học */}
       {loading ? (
-        <div className={styles.loading}>Đang tải dữ liệu...</div>
+        <div className={styles.loading}>Đang tải dữ liệu từ hệ thống...</div>
       ) : (
         <div className={styles.gridContainer}>
           {filteredCourses.length > 0 ? (
@@ -135,7 +139,13 @@ export default function AdminClassesManagement() {
             <div className={styles.courseDetailHeader}>
               <p><strong>Cấp độ:</strong> {selectedCourse.level}</p>
               <p><strong>Học phí:</strong> {selectedCourse.hourly_rate?.toLocaleString()} VNĐ/giờ</p>
-              <p><strong>Lịch học:</strong> {selectedCourse.schedule_days?.join(', ')} ({selectedCourse.time_slot})</p>
+              <p>
+                <strong>Lịch học:</strong>{' '}
+                {Array.isArray(selectedCourse.schedule_days)
+                  ? selectedCourse.schedule_days.join(', ')
+                  : selectedCourse.schedule_days}{' '}
+                ({selectedCourse.time_slot})
+              </p>
               <p><strong>Gia sư đảm nhận:</strong> {getTutorInfo(selectedCourse.tutor_id).full_name}</p>
             </div>
 
