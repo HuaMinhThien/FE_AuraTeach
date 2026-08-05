@@ -21,15 +21,26 @@ const DEFAULT_IMAGES = [
 // Định nghĩa khung giá chi tiết theo cấp học & quy mô lớp (min - max)
 const PRICE_LIMITS = {
   greaterThan3: { // Lớp >= 3 học sinh
-    "Cấp 1": { min: 100000, max: 150000, label: "100.000đ - 150.000đ / giờ" },
-    "Cấp 2": { min: 150000, max: 300000, label: "150.000đ - 300.000đ / giờ" },
-    "Cấp 3": { min: 250000, max: 500000, label: "250.000đ - 500.000đ / giờ" },
+    "Cấp 1": { min: 50000, max: 100000, label: "50.000đ - 100.000đ / buổi" }, // ✅ Đã sửa max: 100000
+    "Cấp 2": { min: 150000, max: 300000, label: "150.000đ - 300.000đ / buổi" },
+    "Cấp 3": { min: 250000, max: 500000, label: "250.000đ - 500.000đ / buổi" },
   },
   lessThan3: { // Lớp < 3 học sinh
-    "Cấp 1": { min: 200000, max: 350000, label: "200.000đ - 350.000đ / giờ" },
-    "Cấp 2": { min: 300000, max: 500000, label: "300.000đ - 500.000đ / giờ" },
-    "Cấp 3": { min: 450000, max: 1000000, label: "450.000đ - 1.000.000đ / giờ" },
+    "Cấp 1": { min: 100000, max: 300000, label: "100.000đ - 300.000đ / buổi" },
+    "Cấp 2": { min: 120000, max: 400000, label: "120.000đ - 400.000đ / buổi" },
+    "Cấp 3": { min: 150000, max: 1000000, label: "150.000đ - 1.000.000đ / buổi" },
   },
+};
+
+// Bản đồ ánh xạ tên thứ sang chỉ số getDay() của JS (0 = Chủ Nhật, 1 = Thứ 2, ...)
+const DAY_MAP = {
+  "Chủ Nhật": 0,
+  "Thứ 2": 1,
+  "Thứ 3": 2,
+  "Thứ 4": 3,
+  "Thứ 5": 4,
+  "Thứ 6": 5,
+  "Thứ 7": 6,
 };
 
 export default function CreateClassPage() {
@@ -43,10 +54,10 @@ export default function CreateClassPage() {
   // --- Các State quản lý dữ liệu Form ---
   const [className, setClassName] = useState("");
   const [category, setCategory] = useState("");
-  const [level, setLevel] = useState("Cấp 2");
+  const [level, setLevel] = useState("Cấp 1");
   const [description, setDescription] = useState("");
-  const [maxStudents, setMaxStudents] = useState(15);
-  const [hourlyRate, setHourlyRate] = useState(150000);
+  const [maxStudents, setMaxStudents] = useState(10);
+  const [pricePerSession, setPricePerSession] = useState(50000); // Học phí theo 1 buổi
 
   // State quản lý link Google Meet
   const [meetLink, setMeetLink] = useState("");
@@ -57,7 +68,7 @@ export default function CreateClassPage() {
 
   // State về Thời gian & Lịch học
   const [startDate, setStartDate] = useState("");
-  const [totalWeeks, setTotalWeeks] = useState(12);
+  const [totalWeeks, setTotalWeeks] = useState(4);
   const [selectedDays, setSelectedDays] = useState([]);
   const [startTime, setStartTime] = useState("18:00");
   const [endTime, setEndTime] = useState("20:00");
@@ -73,13 +84,13 @@ export default function CreateClassPage() {
   const [tutorId, setTutorId] = useState("");
 
   // Tự động lấy cấu hình min/max giá hiện tại
-  const numStudents = parseInt(maxStudents || 0);
+  const numStudents = parseInt(maxStudents || 0, 10);
   const currentPriceConfig = numStudents >= 3 
     ? PRICE_LIMITS.greaterThan3[level] 
     : PRICE_LIMITS.lessThan3[level];
 
   // Tính toán giá trị lỗi kiểm tra giá
-  const currentRate = parseInt(hourlyRate || 0);
+  const currentRate = parseInt(pricePerSession || 0, 10);
   const priceError = (currentPriceConfig && (currentRate < currentPriceConfig.min || currentRate > currentPriceConfig.max))
     ? `⚠️ Mức phí cho ${level} (${numStudents >= 3 ? "Lớp ≥ 3 HS" : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`
     : "";
@@ -190,13 +201,48 @@ export default function CreateClassPage() {
     validateStartDate(value);
   };
 
+  // ✅ LOGIC SỬA LỖI TÍNH NGÀY KẾT THÚC (Lấy ngày học thực tế cuối cùng)
   let endDate = "";
   if (startDate && totalWeeks) {
     const start = new Date(startDate);
-    const daysToAdd = parseInt(totalWeeks) * 7;
-    const end = new Date(start);
-    end.setDate(start.getDate() + daysToAdd);
-    endDate = end.toISOString().split("T")[0];
+    const weeks = parseInt(totalWeeks, 10);
+    
+    // Chuyển danh sách thứ được chọn thành danh sách chỉ số (0 - 6)
+    const targetDayIndexes = selectedDays
+      .map((day) => DAY_MAP[day])
+      .filter((index) => index !== undefined);
+
+    if (targetDayIndexes.length > 0) {
+      let lastClassDate = null;
+      const totalDaysToScan = weeks * 7;
+
+      // Duyệt qua tất cả các ngày trong khung thời gian đăng ký học
+      for (let i = 0; i < totalDaysToScan; i++) {
+        const current = new Date(start);
+        current.setDate(start.getDate() + i);
+
+        if (targetDayIndexes.includes(current.getDay())) {
+          lastClassDate = current;
+        }
+      }
+
+      if (lastClassDate) {
+        const year = lastClassDate.getFullYear();
+        const month = String(lastClassDate.getMonth() + 1).padStart(2, "0");
+        const day = String(lastClassDate.getDate()).padStart(2, "0");
+        endDate = `${year}-${month}-${day}`;
+      }
+    } else {
+      // Mặc định fallback nếu chưa chọn thứ
+      const daysToAdd = weeks * 7 - 1;
+      const end = new Date(start);
+      end.setDate(start.getDate() + daysToAdd);
+      
+      const year = end.getFullYear();
+      const month = String(end.getMonth() + 1).padStart(2, "0");
+      const day = String(end.getDate()).padStart(2, "0");
+      endDate = `${year}-${month}-${day}`;
+    }
   }
 
   useEffect(() => {
@@ -271,7 +317,7 @@ export default function CreateClassPage() {
     }
   };
 
-  // --- LOGIC TÍNH TOÁN DỰ TOÁN HỌC PHÍ & KIỂM TRA GIỜ HỌC ---
+  // --- LOGIC TÍNH TOÁN THỜI GIẢN BUỔI HỌC VÀ DỰ TOÁN HỌC PHÍ ---
   const calculateHoursPerSession = () => {
     if (!startTime || !endTime) return 0;
     const [startH, startM] = startTime.split(":").map(Number);
@@ -286,12 +332,10 @@ export default function CreateClassPage() {
   const getTimeError = () => {
     if (!startTime || !endTime) return "";
     
-    // Kiểm tra giới hạn khung giờ cho phép từ 07:00 đến 23:00
     if (startTime < "07:00" || startTime > "23:00" || endTime < "07:00" || endTime > "23:00") {
       return "⚠️ Thời gian học chỉ được phép chọn trong khoảng từ 07:00 sáng đến 23:00 đêm.";
     }
 
-    // Kiểm tra thời lượng tối thiểu 1 tiếng
     if (hoursPerSession < 1) {
       return "⚠️ Thời gian buổi học phải kéo dài tối thiểu 1 tiếng (60 phút).";
     }
@@ -301,12 +345,16 @@ export default function CreateClassPage() {
 
   const timeError = getTimeError();
 
-  const pricePerHour = parseInt(hourlyRate || 0);
-  const costPerSession = (hoursPerSession > 0 ? hoursPerSession : 0) * pricePerHour;
+  // --- CÔNG THỨC MỚI TÍNH TIỀN HỌC THEO BUỔI ---
   const daysPerWeekCount = selectedDays.length;
-  const totalWeeksCount = parseInt(totalWeeks || 0);
-  const totalCourseSessions = daysPerWeekCount * totalWeeksCount;
-  const totalCourseCost = costPerSession * totalCourseSessions;
+  const totalWeeksCount = parseInt(totalWeeks || 0, 10);
+  const totalCourseSessions = daysPerWeekCount * totalWeeksCount; // Tổng số buổi học trong khóa
+  
+  // 1. Số tiền 1 học sinh sẽ đóng khi đăng ký khóa học này
+  const studentFeeToPay = currentRate * totalCourseSessions;
+
+  // 2. Tổng số tiền ước tính nhận khi hoàn thành lớp học này (Số tiền 1 HS đóng * Số HS tối đa)
+  const totalCourseEstimateBenefit = studentFeeToPay * numStudents;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -351,11 +399,11 @@ export default function CreateClassPage() {
       category_id: category,
       level,
       description,
-      max_students: parseInt(maxStudents),
-      price_per_session: parseInt(hourlyRate),
+      max_students: parseInt(maxStudents, 10),
+      price_per_session: currentRate,
       start_date: startDate,
       end_date: endDate,
-      total_weeks: parseInt(totalWeeks),
+      total_weeks: parseInt(totalWeeks, 10),
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
@@ -441,7 +489,7 @@ export default function CreateClassPage() {
 
             <div className={styles.rowGrid}>
               <div className={styles.formGroup}>
-                <label htmlFor="category">Môn học học phần (Chỉ chọn môn đã đăng ký chuyên môn) <span className={styles.required}>*</span></label>
+                <label htmlFor="category">Môn học sẽ dạy <span className={styles.required}>*</span></label>
                 <select
                   id="category"
                   value={category}
@@ -498,14 +546,14 @@ export default function CreateClassPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Học phí mong muốn (đ/giờ) <span className={styles.required}>*</span></label>
+                <label>Học phí mong muốn (đ/buổi) <span className={styles.required}>*</span></label>
                 <input 
                   type="number" 
                   step="10000"
                   min={currentPriceConfig?.min}
                   max={currentPriceConfig?.max}
-                  value={hourlyRate}
-                  onChange={(e) => setHourlyRate(e.target.value)}
+                  value={pricePerSession}
+                  onChange={(e) => setPricePerSession(e.target.value)}
                   required
                 />
                 {priceError && (
@@ -636,7 +684,7 @@ export default function CreateClassPage() {
                 </div>
               </div>
 
-              {/* THÔNG BÁO BÁO LỖI THỜI GIAN KHÔNG HỢP LỆ */}
+              {/* THÔNG BÁO LỖI THỜI GIAN KHÔNG HỢP LỆ */}
               {timeError && (
                 <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "13px", padding: "8px 12px" }}>
                   {timeError}
@@ -656,8 +704,8 @@ export default function CreateClassPage() {
               <p className={styles.feeSubHeader}>Mức giá này được hiển thị công khai cho phụ huynh và học sinh khi thực hiện đăng ký tìm kiếm giảng viên.</p>
               
               <div className={styles.feeDisplay}>
-                <span className={styles.feeLabel}>Mức phí mỗi giờ:</span>
-                <span className={styles.feeValue}>{pricePerHour.toLocaleString("vi-VN")}đ / giờ</span>
+                <span className={styles.feeLabel}>Học phí 1 buổi:</span>
+                <span className={styles.feeValue}>{currentRate.toLocaleString("vi-VN")}đ / Buổi</span>
               </div>
 
               {/* KHUNG GIÁ GỢI Ý DỰA THEO CẤP HỌC VÀ SỐ LƯỢNG HỌC SINH */}
@@ -670,26 +718,29 @@ export default function CreateClassPage() {
                 </div>
               </div>
 
-              {/* TÍNH TOÁN TIỀN TỪNG BUỔI VÀ TỔNG KHÓA HỌC */}
+              {/* TÍNH TOÁN TIỀN THEO BUỔI & HỌC PHÍ HỌC SINH ĐÓNG & TỔNG TIỀN DỰ ĐIỂN */}
               <div className={styles.calculationSection}>
                 <div className={styles.calcRow}>
                   <span className={styles.calcLabel}>Thời lượng 1 buổi:</span>
                   <span className={styles.calcValue}>{hoursPerSession >= 1 ? `${hoursPerSession} tiếng` : "Chưa hợp lệ (< 1h)"}</span>
                 </div>
-                <div className={styles.calcRow}>
-                  <span className={styles.calcLabel}>Thành tiền / Buổi:</span>
-                  <span className={styles.calcValueHighlight}>{costPerSession.toLocaleString("vi-VN")}đ / buổi</span>
-                </div>
-                
+
                 <div className={styles.calcRow}>
                   <span className={styles.calcLabel}>Tổng số buổi học:</span>
                   <span className={styles.calcValue}>{totalCourseSessions} buổi ({daysPerWeekCount} buổi/tuần × {totalWeeksCount} tuần)</span>
                 </div>
 
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Tiền học sinh cần đóng:</span>
+                  <span className={styles.calcValueHighlight}>
+                    {studentFeeToPay > 0 ? `${studentFeeToPay.toLocaleString("vi-VN")}đ` : "0đ"}
+                  </span>
+                </div>
+
                 <div className={styles.totalRow}>
-                  <span className={styles.totalLabel}>Tổng tiền cả lớp:</span>
+                  <span className={styles.totalLabel}>Tổng tiền ước tính sẽ nhận:</span>
                   <span className={styles.totalValue}>
-                    {totalCourseCost > 0 ? `${totalCourseCost.toLocaleString("vi-VN")}đ` : "0đ"}
+                    {totalCourseEstimateBenefit > 0 ? `${totalCourseEstimateBenefit.toLocaleString("vi-VN")}đ` : "0đ"}
                   </span>
                 </div>
               </div>
