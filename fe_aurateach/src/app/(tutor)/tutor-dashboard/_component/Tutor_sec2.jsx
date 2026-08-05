@@ -110,7 +110,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
       
       // Công thức: Học phí 1 giờ * Số giờ dạy * Số học sinh
       const lessonAmount = Math.round(
-        session.hourly_rate * session.duration_hours * session.students_count
+        session.price_per_session * session.duration_hours * session.students_count
       );
 
       const now = new Date();
@@ -261,7 +261,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
 
               <div className={styles.detailGrid}>
                 <div><strong>Trình độ:</strong> {selectedClass.level || "N/A"}</div>
-                <div><strong>Học phí / giờ:</strong> {selectedClass.hourly_rate?.toLocaleString("vi-VN")}đ/h</div>
+                <div><strong>Học phí / giờ:</strong> {selectedClass.price_per_session?.toLocaleString("vi-VN")}đ/h</div>
                 <div><strong>Lịch học:</strong> {selectedClass.schedule_days?.join(", ")}</div>
                 <div><strong>Khung giờ:</strong> {selectedClass.time}</div>
               </div>
@@ -329,7 +329,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
                     <strong>Thu nhập nhận được:</strong>{" "}
                     <span style={{ color: "#16a34a", fontSize: "16px", fontWeight: "bold" }}>
                       {Math.round(
-                        activeConfirmSession.hourly_rate * activeConfirmSession.duration_hours * activeConfirmSession.students_count
+                        activeConfirmSession.price_per_session * activeConfirmSession.duration_hours * activeConfirmSession.students_count
                       ).toLocaleString("vi-VN")}đ
                     </span>
                   </div>

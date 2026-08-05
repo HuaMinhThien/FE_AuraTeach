@@ -78,7 +78,7 @@ export default function ClassListPage() {
 
   // Lấy giá trị an toàn
   const getSafePrice = useCallback((course) => {
-    const price = course?.hourly_rate || course?.price_per_session || 0;
+    const price = course?.price_per_session || course?.price_per_session || 0;
     return typeof price === 'number' ? price : parsePrice(price);
   }, [parsePrice]);
 
@@ -409,7 +409,7 @@ export default function ClassListPage() {
                   <div className={styles.tutorPrice}>
                     <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
                     <span className={styles.priceValue}>
-                      {formatPrice(course.hourly_rate || course.price_per_session)} đ/h
+                      {formatPrice(course.price_per_session || course.price_per_session)} đ/Buổi
                     </span>
                   </div>
                   <div className={styles.studentCount}>

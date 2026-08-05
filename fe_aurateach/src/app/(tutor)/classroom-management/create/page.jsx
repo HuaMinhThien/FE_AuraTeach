@@ -352,7 +352,7 @@ export default function CreateClassPage() {
       level,
       description,
       max_students: parseInt(maxStudents),
-      hourly_rate: parseInt(hourlyRate),
+      price_per_session: parseInt(hourlyRate),
       start_date: startDate,
       end_date: endDate,
       total_weeks: parseInt(totalWeeks),
