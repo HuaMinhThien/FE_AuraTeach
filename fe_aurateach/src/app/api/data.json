@@ -1114,6 +1114,31 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
+    },
+    {
+      "id": "b341",
+      "course_id": "course_1785951886194",
+      "tutor_id": "tutor_01",
+      "title": "toán đại số  ",
+      "category_id": "cat-02",
+      "level": "Cấp 1",
+      "description": "",
+      "max_students": 10,
+      "price_per_session": 50000,
+      "start_date": "2026-08-16",
+      "end_date": "2026-09-12",
+      "total_weeks": 4,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "10:00-11:00",
+      "image": "/img/class/default-class-9.png",
+      "permanent_room_url": "https://meet.google.com/tvb-ahfg-tme",
+      "status": "active",
+      "students": [],
+      "created_at": "2026-08-05T17:44:46.194Z"
     }
   ],
   "reviews": [

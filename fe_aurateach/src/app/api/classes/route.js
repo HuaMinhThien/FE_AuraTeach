@@ -1,215 +1,148 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
-// 1. LẤY DANH SÁCH LỚP HỌC THEO ID GIA SƯ ĐĂNG NHẬP
+const API_BASE = "http://localhost:3007";
+
+// 1. HAM GET: Lấy danh sách lớp học & Populate thông tin học viên
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 6;
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "6", 10);
     const status = searchParams.get("status") || "all";
     const search = searchParams.get("search") || "";
 
-    // Đọc thông tin gia sư từ Cookie
-    const cookieStore = await cookies();
-    const userInfoCookie = cookieStore.get("user_info")?.value;
-    
-    let userId = "u-01";
+    // Fetch courses và users đồng thời từ json-server
+    const [coursesRes, usersRes] = await Promise.all([
+      fetch(`${API_BASE}/courses`, { cache: "no-store" }),
+      fetch(`${API_BASE}/users`, { cache: "no-store" }),
+    ]);
 
-    if (userInfoCookie) {
-      try {
-        const decodedUser = JSON.parse(decodeURIComponent(userInfoCookie));
-        userId = decodedUser.user_id || decodedUser.id || "u-01";
-      } catch (e) {
-        console.error("Lỗi parse cookie gia sư trong hàm GET:", e);
-      }
+    if (!coursesRes.ok || !usersRes.ok) {
+      throw new Error("Không thể lấy dữ liệu từ Server");
     }
 
-    console.log("👤 User ID từ cookie:", userId);
+    const courses = await coursesRes.json();
+    const users = await usersRes.json();
 
-    // Lấy danh sách tutors để map user_id -> tutor_id
-    const tutorsRes = await fetch("http://localhost:3007/tutors", { cache: "no-store" });
-    const tutors = tutorsRes.ok ? await tutorsRes.json() : [];
-    
-    // Tìm tutor_id tương ứng với user_id
-    const tutor = tutors.find(t => t.user_id === userId);
-    const tutorId = tutor?.tutor_id || userId;
+    const userMap = new Map(users.map((u) => [u.user_id, u]));
 
-    console.log("🔍 Tutor ID tìm được:", tutorId);
+    let filteredCourses = courses;
 
-    // Lấy tất cả courses của tutor (dùng tutor_id)
-    const resFromJsonServer = await fetch(`http://localhost:3007/courses?tutor_id=${tutorId}`, {
-      cache: "no-store" 
-    });
-
-    if (!resFromJsonServer.ok) {
-      return NextResponse.json(
-        { success: false, data: [], pagination: { totalPages: 1 }, message: "Không thể kết nối tới JSON Server." }
-      );
-    }
-
-    const jsonServerData = await resFromJsonServer.json();
-    
-    let rawCourses = [];
-    if (Array.isArray(jsonServerData)) {
-      rawCourses = jsonServerData;
-    } else if (jsonServerData.courses) {
-      rawCourses = jsonServerData.courses; 
-    }
-
-    // Lấy thông tin users để map student names
-    const usersRes = await fetch("http://localhost:3007/users", { cache: "no-store" });
-    const allUsers = usersRes.ok ? await usersRes.json() : [];
-
-    // Bộ lọc Trạng thái
     if (status !== "all") {
-      rawCourses = rawCourses.filter(c => c.status === status);
+      filteredCourses = filteredCourses.filter((c) => c.status === status);
     }
 
-    // Bộ lọc Tìm kiếm
-    if (search && search.trim() !== "") {
-      const searchLower = search.toLowerCase().trim();
-      rawCourses = rawCourses.filter(c => 
-        (c.title && c.title.toLowerCase().includes(searchLower))
-      );
+    if (search.trim() !== "") {
+      const query = search.toLowerCase().trim();
+      filteredCourses = filteredCourses.filter((c) => {
+        const matchClassName = c.title?.toLowerCase().includes(query);
+        const matchStudentName = (c.students || []).some((studentId) => {
+          const user = userMap.get(studentId);
+          return user?.full_name?.toLowerCase().includes(query);
+        });
+        return matchClassName || matchStudentName;
+      });
     }
 
-    // Xử lý phân trang
-    const totalItems = rawCourses.length;
+    const totalItems = filteredCourses.length;
     const totalPages = Math.ceil(totalItems / limit) || 1;
     const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const activeCourses = rawCourses.slice(startIndex, endIndex);
+    const paginatedCourses = filteredCourses.slice(startIndex, startIndex + limit);
 
-    // ✅ CHUẨN HÓA DỮ LIỆU TRẢ VỀ CHO CLIENT VÀ THÊM PERMANENT_ROOM_URL
-    const formattedClasses = activeCourses.map(course => {
-      const studentIds = course.students || [];
-      const studentDetails = studentIds.map(studentId => {
-        const user = allUsers.find(u => u.user_id === studentId);
-        return user ? {
-          user_id: user.user_id,
-          full_name: user.full_name,
-          avatar: user.avatar || "/img/default-avatar.svg",
-          email: user.email
-        } : {
-          user_id: studentId,
-          full_name: "Học viên",
-          avatar: "/img/default-avatar.svg"
+    const mappedData = paginatedCourses.map((course) => {
+      const detailedStudents = (course.students || []).map((studentId) => {
+        const studentUser = userMap.get(studentId);
+        return {
+          student_id: studentId,
+          full_name: studentUser ? studentUser.full_name : "Học sinh chưa cập nhật",
+          email: studentUser ? studentUser.email : "Chưa có email",
+          phone: studentUser ? studentUser.phone : "",
+          avatar: studentUser ? studentUser.avatar : "",
         };
       });
 
       return {
-        id: course.id,
-        class_id: course.course_id || course.class_id || `cls-${Math.random()}`,
-        class_name: course.title || course.class_name || "Lớp học chưa đặt tên",
-        start_date: course.start_date || "15/06/2024",
-        end_date: course.end_date || "30/08/2024",
-        total_weeks: course.total_weeks || 12,
-        status: course.status || "active", 
-        schedule_days: course.schedule_days || ["Thứ 2", "Thứ 4", "Thứ 6"],
-        time_slot: course.time_slot || "18:00-20:00",
-        price_per_session: course.price_per_session || 150000,
-        max_students: course.max_students || 15,
-        students: studentIds,
-        student_details: studentDetails,
-        student_count: studentIds.length,
-        permanent_room_url: course.permanent_room_url || "" 
+        class_id: course.course_id || course.id,
+        class_name: course.title,
+        total_weeks: course.total_weeks,
+        start_date: course.start_date,
+        end_date: course.end_date,
+        status: course.status,
+        max_students: course.max_students,
+        permanent_room_url: course.permanent_room_url,
+        schedule_days: course.schedule_days,
+        students: detailedStudents,
       };
     });
 
-    console.log(`📚 Tìm thấy ${totalItems} lớp học cho tutor ${tutorId}`);
-
     return NextResponse.json({
       success: true,
-      data: formattedClasses, // Trả dữ liệu đã định dạng về Client
-      pagination: { currentPage: page, limit, totalItems, totalPages }
+      data: mappedData,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+      },
     });
-
   } catch (error) {
-    console.error("Lỗi kết nối API Route với JSON Server:", error);
+    console.error("❌ GET /api/classes error:", error);
     return NextResponse.json(
-      { success: false, data: [], pagination: { totalPages: 1 }, message: "Lỗi xử lý server dữ liệu." }, 
+      { success: false, message: error.message || "Lỗi tải danh sách lớp học" },
       { status: 500 }
     );
   }
 }
 
-// 2. TẠO LỚP HỌC MỚI 
+// 2. HAM POST: Xử lý Tạo Lớp Học Mới
 export async function POST(request) {
   try {
     const body = await request.json();
-    
-    const cookieStore = await cookies();
-    const userInfoCookie = cookieStore.get("user_info")?.value;
-    
-    let userId = "u-01"; 
-    
-    if (userInfoCookie) {
-      try {
-        const decodedUser = JSON.parse(decodeURIComponent(userInfoCookie));
-        userId = decodedUser.user_id || decodedUser.id || "u-01"; 
-      } catch (e) {
-        console.error("Lỗi parse thông tin cookie gia sư:", e);
-      }
-    }
 
-    console.log("👤 User ID tạo lớp:", userId);
-
-    // Lấy tutor_id từ user_id
-    const tutorsRes = await fetch("http://localhost:3007/tutors", { cache: "no-store" });
-    const tutors = tutorsRes.ok ? await tutorsRes.json() : [];
-    const tutor = tutors.find(t => t.user_id === userId);
-    const tutorId = tutor?.tutor_id || userId;
-
-    console.log("🔍 Tutor ID tạo lớp:", tutorId);
-    
-    const newClassData = {
-      id: `course-${Date.now()}`,
-      course_id: `course-${Date.now()}`, 
-      tutor_id: tutorId, 
+    // Ánh xạ dữ liệu gửi từ Form sang cấu trúc lưu trong json-server
+    const newCourse = {
+      course_id: `course_${Date.now()}`,
+      tutor_id: body.tutor_id,
       title: body.class_name,
-      category_id: body.category || "cat-02",
+      category_id: body.category_id,
       level: body.level,
-      description: body.description || "",
-      max_students: parseInt(body.max_students || 15),
-      price_per_session: parseInt(body.price_per_session || 150000),
+      description: body.description,
+      max_students: body.max_students,
+      price_per_session: body.price_per_session,
       start_date: body.start_date,
       end_date: body.end_date,
-      total_weeks: parseInt(body.total_weeks),
+      total_weeks: body.total_weeks,
       schedule_days: body.schedule_days,
       time_slot: body.time_slot,
-      thumbnail: body.thumbnail || "/img/default-class-1.jpg",
-      status: "active",
-      permanent_room_url: body.permanent_room_url || "https://meet.google.com/abc-xyz-def",
-      students: []
+      image: body.thumbnail,
+      permanent_room_url: body.permanent_room_url,
+      status: "active", // Trạng thái mặc định khi tạo mới
+      students: [],    // Khởi tạo danh sách học sinh rỗng
+      created_at: new Date().toISOString(),
     };
 
-    const resFromJsonServer = await fetch("http://localhost:3007/courses", {
+    // Gửi dữ liệu tạo khóa học mới sang json-server (JSON Server hỗ trợ cả id tự sinh)
+    const res = await fetch(`${API_BASE}/courses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newClassData),
+      body: JSON.stringify(newCourse),
     });
 
-    if (!resFromJsonServer.ok) {
-      const errorText = await resFromJsonServer.text();
-      console.error("❌ Lỗi tạo lớp:", errorText);
-      throw new Error("Lỗi ghi JSON Server");
+    if (!res.ok) {
+      throw new Error("Không thể lưu lớp học vào cơ sở dữ liệu");
     }
 
-    const savedData = await resFromJsonServer.json();
-    console.log("✅ Lớp học đã được tạo:", savedData);
+    const createdData = await res.json();
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Tạo lớp thành công!", 
-      data: savedData 
+    return NextResponse.json({
+      success: true,
+      message: "Tạo lớp học thành công!",
+      data: createdData,
     });
-
   } catch (error) {
-    console.error("Lỗi API Route POST khi tạo lớp học:", error);
-    return NextResponse.json({ 
-      success: false, 
-      message: error.message || "Lỗi kết nối cơ sở dữ liệu." 
-    }, { status: 500 });
+    console.error("❌ POST /api/classes error:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Đã xảy ra lỗi khi tạo lớp học" },
+      { status: 500 }
+    );
   }
 }
