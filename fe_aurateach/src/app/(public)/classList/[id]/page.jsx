@@ -330,7 +330,7 @@ export default function ClassDetailPage({ params }) {
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Học phí</span>
                 <span className={`${styles.detailValue} ${styles.priceValue}`}>
-                  {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ/giờ` : 'Liên hệ'}
+                  {course.price_per_session ? `${formatPrice(course.price_per_session)}đ/Buổi` : 'Liên hệ'}
                 </span>
               </div>
               <div className={styles.detailItem}>
@@ -428,10 +428,10 @@ export default function ClassDetailPage({ params }) {
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
               <span className={styles.price}>
-                {course.hourly_rate ? `${formatPrice(course.hourly_rate)}đ` : 'Liên hệ'}
+                {course.price_per_session ? `${formatPrice(course.price_per_session)}đ` : 'Liên hệ'}
               </span>
-              {course.hourly_rate && (
-                <span className={styles.priceUnit}>/giờ</span>
+              {course.price_per_session && (
+                <span className={styles.priceUnit}>/Buổi</span>
               )}
             </div>
 

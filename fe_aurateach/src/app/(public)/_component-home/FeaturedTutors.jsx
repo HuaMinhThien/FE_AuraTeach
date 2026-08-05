@@ -36,7 +36,7 @@ function FeaturedTutors() {
             rating: tutor.rating || 5.0,
             experience: tutor.Experience || "Chưa cập nhật",
             bio: tutor.bio || "",
-            price: matchedCourse.hourly_rate ? `${parseInt(matchedCourse.hourly_rate).toLocaleString('vi-VN')}đ/h` : "Đang cập nhật",
+            price: matchedCourse.price_per_session ? `${parseInt(matchedCourse.price_per_session).toLocaleString('vi-VN')}đ/Buổi` : "Đang cập nhật",
             reviews: tutor.tutor_id === "tutor_01" ? 120 : 45 
           };
         });
