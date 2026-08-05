@@ -69,7 +69,7 @@ export function middleware(request) {
       return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
     }
     if (token && role === "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL("/admin-dashboard", request.url));
     }
     return NextResponse.next();
   }

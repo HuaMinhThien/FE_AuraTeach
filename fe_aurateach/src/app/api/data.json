@@ -378,12 +378,12 @@
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
       "pending_balance": 900000,
-      "available_balance": 38090000,
+      "available_balance": 37640000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-08-04T18:12:23.889Z",
+      "updated_at": "2026-08-05T06:44:21.240Z",
       "rejection_reason": null
     },
     {
@@ -2355,6 +2355,32 @@
       "rejection_reason": null,
       "processed_at": "2026-08-04T18:16:12.268Z",
       "created_at": "2026-08-04T18:12:51.201Z"
+    },
+    {
+      "id": "6605",
+      "payout_req_id": "pr_1785911673238",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "admin_system",
+      "request_code": "PR-673238",
+      "amount": 450000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-05T06:34:58.388Z",
+      "created_at": "2026-08-05T06:34:33.238Z"
+    },
+    {
+      "id": "1d03",
+      "payout_req_id": "pr_1785912189680",
+      "bank_account_id": "bank_1785863781558",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-2",
+      "request_code": "PR-189680",
+      "amount": 900000,
+      "status": "rejected",
+      "rejection_reason": "sai thông tin\n",
+      "processed_at": "2026-08-05T06:44:21.227Z",
+      "created_at": "2026-08-05T06:43:09.680Z"
     }
   ],
   "tutor_bank_accounts": [
