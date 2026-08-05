@@ -317,6 +317,42 @@
       "role": "tutor",
       "status": "active",
       "created_at": "2026-07-29T09:44:56.404Z"
+    },
+    {
+      "id": "b527",
+      "user_id": "user_1785489685235_kl7eih",
+      "email": "kkkk@gmail.com",
+      "password": "123123",
+      "full_name": "kkkk",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-07-31T09:21:25.235Z"
+    },
+    {
+      "id": "509e",
+      "user_id": "user_1785774015940_bn2etd",
+      "email": "thanhliem147789@gmail.com",
+      "password": "123456",
+      "full_name": "Liemtran",
+      "phone": "0966713806",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-08-03T16:20:15.940Z"
+    },
+    {
+      "id": "2296",
+      "user_id": "user_1785775170840_q3ptft",
+      "email": "mqituqn1502@gmail.com",
+      "password": "123123",
+      "full_name": "TuanMai",
+      "phone": "0909678678",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "student",
+      "status": "active",
+      "created_at": "2026-08-03T16:39:30.840Z"
     }
   ],
   "admins": [
@@ -337,17 +373,17 @@
       "tutor_id": "tutor_01",
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-      "expertise": "Toán, Tin học & Lập trình, Ngữ văn",
+      "expertise": "Toán, Tin học & Lập trình",
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
-      "pending_balance": 1500000,
-      "available_balance": 53390000,
+      "pending_balance": 900000,
+      "available_balance": 38090000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-07-29T10:00:00.000Z",
+      "updated_at": "2026-08-04T18:12:23.889Z",
       "rejection_reason": null
     },
     {
@@ -545,6 +581,21 @@
       "available_balance": 0,
       "cv_link": "https://vn.linkedin.com",
       "created_at": "2026-07-29T09:44:56.422Z"
+    },
+    {
+      "id": "4bb7",
+      "tutor_id": "tutor_1785489685273",
+      "user_id": "user_1785489685235_kl7eih",
+      "bio": "",
+      "expertise": "Toán học, Hóa học, Vật lý, Ngữ văn",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "created_at": "2026-07-31T09:21:25.273Z",
+      "rejection_reason": null
     }
   ],
   "students": [
@@ -601,6 +652,14 @@
       "grade": "",
       "school_name": "",
       "created_at": "2026-07-29T09:14:46.813Z"
+    },
+    {
+      "id": "6551",
+      "student_id": "student_1785775170854",
+      "user_id": "user_1785775170840_q3ptft",
+      "grade": "",
+      "school_name": "",
+      "created_at": "2026-08-03T16:39:30.854Z"
     }
   ],
   "courses": [
@@ -864,7 +923,7 @@
       ],
       "time_slot": "13:00-13:30",
       "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "active",
+      "status": "closed",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1",
@@ -1015,6 +1074,28 @@
       ],
       "time_slot": "13:00-14:00",
       "thumbnail": "/img/class/default-class-9.png",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "students": []
+    },
+    {
+      "id": "course-1785824128324",
+      "course_id": "course-1785824128324",
+      "tutor_id": "tutor_01",
+      "title": "JS ",
+      "category_id": "cat-02",
+      "level": "Cấp 3",
+      "description": "",
+      "max_students": 1,
+      "hourly_rate": 1000000,
+      "start_date": "2026-08-04",
+      "end_date": "2026-08-11",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Chủ Nhật"
+      ],
+      "time_slot": "08:00-09:30",
+      "thumbnail": "/img/class/default-class-10.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": []
@@ -1388,6 +1469,16 @@
       ],
       "last_message": "ăedsfawedf",
       "last_message_time": "2026-07-29T12:31:44.633Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_1785490163820",
+      "participants": [
+        "u-student-1",
+        "user_1785489685235_kl7eih"
+      ],
+      "last_message": "",
+      "last_message_time": "2026-07-31T09:29:23.820Z",
       "unread_count": 0
     }
   ],
@@ -2074,7 +2165,7 @@
   ],
   "tutor_update_requests": [
     {
-      "id": "2078",
+      "tutor_update_req_id": "2078",
       "tutor_id": "1f17",
       "old_data": {
         "phone": "0912345678",
@@ -2093,10 +2184,11 @@
       "status": "rejected",
       "reject_reason": "Không đạt yêu cầu",
       "created_at": "2026-07-27T10:02:22.838Z",
-      "updated_at": "2026-07-27T11:15:45.401Z"
+      "updated_at": "2026-07-27T11:15:45.401Z",
+      "id": "c208"
     },
     {
-      "id": "1c26",
+      "tutor_update_req_id": "1c26",
       "tutor_id": "1f17",
       "old_data": {
         "phone": "0912345678",
@@ -2115,28 +2207,8 @@
       "status": "approved",
       "reject_reason": null,
       "created_at": "2026-07-27T11:16:19.358Z",
-      "updated_at": "2026-07-27T11:23:18.541Z"
-    },
-    {
-      "id": "aa96",
-      "tutor_id": "1f17",
-      "old_data": {
-        "phone": "09106761390",
-        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-        "experience": "Dưới 1 năm",
-        "cv_link": "https://example.com/cv/tutor_01/profile",
-        "expertise": "Toán, Tin học & Lập trình, Ngữ văn"
-      },
-      "new_data": {
-        "phone": "09106761390",
-        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
-        "experience": "Dưới 1 năm",
-        "cv_link": "https://example.com/cv/tutor_01/profile",
-        "expertise": "Toán, Tin học & Lập trình"
-      },
-      "status": "pending",
-      "reject_reason": null,
-      "created_at": "2026-07-29T09:33:58.620Z"
+      "updated_at": "2026-07-27T11:23:18.541Z",
+      "id": "12fd"
     }
   ],
   "lesson_confirmations": [
@@ -2146,14 +2218,15 @@
       "tutor_id": "tutor_01",
       "lesson_number": 3,
       "lesson_date": "2026-08-01",
-      "evidence_url": "https://drive.google.com/file/d/1xABCxyz...",
+      "record_url": "https://drive.google.com/file/d/1xABCxyz...",
       "note": "Đã dạy xong bài...",
       "submitted_at": "2026-08-01T20:00:00.000Z",
       "holding_hours": 24,
       "payout_available_at": "2026-08-02T20:00:00.000Z",
-      "status": "pending_review",
+      "status": "approved",
       "lesson_amount": 300000,
-      "payout_status": "holding"
+      "payout_status": "transferred",
+      "id": "f225"
     },
     {
       "id": "937b",
@@ -2162,14 +2235,14 @@
       "tutor_id": "tutor_01",
       "lesson_number": 1,
       "lesson_date": "2026-07-27",
-      "evidence_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
       "note": "ôn tập",
       "submitted_at": "2026-07-30T13:16:37.233Z",
       "holding_hours": 24,
       "payout_available_at": "2026-07-31T13:16:37.233Z",
-      "status": "pending_review",
+      "status": "approved",
       "lesson_amount": 0,
-      "payout_status": "holding"
+      "payout_status": "transferred"
     },
     {
       "id": "55ed",
@@ -2178,14 +2251,134 @@
       "tutor_id": "tutor_01",
       "lesson_number": 1,
       "lesson_date": "2026-07-29",
-      "evidence_url": "localhost:3000/tutor-dashboard",
+      "record_url": "localhost:3000/tutor-dashboard",
       "note": "",
       "submitted_at": "2026-07-30T14:49:19.781Z",
       "holding_hours": 24,
       "payout_available_at": "2026-07-31T14:49:19.781Z",
-      "status": "pending_review",
+      "status": "approved",
       "lesson_amount": 300000,
+      "payout_status": "transferred"
+    },
+    {
+      "id": "e4f3",
+      "comfirmation_id": "c-02_2026-07-30",
+      "course_id": "c-02",
+      "tutor_id": "tutor_01",
+      "lesson_number": 1,
+      "lesson_date": "2026-07-30",
+      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "note": "test",
+      "submitted_at": "2026-08-04T11:54:49.757Z",
+      "holding_hours": 24,
+      "payout_available_at": "2026-08-05T11:54:49.757Z",
+      "status": "pending_review",
+      "lesson_amount": 240000,
       "payout_status": "holding"
+    }
+  ],
+  "payout_requests": [
+    {
+      "id": "ab34",
+      "payout_req_id": "pr_1785863906022",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-906022",
+      "amount": 3000000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T17:56:33.405Z",
+      "created_at": "2026-08-04T17:18:26.022Z"
+    },
+    {
+      "id": "1f33",
+      "payout_req_id": "pr_1785866491162",
+      "bank_account_id": "bank_1785863781558",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-491162",
+      "amount": 2000000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T18:02:05.923Z",
+      "created_at": "2026-08-04T18:01:31.162Z"
+    },
+    {
+      "id": "114a",
+      "payout_req_id": "pr_1785866548852",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-548852",
+      "amount": 4500000,
+      "status": "rejected",
+      "rejection_reason": "stk sai",
+      "processed_at": "2026-08-04T18:04:11.923Z",
+      "created_at": "2026-08-04T18:02:28.852Z"
+    },
+    {
+      "id": "3848",
+      "payout_req_id": "pr_1785866689849",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "u-admin-1",
+      "request_code": "PR-689849",
+      "amount": 600000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T18:05:22.451Z",
+      "created_at": "2026-08-04T18:04:49.849Z"
+    },
+    {
+      "id": "897d",
+      "payout_req_id": "pr_1785867074456",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "admin_system",
+      "request_code": "PR-074456",
+      "amount": 499998,
+      "status": "rejected",
+      "rejection_reason": "không tồn tại",
+      "processed_at": "2026-08-04T18:12:23.879Z",
+      "created_at": "2026-08-04T18:11:14.456Z"
+    },
+    {
+      "id": "9760",
+      "payout_req_id": "pr_1785867171201",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "processed_by": "admin_system",
+      "request_code": "PR-171201",
+      "amount": 200000,
+      "status": "approved",
+      "rejection_reason": null,
+      "processed_at": "2026-08-04T18:16:12.268Z",
+      "created_at": "2026-08-04T18:12:51.201Z"
+    }
+  ],
+  "tutor_bank_accounts": [
+    {
+      "id": "72b4",
+      "bank_account_id": "bank_1785863761157",
+      "tutor_id": "tutor_01",
+      "bank_name": "Ngân hàng TMCP Đại Chúng Việt Nam",
+      "bank_code": "PVCB",
+      "account_number": "105002712102",
+      "account_holder_name": "HUA MINH THIEN",
+      "is_default": true,
+      "created_at": "2026-08-04T17:16:01.157Z"
+    },
+    {
+      "id": "d9f9",
+      "bank_account_id": "bank_1785863781558",
+      "tutor_id": "tutor_01",
+      "bank_name": "Ngân hàng TMCP Ngoại Thương Việt Nam",
+      "bank_code": "VCB",
+      "account_number": "1231234512323",
+      "account_holder_name": "HUA MINH THIEN",
+      "is_default": false,
+      "created_at": "2026-08-04T17:16:21.558Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

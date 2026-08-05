@@ -5,13 +5,45 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("user_info")?.value;
   const role = request.cookies.get("role")?.value;
+  
+  const sessionToken = request.cookies.get("next-auth.session-token")?.value;
+  const isGoogleAuth = !!sessionToken;
 
   console.log("=== MIDDLEWARE ===");
   console.log("Pathname:", pathname);
-  console.log("Token:", token ? "exists" : "none");
+  console.log("Token (user_info):", token ? "exists" : "none");
+  console.log("Session Token (NextAuth):", sessionToken ? "exists" : "none");
   console.log("Role:", role);
 
-  // Route public (không cần đăng nhập)
+  // Bỏ qua các request không cần thiết
+  if (pathname.startsWith("/_next/") || 
+      pathname.startsWith("/favicon.ico") || 
+      pathname.startsWith("/img/") || 
+      pathname.startsWith("/images/") ||
+      pathname.startsWith("/.well-known/")) {
+    return NextResponse.next();
+  }
+
+  // Cho phép tất cả API routes của NextAuth
+  if (pathname.startsWith("/api/auth/")) {
+    return NextResponse.next();
+  }
+
+  // Nếu đang ở /login, cho phép truy cập
+  if (pathname === "/login") {
+    return NextResponse.next();
+  }
+
+  // ✅ Nếu đã logout (không có user_info) nhưng vẫn có session token
+  // KHÔNG redirect, để trang login xử lý
+  if (!token && isGoogleAuth && pathname !== "/login") {
+    // Chỉ redirect nếu không phải trang login
+    // Nhưng nếu đã ở /login, không redirect
+    console.log("🔄 Session tồn tại nhưng chưa có user_info, chuyển đến login");
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Route public
   const publicRoutes = [
     "/login", 
     "/register", 
@@ -24,18 +56,14 @@ export function middleware(request) {
     pathname === route || pathname.startsWith(route + "/")
   );
 
-  // Route đặc biệt: các route con dành riêng cho student
   const studentRoutes = ["/profile", "/lich-su-book", "/book-gia-su"];
   const isStudentRoute = studentRoutes.some(route => 
     pathname === route || pathname.startsWith(route + "/")
   );
 
-  // Admin routes - cho phép tất cả route bắt đầu bằng /admin
   const isAdminRoute = pathname.startsWith("/admin");
 
-  // =========================================================================
-  // LOGIC ĐIỀU HƯỚNG GỐC (TRANG ĐẦU TIÊN KHI MỞ TRÌNH DUYỆT / TRANG CHỦ "/")
-  // =========================================================================
+  // Logic điều hướng
   if (pathname === "/") {
     if (token && role === "tutor") {
       return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
@@ -46,19 +74,23 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  // 1. Nếu chưa đăng nhập và vào route cần bảo vệ -> redirect login
-  if (!token) {
+  // Chưa đăng nhập
+  if (!token && !isGoogleAuth) {
     if (isPublicRoute) {
       return NextResponse.next();
     }
-    // Cho phép truy cập admin routes mà không cần token? Không, chuyển hướng đến login
     if (isAdminRoute || isStudentRoute || pathname.startsWith("/tutor") || pathname.startsWith("/classroom-management") || pathname.startsWith("/schedule") || pathname.startsWith("/income")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }
 
-  // 2. Nếu ĐÃ ĐĂNG NHẬP mà cố tình vào các trang đăng nhập/đăng ký -> Trả về đúng dashboard/home
-  if (token && (pathname === "/login" || pathname === "/register" || pathname === "/forgot-password")) {
+  // Đã đăng nhập nhưng vào trang login
+  if ((token || isGoogleAuth) && (pathname === "/login" || pathname === "/register" || pathname === "/forgot-password")) {
+    // ✅ Nếu chỉ có session token mà không có user_info, cho phép vào login
+    if (isGoogleAuth && !token) {
+      return NextResponse.next();
+    }
+    
     if (role === "student") {
       return NextResponse.redirect(new URL("/", request.url));
     } else if (role === "tutor") {
@@ -68,9 +100,12 @@ export function middleware(request) {
     }
   }
 
-  // 3. Bảo vệ và phân quyền
-  if (token) {
-    // Nếu là Student, không cho vào Admin routes
+  // Phân quyền
+  if (token || isGoogleAuth) {
+    if (token && !role) {
+      return NextResponse.next();
+    }
+    
     if (role === "student") {
       const isTutorRoute = (pathname.startsWith("/tutor") && !pathname.startsWith("/tutorList")) || 
                           pathname.startsWith("/classroom-management") || 
@@ -82,25 +117,21 @@ export function middleware(request) {
       }
     }
 
-    // Nếu là Tutor, không cho vào Admin routes hoặc Student routes
     if (role === "tutor" && (isAdminRoute || isStudentRoute)) {
       return NextResponse.redirect(new URL("/tutor-dashboard", request.url));
     }
     
-    // Nếu là Admin, không cho vào Tutor routes hoặc Student routes
     if (role === "admin" && (pathname.startsWith("/tutor") || 
         pathname.startsWith("/classroom-management") || 
         pathname.startsWith("/schedule") || 
         pathname.startsWith("/income") || 
         isStudentRoute)) {
-      // Cho phép admin truy cập admin routes
       if (isAdminRoute) {
         return NextResponse.next();
       }
       return NextResponse.redirect(new URL("/admin", request.url));
     }
 
-    // Cho phép admin truy cập tất cả admin routes
     if (role === "admin" && isAdminRoute) {
       return NextResponse.next();
     }
@@ -109,7 +140,6 @@ export function middleware(request) {
   return NextResponse.next();
 }
 
-// Cấu hình matcher
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",

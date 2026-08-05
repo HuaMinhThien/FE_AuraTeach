@@ -4,11 +4,11 @@ const BACKEND = "http://localhost:3007";
 
 export async function PATCH(request, { params }) {
   try {
-    const { id } = await params;
+    const { tutor_update_req_id } = await params;
     const body = await request.json();
     const { status, reject_reason } = body; // status: "approved" | "rejected"
 
-    if (!id || !status) {
+    if (!tutor_update_req_id || !status) {
       return NextResponse.json(
         { success: false, message: "Thiếu thông tin ID hoặc trạng thái xử lý" },
         { status: 400 }
@@ -16,7 +16,7 @@ export async function PATCH(request, { params }) {
     }
 
     // 1. Lấy thông tin chi tiết của yêu cầu chỉnh sửa từ backend
-    const getReq = await fetch(`${BACKEND}/tutor_update_requests/${id}`);
+    const getReq = await fetch(`${BACKEND}/tutor_update_requests/${tutor_update_req_id}`);
     if (!getReq.ok) {
       return NextResponse.json(
         { success: false, message: "Không tìm thấy yêu cầu chỉnh sửa này" },
@@ -72,7 +72,7 @@ export async function PATCH(request, { params }) {
       }
 
       // 3. XÓA bản ghi yêu cầu khỏi bảng tutor_update_requests
-      const deleteRes = await fetch(`${BACKEND}/tutor_update_requests/${id}`, {
+      const deleteRes = await fetch(`${BACKEND}/tutor_update_requests/${tutor_update_req_id}`, {
         method: "DELETE",
       });
 
@@ -87,7 +87,7 @@ export async function PATCH(request, { params }) {
 
     } else if (status === "rejected") {
       // TRƯỜNG HỢP TỪ CHỐI: Hoặc cập nhật trạng thái rejected, hoặc xóa luôn yêu cầu
-      const updateRes = await fetch(`${BACKEND}/tutor_update_requests/${id}`, {
+      const updateRes = await fetch(`${BACKEND}/tutor_update_requests/${tutor_update_req_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

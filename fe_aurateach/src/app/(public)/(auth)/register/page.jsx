@@ -388,7 +388,7 @@ export default function RegisterPage() {
                   href="/register/teacher"
                   className="aurateach-teacher-button"
                 >
-                  Đăng ký làm Giảng viên
+                  Đăng ký làm Gia Sư
                 </Link>
               </div>
 

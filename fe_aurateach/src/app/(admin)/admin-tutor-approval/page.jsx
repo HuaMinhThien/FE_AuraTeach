@@ -36,33 +36,33 @@ export default function TutorApprovalPage() {
   };
 
   useEffect(() => {
-  let ignore = false;
-  
-  async function fetchData() {
-    setIsLoading(true);
-    try {
-      if (activeTab === "pending_tutors") {
-        const response = await fetch("/api/admin-tutor-approval/pending");
-        const result = await response.json();
-        if (!ignore && result.success) setPendingTutors(result.data || []);
-      } else {
-        const response = await fetch("http://localhost:3007/tutor_update_requests?status=pending");
-        const data = await response.json();
-        if (!ignore) setUpdateRequests(data || []);
+    let ignore = false;
+    
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        if (activeTab === "pending_tutors") {
+          const response = await fetch("/api/admin-tutor-approval/pending");
+          const result = await response.json();
+          if (!ignore && result.success) setPendingTutors(result.data || []);
+        } else {
+          const response = await fetch("http://localhost:3007/tutor_update_requests?status=pending");
+          const data = await response.json();
+          if (!ignore) setUpdateRequests(data || []);
+        }
+      } catch (error) {
+        console.error("Lỗi tải dữ liệu:", error);
+      } finally {
+        if (!ignore) setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Lỗi tải dữ liệu:", error);
-    } finally {
-      if (!ignore) setIsLoading(false);
     }
-  }
 
-  fetchData();
+    fetchData();
 
-  return () => {
-    ignore = true; // Chống race-condition khi switch tab nhanh
-  };
-}, [activeTab]);
+    return () => {
+      ignore = true; // Chống race-condition khi switch tab nhanh
+    };
+  }, [activeTab]);
 
   // Xử lý Duyệt Gia Sư Mới
   const handleApproveTutor = async (tutor) => {
@@ -210,7 +210,10 @@ export default function TutorApprovalPage() {
                           <div className={styles.actionGroup}>
                             <button
                               className={`${styles.btn} ${styles.btnInfo}`}
-                              onClick={() => setSelectedTutor(tutor)}
+                              onClick={() => {
+                                setSelectedTutor(tutor);
+                                setShowRejectModal(false);
+                              }}
                             >
                               Chi tiết
                             </button>
@@ -276,7 +279,7 @@ export default function TutorApprovalPage() {
                               className={`${styles.btn} ${styles.btnInfo}`}
                               onClick={() => setSelectedRequest(req)}
                             >
-                              🔍 Đối chiếu Cũ/Mới
+                              Đối chiếu Cũ/Mới
                             </button>
                           </div>
                         </td>
@@ -287,6 +290,81 @@ export default function TutorApprovalPage() {
               </div>
             )
           )}
+        </div>
+      )}
+
+      {/* ================= MODAL XEM CHI TIẾT HỒ SƠ ĐĂNG KÝ MỚI ================= */}
+      {selectedTutor && !showRejectModal && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedTutor(null)}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.closeBtn} onClick={() => setSelectedTutor(null)}>
+              &times;
+            </button>
+
+            <div className={styles.modalHeader}>
+              <h2>📄 Chi Tiết Hồ Sơ Đăng Ký Gia Sư</h2>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.infoItem}>
+                <label>Họ và tên:</label>
+                <p className={styles.boldText}>{selectedTutor.full_name}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Email:</label>
+                <p>{selectedTutor.email}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Số điện thoại:</label>
+                <p>{selectedTutor.phone}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Lĩnh vực / Chuyên môn:</label>
+                <p className={styles.badgeExpertise}>{selectedTutor.expertise || "Chưa cập nhật"}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Kinh nghiệm giảng dạy:</label>
+                <p>{selectedTutor.experience || "Chưa cập nhật"}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Giới thiệu bản thân (Bio):</label>
+                <div className={styles.bioBox}>
+                  {selectedTutor.bio || "Không có thông tin giới thiệu."}
+                </div>
+              </div>
+              {selectedTutor.cv_link && (
+                <div className={styles.infoItem}>
+                  <label>Hồ sơ năng lực / CV:</label>
+                  <a
+                    href={selectedTutor.cv_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.cvLink}
+                  >
+                    🔗 Xem File CV / Bằng Cấp
+                  </a>
+                </div>
+              )}
+
+              <div className={styles.modalActions} style={{ marginTop: "20px" }}>
+                <button
+                  className={`${styles.btn} ${styles.btnSuccess}`}
+                  onClick={() => handleApproveTutor(selectedTutor)}
+                >
+                  Duyệt hồ sơ này
+                </button>
+                <button
+                  className={`${styles.btn} ${styles.btnDanger}`}
+                  onClick={() => setShowRejectModal(true)}
+                >
+                  Từ chối
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

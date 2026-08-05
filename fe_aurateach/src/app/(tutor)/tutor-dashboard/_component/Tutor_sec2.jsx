@@ -128,7 +128,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
           tutor_id: session.tutor_id,
           lesson_number: session.lesson_number || 1,
           lesson_date: session.lesson_date,
-          evidence_url: driveLink,
+          record_url: driveLink,
           note: sessionNote,
           submitted_at: submittedAtIso,
           holding_hours: 24,
@@ -136,16 +136,6 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
           status: "pending_review",
           lesson_amount: lessonAmount,
           payout_status: "holding"
-        })
-      });
-
-      // b. Cộng tiền vào ví chờ duyệt (pending_balance) của Gia sư
-      const newPendingBalance = (session.tutor_pending_balance || 0) + lessonAmount;
-      await fetch(`http://localhost:3007/tutors/${session.tutor_db_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pending_balance: newPendingBalance
         })
       });
 
