@@ -5,6 +5,24 @@ import styles from './admin-tutor-payout-requests.module.css';
 
 const API_ROUTE = '/api/admin-tutor-payout-requests';
 
+// Hàm helper để lấy cookie theo tên
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const rawVal = parts.pop().split(';').shift();
+    try {
+      // Decode chuỗi %7B%22user_id... thành JSON hợp lệ
+      return JSON.parse(decodeURIComponent(rawVal));
+    } catch (e) {
+      console.error('Lỗi khi parse cookie:', e);
+      return null;
+    }
+  }
+  return null;
+};
+
 export default function AdminPayoutRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,17 +36,14 @@ export default function AdminPayoutRequestsPage() {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    // Lấy thông tin Admin đăng nhập từ Auth Storage (localStorage / sessionStorage)
+    // Lấy thông tin Admin đăng nhập từ cookie `user_info`
     try {
-      const userSession = localStorage.getItem('user') || sessionStorage.getItem('user');
-      if (userSession) {
-        const parsedUser = JSON.parse(userSession);
-        if (parsedUser?.user_id || parsedUser?.id) {
-          setAdminId(parsedUser.user_id || parsedUser.id);
-        }
+      const userInfo = getCookie('user_info');
+      if (userInfo && (userInfo.user_id || userInfo.id)) {
+        setAdminId(userInfo.user_id || userInfo.id);
       }
     } catch (err) {
-      console.error('Không thể lấy thông tin Admin:', err);
+      console.error('Không thể lấy thông tin Admin từ cookie:', err);
     }
 
     fetchData();
@@ -70,7 +85,7 @@ export default function AdminPayoutRequestsPage() {
         body: JSON.stringify({
           id: request.id,
           status: 'approved',
-          processed_by: adminId, // Truyền ID của Admin đang đăng nhập
+          processed_by: adminId, 
         }),
       });
 
@@ -105,7 +120,7 @@ export default function AdminPayoutRequestsPage() {
           id: rejectingRequest.id,
           status: 'rejected',
           rejection_reason: rejectReason,
-          processed_by: adminId, // Truyền ID của Admin đang đăng nhập
+          processed_by: adminId, 
         }),
       });
 
