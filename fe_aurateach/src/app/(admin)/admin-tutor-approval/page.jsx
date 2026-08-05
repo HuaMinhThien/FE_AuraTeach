@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./TutorApproval.module.css";
+import { adminService } from "@/services/adminService";
 
 export default function TutorApprovalPage() {
   const [activeTab, setActiveTab] = useState("pending_tutors"); // "pending_tutors" | "update_requests"
@@ -9,24 +10,24 @@ export default function TutorApprovalPage() {
   const [updateRequests, setUpdateRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // States cho modal
+  // States quản lý modal & thao tác
   const [selectedTutor, setSelectedTutor] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  // Load danh sách dữ liệu
+  // Hàm tải dữ liệu chung dùng adminService
   const loadData = async () => {
     setIsLoading(true);
     try {
       if (activeTab === "pending_tutors") {
-        const response = await fetch("/api/admin-tutor-approval/pending");
-        const result = await response.json();
-        if (result.success) setPendingTutors(result.data || []);
+        const result = await adminService.getPendingTutors();
+        if (result?.success) {
+          setPendingTutors(result.data || []);
+        }
       } else {
-        const response = await fetch("http://localhost:3007/tutor_update_requests?status=pending");
-        const data = await response.json();
-        setUpdateRequests(data || []);
+        const result = await adminService.getUpdateRequests();
+        setUpdateRequests(result?.data || result || []);
       }
     } catch (error) {
       console.error("Lỗi tải dữ liệu:", error);
@@ -37,18 +38,20 @@ export default function TutorApprovalPage() {
 
   useEffect(() => {
     let ignore = false;
-    
+
     async function fetchData() {
       setIsLoading(true);
       try {
         if (activeTab === "pending_tutors") {
-          const response = await fetch("/api/admin-tutor-approval/pending");
-          const result = await response.json();
-          if (!ignore && result.success) setPendingTutors(result.data || []);
+          const result = await adminService.getPendingTutors();
+          if (!ignore && result?.success) {
+            setPendingTutors(result.data || []);
+          }
         } else {
-          const response = await fetch("http://localhost:3007/tutor_update_requests?status=pending");
-          const data = await response.json();
-          if (!ignore) setUpdateRequests(data || []);
+          const result = await adminService.getUpdateRequests();
+          if (!ignore) {
+            setUpdateRequests(result?.data || result || []);
+          }
         }
       } catch (error) {
         console.error("Lỗi tải dữ liệu:", error);
@@ -60,7 +63,7 @@ export default function TutorApprovalPage() {
     fetchData();
 
     return () => {
-      ignore = true; // Chống race-condition khi switch tab nhanh
+      ignore = true; // Ngăn chặn race-condition khi chuyển tab nhanh
     };
   }, [activeTab]);
 
@@ -69,21 +72,16 @@ export default function TutorApprovalPage() {
     if (!window.confirm(`Bạn có chắc muốn duyệt hồ sơ của ${tutor.full_name}?`)) return;
 
     try {
-      const response = await fetch("/api/admin-tutor-approval/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: tutor.user_id, tutorId: tutor.tutor_id }),
-      });
-      const result = await response.json();
-      if (result.success) {
+      const result = await adminService.approveTutor(tutor.user_id, tutor.tutor_id);
+      if (result?.success) {
         alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}.`);
         loadData();
         setSelectedTutor(null);
       } else {
-        alert(result.message || "Có lỗi xảy ra");
+        alert(result?.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      alert("Lỗi khi duyệt hồ sơ!");
+      alert(error?.message || "Lỗi khi duyệt hồ sơ!");
     }
   };
 
@@ -95,27 +93,22 @@ export default function TutorApprovalPage() {
     }
 
     try {
-      const response = await fetch("/api/admin-tutor-approval/reject", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: selectedTutor.user_id,
-          tutorId: selectedTutor.tutor_id,
-          reason: rejectReason,
-        }),
-      });
-      const result = await response.json();
-      if (result.success) {
+      const result = await adminService.rejectTutor(
+        selectedTutor.user_id,
+        selectedTutor.tutor_id,
+        rejectReason
+      );
+      if (result?.success) {
         alert(`❌ Đã từ chối hồ sơ của ${selectedTutor.full_name}.`);
         loadData();
         setSelectedTutor(null);
         setShowRejectModal(false);
         setRejectReason("");
       } else {
-        alert(result.message || "Có lỗi xảy ra");
+        alert(result?.message || "Có lỗi xảy ra");
       }
     } catch (error) {
-      alert("Lỗi khi từ chối hồ sơ!");
+      alert(error?.message || "Lỗi khi từ chối hồ sơ!");
     }
   };
 
@@ -125,22 +118,19 @@ export default function TutorApprovalPage() {
     if (!window.confirm(`Bạn có chắc muốn ${actionText} yêu cầu thay đổi này?`)) return;
 
     try {
-      const response = await fetch(`/api/admin-tutor-update-requests/${reqId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, reject_reason: status === "rejected" ? rejectReason : null }),
+      const result = await adminService.sendUpdateEvaluationRequest(reqId, {
+        status,
+        reject_reason: status === "rejected" ? rejectReason : null,
       });
-      const result = await response.json();
-      if (result.success) {
+      if (result?.success) {
         alert(`✅ Đã ${actionText} yêu cầu cập nhật thành công!`);
         loadData();
         setSelectedRequest(null);
-        setShowRejectModal(false);
       } else {
-        alert(result.message || "Thao tác thất bại");
+        alert(result?.message || "Thao tác thất bại");
       }
     } catch (error) {
-      alert("Có lỗi xảy ra khi xử lý yêu cầu!");
+      alert(error?.message || "Có lỗi xảy ra khi xử lý yêu cầu!");
     }
   };
 
@@ -175,7 +165,6 @@ export default function TutorApprovalPage() {
       ) : (
         <div>
           {activeTab === "pending_tutors" ? (
-            /* --- BẢNG DÂN SÁCH ĐĂNG KÝ MỚI --- */
             pendingTutors.length === 0 ? (
               <div className={styles.emptyState}>
                 <div className={styles.emptyIcon}>✅</div>
@@ -196,7 +185,7 @@ export default function TutorApprovalPage() {
                   </thead>
                   <tbody>
                     {pendingTutors.map((tutor) => (
-                      <tr key={tutor.user_id} className={styles.tableRow}>
+                      <tr key={tutor.user_id || tutor.id} className={styles.tableRow}>
                         <td className={styles.boldText}>{tutor.full_name}</td>
                         <td>{tutor.email}</td>
                         <td>{tutor.phone}</td>
@@ -242,7 +231,6 @@ export default function TutorApprovalPage() {
               </div>
             )
           ) : (
-            /* --- BẢNG YÊU CẦU CẬP NHẬT THÔNG TIN --- */
             updateRequests.length === 0 ? (
               <div className={styles.emptyState}>
                 <div className={styles.emptyIcon}>📝</div>
@@ -267,7 +255,9 @@ export default function TutorApprovalPage() {
                         <td className={styles.boldText}>#{req.id}</td>
                         <td>{req.tutor_id}</td>
                         <td>
-                          <span className={styles.badgeExpertise}>{req.new_data.expertise}</span>
+                          <span className={styles.badgeExpertise}>
+                            {req.new_data?.expertise || req.expertise || "N/A"}
+                          </span>
                         </td>
                         <td>{new Date(req.created_at).toLocaleString("vi-VN")}</td>
                         <td>
@@ -296,10 +286,7 @@ export default function TutorApprovalPage() {
       {/* ================= MODAL XEM CHI TIẾT HỒ SƠ ĐĂNG KÝ MỚI ================= */}
       {selectedTutor && !showRejectModal && (
         <div className={styles.modalOverlay} onClick={() => setSelectedTutor(null)}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setSelectedTutor(null)}>
               &times;
             </button>
@@ -368,13 +355,50 @@ export default function TutorApprovalPage() {
         </div>
       )}
 
-      {/* ================= MODAL ĐỐI CHIẾU DỮ LIỆU CỦ VS MỚI ================= */}
+      {/* ================= MODAL NHẬP LÝ DO TỪ CHỐI GIA SƯ MỚI ================= */}
+      {selectedTutor && showRejectModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowRejectModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setShowRejectModal(false)}>
+              &times;
+            </button>
+            <div className={styles.modalHeader}>
+              <h2>❌ Từ Chối Hồ Sơ: {selectedTutor.full_name}</h2>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.infoItem}>
+                <label>Vui lòng nhập lý do từ chối (Gửi thông báo đến gia sư):</label>
+                <textarea
+                  className={styles.textarea}
+                  rows={4}
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Nhập lý do chi tiết..."
+                />
+              </div>
+              <div className={styles.modalActions} style={{ marginTop: "20px" }}>
+                <button
+                  className={`${styles.btn} ${styles.btnDanger}`}
+                  onClick={handleRejectTutor}
+                >
+                  Xác nhận Từ chối
+                </button>
+                <button
+                  className={`${styles.btn} ${styles.btnSecondary}`}
+                  onClick={() => setShowRejectModal(false)}
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL ĐỐI CHIẾU DỮ LIỆU CŨ VS MỚI ================= */}
       {selectedRequest && (
         <div className={styles.modalOverlay} onClick={() => setSelectedRequest(null)}>
-          <div
-            className={`${styles.modalContent} ${styles.compareModal}`}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className={`${styles.modalContent} ${styles.compareModal}`} onClick={(e) => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setSelectedRequest(null)}>
               &times;
             </button>
@@ -390,61 +414,31 @@ export default function TutorApprovalPage() {
                   <h3 className={styles.colTitleOld}>Dữ Liệu Cũ</h3>
                   <div className={styles.infoItem}>
                     <label>Số điện thoại</label>
-                    <p
-                      className={
-                        selectedRequest.old_data.phone !== selectedRequest.new_data.phone
-                          ? styles.changedText
-                          : ""
-                      }
-                    >
-                      {selectedRequest.old_data.phone}
+                    <p className={selectedRequest.old_data?.phone !== selectedRequest.new_data?.phone ? styles.changedText : ""}>
+                      {selectedRequest.old_data?.phone}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Chuyên môn / Lĩnh vực</label>
-                    <p
-                      className={
-                        selectedRequest.old_data.expertise !== selectedRequest.new_data.expertise
-                          ? styles.changedText
-                          : ""
-                      }
-                    >
-                      {selectedRequest.old_data.expertise}
+                    <p className={selectedRequest.old_data?.expertise !== selectedRequest.new_data?.expertise ? styles.changedText : ""}>
+                      {selectedRequest.old_data?.expertise}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Kinh nghiệm</label>
-                    <p
-                      className={
-                        selectedRequest.old_data.experience !==
-                        selectedRequest.new_data.experience
-                          ? styles.changedText
-                          : ""
-                      }
-                    >
-                      {selectedRequest.old_data.experience}
+                    <p className={selectedRequest.old_data?.experience !== selectedRequest.new_data?.experience ? styles.changedText : ""}>
+                      {selectedRequest.old_data?.experience}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Giới thiệu (Bio)</label>
-                    <div
-                      className={`${styles.bioBox} ${
-                        selectedRequest.old_data.bio !== selectedRequest.new_data.bio
-                          ? styles.changedText
-                          : ""
-                      }`}
-                    >
-                      {selectedRequest.old_data.bio}
+                    <div className={`${styles.bioBox} ${selectedRequest.old_data?.bio !== selectedRequest.new_data?.bio ? styles.changedText : ""}`}>
+                      {selectedRequest.old_data?.bio}
                     </div>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Link CV</label>
-                    <a
-                      href={selectedRequest.old_data.cv_link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={styles.cvLink}
-                    >
+                    <a href={selectedRequest.old_data?.cv_link} target="_blank" rel="noreferrer" className={styles.cvLink}>
                       Xem CV cũ
                     </a>
                   </div>
@@ -455,121 +449,56 @@ export default function TutorApprovalPage() {
                   <h3 className={styles.colTitleNew}>Dữ Liệu Mới (Cần Duyệt)</h3>
                   <div className={styles.infoItem}>
                     <label>Số điện thoại</label>
-                    <p
-                      className={
-                        selectedRequest.old_data.phone !== selectedRequest.new_data.phone
-                          ? styles.highlightNew
-                          : ""
-                      }
-                    >
-                      {selectedRequest.new_data.phone}
+                    <p className={selectedRequest.old_data?.phone !== selectedRequest.new_data?.phone ? styles.highlightNew : ""}>
+                      {selectedRequest.new_data?.phone}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Chuyên môn / Lĩnh vực</label>
-                    <p
-                      className={
-                        selectedRequest.old_data.expertise !== selectedRequest.new_data.expertise
-                          ? styles.highlightNew
-                          : ""
-                      }
-                    >
-                      {selectedRequest.new_data.expertise}
+                    <p className={selectedRequest.old_data?.expertise !== selectedRequest.new_data?.expertise ? styles.highlightNew : ""}>
+                      {selectedRequest.new_data?.expertise}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Kinh nghiệm</label>
-                    <p
-                      className={
-                        selectedRequest.old_data.experience !==
-                        selectedRequest.new_data.experience
-                          ? styles.highlightNew
-                          : ""
-                      }
-                    >
-                      {selectedRequest.new_data.experience}
+                    <p className={selectedRequest.old_data?.experience !== selectedRequest.new_data?.experience ? styles.highlightNew : ""}>
+                      {selectedRequest.new_data?.experience}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Giới thiệu (Bio)</label>
-                    <div
-                      className={`${styles.bioBox} ${
-                        selectedRequest.old_data.bio !== selectedRequest.new_data.bio
-                          ? styles.highlightNew
-                          : ""
-                      }`}
-                    >
-                      {selectedRequest.new_data.bio}
+                    <div className={`${styles.bioBox} ${selectedRequest.old_data?.bio !== selectedRequest.new_data?.bio ? styles.highlightNew : ""}`}>
+                      {selectedRequest.new_data?.bio}
                     </div>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Link CV</label>
-                    <a
-                      href={selectedRequest.new_data.cv_link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={styles.cvLink}
-                    >
+                    <a href={selectedRequest.new_data?.cv_link} target="_blank" rel="noreferrer" className={styles.cvLink}>
                       Xem CV mới
                     </a>
                   </div>
                 </div>
               </div>
 
-              {/* Thao tác phê duyệt thay đổi */}
-              <div className={styles.modalActions}>
+              {/* Thao tác Duyệt / Từ chối yêu cầu cập nhật */}
+              <div className={styles.modalActions} style={{ marginTop: "20px" }}>
                 <button
                   className={`${styles.btn} ${styles.btnSuccess}`}
                   onClick={() => handleProcessUpdateRequest(selectedRequest.id, "approved")}
                 >
-                  Đồng ý cập nhật
+                  ✅ Phê duyệt thay đổi
                 </button>
                 <button
                   className={`${styles.btn} ${styles.btnDanger}`}
-                  onClick={() => handleProcessUpdateRequest(selectedRequest.id, "rejected")}
+                  onClick={() => {
+                    const reason = prompt("Nhập lý do từ chối yêu cầu thay đổi:");
+                    if (reason !== null) {
+                      setRejectReason(reason);
+                      handleProcessUpdateRequest(selectedRequest.id, "rejected");
+                    }
+                  }}
                 >
-                  Từ chối cập nhật
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal từ chối đăng ký mới */}
-      {showRejectModal && selectedTutor && (
-        <div className={styles.modalOverlay} onClick={() => setShowRejectModal(false)}>
-          <div
-            className={`${styles.modalContent} ${styles.rejectModal}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={styles.closeBtn} onClick={() => setShowRejectModal(false)}>
-              &times;
-            </button>
-            <div className={styles.modalHeader}>
-              <h2>❌ Từ chối hồ sơ</h2>
-            </div>
-            <div className={styles.modalBody}>
-              <div className={styles.rejectForm}>
-                <label>Lý do từ chối</label>
-                <select
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  className={styles.selectInput}
-                >
-                  <option value="">-- Chọn lý do --</option>
-                  <option value="Không đủ bằng cấp/chứng chỉ">Không đủ bằng cấp/chứng chỉ</option>
-                  <option value="Thông tin cá nhân không hợp lệ">Thông tin cá nhân không hợp lệ</option>
-                  <option value="Lý do khác">Lý do khác</option>
-                </select>
-              </div>
-              <div className={styles.modalActions}>
-                <button
-                  className={`${styles.btn} ${styles.btnDanger}`}
-                  onClick={handleRejectTutor}
-                  disabled={!rejectReason}
-                >
-                  Xác nhận
+                  ❌ Từ chối thay đổi
                 </button>
               </div>
             </div>

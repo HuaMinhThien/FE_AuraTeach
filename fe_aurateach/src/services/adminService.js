@@ -57,4 +57,64 @@ export const adminService = {
     const response = await apiClient.get('/admin/classes-management');
     return response.data !== undefined ? response.data : response;
   },
+
+  approveTutor: async (userId, tutorId) => {
+    if (!userId || !tutorId) {
+      throw new Error("Thiếu thông tin userId hoặc tutorId");
+    }
+    // Gọi trực tiếp đến endpoint Laravel xử lý việc duyệt gia sư
+    // Hoặc bạn có thể dùng chung hàm updateTutorStatus nếu backend thiết kế gộp chung
+    const response = await apiClient.post('/admin/tutors/approve', { 
+      userId, 
+      tutorId 
+    });
+    return response;
+  },
+
+  deleteRejectedTutor: async (userId, tutorId) => {
+    if (!userId || !tutorId) {
+      throw new Error("Thiếu thông tin userId hoặc tutorId");
+    }
+    // Sử dụng phương thức DELETE với body bằng cách truyền vào options.body thông qua apiClient
+    // Hoặc điều chỉnh apiClient nếu bạn hỗ trợ truyền data trong DELETE. 
+    // Dưới đây dùng cách cấu hình chuẩn thông qua endpoint hoặc body tùy chỉnh.
+    const response = await apiClient.delete('/admin/tutors/delete-rejected', {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      // Lưu ý: Nếu apiClient của bạn chưa hỗ trợ gửi body trong DELETE, 
+      // bạn có thể đổi thành apiClient.post hoặc truyền qua params/body tùy thiết kế Laravel.
+    });
+    return response;
+  },
+
+  getPendingTutors: async () => {
+    const response = await apiClient.get('/admin/tutors/pending');
+    return response.data !== undefined ? response.data : response;
+  },
+
+  rejectTutor: async (userId, tutorId, reason) => {
+    if (!userId || !tutorId) {
+      throw new Error("Thiếu thông tin userId hoặc tutorId");
+    }
+    if (!reason || !reason.trim()) {
+      throw new Error("Vui lòng nhập lý do từ chối");
+    }
+
+    const response = await apiClient.post('/admin/tutors/reject', {
+      userId,
+      tutorId,
+      reason: reason.trim()
+    });
+    return response;
+  },
+
+  getPayoutRequests: async () => {
+    return await apiClient.get('/admin-tutor-payout-requests');
+  },
+
+  // --- Cập nhật trạng thái yêu cầu rút tiền (Duyệt / Từ chối kèm lý do) ---
+  updatePayoutRequestStatus: async (payload) => {
+    return await apiClient.patch('/admin-tutor-payout-requests', payload);
+  },
 };

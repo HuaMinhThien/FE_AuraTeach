@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE_URL =  "http://localhost:8000/api";
 
 const getHeaders = (customHeaders = {}, isFormData = false) => {
   const token = localStorage.getItem("access_token");
@@ -89,13 +89,18 @@ const apiClient = {
   },
 
   // Phương thức DELETE
-  delete: async (endpoint, options = {}) => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  delete: async (endpoint, body = null, options = {}) => {
+    const config = {
       method: "DELETE",
       headers: getHeaders(options.headers),
-    });
+    };
+    if (body) {
+      config.body = JSON.stringify(body);
+      config.headers["Content-Type"] = "application/json";
+    }
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     return handleResponse(response);
-  }
+  },
 };
 
 export default apiClient;

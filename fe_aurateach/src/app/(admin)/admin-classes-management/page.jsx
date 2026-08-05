@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { adminService } from '@/services/adminService'; // 👈 Import adminService (điều chỉnh đường dẫn phù hợp với project của bạn)
+import { adminService } from '@/services/adminService';
 import styles from './AdminClassesManagement.module.css';
 
 export default function AdminClassesManagement() {
@@ -19,10 +19,8 @@ export default function AdminClassesManagement() {
 
     const fetchData = async () => {
       try {
-        // 🚀 Gọi API thông qua adminService
         const response = await adminService.getClassesManagementData();
         
-        // Tùy thuộc vào cấu trúc trả về của API Laravel (response.data hoặc trực tiếp response)
         const resultData = response.data !== undefined ? response.data : response;
 
         if (isMounted && (resultData.success || resultData)) {
@@ -47,6 +45,15 @@ export default function AdminClassesManagement() {
       isMounted = false;
     };
   }, []);
+
+  // 🔍 Theo dõi sự thay đổi của selectedCourse ở đây (sau khi đã được gán giá trị)
+  useEffect(() => {
+    if (selectedCourse) {
+      console.log("Dữ liệu khóa học nhận từ API (selectedCourse):", selectedCourse);
+      console.log("Mảng schedules:", selectedCourse?.schedules);
+      console.log("schedule_days:", selectedCourse?.schedule_days);
+    }
+  }, [selectedCourse]);
 
   // Tra cứu thông tin gia sư
   const getTutorInfo = (tutorId) => {
@@ -141,10 +148,9 @@ export default function AdminClassesManagement() {
               <p><strong>Học phí:</strong> {selectedCourse.hourly_rate?.toLocaleString()} VNĐ/giờ</p>
               <p>
                 <strong>Lịch học:</strong>{' '}
-                {Array.isArray(selectedCourse.schedule_days)
-                  ? selectedCourse.schedule_days.join(', ')
-                  : selectedCourse.schedule_days}{' '}
-                ({selectedCourse.time_slot})
+                {Array.isArray(selectedCourse.schedules) && selectedCourse.schedules.length > 0
+                  ? selectedCourse.schedules.map(item => `${item.day_of_week} (${item.time_slot})`).join(', ')
+                  : 'Chưa có lịch học'}
               </p>
               <p><strong>Gia sư đảm nhận:</strong> {getTutorInfo(selectedCourse.tutor_id).full_name}</p>
             </div>
