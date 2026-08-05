@@ -22,16 +22,27 @@ const DEFAULT_IMAGES = [
   "/img/class/default-class-10.png",
 ];
 
+const PRICE_LIMITS = {
+  greaterThan3: { // Lớp >= 3 học sinh
+    "Cấp 1": { min: 100000, max: 150000, label: "100.000đ - 150.000đ / giờ" },
+    "Cấp 2": { min: 150000, max: 300000, label: "150.000đ - 300.000đ / giờ" },
+    "Cấp 3": { min: 250000, max: 500000, label: "250.000đ - 500.000đ / giờ" },
+  },
+  lessThan3: { // Lớp < 3 học sinh
+    "Cấp 1": { min: 200000, max: 350000, label: "200.000đ - 350.000đ / giờ" },
+    "Cấp 2": { min: 300000, max: 500000, label: "300.000đ - 500.000đ / giờ" },
+    "Cấp 3": { min: 450000, max: 1000000, label: "450.000đ - 1.000.000đ / giờ" },
+  },
+};
+
 export default function CreateClassPage() {
   const router = useRouter();
 
-  // --- State Kiểm soát Quyền Tạo Lớp & Danh mục ---
   const [isPermissionChecked, setIsPermissionChecked] = useState(false);
   const [isAllowed, setIsAllowed] = useState(false);
   const [allowedCategories, setAllowedCategories] = useState([]);
   const [tutorId, setTutorId] = useState("");
 
-  // --- Các State quản lý dữ liệu Form ---
   const [className, setClassName] = useState("");
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("Cấp 2");
@@ -39,38 +50,39 @@ export default function CreateClassPage() {
   const [maxStudents, setMaxStudents] = useState(15);
   const [hourlyRate, setHourlyRate] = useState(150000);
   
-  // State quản lý link Google Meet
   const [meetLink, setMeetLink] = useState("");
   const [meetError, setMeetError] = useState("");
 
-  // State danh mục động nạp từ API
   const [categoriesList, setCategoriesList] = useState([]);
 
-  // State về Thời gian & Lịch học
   const [startDate, setStartDate] = useState("");
   const [totalWeeks, setTotalWeeks] = useState(12);
   const [selectedDays, setSelectedDays] = useState([]);
   const [startTime, setStartTime] = useState("18:00");
   const [endTime, setEndTime] = useState("20:00");
 
-  // State quản lý ảnh đại diện lớp học
   const [selectedImage, setSelectedImage] = useState(DEFAULT_IMAGES[0]);
   const [customImage, setCustomImage] = useState(null);
 
-  // State trạng thái hệ thống
   const [conflictMessage, setConflictMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
 
-  // =========================================================================
-  // 1. TỐI ƯU: GOM CHUNG KHỞI TẠO (Lấy Categories + Check Quyền Gia Sư Song Song)
-  // =========================================================================
+  const numStudents = parseInt(maxStudents || 0);
+  const currentPriceConfig = numStudents >= 3 
+    ? PRICE_LIMITS.greaterThan3[level] 
+    : PRICE_LIMITS.lessThan3[level];
+
+  const currentRate = parseInt(hourlyRate || 0);
+  const priceError = (currentPriceConfig && (currentRate < currentPriceConfig.min || currentRate > currentPriceConfig.max))
+    ? `⚠️ Mức phí cho ${level} (${numStudents >= 3 ? "Lớp ≥ 3 HS" : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`
+    : "";
+
   useEffect(() => {
     let isMounted = true;
 
     const initializePage = async () => {
       try {
-        // Kiểm tra cookie đăng nhập
         const cookies = document.cookie.split("; ");
         const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
 
@@ -88,14 +100,16 @@ export default function CreateClassPage() {
           return;
         }
 
-        // Gọi song song API lấy danh mục môn học và thông tin gia sư
         const [categoriesData, tutorsData] = await Promise.all([
           categoryService.getCategories(),
           tutorService.getByUserId(userInfo.user_id),
         ]);
 
-        if (isMounted && categoriesData) {
-          setCategoriesList(categoriesData);
+        if (isMounted) {
+          const categoriesArray = Array.isArray(categoriesData) 
+            ? categoriesData 
+            : categoriesData?.data || categoriesData?.categories || [];
+          setCategoriesList(categoriesArray);
         }
 
         const tutor = Array.isArray(tutorsData) ? tutorsData[0] : tutorsData;
@@ -110,12 +124,9 @@ export default function CreateClassPage() {
 
         if (isMounted) {
           setTutorId(tutor.tutor_id || tutor.id);
-
-          // Xử lý tách chuyên môn gia sư
           const registeredExpertise = tutor.expertise
             ? tutor.expertise.split(",").map((exp) => exp.trim().toLowerCase())
             : [];
-
           setAllowedCategories(registeredExpertise);
           setIsAllowed(true);
         }
@@ -169,9 +180,6 @@ export default function CreateClassPage() {
     endDate = end.toISOString().split("T")[0];
   }
 
-  // =========================================================================
-  // 2. useEffect RIÊNG: Kiểm tra trùng lịch Real-time (Chỉ chạy khi lịch thay đổi)
-  // =========================================================================
   useEffect(() => {
     const checkScheduleConflict = async () => {
       if (!startDate || !endDate || selectedDays.length === 0 || !startTime || !endTime || !tutorId) {
@@ -241,7 +249,36 @@ export default function CreateClassPage() {
     }
   };
 
-  // Submit tạo khóa học / lớp học
+  const calculateHoursPerSession = () => {
+    if (!startTime || !endTime) return 0;
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const durationInMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+    return durationInMinutes / 60;
+  };
+
+  const hoursPerSession = calculateHoursPerSession();
+
+  const getTimeError = () => {
+    if (!startTime || !endTime) return "";
+    if (startTime < "07:00" || startTime > "23:00" || endTime < "07:00" || endTime > "23:00") {
+      return "⚠️ Thời gian học chỉ được phép chọn trong khoảng từ 07:00 sáng đến 23:00 đêm.";
+    }
+    if (hoursPerSession < 1) {
+      return "⚠️ Thời gian buổi học phải kéo dài tối thiểu 1 tiếng (60 phút).";
+    }
+    return "";
+  };
+
+  const timeError = getTimeError();
+
+  const pricePerHour = parseInt(hourlyRate || 0);
+  const costPerSession = (hoursPerSession > 0 ? hoursPerSession : 0) * pricePerHour;
+  const daysPerWeekCount = selectedDays.length;
+  const totalWeeksCount = parseInt(totalWeeks || 0);
+  const totalCourseSessions = daysPerWeekCount * totalWeeksCount;
+  const totalCourseCost = costPerSession * totalCourseSessions;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -252,6 +289,16 @@ export default function CreateClassPage() {
 
     if (!category) {
       alert("⚠️ Vui lòng chọn môn học được phép dạy!");
+      return;
+    }
+
+    if (priceError) {
+      alert("⚠️ Học phí nhập vào không nằm trong khoảng giá quy định. Vui lòng kiểm tra lại!");
+      return;
+    }
+
+    if (timeError) {
+      alert(timeError);
       return;
     }
     
@@ -293,7 +340,7 @@ export default function CreateClassPage() {
       title: className,           
       category_id: category,    
       level,                        
-      description,                  
+      description,                    
       max_students: parseInt(maxStudents),
       hourly_rate: parseInt(hourlyRate),
       start_date: startDate,
@@ -338,7 +385,6 @@ export default function CreateClassPage() {
     return null;
   }
 
-  // Lọc danh sách danh mục theo chuyên môn
   const filteredCategories = categoriesList.filter((cat) => {
     const catName = cat.category_name.toLowerCase();
 
@@ -396,14 +442,14 @@ export default function CreateClassPage() {
                   required
                 >
                   <option value="">-- Chọn môn học dạy --</option>
-                  {filteredCategories.length > 0 ? (
+                  {filteredCategories && filteredCategories.length > 0 ? (
                     filteredCategories.map((cat) => (
                       <option key={cat.category_id} value={cat.category_id}>
                         {cat.category_name}
                       </option>
                     ))
                   ) : (
-                    <option value="" disabled>
+                    <option value="no-category" disabled>
                       Chưa có chuyên môn hợp lệ được phê duyệt
                     </option>
                   )}
@@ -449,11 +495,17 @@ export default function CreateClassPage() {
                 <input 
                   type="number" 
                   step="10000"
-                  min="0"
+                  min={currentPriceConfig?.min}
+                  max={currentPriceConfig?.max}
                   value={hourlyRate}
                   onChange={(e) => setHourlyRate(e.target.value)}
                   required
                 />
+                {priceError && (
+                  <p className={styles.errorAlert} style={{ marginTop: "6px", fontSize: "13px", padding: "8px 12px" }}>
+                    {priceError}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -476,7 +528,7 @@ export default function CreateClassPage() {
               <div className={styles.defaultGrid}>
                 {DEFAULT_IMAGES.map((imgSrc, index) => (
                   <div 
-                    key={index} 
+                    key={index}
                     className={`${styles.imgWrapper} ${selectedImage === imgSrc ? styles.selectedImg : ""}`}
                     onClick={() => setSelectedImage(imgSrc)}
                   >
@@ -547,13 +599,15 @@ export default function CreateClassPage() {
             </div>
 
             <div className={styles.timePickerContainer}>
-              <label className={styles.subLabel}>Chọn mốc thời gian bắt đầu và kết thúc (Tối thiểu 2 tiếng / buổi)</label>
+              <label className={styles.subLabel}>Chọn mốc thời gian bắt đầu và kết thúc (Từ 07:00 đến 23:00, tối thiểu 1 tiếng / buổi)</label>
               
               <div className={styles.timePickerRow}>
                 <div className={styles.timeInputWrapper}>
                   <span className={styles.timeInputIcon}>Từ:</span>
                   <input 
-                    type="time" 
+                    type="time"
+                    min="07:00"
+                    max="23:00"
                     value={startTime} 
                     onChange={(e) => setStartTime(e.target.value)} 
                     className={styles.timeInput}
@@ -566,6 +620,8 @@ export default function CreateClassPage() {
                   <span className={styles.timeInputIcon}>Đến:</span>
                   <input 
                     type="time" 
+                    min="07:00"
+                    max="23:00"
                     value={endTime} 
                     onChange={(e) => setEndTime(e.target.value)} 
                     className={styles.timeInput}
@@ -574,21 +630,63 @@ export default function CreateClassPage() {
               </div>
             </div>
 
+            {timeError && (
+              <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "13px", padding: "8px 12px" }}>
+                {timeError}
+              </p>
+            )}
+
             {conflictMessage && <div className={styles.errorAlert}>{conflictMessage}</div>}
           </section>
         </div>
 
+        {/* CỘT PHẢI: Đã chỉnh sửa cấu trúc thẻ đóng đúng vị trí */}
         <div className={styles.rightColumn}>
           <div className={styles.stickyWrapper}>
             <div className={styles.feeEstimateCard}>
               <h3>💵 Học phí dự kiến</h3>
-              <p>Mức giá này được hiển thị công khai cho phụ huynh và học sinh khi thực hiện đăng ký tìm kiếm giảng viên.</p>
+              <p className={styles.feeSubHeader}>Mức giá này được hiển thị công khai cho phụ huynh và học sinh khi thực hiện đăng ký tìm kiếm giảng viên.</p>
               <div className={styles.feeDisplay}>
                 <span className={styles.feeLabel}>Mức phí mỗi giờ:</span>
-                <span className={styles.feeValue}>{parseInt(hourlyRate || 0).toLocaleString("vi-VN")}đ/ giờ</span>
+                <span className={styles.feeValue}>{pricePerHour.toLocaleString("vi-VN")}đ / giờ</span>
               </div>
-              <p className={styles.feeFootnote}>ℹ️ Mức phí tự điền này đảm bảo tính chủ động và tối ưu thu nhập theo đúng năng lực kinh nghiệm.</p>
+
+              <div className={styles.suggestedBox}>
+                <div className={styles.suggestedTitle}>
+                  💡 Khung giá cho phép ({level} - {numStudents >= 3 ? "Lớp ≥ 3 học sinh" : "Lớp < 3 học sinh"}):
+                </div>
+                <div className={styles.suggestedValue}>
+                  {currentPriceConfig?.label}
+                </div>
+              </div>
             </div>
+
+            <div className={styles.calculationSection}>
+              <div className={styles.calcRow}>
+                <span className={styles.calcLabel}>Thời lượng 1 buổi:</span>
+                <span className={styles.calcValue}>{hoursPerSession >= 1 ? `${hoursPerSession} tiếng` : "Chưa hợp lệ (< 1h)"}</span>
+              </div>
+              <div className={styles.calcRow}>
+                <span className={styles.calcLabel}>Thành tiền / Buổi:</span>
+                <span className={styles.calcValueHighlight}>{costPerSession.toLocaleString("vi-VN")}đ / buổi</span>
+              </div>
+              
+              <div className={styles.calcRow}>
+                <span className={styles.calcLabel}>Tổng số buổi học:</span>
+                <span className={styles.calcValue}>{totalCourseSessions} buổi ({daysPerWeekCount} buổi/tuần × {totalWeeksCount} tuần)</span>
+              </div>
+
+              <div className={styles.totalRow}>
+                <span className={styles.totalLabel}>Tổng tiền cả lớp:</span>
+                <span className={styles.totalValue}>
+                  {totalCourseCost > 0 ? `${totalCourseCost.toLocaleString("vi-VN")}đ` : "0đ"}
+                </span>
+              </div>
+            </div>
+
+            <p className={styles.feeFootnote}>
+              ℹ️ Mức phí tự điền phải nằm trong khung quy định nhằm đảm bảo cân bằng thị trường gia sư.
+            </p>
 
             <div className={styles.tipsCard}>
               <h4>💡 Mẹo dành cho bạn</h4>
@@ -601,7 +699,7 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || filteredCategories.length === 0}
+              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || filteredCategories.length === 0 || !!priceError || !!timeError}
             >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tạo lớp ➔"}
             </button>
