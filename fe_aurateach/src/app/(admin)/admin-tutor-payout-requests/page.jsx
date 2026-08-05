@@ -29,6 +29,12 @@ export default function AdminPayoutRequestsPage() {
   const [message, setMessage] = useState(null);
   const [adminId, setAdminId] = useState('admin_system');
 
+  // Filter & Search States
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   // Modal states
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectingRequest, setRejectingRequest] = useState(null);
@@ -140,6 +146,46 @@ export default function AdminPayoutRequestsPage() {
     }
   };
 
+  // Logic lọc danh sách theo Trạng thái, Tìm kiếm tên/mã và Ngày tháng
+  const filteredRequests = requests.filter((req) => {
+    // 1. Lọc theo trạng thái
+    if (statusFilter !== 'all' && req.status !== statusFilter) {
+      return false;
+    }
+
+    // 2. Tìm kiếm theo Tên gia sư hoặc Mã yêu cầu
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      const matchName = req.tutor_name?.toLowerCase().includes(term);
+      const matchCode = req.request_code?.toLowerCase().includes(term);
+      if (!matchName && !matchCode) return false;
+    }
+
+    // 3. Lọc theo Ngày gửi yêu cầu (created_at)
+    if (startDate) {
+      const reqDate = new Date(req.created_at);
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (reqDate < start) return false;
+    }
+
+    if (endDate) {
+      const reqDate = new Date(req.created_at);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      if (reqDate > end) return false;
+    }
+
+    return true;
+  });
+
+  const resetFilters = () => {
+    setStatusFilter('all');
+    setSearchTerm('');
+    setStartDate('');
+    setEndDate('');
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -197,7 +243,60 @@ export default function AdminPayoutRequestsPage() {
 
       {/* Bảng danh sách yêu cầu rút tiền */}
       <div className={styles.tableCard}>
-        <h3>Danh sách yêu cầu rút tiền</h3>
+        <div className={styles.tableCardHeader}>
+          <h3>Danh sách yêu cầu rút tiền</h3>
+
+          {/* Thanh Bộ Lọc & Tìm Kiếm */}
+          <div className={styles.filterBar}>
+            {/* 1. Lọc theo trạng thái */}
+            <select
+              className={styles.selectFilter}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="pending">⏳ Chờ duyệt</option>
+              <option value="approved">✅ Đã duyệt</option>
+              <option value="rejected">❌ Từ chối</option>
+            </select>
+
+            {/* 2. Tìm kiếm theo tên / mã */}
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder=" Tìm theo tên gia sư, mã YC..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            {/* 3. Lọc theo ngày */}
+            <div className={styles.dateGroup}>
+              <input
+                type="date"
+                className={styles.dateInput}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                title="Từ ngày"
+              />
+              <span className={styles.dateSeparator}>-</span>
+              <input
+                type="date"
+                className={styles.dateInput}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                title="Đến ngày"
+              />
+            </div>
+
+            {/* Nút Xóa Lọc */}
+            {(statusFilter !== 'all' || searchTerm || startDate || endDate) && (
+              <button className={styles.resetFilterBtn} onClick={resetFilters}>
+                🔄 Xóa lọc
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
@@ -210,7 +309,7 @@ export default function AdminPayoutRequestsPage() {
               </tr>
             </thead>
             <tbody>
-              {requests.map((req) => (
+              {filteredRequests.map((req) => (
                 <tr key={req.id}>
                   <td>
                     <div className={styles.tutorCell}>
@@ -240,7 +339,7 @@ export default function AdminPayoutRequestsPage() {
                       <span className={`${styles.statusBadge} ${styles.statusApproved}`}>✅ Đã duyệt</span>
                     )}
                     {req.status === 'rejected' && (
-                      <span className={`${styles.statusBadge} ${styles.statusRejected}`}> Từ chối</span>
+                      <span className={`${styles.statusBadge} ${styles.statusRejected}`}>❌ Từ chối</span>
                     )}
                   </td>
                   <td>
@@ -259,17 +358,17 @@ export default function AdminPayoutRequestsPage() {
                         }}
                         disabled={req.status !== 'pending'}
                       >
-                         Từ chối
+                        ❌ Từ chối
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
 
-              {requests.length === 0 && (
+              {filteredRequests.length === 0 && (
                 <tr>
                   <td colSpan={5} className={styles.emptyCell}>
-                    Chưa có yêu cầu rút tiền nào
+                    Không tìm thấy yêu cầu rút tiền nào phù hợp
                   </td>
                 </tr>
               )}
@@ -360,7 +459,7 @@ export default function AdminPayoutRequestsPage() {
         <div className={styles.modalOverlay} onClick={() => setRejectingRequest(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3 style={{ color: '#dc2626' }}> Từ chối yêu cầu rút tiền</h3>
+              <h3 style={{ color: '#dc2626' }}>❌ Từ chối yêu cầu rút tiền</h3>
               <button className={styles.modalClose} onClick={() => setRejectingRequest(null)}>✕</button>
             </div>
 
@@ -392,7 +491,7 @@ export default function AdminPayoutRequestsPage() {
                 onClick={handleReject}
                 disabled={processing || !rejectReason.trim()}
               >
-                {processing ? <span className={styles.spinner}></span> : ' Xác nhận Từ chối'}
+                {processing ? <span className={styles.spinner}></span> : '❌ Xác nhận Từ chối'}
               </button>
             </div>
           </div>
