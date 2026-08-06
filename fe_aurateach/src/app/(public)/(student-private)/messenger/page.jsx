@@ -8,9 +8,11 @@ import ConversationList from "./_components/ConversationList";
 import ChatWindow from "./_components/ChatWindow";
 import WelcomeBanner from "./_components/WelcomeBanner";
 import { authService } from "@/services/authService";
+import { userService } from "@/services/userService";
+import { tutorService } from "@/services/tutorService";
+import { conversationService } from "@/services/conversationService";
+import { messageService } from "@/services/messageService";
 import styles from "./page.module.css";
-
-const API_BASE = "http://localhost:3007";
 
 function MessengerContent() {
   const router = useRouter();
@@ -27,6 +29,7 @@ function MessengerContent() {
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+
   const pollingRef = useRef(null);
   const isInitialLoadRef = useRef(true);
   const isSendingRef = useRef(false);
@@ -51,16 +54,15 @@ function MessengerContent() {
         console.log("📡 User ID:", userId);
         
         if (!userId) {
-          console.error("❌ Không tìm thấy user_id trong cookie");
           setError("Không tìm thấy thông tin người dùng");
           setLoading(false);
           return;
         }
         
         await fetchConversations(userId);
-      } catch (error) {
-        console.error("❌ Lỗi tải messenger:", error);
-        setError(error.message);
+      } catch (err) {
+        console.error("❌ Lỗi tải messenger:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -69,7 +71,6 @@ function MessengerContent() {
 
     return () => {
       if (pollingRef.current) {
-        console.log("🧹 Cleanup: Stop polling");
         clearInterval(pollingRef.current);
         pollingRef.current = null;
         isPollingActiveRef.current = false;
@@ -78,10 +79,9 @@ function MessengerContent() {
   }, [router]);
 
   useEffect(() => {
-    if (conversations.length > 0 && conversationIdFromUrl) {
+    if (conversations.length > 0 && conversationIdFromUrl && !hasUrlBeenHandledRef.current) {
       const targetConv = conversations.find(c => c.id === conversationIdFromUrl);
       if (targetConv) {
-        console.log("📌 Selecting conversation from URL:", targetConv);
         hasUrlBeenHandledRef.current = true;
         handleSelectConversation(targetConv);
       }
@@ -90,43 +90,43 @@ function MessengerContent() {
 
   const fetchConversations = async (userId) => {
     try {
-      console.log(`📡 Fetching conversations for: ${userId}`);
-      const res = await fetch(`${API_BASE}/conversations`);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const allConversations = await res.json();
+      const allConversations = await conversationService.getConversations();
       if (!Array.isArray(allConversations)) {
         setConversations([]);
         return;
       }
-      const tutorsRes = await fetch(`${API_BASE}/tutors`);
-      const allTutors = await tutorsRes.json();
+
+      const allTutors = await tutorService.getTutors();
       const tutorToUserMap = {};
       const userToTutorMap = {};
-      if (Array.isArray(allTutors)) {
-        allTutors.forEach(t => {
-          if (t.tutor_id && t.user_id) {
-            tutorToUserMap[t.tutor_id] = t.user_id;
-            userToTutorMap[t.user_id] = t.tutor_id;
-          }
-        });
-      }
+      
+      const tutorsList = Array.isArray(allTutors) ? allTutors : (allTutors.data || []);
+      tutorsList.forEach(t => {
+        if (t.tutor_id && t.user_id) {
+          tutorToUserMap[t.tutor_id] = t.user_id;
+          userToTutorMap[t.user_id] = t.tutor_id;
+        }
+      });
+
       const myIds = [userId];
       if (userToTutorMap[userId]) {
         myIds.push(userToTutorMap[userId]);
       }
+
       const userConversations = allConversations.filter(conv => {
         if (!conv.participants) return false;
         return conv.participants.some(p => myIds.includes(p));
       });
+
       if (userConversations.length === 0) {
         setConversations([]);
         setUnreadCount(0);
         return;
       }
+
       const totalUnread = userConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
       setUnreadCount(totalUnread);
+
       const convWithUsers = await Promise.all(
         userConversations.map(async (conv) => {
           const otherParticipantId = conv.participants.find(p => !myIds.includes(p));
@@ -134,9 +134,10 @@ function MessengerContent() {
           if (tutorToUserMap[otherParticipantId]) {
             lookupUserId = tutorToUserMap[otherParticipantId];
           }
+
           try {
-            const userRes = await fetch(`${API_BASE}/users?user_id=${lookupUserId}`);
-            const users = await userRes.json();
+            const userRes = await userService.getUsers({ user_id: lookupUserId });
+            const users = Array.isArray(userRes) ? userRes : (userRes.data || []);
             const otherUser = users[0] || { 
               full_name: "Người dùng", 
               avatar: "/img/default-avatar.svg",
@@ -154,6 +155,7 @@ function MessengerContent() {
       );
       setConversations(convWithUsers);
     } catch (error) {
+      console.error("Lỗi lấy danh sách hội thoại:", error);
       setConversations([]);
     }
   };
@@ -178,24 +180,23 @@ function MessengerContent() {
   const fetchMessages = async (conversationId, resetOffset = true) => {
     let messagesToUse = null;
     try {
-      const res = await fetch(
-        `${API_BASE}/messages?conversation_id=${conversationId}&_sort=created_at&_order=asc`
-      );
-      const data = await res.json();
+      const data = await messageService.getMessages(conversationId);
       if (data && data.length > 0) {
         messagesToUse = data;
         saveMessagesToLocal(conversationId, data);
         lastMessageCountRef.current = data.length;
       }
     } catch (error) {
-      console.error("❌ Lỗi lấy tin nhắn:", error);
+      console.error("❌ Lỗi lấy tin nhắn từ API:", error);
     }
+
     if (!messagesToUse || messagesToUse.length === 0) {
       const localMessages = loadMessagesFromLocal(conversationId);
       if (localMessages && localMessages.length > 0) {
         messagesToUse = localMessages;
       }
     }
+
     if (messagesToUse && messagesToUse.length > 0) {
       if (resetOffset) {
         setMessages(messagesToUse);
@@ -224,10 +225,13 @@ function MessengerContent() {
   const sendMessage = async (content) => {
     if (!selectedConversation || !user) return;
     if (isSendingRef.current) return;
+    
     const isFile = typeof content === 'object' && content.file_data;
     if (!isFile && !content.trim()) return;
+
     isSendingRef.current = true;
     setSending(true);
+
     try {
       const senderId = user.user_id || user.id;
       const receiverId = selectedConversation.other_user_id;
@@ -248,33 +252,27 @@ function MessengerContent() {
           file_data: content.file_data,
         } : {}),
       };
+
       setMessages(prev => {
         const updated = [...prev, newMessage];
         saveMessagesToLocal(selectedConversation.id, updated);
         return updated;
       });
-      const res = await fetch(`${API_BASE}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMessage),
+
+      const savedMsg = await messageService.sendMessage(newMessage);
+      
+      setMessages(prev => {
+        const updated = prev.map(m => m.id === newMessage.id ? (savedMsg || newMessage) : m);
+        saveMessagesToLocal(selectedConversation.id, updated);
+        return updated;
       });
-      if (res.ok) {
-        const savedMsg = await res.json();
-        setMessages(prev => {
-          const updated = prev.map(m => m.id === newMessage.id ? savedMsg : m);
-          saveMessagesToLocal(selectedConversation.id, updated);
-          return updated;
-        });
-        await fetch(`${API_BASE}/conversations/${selectedConversation.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            last_message: isFile ? `📎 ${content.file_name}` : content.trim(),
-            last_message_time: new Date().toISOString(),
-            unread_count: 1,
-          }),
-        });
-      }
+
+      await messageService.updateConversation(selectedConversation.id, {
+        last_message: isFile ? `📎 ${content.file_name}` : content.trim(),
+        last_message_time: new Date().toISOString(),
+        unread_count: 1,
+      });
+
     } catch (error) {
       alert("Không thể gửi tin nhắn. Vui lòng thử lại.");
     } finally {
@@ -296,11 +294,7 @@ function MessengerContent() {
 
   const markAsRead = async (conversationId) => {
     try {
-      await fetch(`${API_BASE}/conversations/${conversationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ unread_count: 0 }),
-      });
+      await messageService.updateConversation(conversationId, { unread_count: 0 });
       setConversations(prev => prev.map(conv => conv.id === conversationId ? { ...conv, unread_count: 0 } : conv));
       const conv = conversations.find(c => c.id === conversationId);
       if (conv) {
@@ -318,16 +312,14 @@ function MessengerContent() {
       isPollingActiveRef.current = false;
     }
     if (!selectedConversation) return;
+
     isPollingActiveRef.current = true;
     const fetchNewMessages = async () => {
       if (!isPollingActiveRef.current) return;
       try {
-        const res = await fetch(
-          `${API_BASE}/messages?conversation_id=${selectedConversation.id}&_sort=created_at&_order=asc`
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.length === 0) return;
+        const data = await messageService.getMessages(selectedConversation.id);
+        if (!data || data.length === 0) return;
+
         setMessages(prev => {
           const currentIds = prev.map(m => m.id);
           const newMessages = data.filter(m => !currentIds.includes(m.id));
@@ -337,6 +329,7 @@ function MessengerContent() {
           if (prev.length === 0 && data.length > 0) return data;
           return prev;
         });
+
         if (data.length > 0) {
           const latestMsg = data[data.length - 1];
           setConversations(prev => prev.map(c => c.id === selectedConversation.id ? { ...c, last_message: latestMsg.content, last_message_time: latestMsg.created_at } : c));
@@ -345,8 +338,10 @@ function MessengerContent() {
         console.error("❌ Polling error:", error);
       }
     };
+
     fetchNewMessages();
     pollingRef.current = setInterval(fetchNewMessages, 3000);
+
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);

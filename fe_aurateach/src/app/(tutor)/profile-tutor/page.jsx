@@ -5,7 +5,6 @@ import styles from "./TutorProfile.module.css";
 import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
 import { categoryService } from "@/services/categoryService";
-import { adminService } from '@/services/adminService';
 
 const getUserIdFromCookie = () => {
   try {
@@ -133,19 +132,18 @@ export default function TutorProfile() {
 
           // 🛡️ Chỉ gọi API check update nếu có ID và chưa từng gọi trước đó
           if (currentTutorId && !sessionStorage.getItem(requestKey)) {
-            // Đánh dấu đã gọi ngay lập tức trước khi await để chặn các request song song/dồn dập
             sessionStorage.setItem(requestKey, "true"); 
 
             try {
-              const checkData = await adminService.getUpdateRequests(currentTutorId);
+              // 🛠️ Sửa từ adminService thành tutorService
+              const checkData = await tutorService.checkPendingUpdate(currentTutorId);
               
               if (isMounted && checkData?.success && checkData?.hasPending) {
                 setHasPendingRequest(true);
               }
             } catch (apiErr) {
-              // Nếu lỗi thì xóa key để có thể retry sau nếu cần
               sessionStorage.removeItem(requestKey);
-              console.error("Lỗi gọi API update requests:", apiErr);
+              console.error("Lỗi gọi API check pending requests:", apiErr);
             }
           }
         } else {
@@ -190,7 +188,8 @@ export default function TutorProfile() {
         return;
       }
 
-      const result = await adminService.sendUpdateEvaluationRequest({
+      // 🛠️ Đổi sang dùng tutorService thay vì adminService
+      const result = await tutorService.sendUpdateEvaluationRequest({
         tutor_update_req_id: `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
         tutor_id: tutorId,
         old_data: oldPayload,
@@ -199,7 +198,6 @@ export default function TutorProfile() {
 
       console.log("Response từ server:", result);
 
-      // 🛠️ Đã lưu DB thành công ở backend, chạy đến đây không throw lỗi là thành công tuyệt đối
       setIsEditing(false);
       setIsDropdownOpen(false);
       setHasPendingRequest(true);
@@ -207,7 +205,7 @@ export default function TutorProfile() {
 
     } catch (error) {
       console.error("Lỗi gửi yêu cầu cập nhật:", error);
-      alert("❌ Gửi yêu cầu thất bại do lỗi kết nối hoặc máy chủ.");
+      alert(error.response?.data?.message || "❌ Gửi yêu cầu thất bại do lỗi kết nối hoặc máy chủ.");
     }
   };
 

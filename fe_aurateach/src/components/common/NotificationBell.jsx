@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./NotificationBell.module.css";
-
-const API_BASE = "http://localhost:3007";
+import { notificationService } from "@/services/notificationService"; // ✅ Import service mới
 
 export default function NotificationBell({ userId, userRole }) {
   const [notifications, setNotifications] = useState([]);
@@ -17,7 +16,7 @@ export default function NotificationBell({ userId, userRole }) {
     console.log("🔔 [NotificationBell] Mounted with userId:", userId);
   }, [userId]);
 
-  // Fetch notifications
+  // Fetch notifications thông qua notificationService
   useEffect(() => {
     if (!userId) {
       console.log("⏳ [NotificationBell] No userId, skipping fetch");
@@ -28,16 +27,8 @@ export default function NotificationBell({ userId, userRole }) {
       try {
         setLoading(true);
         console.log(`📡 [NotificationBell] Fetching for user: ${userId}`);
-        const res = await fetch(`${API_BASE}/notifications?receiver_id=${userId}`);
         
-        if (!res.ok) {
-          console.warn(`⚠️ [NotificationBell] API returned ${res.status}`);
-          setNotifications([]);
-          setUnreadCount(0);
-          return;
-        }
-        
-        const data = await res.json();
+        const data = await notificationService.getNotifications(userId);
         console.log(`📊 [NotificationBell] Found ${data.length} notifications`);
         
         if (Array.isArray(data)) {
@@ -62,7 +53,7 @@ export default function NotificationBell({ userId, userRole }) {
     return () => clearInterval(interval);
   }, [userId]);
 
-  // Click outside
+  // Click outside dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -164,11 +155,7 @@ export default function NotificationBell({ userId, userRole }) {
                   onClick={async () => {
                     if (!notif.is_read) {
                       try {
-                        await fetch(`${API_BASE}/notifications/${notif.id}`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ is_read: true }),
-                        });
+                        await notificationService.markAsRead(notif.id);
                         setNotifications(prev => 
                           prev.map(n => 
                             n.id === notif.id ? { ...n, is_read: true } : n

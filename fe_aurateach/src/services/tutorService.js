@@ -95,13 +95,42 @@ export const tutorService = {
         ...payoutData,
       });
       console.log("🟢 Phản hồi thành công tạo yêu cầu rút tiền:", response);
-      return response.data !== undefined ? response.data : response;
+      
+      // 🚀 Trả thẳng response vì apiClient đã tự lo việc bóc tách data (hoặc trả về nguyên cục)
+      return response; 
     } catch (error) {
       console.error("🔴 Lỗi API createPayoutRequest chi tiết:", {
         message: error.message,
         status: error.response?.status,
         data: error.response?.data
       });
+      throw error;
+    }
+  },
+
+  sendUpdateEvaluationRequest: async (payload) => {
+    console.log("🟡 Đang gửi yêu cầu chỉnh sửa hồ sơ lên server:", payload);
+    try {
+      // Endpoint này trỏ tới route nhận yêu cầu cập nhật hồ sơ từ phía gia sư
+      const response = await apiClient.post('/admin-tutor-update-requests', payload);
+      console.log("🟢 Phản hồi thành công gửi yêu cầu cập nhật:", response);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error("🔴 Lỗi API sendUpdateEvaluationRequest chi tiết:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      throw error;
+    }
+  },
+
+  checkPendingUpdate: async (tutorId) => {
+    try {
+      const response = await apiClient.get(`/tutors/${tutorId}/pending-update-request`);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error("Lỗi kiểm tra pending update:", error);
       throw error;
     }
   },

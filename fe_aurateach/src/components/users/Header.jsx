@@ -7,11 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import SearchComponent from "./SearchInput";
 import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
 import NotificationBell from "@/components/common/NotificationBell";
-
-// ✅ Thêm flag để kiểm tra JSON Server đã sẵn sàng chưa
-const API_BASE = "http://localhost:3007";
-let isJsonServerReady = false;
-let hasCheckedJsonServer = false;
+import { conversationService } from "@/services/conversationService"; // ✅ Import service chat mới
+import { authService } from "@/services/authService";
 
 export default function Header() {
     const pathname = usePathname(); 
@@ -32,26 +29,18 @@ export default function Header() {
 
     // Load user từ cookie khi component mount
     useEffect(() => {
-        console.log("=== HEADERS CHECK ===");
-        console.log("All cookies:", document.cookie);
-        
         const userCookie = getCookie("user_info");
-        console.log("user_info cookie value:", userCookie);
-        
         if (userCookie) {
             try {
                 const decoded = decodeURIComponent(userCookie);
-                console.log("Decoded:", decoded);
                 const userData = JSON.parse(decoded);
-                console.log("✅ Parsed user data:", userData);
                 setUser(userData);
                 setIsMounted(true);
             } catch (error) {
-                console.error("❌ Error parsing:", error);
+                console.error("❌ Error parsing user cookie:", error);
                 setIsMounted(true);
             }
         } else {
-            console.log("❌ No user_info cookie");
             setIsMounted(true);
         }
     }, []);
@@ -67,7 +56,6 @@ export default function Header() {
                     const decoded = decodeURIComponent(userCookie);
                     const userData = JSON.parse(decoded);
                     if (JSON.stringify(userData) !== JSON.stringify(user)) {
-                        console.log("🔄 User updated:", userData);
                         setUser(userData);
                     }
                 } catch (error) {
@@ -75,7 +63,6 @@ export default function Header() {
                 }
             } else {
                 if (user !== null) {
-                    console.log("🔄 User logged out");
                     setUser(null);
                 }
             }
@@ -85,7 +72,7 @@ export default function Header() {
         return () => clearInterval(interval);
     }, [isMounted, user]);
 
-    // Click outside
+    // Click outside dropdown
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -96,153 +83,49 @@ export default function Header() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-// ✅ SỬA LẠI HÀM LOGOUT - XÓA HẾT COOKIE
-const handleLogout = async () => {
-    console.log("=== LOGOUT ===");
-    
-    try {
-        // 1. Gọi API logout của NextAuth để xóa session trên server
-        const response = await fetch("/api/auth/signout", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        
-        // 2. Xóa cookie user_info và role
-        document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        
-        // 3. Xóa localStorage
-        localStorage.removeItem("user");
-        
-        // 4. Reset state
-        setUser(null);
-        setIsDropdownOpen(false);
-        
-        // 5. Chuyển hướng về trang login
-        window.location.href = "/login";
-    } catch (error) {
-        console.error("Logout error:", error);
-        // Fallback: xóa cookie và chuyển hướng
-        document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        document.cookie = "next-auth.session-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        document.cookie = "next-auth.csrf-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        document.cookie = "next-auth.callback-url=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
-        localStorage.removeItem("user");
-        setUser(null);
-        window.location.href = "/login";
-    }
-};
-
-    // ✅ Kiểm tra JSON Server có hoạt động không (chỉ 1 lần)
-    const checkJsonServer = useCallback(async () => {
-        if (hasCheckedJsonServer) return isJsonServerReady;
-        hasCheckedJsonServer = true;
-        
+    // Xử lý Đăng xuất - Xóa hết cookie & storage
+    const handleLogout = async () => {
         try {
-            const res = await fetch(`${API_BASE}/conversations`, {
-                method: 'HEAD',
-                signal: AbortSignal.timeout(2000) // Timeout 2s
-            });
-            isJsonServerReady = res.ok;
-            console.log(`📡 JSON Server status: ${isJsonServerReady ? '✅ Ready' : '❌ Not ready'}`);
-            return isJsonServerReady;
-        } catch {
-            isJsonServerReady = false;
-            console.log('📡 JSON Server: ❌ Not reachable');
-            return false;
+            await authService.logout();
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            // Dọn dẹp sạch sẽ cookie và storage ở phía client
+            document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+            document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+            localStorage.removeItem("user");
+            
+            setUser(null);
+            setIsDropdownOpen(false);
+            window.location.href = "/login";
+        }
+    };
+
+    // ✅ Lấy số lượng tin nhắn chưa đọc thông qua conversationService
+    const fetchUnreadCount = useCallback(async (userId) => {
+        try {
+            const data = await conversationService.getUnreadCount(userId);
+            // Hỗ trợ cả trường hợp BE trả về object { unread_count: X } hoặc trả thẳng con số
+            const count = typeof data === 'object' ? (data.unread_count || data.data?.unread_count || 0) : data;
+            setUnreadCount(Number(count));
+        } catch (error) {
+            // Lặng lẽ bỏ qua lỗi kết nối ngầm định nếu có
         }
     }, []);
 
-    // ✅ Fetch unread count - CHỈ GỌI KHI JSON SERVER SẴN SÀNG
-    const fetchUnreadCount = useCallback(async (userId) => {
-        // Kiểm tra JSON Server trước khi gọi
-        const isReady = await checkJsonServer();
-        if (!isReady) {
-            // Không log để tránh spam
-            return;
-        }
-        
-        try {
-            const res = await fetch(`${API_BASE}/conversations`);
-            
-            if (!res.ok) {
-                // Nếu lỗi, đánh dấu JSON Server không sẵn sàng để lần sau bỏ qua
-                if (res.status === 404) {
-                    isJsonServerReady = false;
-                }
-                return;
-            }
-            
-            const text = await res.text();
-            if (!text) return;
-            
-            let allConversations;
-            try {
-                allConversations = JSON.parse(text);
-            } catch (parseError) {
-                return;
-            }
-            
-            if (!Array.isArray(allConversations)) return;
-
-            // Fetch tutors
-            const tutorsRes = await fetch(`${API_BASE}/tutors`);
-            if (!tutorsRes.ok) return;
-            
-            const tutorsText = await tutorsRes.text();
-            if (!tutorsText) return;
-            
-            let allTutors;
-            try {
-                allTutors = JSON.parse(tutorsText);
-            } catch (parseError) {
-                return;
-            }
-            
-            if (!Array.isArray(allTutors)) return;
-            
-            const tutorToUserMap = {};
-            const userToTutorMap = {};
-            allTutors.forEach(t => {
-                if (t.tutor_id && t.user_id) {
-                    tutorToUserMap[t.tutor_id] = t.user_id;
-                    userToTutorMap[t.user_id] = t.tutor_id;
-                }
-            });
-
-            const myIds = [userId];
-            if (userToTutorMap[userId]) {
-                myIds.push(userToTutorMap[userId]);
-            }
-
-            const myConversations = allConversations.filter(conv => 
-                conv.participants && conv.participants.some(p => myIds.includes(p))
-            );
-
-            const totalUnread = myConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
-            setUnreadCount(totalUnread);
-        } catch (error) {
-            // Bỏ qua lỗi
-        }
-    }, [checkJsonServer]);
-
-    // ✅ Polling unread count - CHỈ CHẠY KHI CÓ USER
+    // Polling unread count định kỳ khi có user đăng nhập
     useEffect(() => {
-        if (!user?.user_id) return;
+        if (!user?.user_id && !user?.id) return;
         
         const userId = user.user_id || user.id;
         
-        // Delay 2s trước khi fetch lần đầu
         const timeout = setTimeout(() => {
             fetchUnreadCount(userId);
-        }, 2000);
+        }, 1000);
         
         const interval = setInterval(() => {
             fetchUnreadCount(userId);
-        }, 10000); // Giảm tần suất xuống 10s
+        }, 10000); // Polling mỗi 10 giây
         
         return () => {
             clearTimeout(timeout);
@@ -251,8 +134,6 @@ const handleLogout = async () => {
     }, [user, fetchUnreadCount]);
 
     const handleProfileClick = () => {
-        console.log("=== PROFILE CLICK ===");
-        console.log("Current user:", user);
         setIsDropdownOpen(false);
         router.push("/profile");
     };
@@ -281,12 +162,12 @@ const handleLogout = async () => {
                 <div className="header-right">
                     {user ? (
                         <>
-                            {/* ✅ Notification Bell */}
+                            {/* Notification Bell */}
                             <NotificationBell 
                                 userId={user.user_id || user.id}
                                 userRole={user.role || 'student'}
                             />
-                            {/* ✅ Icon Messenger với badge unread count */}
+                            {/* Icon Messenger với badge unread count */}
                             <Link href="/messenger" className="header-messenger-icon" title="Tin nhắn">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00236f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -313,9 +194,7 @@ const handleLogout = async () => {
                                     size={35}
                                     fallbackText={user.full_name?.charAt(0) || user.name?.charAt(0) || "U"}
                                 />
-                                
                                 <span className="user-name">{user.full_name || user.name}</span>
-                                
                                 <svg className={`arrow-icon ${isDropdownOpen ? "rotate" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00236f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
@@ -326,7 +205,6 @@ const handleLogout = async () => {
                                     </button>
                                     <button onClick={handleLogout} className="dropdown-item logout-btn">Đăng xuất</button>
                                 </div>
-
                             </div>
                         ) : (
                             <Link href="/login" className={`header-btn login-btn ${pathname === "/login" ? "header-btn-active" : ""}`}>

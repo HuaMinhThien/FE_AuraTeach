@@ -177,23 +177,31 @@ export default function TutorRevenuePage() {
     try {
       setIsSubmittingWithdraw(true);
 
-      // 🚀 Sử dụng tutorService.createPayoutRequest
       const result = await tutorService.createPayoutRequest({
         tutor_id: tutorData.tutor_id,
         bank_account_id: selectedBankId,
         amount: amount,
       });
 
-      if (result.success) {
+      console.log("🔍 Kết quả phản hồi rút tiền:", result);
+
+      // 🚀 Bóc tách linh hoạt để tránh lỗi hiểu nhầm response
+      const responseData = result?.data || result;
+      const isSuccess = responseData?.success === true || result?.success === true;
+      const responseMessage = responseData?.message || result?.message;
+
+      if (isSuccess) {
         alert(`Gửi yêu cầu rút ${amount.toLocaleString('vi-VN')} VNĐ thành công! Vui lòng chờ Admin duyệt.`);
         setWithdrawAmount('');
         await fetchPageData();
       } else {
-        alert(result.message || 'Lỗi khi gửi yêu cầu rút tiền');
+        alert(responseMessage || 'Lỗi khi gửi yêu cầu rút tiền');
       }
     } catch (error) {
       console.error('Lỗi khi gửi yêu cầu rút tiền:', error);
-      alert('Có lỗi xảy ra khi gửi yêu cầu');
+      // Đọc thông báo lỗi chi tiết từ Axios error response nếu có
+      const errorMsg = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi gửi yêu cầu';
+      alert(errorMsg);
     } finally {
       setIsSubmittingWithdraw(false);
     }

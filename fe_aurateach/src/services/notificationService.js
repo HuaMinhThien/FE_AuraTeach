@@ -1,41 +1,41 @@
-// src/services/notificationService.js
+import apiClient from "./apiClient";
 
-class NotificationService {
-  constructor() {
-    this.jsonServerUrl = 'http://localhost:3007';
-  }
-
-  // === LẤY DANH SÁCH THÔNG BÁO CỦA USER ===
+export const notificationService = {
+  /**
+   * Lấy danh sách thông báo theo userId 
+   * @param {string|number} userId 
+   */
   async getNotifications(userId) {
     try {
-      const res = await fetch(`${this.jsonServerUrl}/notifications?receiver_id=${userId}&_sort=created_at&_order=desc`);
-      if (!res.ok) throw new Error('Không thể lấy thông báo');
-      const notifications = await res.json();
-      return { success: true, data: notifications };
+      const response = await apiClient.get(`/notifications?user_id=${userId}`);
+      return Array.isArray(response) ? response : (response.data || []);
     } catch (error) {
-      console.error('❌ Lỗi lấy thông báo:', error);
-      return { success: false, data: [], message: error.message };
+      console.error("⚠️ Lỗi khi tải thông báo:", error);
+      return [];
     }
-  }
+  },
 
-  // === LẤY SỐ LƯỢNG THÔNG BÁO CHƯA ĐỌC ===
+  /**
+   * Lấy số lượng thông báo chưa đọc của user
+   * @param {string|number} userId 
+   */
   async getUnreadCount(userId) {
     try {
-      const res = await fetch(`${this.jsonServerUrl}/notifications?receiver_id=${userId}&is_read=false`);
-      if (!res.ok) throw new Error('Không thể lấy số thông báo');
-      const notifications = await res.json();
-      return { success: true, count: notifications.length };
+      const notifications = await this.getNotifications(userId);
+      const unreadList = notifications.filter(n => !n.is_read);
+      return { success: true, count: unreadList.length };
     } catch (error) {
       console.error('❌ Lỗi lấy số thông báo chưa đọc:', error);
       return { success: false, count: 0 };
     }
-  }
+  },
 
-  // === TẠO THÔNG BÁO MỚI ===
+  /**
+   * TẠO THÔNG BÁO MỚI
+   */
   async createNotification({ receiver_id, receiver_role, type, title, message, related_id, related_type }) {
     try {
       const newNotification = {
-        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         receiver_id,
         receiver_role,
         type, // 'booking', 'payment', 'system', 'message'
@@ -44,26 +44,21 @@ class NotificationService {
         related_id: related_id || null,
         related_type: related_type || null, // 'booking', 'course', 'payment'
         is_read: false,
-        created_at: new Date().toISOString(),
       };
 
-      const res = await fetch(`${this.jsonServerUrl}/notifications`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newNotification),
-      });
-
-      if (!res.ok) throw new Error('Không thể tạo thông báo');
-      const saved = await res.json();
+      const response = await apiClient.post('/notifications', newNotification);
+      const saved = response.data || response;
       console.log(`📬 [Notification] Created for ${receiver_role} (${receiver_id}):`, saved);
       return { success: true, data: saved };
     } catch (error) {
       console.error('❌ Lỗi tạo thông báo:', error);
       return { success: false, message: error.message };
     }
-  }
+  },
 
-  // === TẠO THÔNG BÁO KHI CÓ BOOKING MỚI ===
+  /**
+   * TẠO THÔNG BÁO KHI CÓ BOOKING MỚI
+   */
   async notifyNewBooking(bookingData, tutorUserId, studentName, courseTitle) {
     const results = [];
 
@@ -92,9 +87,11 @@ class NotificationService {
     results.push(adminNotif);
 
     return results;
-  }
+  },
 
-  // === TẠO THÔNG BÁO KHI THANH TOÁN THÀNH CÔNG ===
+  /**
+   * TẠO THÔNG BÁO KHI THANH TOÁN THÀNH CÔNG
+   */
   async notifyPaymentSuccess(bookingData, tutorUserId, studentName, courseTitle, amount) {
     const results = [];
 
@@ -123,56 +120,41 @@ class NotificationService {
     results.push(adminNotif);
 
     return results;
-  }
+  },
 
-  // === ĐÁNH DẤU ĐÃ ĐỌC ===
-  async markAsRead(notificationId) {
+  /**
+   * Đánh dấu một thông báo là đã đọc
+   * @param {string|number} id 
+   */
+  async markAsRead(id) {
     try {
-      // Tìm notification
-      const findRes = await fetch(`${this.jsonServerUrl}/notifications?id=${notificationId}`);
-      const notifications = await findRes.json();
-      const notif = notifications[0];
-      if (!notif) throw new Error('Không tìm thấy thông báo');
-
-      const res = await fetch(`${this.jsonServerUrl}/notifications/${notif.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_read: true }),
-      });
-
-      if (!res.ok) throw new Error('Không thể đánh dấu đã đọc');
-      return { success: true };
+      return await apiClient.patch(`/notifications/${id}`, { is_read: true });
     } catch (error) {
-      console.error('❌ Lỗi đánh dấu đã đọc:', error);
-      return { success: false };
+      console.error(`❌ Lỗi đánh dấu đã đọc thông báo ${id}:`, error);
+      throw error;
     }
-  }
+  },
 
-  // === ĐÁNH DẤU TẤT CẢ ĐÃ ĐỌC ===
+  /**
+   * Đánh dấu tất cả thông báo của user là đã đọc
+   * @param {string|number} userId 
+   */
   async markAllAsRead(userId) {
     try {
-      const res = await fetch(`${this.jsonServerUrl}/notifications?receiver_id=${userId}&is_read=false`);
-      const notifications = await res.json();
+      const notifications = await this.getNotifications(userId);
+      const unreadList = notifications.filter(n => !n.is_read);
 
       await Promise.all(
-        notifications.map(notif =>
-          fetch(`${this.jsonServerUrl}/notifications/${notif.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ is_read: true }),
-          })
-        )
+        unreadList.map(notif => this.markAsRead(notif.id))
       );
 
-      console.log(`✅ Đã đánh dấu ${notifications.length} thông báo là đã đọc`);
-      return { success: true, count: notifications.length };
+      console.log(`✅ Đã đánh dấu ${unreadList.length} thông báo là đã đọc`);
+      return { success: true, count: unreadList.length };
     } catch (error) {
       console.error('❌ Lỗi đánh dấu tất cả đã đọc:', error);
-      return { success: false };
+      return { success: false, count: 0 };
     }
   }
-}
+};
 
-const notificationService = new NotificationService();
 export default notificationService;
-

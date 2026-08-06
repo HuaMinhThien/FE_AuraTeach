@@ -22,12 +22,13 @@ export default function TutorApprovalPage() {
     try {
       if (activeTab === "pending_tutors") {
         const result = await adminService.getPendingTutors();
-        if (result?.success) {
-          setPendingTutors(result.data || []);
-        }
+        // Xử lý linh hoạt: nhận result.data hoặc lấy chính result nếu nó là mảng
+        const tutorsList = result?.data || (Array.isArray(result) ? result : []);
+        setPendingTutors(tutorsList);
       } else {
-        const result = await adminService.getUpdateRequests();
-        setUpdateRequests(result?.data || result || []);
+        const result = await adminService.getPendingUpdateRequests();
+        const requestsList = result?.data || (Array.isArray(result) ? result : []);
+        setUpdateRequests(requestsList);
       }
     } catch (error) {
       console.error("Lỗi tải dữ liệu:", error);
@@ -44,13 +45,15 @@ export default function TutorApprovalPage() {
       try {
         if (activeTab === "pending_tutors") {
           const result = await adminService.getPendingTutors();
-          if (!ignore && result?.success) {
-            setPendingTutors(result.data || []);
+          if (!ignore) {
+            const tutorsList = result?.data || (Array.isArray(result) ? result : []);
+            setPendingTutors(tutorsList);
           }
         } else {
-          const result = await adminService.getUpdateRequests();
+          const result = await adminService.getPendingUpdateRequests();
           if (!ignore) {
-            setUpdateRequests(result?.data || result || []);
+            const requestsList = result?.data || (Array.isArray(result) ? result : []);
+            setUpdateRequests(requestsList);
           }
         }
       } catch (error) {
@@ -63,7 +66,7 @@ export default function TutorApprovalPage() {
     fetchData();
 
     return () => {
-      ignore = true; // Ngăn chặn race-condition khi chuyển tab nhanh
+      ignore = true;
     };
   }, [activeTab]);
 
@@ -118,11 +121,15 @@ export default function TutorApprovalPage() {
     if (!window.confirm(`Bạn có chắc muốn ${actionText} yêu cầu thay đổi này?`)) return;
 
     try {
-      const result = await adminService.sendUpdateEvaluationRequest(reqId, {
+      const result = await adminService.respondUpdateEvaluationRequest(reqId, {
         status,
         reject_reason: status === "rejected" ? rejectReason : null,
       });
-      if (result?.success) {
+      
+      console.log("Kết quả trả về từ API:", result); // 🔍 Kiểm tra xem có trường success: true không
+
+      // Chấp nhận cả trường hợp result.success true hoặc HTTP status OK
+      if (result?.success || result) {
         alert(`✅ Đã ${actionText} yêu cầu cập nhật thành công!`);
         loadData();
         setSelectedRequest(null);
@@ -251,8 +258,8 @@ export default function TutorApprovalPage() {
                   </thead>
                   <tbody>
                     {updateRequests.map((req) => (
-                      <tr key={req.id} className={styles.tableRow}>
-                        <td className={styles.boldText}>#{req.id}</td>
+                      <tr key={req.update_req_id || req.id} className={styles.tableRow}>
+                        <td className={styles.boldText}>#{req.update_req_id || req.id}</td>
                         <td>{req.tutor_id}</td>
                         <td>
                           <span className={styles.badgeExpertise}>
@@ -484,7 +491,7 @@ export default function TutorApprovalPage() {
               <div className={styles.modalActions} style={{ marginTop: "20px" }}>
                 <button
                   className={`${styles.btn} ${styles.btnSuccess}`}
-                  onClick={() => handleProcessUpdateRequest(selectedRequest.id, "approved")}
+                  onClick={() => handleProcessUpdateRequest(selectedRequest.update_req_id || selectedRequest.id, "approved")}
                 >
                   ✅ Phê duyệt thay đổi
                 </button>
@@ -494,7 +501,7 @@ export default function TutorApprovalPage() {
                     const reason = prompt("Nhập lý do từ chối yêu cầu thay đổi:");
                     if (reason !== null) {
                       setRejectReason(reason);
-                      handleProcessUpdateRequest(selectedRequest.id, "rejected");
+                      handleProcessUpdateRequest(selectedRequest.update_req_id || selectedRequest.id, "rejected");
                     }
                   }}
                 >

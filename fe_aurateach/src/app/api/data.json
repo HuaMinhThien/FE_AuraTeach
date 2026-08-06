@@ -1472,7 +1472,7 @@
       "unread_count": 0
     },
     {
-      "id": "conv_1785490163820",
+      "conversation_id": "conv_1785490163820",
       "participants": [
         "u-student-1",
         "user_1785489685235_kl7eih"
@@ -1484,7 +1484,7 @@
   ],
   "messages": [
     {
-      "id": "BQ7s5fs0kTE",
+      "message_id": "BQ7s5fs0kTE",
       "conversation_id": "FvtVRh7m5So",
       "sender_id": "user_1782855725159_tqroz6",
       "sender_role": "student",

@@ -10,9 +10,11 @@ export default function AdminPayoutRequestsPage() {
   const [message, setMessage] = useState(null);
   const [adminId, setAdminId] = useState('admin_system');
 
-  // Filter & Search states
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'pending', 'approved', 'rejected'
+  // Filter & Search States
+  const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Modal states
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -25,6 +27,7 @@ export default function AdminPayoutRequestsPage() {
       const userSession = localStorage.getItem('user') || sessionStorage.getItem('user');
       if (userSession) {
         const parsedUser = JSON.parse(userSession);
+        // Đảm bảo lấy đúng khóa chứa ID của bảng users trong DB của bạn
         if (parsedUser?.user_id || parsedUser?.id) {
           setAdminId(parsedUser.user_id || parsedUser.id);
         }
@@ -64,7 +67,7 @@ export default function AdminPayoutRequestsPage() {
     setProcessing(true);
     try {
       await adminService.updatePayoutRequestStatus({
-        id: request.id,
+        id: request.payout_req_id,
         status: 'approved',
         processed_by: adminId,
       });
@@ -80,6 +83,43 @@ export default function AdminPayoutRequestsPage() {
     }
   };
 
+  // Logic lọc danh sách theo Trạng thái, Tìm kiếm tên/mã và Ngày tháng
+  const filteredRequests = requests.filter((req) => {
+    if (statusFilter !== 'all' && req.status !== statusFilter) {
+      return false;
+    }
+
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      const matchName = req.tutor_name?.toLowerCase().includes(term);
+      const matchCode = req.request_code?.toLowerCase().includes(term);
+      if (!matchName && !matchCode) return false;
+    }
+
+    if (startDate) {
+      const reqDate = new Date(req.created_at);
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (reqDate < start) return false;
+    }
+
+    if (endDate) {
+      const reqDate = new Date(req.created_at);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      if (reqDate > end) return false;
+    }
+
+    return true;
+  });
+
+  const resetFilters = () => {
+    setStatusFilter('all');
+    setSearchTerm('');
+    setStartDate('');
+    setEndDate('');
+  };
+
   // Xử lý Từ Chối
   const handleReject = async () => {
     if (!rejectReason.trim()) {
@@ -90,7 +130,7 @@ export default function AdminPayoutRequestsPage() {
     setProcessing(true);
     try {
       await adminService.updatePayoutRequestStatus({
-        id: rejectingRequest.id,
+        id: rejectingRequest.payout_req_id,
         status: 'rejected',
         rejection_reason: rejectReason,
         processed_by: adminId,
@@ -122,33 +162,6 @@ export default function AdminPayoutRequestsPage() {
       totalPendingAmount,
     };
   }, [requests]);
-
-  // Lọc và Tìm kiếm danh sách hiển thị
-  const filteredRequests = useMemo(() => {
-    return requests.filter(req => {
-      // Bộ lọc theo tab trạng thái
-      const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
-      
-      // Bộ lọc theo từ khóa tìm kiếm (Tên gia sư hoặc mã giao dịch)
-      const query = searchTerm.toLowerCase().trim();
-      const matchesSearch = 
-        !query || 
-        (req.tutor_name && req.tutor_name.toLowerCase().includes(query)) ||
-        (req.request_code && req.request_code.toLowerCase().includes(query)) ||
-        (String(req.id).toLowerCase().includes(query));
-
-      return matchesStatus && matchesSearch;
-    });
-  }, [requests, statusFilter, searchTerm]);
-
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Đang tải danh sách yêu cầu rút tiền...</p>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.page}>
@@ -199,53 +212,55 @@ export default function AdminPayoutRequestsPage() {
       {/* Khu vực Bảng danh sách & Bộ lọc */}
       <div className={styles.tableCard}>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <h3>Danh sách yêu cầu rút tiền</h3>
+          <div className={styles.tableCardHeader}>
+            <h3>Danh sách yêu cầu rút tiền</h3>
+          </div>
           
-          {/* Ô tìm kiếm nhanh */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {/* Thanh Bộ Lọc & Tìm Kiếm */}
+          <div className={styles.filterBar}>
+            <select
+              className={styles.selectFilter}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="pending">⏳ Chờ duyệt</option>
+              <option value="approved">✅ Đã duyệt</option>
+              <option value="rejected">❌ Từ chối</option>
+            </select>
+
             <input
               type="text"
-              placeholder="🔍 Tìm theo tên hoặc mã YC..."
+              className={styles.searchInput}
+              placeholder="Tìm theo tên gia sư, mã YC..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '13px',
-                outline: 'none',
-                minWidth: '240px'
-              }}
             />
-          </div>
-        </div>
 
-        {/* Tabs Lọc trạng thái */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
-          {[
-            { key: 'all', label: `Tất cả (${requests.length})` },
-            { key: 'pending', label: `Chờ duyệt (${stats.pendingCount})` },
-            { key: 'approved', label: `Đã duyệt (${stats.approvedCount})` },
-            { key: 'rejected', label: `Từ chối (${stats.rejectedCount})` },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setStatusFilter(tab.key)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '20px',
-                fontSize: '13px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                border: 'none',
-                backgroundColor: statusFilter === tab.key ? '#4f46e5' : '#f3f4f6',
-                color: statusFilter === tab.key ? '#ffffff' : '#4b5563',
-                transition: 'all 0.2s',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+            <div className={styles.dateGroup}>
+              <input
+                type="date"
+                className={styles.dateInput}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                title="Từ ngày"
+              />
+              <span className={styles.dateSeparator}>-</span>
+              <input
+                type="date"
+                className={styles.dateInput}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                title="Đến ngày"
+              />
+            </div>
+
+            {(statusFilter !== 'all' || searchTerm || startDate || endDate) && (
+              <button className={styles.resetFilterBtn} onClick={resetFilters}>
+                🔄 Xóa lọc
+              </button>
+            )}
+          </div>
         </div>
 
         <div className={styles.tableWrapper}>

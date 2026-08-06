@@ -36,19 +36,18 @@ export const adminService = {
     return response.data !== undefined ? response.data : response;
   },
 
-  getUpdateRequests: async (params = {}) => {
-    const queryParams = typeof params === 'object' ? params : { tutor_id: params };
-    const queryString = new URLSearchParams(queryParams).toString();
-    const endpoint = `/admin-tutor-update-requests${queryString ? `?${queryString}` : ''}`;
-    const response = await apiClient.get(endpoint);
+  getPendingUpdateRequests: async () => {
+    const response = await apiClient.get('/admin-tutor-update-requests/all-pending'); // Hoặc endpoint tùy bạn thiết kế ở Laravel
     return response.data !== undefined ? response.data : response;
   },
 
-  sendUpdateEvaluationRequest: async (data) => {
+  respondUpdateEvaluationRequest: async (reqId, data) => {
     try {
-      const response = await apiClient.post('/admin-tutor-update-requests', data);
-      return response.data;
+      const response = await apiClient.post(`/admin/tutor-update-requests/${reqId}/handle`, data);
+      // Phải đảm bảo trả về response.data để lấy được object { success: true, message: ... }
+      return response.data !== undefined ? response.data : response;
     } catch (error) {
+      console.error("Lỗi khi xử lý yêu cầu:", error);
       throw error;
     }
   },
@@ -117,4 +116,5 @@ export const adminService = {
   updatePayoutRequestStatus: async (payload) => {
     return await apiClient.patch('/admin-tutor-payout-requests', payload);
   },
+
 };
