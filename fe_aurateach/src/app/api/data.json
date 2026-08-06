@@ -377,13 +377,8 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
-<<<<<<< Updated upstream
       "pending_balance": 660000,
       "available_balance": 37880000,
-=======
-      "pending_balance": 900000,
-      "available_balance": 53990000,
->>>>>>> Stashed changes
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
