@@ -1093,19 +1093,11 @@
       "category_id": "cat-02",
       "level": "Cấp 2",
       "description": "",
-<<<<<<< Updated upstream
       "max_students": 1,
       "price_per_session": 1000000,
       "start_date": "2026-08-04",
       "end_date": "2026-08-11",
       "total_weeks": 1,
-=======
-      "max_students": 10,
-      "hourly_rate": 200000,
-      "start_date": "2026-08-06",
-      "end_date": "2026-08-20",
-      "total_weeks": 2,
->>>>>>> Stashed changes
       "schedule_days": [
         "Chủ Nhật"
       ],
@@ -2386,7 +2378,6 @@
       "status": "approved",
       "lesson_amount": 300000,
       "payout_status": "transferred"
-<<<<<<< Updated upstream
     },
     {
       "id": "e4f3",
@@ -2533,8 +2524,6 @@
       "account_holder_name": "HUA MINH THIEN",
       "is_default": false,
       "created_at": "2026-08-04T17:16:21.558Z"
-=======
->>>>>>> Stashed changes
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
