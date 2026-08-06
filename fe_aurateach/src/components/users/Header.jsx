@@ -278,7 +278,7 @@ const handleLogout = async () => {
                         <Link href="/createSchedule" className={`nav-item ${pathname === "/createSchedule" ? "active-nav" : ""}`}>
                             <span>Tạo lịch học cho riêng bạn</span>
                         </Link>
-                        
+                    
                     </div>
                 </div>
 
