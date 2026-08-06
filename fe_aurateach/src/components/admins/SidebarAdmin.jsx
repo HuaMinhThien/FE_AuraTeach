@@ -109,6 +109,7 @@ export default function Sidebar() {
     { name: "Quản lý lớp học", path: "/admin-classes-management" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Duyệt yêu cầu rút tiền", path: "/admin-tutor-payout-requests" },
+    { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },
     { name: "Thông báo", path: "/admin-notifications", badge: unreadNotifCount },
   ];
 
