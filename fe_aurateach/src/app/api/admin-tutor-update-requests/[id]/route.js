@@ -4,8 +4,16 @@ const BACKEND = "http://localhost:3007";
 
 export async function PATCH(request, { params }) {
   try {
-    const { tutor_update_req_id } = await params;
+    // 1. Nhận params (tùy thuộc vào tên thư mục [id] hoặc [tutor_update_req_id])
+    const resolvedParams = await params;
     const body = await request.json();
+
+    // Tự động nhận diện ID từ params.id, params.tutor_update_req_id hoặc body.id
+    const tutor_update_req_id =
+      resolvedParams?.id ||
+      resolvedParams?.tutor_update_req_id ||
+      body?.id;
+
     const { status, reject_reason } = body; // status: "approved" | "rejected"
 
     if (!tutor_update_req_id || !status) {
@@ -71,22 +79,27 @@ export async function PATCH(request, { params }) {
         );
       }
 
-      // 3. XÓA bản ghi yêu cầu khỏi bảng tutor_update_requests
-      const deleteRes = await fetch(`${BACKEND}/tutor_update_requests/${tutor_update_req_id}`, {
-        method: "DELETE",
+      // 3. Cập nhật TRẠNG THÁI "approved" vào bảng tutor_update_requests (Thay vì DELETE)
+      const updateReqRes = await fetch(`${BACKEND}/tutor_update_requests/${tutor_update_req_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "approved",
+          updated_at: new Date().toISOString(),
+        }),
       });
 
-      if (!deleteRes.ok) {
-        throw new Error("Không thể xóa yêu cầu cập nhật sau khi duyệt");
+      if (!updateReqRes.ok) {
+        throw new Error("Không thể cập nhật trạng thái đã duyệt cho yêu cầu");
       }
 
       return NextResponse.json({
         success: true,
-        message: "Đã duyệt, cập nhật hồ sơ và xóa yêu cầu thành công!",
+        message: "Đã duyệt và cập nhật hồ sơ gia sư thành công!",
       });
 
     } else if (status === "rejected") {
-      // TRƯỜNG HỢP TỪ CHỐI: Hoặc cập nhật trạng thái rejected, hoặc xóa luôn yêu cầu
+      // TRƯỜNG HỢP TỪ CHỐI: Cập nhật trạng thái rejected
       const updateRes = await fetch(`${BACKEND}/tutor_update_requests/${tutor_update_req_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

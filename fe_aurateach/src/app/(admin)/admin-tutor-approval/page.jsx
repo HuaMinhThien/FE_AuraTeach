@@ -133,7 +133,7 @@ export default function TutorApprovalPage() {
       const result = await response.json();
       if (result.success) {
         alert(`✅ Đã ${actionText} yêu cầu cập nhật thành công!`);
-        loadData();
+        await loadData();
         setSelectedRequest(null);
         setShowRejectModal(false);
       } else {
@@ -142,6 +142,22 @@ export default function TutorApprovalPage() {
     } catch (error) {
       alert("Có lỗi xảy ra khi xử lý yêu cầu!");
     }
+  };
+
+  // Helper hiển thị danh sách hình ảnh/bằng cấp
+  const renderCertificates = (certs) => {
+    if (!certs || !Array.isArray(certs) || certs.length === 0) {
+      return <p style={{ color: "#94a3b8", fontSize: "13px" }}>Không có hình ảnh/bằng cấp đi kèm.</p>;
+    }
+    return (
+      <div className={styles.certGrid}>
+        {certs.map((cert, index) => (
+          <a key={index} href={cert} target="_blank" rel="noreferrer">
+            <img src={cert} alt={`Bằng cấp ${index + 1}`} className={styles.certImage} />
+          </a>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -186,9 +202,11 @@ export default function TutorApprovalPage() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
+                      <th>Ảnh</th>
                       <th>Họ tên</th>
                       <th>Email</th>
                       <th>Số điện thoại</th>
+                      <th>Trình độ</th>
                       <th>Lĩnh vực</th>
                       <th>Ngày đăng ký</th>
                       <th>Hành động</th>
@@ -197,9 +215,19 @@ export default function TutorApprovalPage() {
                   <tbody>
                     {pendingTutors.map((tutor) => (
                       <tr key={tutor.user_id} className={styles.tableRow}>
+                        <td>
+                          <img
+                            src={tutor.avatar || "/img/avt/avt.jpg"}
+                            alt={tutor.full_name}
+                            className={styles.tableAvatar}
+                          />
+                        </td>
                         <td className={styles.boldText}>{tutor.full_name}</td>
                         <td>{tutor.email}</td>
                         <td>{tutor.phone}</td>
+                        <td>
+                          <span className={styles.badgeLevel}>{tutor.level || "Chưa chọn"}</span>
+                        </td>
                         <td>
                           <span className={styles.badgeExpertise}>
                             {tutor.expertise || "Chưa cập nhật"}
@@ -256,6 +284,7 @@ export default function TutorApprovalPage() {
                       <th>Mã Yêu Cầu</th>
                       <th>Gia sư (ID)</th>
                       <th>Lĩnh vực mới</th>
+                      <th>Trình độ mới</th>
                       <th>Thời gian yêu cầu</th>
                       <th>Trạng thái</th>
                       <th>Hành động</th>
@@ -267,7 +296,10 @@ export default function TutorApprovalPage() {
                         <td className={styles.boldText}>#{req.id}</td>
                         <td>{req.tutor_id}</td>
                         <td>
-                          <span className={styles.badgeExpertise}>{req.new_data.expertise}</span>
+                          <span className={styles.badgeExpertise}>{req.new_data?.expertise}</span>
+                        </td>
+                        <td>
+                          <span className={styles.badgeLevel}>{req.new_data?.level || "Không đổi"}</span>
                         </td>
                         <td>{new Date(req.created_at).toLocaleString("vi-VN")}</td>
                         <td>
@@ -309,6 +341,13 @@ export default function TutorApprovalPage() {
             </div>
 
             <div className={styles.modalBody}>
+              <div className={styles.infoItem} style={{ textAlign: "center", marginBottom: "16px" }}>
+                <img
+                  src={selectedTutor.avatar || "/img/avt/avt.jpg"}
+                  alt={selectedTutor.full_name}
+                  className={styles.modalAvatar}
+                />
+              </div>
               <div className={styles.infoItem}>
                 <label>Họ và tên:</label>
                 <p className={styles.boldText}>{selectedTutor.full_name}</p>
@@ -320,6 +359,10 @@ export default function TutorApprovalPage() {
               <div className={styles.infoItem}>
                 <label>Số điện thoại:</label>
                 <p>{selectedTutor.phone}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Cấp bậc / Trình độ:</label>
+                <p className={styles.badgeLevel}>{selectedTutor.level || "Chưa cập nhật"}</p>
               </div>
               <div className={styles.infoItem}>
                 <label>Lĩnh vực / Chuyên môn:</label>
@@ -392,61 +435,77 @@ export default function TutorApprovalPage() {
                     <label>Số điện thoại</label>
                     <p
                       className={
-                        selectedRequest.old_data.phone !== selectedRequest.new_data.phone
+                        selectedRequest.old_data?.phone !== selectedRequest.new_data?.phone
                           ? styles.changedText
                           : ""
                       }
                     >
-                      {selectedRequest.old_data.phone}
+                      {selectedRequest.old_data?.phone}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Trình độ (Level)</label>
+                    <p
+                      className={
+                        selectedRequest.old_data?.level !== selectedRequest.new_data?.level
+                          ? styles.changedText
+                          : ""
+                      }
+                    >
+                      {selectedRequest.old_data?.level || "Chưa có"}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Chuyên môn / Lĩnh vực</label>
                     <p
                       className={
-                        selectedRequest.old_data.expertise !== selectedRequest.new_data.expertise
+                        selectedRequest.old_data?.expertise !== selectedRequest.new_data?.expertise
                           ? styles.changedText
                           : ""
                       }
                     >
-                      {selectedRequest.old_data.expertise}
+                      {selectedRequest.old_data?.expertise}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Kinh nghiệm</label>
                     <p
                       className={
-                        selectedRequest.old_data.experience !==
-                        selectedRequest.new_data.experience
+                        selectedRequest.old_data?.experience !==
+                        selectedRequest.new_data?.experience
                           ? styles.changedText
                           : ""
                       }
                     >
-                      {selectedRequest.old_data.experience}
+                      {selectedRequest.old_data?.experience}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Giới thiệu (Bio)</label>
                     <div
                       className={`${styles.bioBox} ${
-                        selectedRequest.old_data.bio !== selectedRequest.new_data.bio
+                        selectedRequest.old_data?.bio !== selectedRequest.new_data?.bio
                           ? styles.changedText
                           : ""
                       }`}
                     >
-                      {selectedRequest.old_data.bio}
+                      {selectedRequest.old_data?.bio}
                     </div>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Link CV</label>
                     <a
-                      href={selectedRequest.old_data.cv_link}
+                      href={selectedRequest.old_data?.cv_link}
                       target="_blank"
                       rel="noreferrer"
                       className={styles.cvLink}
                     >
                       Xem CV cũ
                     </a>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Hình ảnh / Chứng chỉ đính kèm cũ</label>
+                    {renderCertificates(selectedRequest.old_data?.certificates)}
                   </div>
                 </div>
 
@@ -457,61 +516,77 @@ export default function TutorApprovalPage() {
                     <label>Số điện thoại</label>
                     <p
                       className={
-                        selectedRequest.old_data.phone !== selectedRequest.new_data.phone
+                        selectedRequest.old_data?.phone !== selectedRequest.new_data?.phone
                           ? styles.highlightNew
                           : ""
                       }
                     >
-                      {selectedRequest.new_data.phone}
+                      {selectedRequest.new_data?.phone}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Trình độ (Level)</label>
+                    <p
+                      className={
+                        selectedRequest.old_data?.level !== selectedRequest.new_data?.level
+                          ? styles.highlightNew
+                          : ""
+                      }
+                    >
+                      {selectedRequest.new_data?.level || "Chưa có"}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Chuyên môn / Lĩnh vực</label>
                     <p
                       className={
-                        selectedRequest.old_data.expertise !== selectedRequest.new_data.expertise
+                        selectedRequest.old_data?.expertise !== selectedRequest.new_data?.expertise
                           ? styles.highlightNew
                           : ""
                       }
                     >
-                      {selectedRequest.new_data.expertise}
+                      {selectedRequest.new_data?.expertise}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Kinh nghiệm</label>
                     <p
                       className={
-                        selectedRequest.old_data.experience !==
-                        selectedRequest.new_data.experience
+                        selectedRequest.old_data?.experience !==
+                        selectedRequest.new_data?.experience
                           ? styles.highlightNew
                           : ""
                       }
                     >
-                      {selectedRequest.new_data.experience}
+                      {selectedRequest.new_data?.experience}
                     </p>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Giới thiệu (Bio)</label>
                     <div
                       className={`${styles.bioBox} ${
-                        selectedRequest.old_data.bio !== selectedRequest.new_data.bio
+                        selectedRequest.old_data?.bio !== selectedRequest.new_data?.bio
                           ? styles.highlightNew
                           : ""
                       }`}
                     >
-                      {selectedRequest.new_data.bio}
+                      {selectedRequest.new_data?.bio}
                     </div>
                   </div>
                   <div className={styles.infoItem}>
                     <label>Link CV</label>
                     <a
-                      href={selectedRequest.new_data.cv_link}
+                      href={selectedRequest.new_data?.cv_link}
                       target="_blank"
                       rel="noreferrer"
                       className={styles.cvLink}
                     >
                       Xem CV mới
                     </a>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Hình ảnh / Chứng chỉ đính kèm mới</label>
+                    {renderCertificates(selectedRequest.new_data?.certificates)}
                   </div>
                 </div>
               </div>
