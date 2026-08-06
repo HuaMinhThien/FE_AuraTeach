@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
+import notificationService from '@/services/notificationService';
 
 const BACKEND_URL = 'http://localhost:3007';
 
-// 1. GET: Lấy danh sách học viên kết hợp thông tin mở rộng
+// 1. GET: Lấy danh sách học viên
 export async function GET() {
   try {
-    // Lấy đồng thời dữ liệu từ bảng users và students của JSON Server
     const [usersRes, studentsRes] = await Promise.all([
       fetch(`${BACKEND_URL}/users`, { cache: 'no-store' }),
       fetch(`${BACKEND_URL}/students`, { cache: 'no-store' })
@@ -14,7 +14,6 @@ export async function GET() {
     const users = await usersRes.json();
     const students = await studentsRes.json();
 
-    // Lọc ra những user có role là student và map thông tin chi tiết từ bảng students
     const studentList = users
       .filter(u => u.role === 'student')
       .map(user => {
@@ -28,12 +27,12 @@ export async function GET() {
   }
 }
 
-// 2. PUT: Khóa/Mở khóa tài khoản học viên (Cập nhật field status trong /users)
+// 2. PUT: Khóa/Mở khóa tài khoản học viên
 export async function PUT(request) {
   try {
     const { userId, status } = await request.json();
 
-    // Lấy thông tin user hiện tại để lấy đúng ID của record trong JSON server
+    // Lấy thông tin user hiện tại
     const userRes = await fetch(`${BACKEND_URL}/users?user_id=${userId}`);
     const userData = await userRes.json();
     
@@ -41,9 +40,10 @@ export async function PUT(request) {
       return NextResponse.json({ success: false, message: "Không tìm thấy user" }, { status: 404 });
     }
 
-    const jsonServerRecordId = userData[0].id; // Lấy ID tự tăng của JSON Server
+    const user = userData[0];
+    const jsonServerRecordId = userData[0].id;
 
-    // Gửi method PATCH để cập nhật riêng field status lên BE
+    // Gửi method PATCH để cập nhật status
     const updateRes = await fetch(`${BACKEND_URL}/users/${jsonServerRecordId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -51,6 +51,18 @@ export async function PUT(request) {
     });
 
     if (updateRes.ok) {
+      // === GỬI THÔNG BÁO CHO USER ===
+      try {
+        await notificationService.notifyAccountStatusChange({
+          user,
+          status,
+          reason: status === 'banned' ? 'Vi phạm điều khoản sử dụng' : null,
+        });
+        console.log(`📬 Đã gửi thông báo khóa/mở khóa cho ${user.email}`);
+      } catch (notifError) {
+        console.error("❌ Lỗi gửi thông báo khóa/mở khóa:", notifError);
+      }
+
       return NextResponse.json({ 
         success: true, 
         message: `Đã cập nhật trạng thái học viên thành: ${status === 'active' ? 'Hoạt động' : 'Bị khóa'}` 

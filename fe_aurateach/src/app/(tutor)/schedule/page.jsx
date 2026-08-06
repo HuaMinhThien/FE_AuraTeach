@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./schedule.module.css";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 
 const API_BASE = "http://localhost:3007";
 
@@ -198,9 +199,9 @@ export default function SchedulePage() {
               <div className={styles.tutorName} style={{ color: colorStyle.text }}>
                 👤 {cls.students?.length || 0} học viên
               </div>
-              {cls.permanent_room_url && (
+              {cls && (
                 <a
-                  href={cls.permanent_room_url}
+                  href={getClassroomRoomPath(cls, "tutor")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.meetBtn}

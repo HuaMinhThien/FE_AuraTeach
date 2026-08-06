@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import styles from "../_css/sec2.module.css";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 
 export default function Tutor_sec2({ classesData, pendingConfirmations = [], onRefreshData }) {
   const list = classesData || [];

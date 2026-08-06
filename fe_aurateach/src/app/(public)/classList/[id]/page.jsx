@@ -9,6 +9,7 @@ import styles from "./ClassDetail.module.css";
 import authService from "@/services/authService";
 import BookingModal from "@/components/users/BookingModal";
 import Avatar from "@/components/common/Avatar";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 
 export default function ClassDetailPage({ params }) {
   const router = useRouter();
@@ -195,8 +196,9 @@ export default function ClassDetailPage({ params }) {
   };
 
   const handleJoinClass = () => {
-    if (course?.permanent_room_url) {
-      window.open(course.permanent_room_url, '_blank');
+    if (course) {
+      const roomPath = getClassroomRoomPath(course, currentUser?.role === "tutor" ? "tutor" : "student");
+      window.open(roomPath, '_blank');
     } else {
       alert("Lớp học chưa có link phòng học. Vui lòng liên hệ gia sư để được hỗ trợ.");
     }
@@ -227,7 +229,7 @@ export default function ClassDetailPage({ params }) {
     ? (courseReviews.reduce((sum, r) => sum + r.rating, 0) / courseReviews.length).toFixed(1)
     : tutorInfo?.rating || 4.8;
 
-  // Kiểm tra quyền xem link Google Meet
+  // Kiểm tra quyền vào phòng học
   const canViewMeetLink = () => {
     if (!currentUser) return false;
     
@@ -241,9 +243,10 @@ export default function ClassDetailPage({ params }) {
     return false;
   };
 
-  // Kiểm tra có link meet hợp lệ không
-  const hasMeetLink = course?.permanent_room_url && course.permanent_room_url.trim() !== "";
+  // AuraTeach luôn có room nội bộ dựa trên course
+  const hasMeetLink = !!course;
   const showMeetLink = canViewMeetLink() && hasMeetLink;
+  const roomPath = course ? getClassroomRoomPath(course, currentUser?.role === "tutor" ? "tutor" : "student") : "";
 
   if (pageLoading) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Đang tải thông tin lớp học từ Server...</div>;
@@ -362,15 +365,15 @@ export default function ClassDetailPage({ params }) {
                 <span className={styles.detailValue}>
                   {showMeetLink ? (
                     <a 
-                      href={course.permanent_room_url} 
+                      href={roomPath}
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className={styles.meetLink}
                     >
-                      🔗 Google Meet
+                      🔗 Phòng học AuraTeach
                     </a>
                   ) : hasMeetLink ? (
-                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký mới xem được link</span>
+                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký mới vào được phòng học</span>
                   ) : (
                     "Chưa cập nhật"
                   )}
@@ -457,12 +460,12 @@ export default function ClassDetailPage({ params }) {
                 <span>
                   {showMeetLink ? (
                     <a 
-                      href={course.permanent_room_url} 
+                      href={roomPath}
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className={styles.meetLink}
                     >
-                      Phòng học Google Meet
+                      Phòng học AuraTeach
                     </a>
                   ) : hasMeetLink ? (
                     <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký</span>

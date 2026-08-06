@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./create-class.module.css"; 
+import { getClassroomBasePath } from "@/utils/roomUtils";
 
 const DEFAULT_IMAGES = [
   "/img/class/default-class-1.jpg",
@@ -344,26 +345,6 @@ export default function CreateClassPage() {
     checkScheduleConflict();
   }, [startDate, endDate, selectedDays, startTime, endTime, tutorId]);
 
-  const validateGoogleMeet = (url) => {
-    if (!url.trim()) {
-      setMeetError("Vui lòng nhập đường liên kết lớp học Google Meet.");
-      return false;
-    }
-    const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
-    if (!meetRegex.test(url.trim())) {
-      setMeetError("Đường liên kết không hợp lệ. Định dạng chuẩn phải là: https://meet.google.com/abc-xxxx-def");
-      return false;
-    }
-    setMeetError("");
-    return true;
-  };
-
-  const handleMeetChange = (e) => {
-    const value = e.target.value;
-    setMeetLink(value);
-    if (value) validateGoogleMeet(value);
-  };
-
   const toggleDay = (day) => {
     setSelectedDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
@@ -445,9 +426,6 @@ export default function CreateClassPage() {
       return;
     }
 
-    const isMeetValid = validateGoogleMeet(meetLink);
-    if (!isMeetValid) return;
-
     if (conflictMessage) {
       alert("Vui lòng xử lý trùng lịch trước khi tạo lớp học!");
       return;
@@ -468,7 +446,6 @@ export default function CreateClassPage() {
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
-      permanent_room_url: meetLink.trim(),
     };
 
     try {
@@ -537,13 +514,11 @@ export default function CreateClassPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Đường liên kết phòng học Google Meet <span className={styles.required}>*</span></label>
+              <label>Đường liên kết phòng học AuraTeach</label>
               <input 
-                type="url" 
-                placeholder="Ví dụ: https://meet.google.com/abc-xxxx-def" 
-                value={meetLink}
-                onChange={handleMeetChange}
-                required
+                type="text"
+                value={roomPreviewPath}
+                readOnly
               />
               {meetError && <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "14px" }}>{meetError}</p>}
             </div>

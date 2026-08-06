@@ -18,7 +18,7 @@ export async function POST(request, { params }) {
     // Tìm booking theo ID
     const findRes = await fetch(`${API_BASE}/bookings?booking_id=${id}`, { cache: 'no-store' });
     const bookings = await findRes.json();
-    const booking = bookings[0];
+    let booking = bookings[0]; // ✅ Sửa thành let thay vì const
 
     if (!booking) {
       // Nếu không tìm thấy theo booking_id, thử tìm theo id JSON Server
@@ -34,7 +34,7 @@ export async function POST(request, { params }) {
       }
       
       // Gán booking tìm được
-      booking = foundBooking;
+      booking = foundBooking; // ✅ Giờ có thể gán lại vì đã dùng let
     }
 
     // Kiểm tra nếu booking đã được thanh toán
@@ -81,7 +81,7 @@ export async function POST(request, { params }) {
       const studentInfo = Array.isArray(students) ? students[0] : students;
       const studentName = studentInfo?.full_name || 'Học viên';
 
-      // Tìm thông tin tutor - QUAN TRỌNG
+      // Tìm thông tin tutor
       let tutorInfo = null;
       let tutorUserId = null;
       
@@ -112,7 +112,7 @@ export async function POST(request, { params }) {
         const currentTotalEarnings = tutorInfo.total_earnings || 0;
         
         // Phí sàn 39%: Tutor nhận 61%
-        const tutorEarning = Math.round(amount * 0.61);
+        const tutorEarning = Math.round(amount * 0.65);
         const adminFee = amount - tutorEarning;
 
         console.log(`💰 [Manual Pay] Cập nhật ví:`, {
