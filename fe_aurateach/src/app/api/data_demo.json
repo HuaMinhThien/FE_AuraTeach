@@ -1,0 +1,45 @@
+{
+  "categories": [
+    { "category_id": "cat-02", "category_name": "Toán", "id": "c19f" },
+    { "category_id": "cat-03", "category_name": "Ngữ văn", "id": "c8aa" },
+    { "category_id": "cat-04", "category_name": "Lý", "id": "5988" },
+    { "category_id": "cat-05", "category_name": "Hóa", "id": "5b2a" },
+    { "category_id": "cat-06", "category_name": "Sinh", "id": "fee6" },
+    { "category_id": "cat-07", "category_name": "Sử", "id": "d3e4" },
+    { "category_id": "cat-08", "category_name": "Địa", "id": "f5g6" },
+    { "category_id": "cat-09", "category_name": "Ngoại ngữ", "id": "8ffa" },
+    { "category_id": "cat-10", "category_name": "Tin học & Lập trình", "id": "h7i8" },
+    { "category_id": "cat-11", "category_name": "Năng khiếu", "id": "p5q6" }
+  ],
+  "class_requests": [
+    {
+      "request_id": "req-001",
+      "student_id": "std-001",
+      "category_id": "cat-02",
+      "title": "Lớp Ôn Thi Toán Cấp 3",
+      "description": "Cần tìm gia sư ôn thi THPT Quốc Gia môn Toán",
+      "grade_level": "Cấp 3",
+      "tutor_level": "Giáo viên",
+      "price_per_session": 150000,
+      "max_students": 2,
+      "schedule_type": "1_term",
+      "total_weeks": 18,
+      "start_date": "2026-09-01",
+      "schedule_days": ["Thứ 2", "Thứ 4"],
+      "start_time": "18:00",
+      "end_time": "20:00",
+      "meet_link": "https://meet.google.com/abc-defg-hij",
+      "status": "pending",
+      "created_at": "2026-08-01T10:00:00Z"
+    }
+  ],
+  "request_applications": [
+    {
+      "application_id": "app-001",
+      "request_id": "req-001",
+      "tutor_id": "tut-001",
+      "status": "pending",
+      "created_at": "2026-08-02T14:30:00Z"
+    }
+  ]
+}

@@ -30,7 +30,7 @@ const PRICE_LIMITS = {
     lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh)
       "Cấp 1": { min: 100000, max: 300000, label: "100.000đ - 300.000đ / buổi" },
       "Cấp 2": { min: 120000, max: 400000, label: "120.000đ - 400.000đ / buổi" },
-      "Cấp 3": { min: 150000, max: 1000000, label: "150.000đ - 1.000.000đ / buổi" },
+      "Cấp 3": { min: 150000, max: 600000, label: "150.000đ - 600.000đ / buổi" },
     },
   },
   "Sinh viên": {
@@ -72,6 +72,7 @@ export default function CreateClassPage() {
   const [isAllowed, setIsAllowed] = useState(false);
   const [allowedCategories, setAllowedCategories] = useState([]);
   const [tutorLevel, setTutorLevel] = useState("Giáo viên"); // Default: Giáo viên / Sinh viên
+  const [teachingLevels, setTeachingLevels] = useState([]); // Lưu danh sách cấp học gia sư được dạy
 
   // --- Các State quản lý dữ liệu Form ---
   const [className, setClassName] = useState("");
@@ -206,6 +207,15 @@ export default function CreateClassPage() {
               setTutorLevel(tutor.level);
             } else {
               setTutorLevel("Giáo viên");
+            }
+
+            // Lưu danh sách Cấp học gia sư được phép dạy
+            const tLevels = Array.isArray(tutor.teaching_levels) ? tutor.teaching_levels : [];
+            setTeachingLevels(tLevels);
+
+            // Mặc định chọn cấp học hợp lệ đầu tiên nếu có
+            if (tLevels.length > 0 && !tLevels.includes(level)) {
+              setLevel(tLevels[0]);
             }
 
             const registeredExpertise = tutor.expertise
@@ -350,15 +360,43 @@ export default function CreateClassPage() {
     }
   };
 
+  // Click vào nút chọn Cấp học
+  const handleLevelSelect = (selectedLvl) => {
+    if (!teachingLevels.includes(selectedLvl)) {
+      alert("Hồ sơ của bạn chưa đạt yêu cầu giảng dạy vui lòng liên hệ với admin để biết thêm chi tiết");
+      return;
+    }
+    setLevel(selectedLvl);
+  };
+
   const hoursPerSession = 2; // Cố định 2 tiếng cho 1 buổi dạy
 
-  // CÔNG THỨC TÍNH TIỀN HỌC THEO BUỔI
+  // CÔNG THỨC TÍNH TIỀN HỌC THEO BUỔI & THEO THÁNG & TRỪ PHÍ VÍ SÀN 35%
   const daysPerWeekCount = selectedDays.length;
   const totalWeeksCount = parseInt(totalWeeks || 0, 10);
   const totalCourseSessions = daysPerWeekCount * totalWeeksCount; 
+
+  // Tính số buổi trong 1 tháng (quy ước chuẩn 4 tuần/tháng)
+  const monthlySessionsCount = daysPerWeekCount * 4;
+
+  // Tổng tiền học sinh (mỗi HS) phải đóng trong 1 tháng
+  const monthlyFeePerStudent = currentRate * monthlySessionsCount;
+
+  // Tổng tiền tất cả học sinh đóng trong 1 tháng (chưa trừ phí)
+  const monthlyGrossRevenue = monthlyFeePerStudent * numStudents;
+
+  // Tổng tiền của nguyên khóa học cho toàn bộ học sinh (chưa trừ phí)
+  const totalCourseGrossRevenue = currentRate * totalCourseSessions * numStudents;
   
-  const studentFeeToPay = currentRate * totalCourseSessions;
-  const totalCourseEstimateBenefit = studentFeeToPay * numStudents;
+  // Giá trị 35% Phí sàn trừ ra
+  const platformFeeAmount = totalCourseGrossRevenue * 0.35;
+
+  // Tổng tiền nhận được của nguyên khóa học đã trừ 35% (nhận 65%)
+  const totalCourseNetEstimateBenefit = totalCourseGrossRevenue * 0.65;
+
+  // Tiền 1 tháng gia sư nhận được = tổng tiền tháng chưa trừ phí x 65% (hoặc tổng tiền nguyên khóa đã trừ phí / số tháng)
+  const totalMonthsCount = totalWeeksCount > 0 ? totalWeeksCount / 4 : 1;
+  const monthlyNetEarnings = totalCourseNetEstimateBenefit / totalMonthsCount;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -368,7 +406,12 @@ export default function CreateClassPage() {
       return;
     }
 
-    if (!category) {
+    if (!description.trim()) {
+      alert("⚠️ Vui lòng nhập mô tả nội dung & phương pháp giảng dạy!");
+      return;
+    }
+
+    if (level !== "Cấp 1" && !category) {
       alert("⚠️ Vui lòng chọn môn học được phép dạy!");
       return;
     }
@@ -392,7 +435,7 @@ export default function CreateClassPage() {
     const payload = {
       tutor_id: tutorId,
       class_name: className,
-      category_id: category,
+      category_id: level === "Cấp 1" ? "cap1_homework" : category,
       level,
       description,
       max_students: numStudents,
@@ -483,26 +526,32 @@ export default function CreateClassPage() {
             <div className={styles.rowGrid}>
               <div className={styles.formGroup}>
                 <label htmlFor="category">Môn học sẽ dạy <span className={styles.required}>*</span></label>
-                <select
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value="">-- Chọn môn học dạy --</option>
-                  {filteredCategories.length > 0 ? (
-                    filteredCategories.map((cat) => (
-                      <option key={cat.category_id} value={cat.category_id}>
-                        {cat.category_name}
+                {level === "Cấp 1" ? (
+                  <select id="category" value="cap1_homework" disabled className={styles.disabledSelect}>
+                    <option value="cap1_homework">Hỗ trợ bài tập về nhà các môn học</option>
+                  </select>
+                ) : (
+                  <select
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Chọn môn học dạy --</option>
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((cat) => (
+                        <option key={cat.category_id} value={cat.category_id}>
+                          {cat.category_name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        Chưa có chuyên môn hợp lệ được phê duyệt
                       </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      Chưa có chuyên môn hợp lệ được phê duyệt
-                    </option>
-                  )}
-                </select>
-                {filteredCategories.length === 0 && (
+                    )}
+                  </select>
+                )}
+                {level !== "Cấp 1" && filteredCategories.length === 0 && (
                   <p className={styles.errorAlert} style={{ marginTop: "6px", fontSize: "13px" }}>
                     ⚠️ Bạn chưa đăng ký hoặc chưa được duyệt chuyên môn dạy môn nào trong danh mục hệ thống.
                   </p>
@@ -512,16 +561,19 @@ export default function CreateClassPage() {
               <div className={styles.formGroup}>
                 <label>Cấp học</label>
                 <div className={styles.segmentedControl}>
-                  {["Cấp 1", "Cấp 2", "Cấp 3"].map((lvl) => (
-                    <button
-                      type="button"
-                      key={lvl}
-                      className={level === lvl ? styles.activeSegment : ""}
-                      onClick={() => setLevel(lvl)}
-                    >
-                      {lvl}
-                    </button>
-                  ))}
+                  {["Cấp 1", "Cấp 2", "Cấp 3"].map((lvl) => {
+                    const isAllowedLevel = teachingLevels.includes(lvl);
+                    return (
+                      <button
+                        type="button"
+                        key={lvl}
+                        className={`${level === lvl ? styles.activeSegment : ""} ${!isAllowedLevel ? styles.disabledSegment : ""}`}
+                        onClick={() => handleLevelSelect(lvl)}
+                      >
+                        {lvl}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -555,7 +607,7 @@ export default function CreateClassPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Học phí mong muốn (đ/buổi) <span className={styles.required}>*</span></label>
+                <label>Học phí mong muốn (đ/buổi/người) <span className={styles.required}>*</span></label>
                 <input 
                   type="number" 
                   step="10000"
@@ -564,6 +616,7 @@ export default function CreateClassPage() {
                   value={pricePerSession}
                   onChange={(e) => setPricePerSession(e.target.value)}
                   required
+                  style={{marginTop: "16px"}}
                 />
                 {priceError && (
                   <p className={styles.errorAlert} style={{ marginTop: "16px", fontSize: "13px", padding: "8px 12px" }}>
@@ -573,14 +626,55 @@ export default function CreateClassPage() {
               </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label>Mô tả nội dung & Phương pháp giảng dạy</label>
+            {/* BẢNG KHUNG GIÁ QUY ĐỊNH HIỂN THỊ DƯỚI Ô SỐ LƯỢNG HỌC SINH VÀ HỌC PHÍ */}
+            <div className={styles.priceRegulationTableBox}>
+              <div className={styles.priceRegulationHeader}>
+                <span>Khung giá quy định hệ thống ({tutorLevel})</span>
+              </div>
+              <table className={styles.priceTable}>
+                <thead>
+                  <tr>
+                    <th>Cấp học</th>
+                    <th>Lớp 1 - 2 học sinh</th>
+                    <th>Lớp 3 - 5 học sinh</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {["Cấp 1", "Cấp 2", "Cấp 3"].map((lvl) => {
+                    const cfgLess = PRICE_LIMITS[tutorLevel]?.lessThan3[lvl];
+                    const cfgGreater = PRICE_LIMITS[tutorLevel]?.greaterThan3[lvl];
+                    const isCurrentLvl = level === lvl;
+                    return (
+                      <tr key={lvl} className={isCurrentLvl ? styles.activeTableRow : ""}>
+                        <td><strong>{lvl}</strong></td>
+                        <td>{cfgLess?.label || "-"}</td>
+                        <td>{cfgGreater?.label || "-"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "20px" }}>
+              <label>Mô tả nội dung & Phương pháp giảng dạy <span className={styles.required}>*</span></label>
               <textarea 
                 rows={4}
                 placeholder="Chia sẻ mục tiêu lớp học, lộ trình học tập và phương pháp giảng dạy độc đáo của bạn..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                required
               />
+
+              {/* KHUNG GỢI Ý MÔ TẢ CẤU TRÚC BUỔI HỌC */}
+              <div className={styles.descriptionSuggestionBox}>
+                <div className={styles.suggestionTitle}>💡 Gợi ý cấu trúc 1 buổi học hiệu quả:</div>
+                <ul className={styles.suggestionList}>
+                  <li><strong>Mở đầu (10 - 15 phút):</strong> Ôn tập kiến thức bài cũ, giải đáp thắc mắc bài tập về nhà.</li>
+                  <li><strong>Nội dung chính (60 - 70 phút):</strong> Giảng dạy lý thuyết bài mới, hướng dẫn ví dụ minh họa và cho học sinh thực hành làm bài tại chỗ.</li>
+                  <li><strong>Tổng kết (10 - 15 phút):</strong> Tóm tắt lại trọng tâm kiến thức, giao bài tập về nhà và dặn dò chuẩn bị cho buổi sau.</li>
+                </ul>
+              </div>
             </div>
           </section>
 
@@ -736,46 +830,72 @@ export default function CreateClassPage() {
                 <span className={styles.feeValue}>{currentRate.toLocaleString("vi-VN")}đ / Buổi</span>
               </div>
 
-              {/* KHUNG GIÁ GỢI Ý DỰA THEO CẤP HỌC, LEVEL GIA SƯ VÀ SỐ LƯỢNG HỌC SINH */}
-              <div className={styles.suggestedBox}>
-                <div className={styles.suggestedTitle}>
-                  💡 Khung giá quy định ({tutorLevel} - {level} - {numStudents >= 3 ? "Lớp từ 3 đến 5 HS" : "Lớp dưới 3 HS"}):
-                </div>
-                <div className={styles.suggestedValue}>
-                  {currentPriceConfig?.label}
-                </div>
-              </div>
-
-              {/* TÍNH TOÁN TIỀN THEO BUỔI & HỌC PHÍ HỌC SINH ĐÓNG & TỔNG TIỀN DỰ ĐIỂN */}
+              {/* TÍNH TOÁN TIỀN THEO THÁNG & TỔNG TIỀN TRỪ PHÍ VÍ SÀN 35% */}
               <div className={styles.calculationSection}>
                 <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Tổng số buổi dạy:</span>
+                  <span className={styles.calcValue}>{totalCourseSessions} buổi</span>
+                </div>
+
+                <div className={styles.calcRow}>
                   <span className={styles.calcLabel}>Thời lượng 1 buổi:</span>
-                  <span className={styles.calcValue}>{hoursPerSession} tiếng (Cố định)</span>
+                  <span className={styles.calcValue}>{hoursPerSession} tiếng </span>
                 </div>
 
                 <div className={styles.calcRow}>
-                  <span className={styles.calcLabel}>Tổng số buổi học:</span>
-                  <span className={styles.calcValue}>{totalCourseSessions} buổi ({daysPerWeekCount} buổi/tuần × {totalWeeksCount} tuần)</span>
+                  <span className={styles.calcLabel}>Số buổi học / tuần:</span>
+                  <span className={styles.calcValue}>{daysPerWeekCount} buổi/tuần</span>
                 </div>
 
                 <div className={styles.calcRow}>
-                  <span className={styles.calcLabel}>Tiền 1 học sinh đóng:</span>
-                  <span className={styles.calcValueHighlight}>
-                    {studentFeeToPay > 0 ? `${studentFeeToPay.toLocaleString("vi-VN")}đ` : "0đ"}
+                  <span className={styles.calcLabel}>Số lượng học sinh:</span>
+                  <span className={styles.calcValue}>{numStudents} học sinh</span>
+                </div>
+
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Học sinh đóng / tháng:</span>
+                  <span className={styles.calcValue}>
+                    {monthlyFeePerStudent > 0 ? `${monthlyFeePerStudent.toLocaleString("vi-VN")}đ` : "0đ"}
                   </span>
                 </div>
 
+                <div className={styles.calcRow}>
+                  <span className={styles.calcLabel}>Tổng tiền 1 tháng nhận được:</span>
+                  <span className={styles.calcValueHighlight}>
+                    {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}
+                  </span>
+                </div>
+
+                {/* TỔNG TIỀN TOÀN KHÓA */}
+                <div className={styles.calcRow} style={{ marginTop: "12px", paddingTop: "8px", borderTop: "1px dashed rgba(255, 255, 255, 0.25)" }}>
+                  <span className={styles.calcLabel}>Tổng tiền toàn khóa (Toàn bộ HS):</span>
+                  <span className={styles.calcValue}>
+                    {totalCourseGrossRevenue.toLocaleString("vi-VN")}đ
+                  </span>
+                </div>
+
+                {/* DÒNG PHÍ SÀN 35% ĐƯỢC THÊM MỚI */}
+                <div className={styles.calcRow}>
+                  <span className={styles.feeSubLabel}>Phí sàn 35%:</span>
+                  <span className={styles.feeSubValue}>
+                    -{platformFeeAmount > 0 ? platformFeeAmount.toLocaleString("vi-VN") : 0}đ
+                  </span>
+                </div>
+
+                {/* TỔNG TIỀN THỰC NHẬN */}
                 <div className={styles.totalRow}>
-                  <span className={styles.totalLabel}>Tổng tiền ước tính sẽ nhận ({numStudents} HS):</span>
+                  <span className={styles.totalLabel}>
+                    Tổng tiền thực nhận của nguyên khóa này:
+                  </span>
                   <span className={styles.totalValue}>
-                    {totalCourseEstimateBenefit > 0 ? `${totalCourseEstimateBenefit.toLocaleString("vi-VN")}đ` : "0đ"}
+                    {totalCourseNetEstimateBenefit > 0 ? `${Math.round(totalCourseNetEstimateBenefit).toLocaleString("vi-VN")}đ` : "0đ"}
                   </span>
                 </div>
               </div>
 
-              <p className={styles.feeFootnote}>
+              {/* <p className={styles.feeFootnote}>
                 ℹ️ Mức phí tự điền phải nằm trong khung quy định nhằm đảm bảo cân bằng thị trường gia sư.
-              </p>
+              </p> */}
             </div>
 
             <div className={styles.tipsCard}>
@@ -789,7 +909,7 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || filteredCategories.length === 0 || !!priceError}
+              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || (level !== "Cấp 1" && filteredCategories.length === 0) || !!priceError}
             >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tạo lớp ➔"}
             </button>

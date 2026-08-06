@@ -19,9 +19,22 @@ export default function LoginPage() {
   const [isSynced, setIsSynced] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // 🔥 Load dữ liệu đã lưu khi trang load
+  useEffect(() => {
+    // Load email và password đã lưu từ localStorage
+    const savedEmail = localStorage.getItem("remembered_email");
+    const savedPassword = localStorage.getItem("remembered_password");
+    const savedRememberMe = localStorage.getItem("remember_me") === "true";
+
+    if (savedRememberMe && savedEmail) {
+      setEmail(savedEmail);
+      setPassword(savedPassword || "");
+      setRememberMe(true);
+    }
+  }, []);
+
   // 🔥 Kiểm tra cookie user_info khi load trang
   useEffect(() => {
-    // Nếu đang redirecting, không làm gì
     if (isRedirecting) return;
     
     const hasUserInfo = document.cookie.includes("user_info");
@@ -32,7 +45,6 @@ export default function LoginPage() {
     console.log("hasRole:", hasRole);
     console.log("Session status:", status);
     
-    // Nếu đã có user_info và role, và đã authenticated -> chuyển hướng về trang chủ
     if (hasUserInfo && hasRole && status === "authenticated") {
       console.log("✅ Đã có user_info và role, chuyển hướng về trang chủ");
       setIsRedirecting(true);
@@ -40,7 +52,6 @@ export default function LoginPage() {
       return;
     }
     
-    // Nếu có session nhưng chưa có user_info -> đồng bộ
     if (status === "authenticated" && session?.user && !isSynced && !hasUserInfo) {
       console.log("🔄 Đồng bộ session Google sang cookie:", session.user);
       
@@ -68,17 +79,13 @@ export default function LoginPage() {
         window.location.href = "/";
       }, 300);
     }
-    
-    // ✅ Nếu không có session và không có user_info -> ở lại trang login
   }, [session, status, isSynced, isRedirecting]);
 
-  // Hàm kiểm tra email Gmail
   const isValidGmail = (email) => {
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     return gmailRegex.test(email);
   };
 
-  // Đăng nhập với email/password
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -124,6 +131,18 @@ export default function LoginPage() {
         throw new Error("Dữ liệu đăng nhập không hợp lệ");
       }
 
+      // 🔥 Lưu thông tin đăng nhập nếu chọn "Ghi nhớ đăng nhập"
+      if (rememberMe) {
+        localStorage.setItem("remembered_email", email);
+        localStorage.setItem("remembered_password", password);
+        localStorage.setItem("remember_me", "true");
+      } else {
+        // Xóa dữ liệu đã lưu nếu không chọn
+        localStorage.removeItem("remembered_email");
+        localStorage.removeItem("remembered_password");
+        localStorage.removeItem("remember_me");
+      }
+
       const userInfo = {
         user_id: data.user.user_id,
         name: data.user.full_name,
@@ -160,7 +179,6 @@ export default function LoginPage() {
     }
   };
 
-  // Đăng nhập với Google
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
@@ -172,6 +190,19 @@ export default function LoginPage() {
       console.error("❌ Google login error:", error);
       setError("Đăng nhập bằng Google thất bại, vui lòng thử lại");
       setIsLoading(false);
+    }
+  };
+
+  // 🔥 Hàm xử lý khi checkbox "Ghi nhớ đăng nhập" thay đổi
+  const handleRememberMeChange = (e) => {
+    const checked = e.target.checked;
+    setRememberMe(checked);
+    
+    // Nếu bỏ chọn, xóa dữ liệu đã lưu
+    if (!checked) {
+      localStorage.removeItem("remembered_email");
+      localStorage.removeItem("remembered_password");
+      localStorage.removeItem("remember_me");
     }
   };
 
@@ -256,12 +287,12 @@ export default function LoginPage() {
                     <input
                       type="checkbox"
                       checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                      onChange={handleRememberMeChange}
                     />
                     <span>Ghi nhớ đăng nhập</span>
                   </label>
                   <Link href="/forgot-password" className="aurateach-forgot-link">
-                      Quên mật khẩu?
+                    Quên mật khẩu?
                   </Link>
                 </div>
 
