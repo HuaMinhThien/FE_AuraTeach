@@ -18,12 +18,11 @@ const DEFAULT_IMAGES = [
   "/img/class/default-class-10.png",
 ];
 
-// Định nghĩa khung giá chi tiết theo cấp học & quy mô lớp (min - max)
 const PRICE_LIMITS = {
   greaterThan3: { // Lớp >= 3 học sinh
-    "Cấp 1": { min: 50000, max: 100000, label: "50.000đ - 100.000đ / buổi" }, // ✅ Đã sửa max: 100000
-    "Cấp 2": { min: 150000, max: 300000, label: "150.000đ - 300.000đ / buổi" },
-    "Cấp 3": { min: 250000, max: 500000, label: "250.000đ - 500.000đ / buổi" },
+    "Cấp 1": { min: 40000, max: 60000, label: "40.000đ - 60.000đ / buổi" },
+    "Cấp 2": { min: 50000, max: 80000, label: "50.000đ - 80.000đ / buổi" },
+    "Cấp 3": { min: 70000, max: 100000, label: "70.000đ - 100.000đ / buổi" },
   },
   lessThan3: { // Lớp < 3 học sinh
     "Cấp 1": { min: 100000, max: 300000, label: "100.000đ - 300.000đ / buổi" },
