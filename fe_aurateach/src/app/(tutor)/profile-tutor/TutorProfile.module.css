@@ -3,12 +3,8 @@
   width: 100%;
   box-sizing: border-box;
   margin-top: 80px; /* Đồng bộ khoảng cách thụt lề từ thanh Topbar xuống */
-  
-  /* Nếu trang quản lý không có padding bọc ngoài, bạn có thể để 0 hoặc chỉnh theo ý muốn */
   padding: 0px; 
 }
-
-
 
 /* Thẻ Header chính */
 .headerCard {
@@ -121,6 +117,7 @@
 
 .badgeRating { background-color: #eff6ff; color: #1d4ed8; }
 .badgeExp { background-color: #f3e8ff; color: #6b21a8; }
+.badgeLevel { background-color: #fef3c7; color: #b45309; }
 .badgeVerifyVerified { background-color: #ecfdf5; color: #047857; }
 .badgeVerifyPending { background-color: #fffbeb; color: #b45309; }
 
@@ -218,7 +215,7 @@
   text-decoration: underline;
 }
 
-/* Khối tiểu sử Bio */
+/* Khối tiểu sử Bio & Chứng chỉ */
 .bioCard {
   background-color: #ffffff;
   border-radius: 0.75rem;
@@ -242,6 +239,105 @@
   line-height: 1.625;
   white-space: pre-line;
   margin: 0;
+}
+
+/* Khối Upload Bằng cấp */
+.certUploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.uploadGroup {
+  display: flex;
+  align-items: center;
+}
+
+.uploadBtn {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px dashed #3b82f6;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadBtn:hover {
+  background-color: #dbeafe;
+}
+
+.urlUploadGroup {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnAddUrl {
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnAddUrl:hover {
+  background-color: #1d4ed8;
+}
+
+/* Grid Bằng cấp */
+.certGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.certItem {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  height: 110px;
+  background-color: #f8fafc;
+}
+
+.certImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.certItem:hover .certImage {
+  transform: scale(1.05);
+}
+
+.btnDeleteCert {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(220, 38, 38, 0.85);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnDeleteCert:hover {
+  background: #dc2626;
 }
 
 /* Loading Spin */
@@ -279,7 +375,6 @@
 
 /* --- CSS Bổ Sung Cho Các Chức Năng Quản Lý Cá Nhân --- */
 
-/* Khung chứa tiêu đề trang và cụm nút thao tác */
 .pageHeaderActions {
   display: flex;
   justify-content: space-between;
@@ -296,15 +391,13 @@
   font-weight: 600;
 }
 
-/* Nhóm nút Hủy và Lưu khi đang chỉnh sửa */
 .btnActionGroup {
   display: flex;
   gap: 10px;
 }
 
-/* Nút Chỉnh sửa cấu hình & Nút Lưu thay đổi */
 .btnEdit, .btnSave {
-  background-color: #0035a6; /* Màu xanh đồng bộ với sidebar của bạn */
+  background-color: #0035a6;
   color: #ffffff;
   border: none;
   padding: 8px 16px;
@@ -319,7 +412,6 @@
   background-color: #002575;
 }
 
-/* Nút Hủy bỏ trạng thái chỉnh sửa */
 .btnCancel {
   background-color: #e2e8f0;
   color: #4a5568;
@@ -336,7 +428,6 @@
   background-color: #cbd5e1;
 }
 
-/* Hàng hiển thị Số dư khả dụng + Nút Rút tiền */
 .balanceRow {
   display: flex;
   justify-content: space-between;
@@ -344,7 +435,6 @@
   margin-top: 8px;
 }
 
-/* Nút Rút tiền về ví */
 .btnPayout {
   background-color: #ffffff;
   color: #0035a6;
@@ -362,8 +452,6 @@
   color: #002575;
   transform: translateY(-1px);
 }
-
-/* --- Style cho các thành phần Form khi nhập liệu --- */
 
 .inputField {
   width: 100%;
