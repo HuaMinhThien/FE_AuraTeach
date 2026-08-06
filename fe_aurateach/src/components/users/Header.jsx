@@ -8,6 +8,7 @@ import SearchComponent from "./SearchInput";
 import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
 import NotificationBell from "@/components/common/NotificationBell";
 
+
 // ✅ Thêm flag để kiểm tra JSON Server đã sẵn sàng chưa
 const API_BASE = "http://localhost:3007";
 let isJsonServerReady = false;

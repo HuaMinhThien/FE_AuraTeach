@@ -266,6 +266,28 @@ export default function TutorDetailPage({ params }) {
     setShowBooking(true);
   };
 
+  // ===== HÀM XỬ LÝ BÁO CÁO GIA SƯ =====
+  const handleReport = () => {
+    if (!currentUser) {
+      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      return;
+    }
+    
+    // Kiểm tra nếu là học viên
+    if (currentUser.role !== 'student') {
+      alert('⚠️ Chỉ học viên mới có thể báo cáo gia sư!');
+      return;
+    }
+
+    // Chuyển đến trang báo cáo
+    const tutorId = tutorDetails?.tutor_id;
+    if (tutorId) {
+      router.push(`/report-tutor/${tutorId}`);
+    } else {
+      alert('❌ Không tìm thấy thông tin gia sư để báo cáo');
+    }
+  };
+
   // Hiển thị loading
   if (isLoading) {
     return (
@@ -308,11 +330,6 @@ export default function TutorDetailPage({ params }) {
     );
   }
 
-  // Phân tách các môn học
-  const subjectsArray = tutorDetails.expertise
-    ? tutorDetails.expertise.split(',').map(item => item.trim())
-    : ["Toán học", "Ngữ Văn", "Tiếng Anh"];
-
   return (
     <div className={styles.tutorProfilePage}>
       <div className={styles.mainLayout}>
@@ -330,12 +347,7 @@ export default function TutorDetailPage({ params }) {
             <div>
               <div className={styles.nameRow}>
                 <h1 className={styles.tutorName}>{accountUser.full_name}</h1>
-                {/* HIỂN THỊ LEVEL (SINH VIÊN HOẶC GIÁO VIÊN) */}
-                {tutorDetails.level && (
-                  <span className={styles.levelBadge}>
-                    {tutorDetails.level}
-                  </span>
-                )}
+                <span className={styles.verifiedCheck}>✓</span>
               </div>
               <div className={styles.ratingMeta}>
                 ⭐ {tutorDetails.rating ? tutorDetails.rating.toFixed(1) : '4.5'} 
@@ -365,30 +377,19 @@ export default function TutorDetailPage({ params }) {
             <p className={styles.bioText}>{tutorDetails.bio || "Chưa có thông tin giới thiệu"}</p>
           </div>
 
-          {/* 3. Khối Bằng cấp & Chứng chỉ */}
+          {/* 3. Khối bằng cấp và thành tích */}
           <div className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Bằng cấp & Chứng chỉ</h2>
-            
-            {/* Hiển thị danh sách hình ảnh chứng chỉ nếu có */}
-            {tutorDetails.certificates && tutorDetails.certificates.length > 0 ? (
-              <div className={styles.certificatesGallery}>
-                {tutorDetails.certificates.map((certImg, idx) => (
-                  <img 
-                    key={idx}
-                    src={certImg} 
-                    alt={`Chứng chỉ ${idx + 1}`} 
-                    className={styles.certificateImage} 
-                  />
-                ))}
-              </div>
-            ) : (
-              <img 
-                src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=1200" 
-                alt="Chứng nhận thành tích gia sư" 
-                className={styles.achievementImage} 
-              />
-            )}
-
+            <h2 className={styles.sectionTitle}>Thành tích nổi bật</h2>
+            <img 
+              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=1200" 
+              alt="Chứng nhận thành tích gia sư" 
+              className={styles.achievementImage} 
+            />
+            <div className={styles.achievementList}>
+              <div>🏅 Giải nhất Olympic Tin học sinh viên 2022</div>
+              <div>📜 Chứng chỉ Professional Software Engineer (PSE)</div>
+              <div>👥 Founder của AuraTeach Community</div>
+            </div>
           </div>
 
           {/* 4. Khối danh sách các lớp học hiện có */}
@@ -473,7 +474,7 @@ export default function TutorDetailPage({ params }) {
         {/* ================= CỘT BÊN PHẢI: SIDEBAR TIỆN ÍCH ================= */}
         <div className={styles.rightColumn}>
           
-          {/* NÚT LIÊN HỆ */}
+          {/* Nút LIÊN HỆ */}
           <div className={styles.contactBox}>
             <button className={styles.contactBtn} onClick={handleContact}>
               💬 Liên hệ với {accountUser.full_name?.split(' ').pop() || 'gia sư'}
@@ -490,13 +491,10 @@ export default function TutorDetailPage({ params }) {
             )}
           </div>
 
+          {/* Thông tin hồ sơ */}
           <div className={styles.infoBox}>
             <h3 className={styles.infoBoxTitle}>Thông tin hồ sơ</h3>
             <div className={styles.infoList}>
-              <div>
-                <span>Trình độ:</span> 
-                <strong>{tutorDetails.level || 'Chưa cập nhật'}</strong>
-              </div>
               <div>
                 <span>Kinh nghiệm:</span> 
                 <strong>{tutorDetails.experience || 'Chưa cập nhật'}</strong>
@@ -511,13 +509,47 @@ export default function TutorDetailPage({ params }) {
               <div className={styles.subjectsDivider}>
                 <span className={styles.subjectsTitle}>Môn học giảng dạy:</span>
                 <div className={styles.tagsContainer}>
-                  {subjectsArray.map((sub, i) => (
-                    <span key={i} className={styles.subjectTag}>{sub}</span>
-                  ))}
+                  {tutorDetails.expertise ? (
+                    tutorDetails.expertise.split(',').map((subject, index) => (
+                      <span key={index} className={styles.subjectTag}>{subject.trim()}</span>
+                    ))
+                  ) : (
+                    <span className={styles.subjectTag}>Chưa cập nhật</span>
+                  )}
                 </div>
               </div>
             </div>
-            <div className={styles.reportBtn}>⚠️ Báo cáo gia sư</div>
+            
+            {/* ✅ NÚT BÁO CÁO GIA SƯ - ĐÃ SỬA */}
+            {currentUser?.role === 'student' ? (
+              <button 
+                className={styles.reportBtn} 
+                onClick={handleReport}
+                style={{ cursor: 'pointer' }}
+              >
+                ⚠️ Báo cáo gia sư
+              </button>
+            ) : currentUser ? (
+              <div 
+                className={styles.reportBtn} 
+                style={{ 
+                  opacity: 0.5, 
+                  cursor: 'not-allowed',
+                  backgroundColor: '#e5e7eb',
+                  color: '#6b7280'
+                }}
+              >
+                ⚠️ Báo cáo gia sư (Chỉ học viên)
+              </div>
+            ) : (
+              <Link 
+                href={`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`}
+                className={styles.reportBtn}
+                style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
+              >
+                ⚠️ Đăng nhập để báo cáo
+              </Link>
+            )}
           </div>
 
           {/* Danh sách Gia sư liên quan */}
