@@ -75,10 +75,17 @@ export const authService = {
 
   async getCurrentUser() {
     try {
-      // 👈 Gọi đúng endpoint /auth/me đã khai báo trong routes/api.php của Laravel
       const response = await apiClient.get("/auth/me");
-      return response.data !== undefined ? response.data : response;
+      const resData = response.data !== undefined ? response.data : response;
+      
+      // Nếu API trả về dạng { user: { user_id: ... } } thì bóc lấy phần user bên trong
+      if (resData && resData.user) {
+        return resData.user;
+      }
+      
+      return resData;
     } catch (error) {
+      console.error("Lỗi lấy thông tin current user:", error);
       return null;
     }
   },

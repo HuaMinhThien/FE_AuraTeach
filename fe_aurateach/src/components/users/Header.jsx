@@ -103,6 +103,9 @@ export default function Header() {
 
     // ✅ Lấy số lượng tin nhắn chưa đọc thông qua conversationService
     const fetchUnreadCount = useCallback(async (userId) => {
+        // 🛑 Chặn ngay nếu không có userId
+        if (!userId) return; 
+
         try {
             const data = await conversationService.getUnreadCount(userId);
             // Hỗ trợ cả trường hợp BE trả về object { unread_count: X } hoặc trả thẳng con số
@@ -115,16 +118,27 @@ export default function Header() {
 
     // Polling unread count định kỳ khi có user đăng nhập
     useEffect(() => {
-        if (!user?.user_id && !user?.id) return;
-        
-        const userId = user.user_id || user.id;
+        // 🛑 Lấy trực tiếp từ cookie hoặc kiểm tra user state an toàn
+        const userCookie = getCookie("user_info");
+        let currentUserId = user?.user_id || user?.id;
+
+        if (!currentUserId && userCookie) {
+            try {
+                const userData = JSON.parse(decodeURIComponent(userCookie));
+                currentUserId = userData.user_id || userData.id;
+            } catch (e) {
+                // Ignore parse error
+            }
+        }
+
+        if (!currentUserId) return; 
         
         const timeout = setTimeout(() => {
-            fetchUnreadCount(userId);
+            fetchUnreadCount(currentUserId);
         }, 1000);
         
         const interval = setInterval(() => {
-            fetchUnreadCount(userId);
+            fetchUnreadCount(currentUserId);
         }, 10000); // Polling mỗi 10 giây
         
         return () => {

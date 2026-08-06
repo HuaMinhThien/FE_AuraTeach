@@ -122,31 +122,45 @@ export default function TutorDetailPage({ params }) {
   // ===== HÀM TÌM HOẶC TẠO CONVERSATION =====
   const findOrCreateConversation = async (studentId, userId, tutorId) => {
     try {
-      const response = await apiClient.get("/conversations");
-      const conversations = Array.isArray(response) ? response : (response.data || []);
+      console.log("🛠️ [DEBUG] Đang tìm conversation với studentId:", studentId, "và targetId:", userId || tutorId);
+
+      const url = `/conversations?user_id=${encodeURIComponent(studentId)}`;
+      const response = await apiClient.get(url);
+      
+      const resData = response.data || response;
+      const conversations = Array.isArray(resData) ? resData : (resData.data || []);
       
       const existingConv = conversations.find(conv => {
-        const participants = conv.participants || [];
-        if (!participants.includes(studentId)) return false;
-        return participants.includes(userId) || participants.includes(tutorId);
+        const participants = conv.users || conv.participants || [];
+        const participantIds = participants.map(p => String(p.user_id || p.id || p));
+        
+        const hasStudent = participantIds.includes(String(studentId));
+        const hasTutorTarget = participantIds.includes(String(userId)) || participantIds.includes(String(tutorId));
+        
+        return hasStudent && hasTutorTarget;
       });
       
       if (existingConv) {
+        console.log("✅ Đã tìm thấy conversation cũ:", existingConv);
         return existingConv;
       }
       
+      // 🚀 Kiểm tra xem ID nào thực sự là user_id của gia sư (ưu tiên dùng userId của accountUser)
+      const targetUserId = userId || tutorId;
       const newConvPayload = {
-        participants: [studentId, userId],
-        last_message: "",
-        last_message_time: new Date().toISOString(),
-        unread_count: 0
+        participants: [studentId, targetUserId]
       };
       
-      const createdConv = await apiClient.post("/conversations", newConvPayload);
-      return createdConv.data || createdConv;
+      console.log("🚀 [DEBUG] Đang gửi payload tạo conversation mới:", newConvPayload);
+
+      const createdRes = await apiClient.post("/conversations", newConvPayload);
+      console.log("🚀 [DEBUG] Kết quả tạo conversation từ server:", createdRes);
+
+      const createdData = createdRes.data || createdRes;
+      return createdData.data || createdData;
       
     } catch (error) {
-      console.error("❌ Lỗi tìm/tạo conversation:", error);
+      console.error("❌ Lỗi tìm/tạo conversation chi tiết:", error);
       return null;
     }
   };

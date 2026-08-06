@@ -1,7 +1,13 @@
 const API_BASE_URL =  "http://localhost:8000/api";
 
 const getHeaders = (customHeaders = {}, isFormData = false) => {
-  const token = localStorage.getItem("access_token");
+  // 🔍 Hỗ trợ tìm token ở nhiều key phổ biến khác nhau trong localStorage
+  const token = 
+    localStorage.getItem("access_token") || 
+    localStorage.getItem("token") || 
+    localStorage.getItem("user_token");
+
+  console.log("🔐 [apiClient] Token lấy từ storage:", token ? token.substring(0, 10) + "..." : "KHÔNG CÓ TOKEN!");
   
   const headers = {
     "Accept": "application/json",

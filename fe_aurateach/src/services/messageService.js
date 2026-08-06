@@ -4,14 +4,15 @@ import apiClient from './apiClient';
 export const messageService = {
   // Lấy danh sách tin nhắn theo cuộc trò chuyện
   getMessages: async (conversationId) => {
+    console.log("🔍 [DEBUG messageService.getMessages] Nhận vào conversationId:", conversationId, typeof conversationId);
+
+    if (!conversationId || conversationId === 'undefined' || conversationId === '[object Object]') {
+      throw new Error("Thiếu hoặc không hợp lệ conversation_id");
+    }
+
     try {
-      const response = await apiClient.get('/messages', {
-        params: {
-          conversation_id: conversationId,
-          _sort: 'created_at',
-          _order: 'asc'
-        }
-      });
+      // 🚀 Gọi theo chuẩn route động /api/messages/by-conversation/{id}
+      const response = await apiClient.get(`/messages/by-conversation/${conversationId}`);
       return response.data !== undefined ? response.data : response;
     } catch (error) {
       console.error(`Lỗi khi lấy tin nhắn của conversation ${conversationId}:`, error);

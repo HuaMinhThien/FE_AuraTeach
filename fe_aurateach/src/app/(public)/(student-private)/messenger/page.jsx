@@ -41,46 +41,46 @@ function MessengerContent() {
     const initPage = async () => {
       try {
         console.log("🚀 START INIT MESSENGER");
+        
         const currentUser = await authService.getCurrentUser();
-        console.log("👤 Current user:", currentUser);
+        console.log("👤 DEBUG currentUser nhận được:", currentUser);
         
         if (!currentUser) {
           router.push("/login");
           return;
         }
+
         setUser(currentUser);
         
-        const userId = currentUser.user_id || currentUser.id;
-        console.log("📡 User ID:", userId);
+        // In ra tất cả các trường có thể chứa ID để kiểm tra xem tên trường thực tế là gì
+        console.log("🔍 user_id:", currentUser.user_id);
+        console.log("🔍 id:", currentUser.id);
+        console.log("🔍 _id:", currentUser._id);
+        
+        const userId = currentUser.user_id || currentUser.id || currentUser._id;
+        console.log("📡 Final userId được chọn để fetch:", userId);
         
         if (!userId) {
-          setError("Không tìm thấy thông tin người dùng");
+          setError("Không tìm thấy thông tin định danh người dùng (userId trống)");
           setLoading(false);
           return;
         }
         
         await fetchConversations(userId);
       } catch (err) {
-        console.error("❌ Lỗi tải messenger:", err);
+        console.error("❌ Lỗi ngoại lệ:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
     initPage();
-
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-        isPollingActiveRef.current = false;
-      }
-    };
   }, [router]);
 
   useEffect(() => {
     if (conversations.length > 0 && conversationIdFromUrl && !hasUrlBeenHandledRef.current) {
-      const targetConv = conversations.find(c => c.id === conversationIdFromUrl);
+      // 🛠️ Sửa c.id thành c.conversation_id || c.id
+      const targetConv = conversations.find(c => (c.conversation_id || c.id) === conversationIdFromUrl);
       if (targetConv) {
         hasUrlBeenHandledRef.current = true;
         handleSelectConversation(targetConv);
@@ -89,73 +89,111 @@ function MessengerContent() {
   }, [conversations, conversationIdFromUrl]);
 
   const fetchConversations = async (userId) => {
+    if (!userId) {
+      console.error("❌ fetchConversations bị gọi nhưng userId đang trống!");
+      return;
+    }
+    
     try {
-      const allConversations = await conversationService.getConversations();
-      if (!Array.isArray(allConversations)) {
-        setConversations([]);
-        return;
-      }
+      console.log("==========================================");
+      console.log("🔍 [DEBUG START] Đang fetch conversations cho userId hiện tại:", userId);
 
-      const allTutors = await tutorService.getTutors();
-      const tutorToUserMap = {};
-      const userToTutorMap = {};
+      const allConversations = await conversationService.getConversations(userId);
+      const convList = Array.isArray(allConversations) ? allConversations : (allConversations.data || []);
+      console.log("📦 [DEBUG] Danh sách conversations thô nhận được từ API:", convList);
       
-      const tutorsList = Array.isArray(allTutors) ? allTutors : (allTutors.data || []);
-      tutorsList.forEach(t => {
-        if (t.tutor_id && t.user_id) {
-          tutorToUserMap[t.tutor_id] = t.user_id;
-          userToTutorMap[t.user_id] = t.tutor_id;
-        }
-      });
-
-      const myIds = [userId];
-      if (userToTutorMap[userId]) {
-        myIds.push(userToTutorMap[userId]);
-      }
-
-      const userConversations = allConversations.filter(conv => {
-        if (!conv.participants) return false;
-        return conv.participants.some(p => myIds.includes(p));
-      });
-
-      if (userConversations.length === 0) {
+      if (convList.length === 0) {
+        console.warn("⚠️ Mảng conversation trống!");
         setConversations([]);
         setUnreadCount(0);
         return;
       }
 
+      // 1. Lấy danh sách gia sư để tạo bảng ánh xạ
+      const allTutors = await tutorService.getTutors();
+      const tutorsList = Array.isArray(allTutors) ? allTutors : (allTutors.data || []);
+      
+      const tutorToUserMap = {};
+      const userToTutorMap = {};
+      
+      tutorsList.forEach(t => {
+        const tId = t.tutor_id || t.id;
+        const uId = t.user_id || t.account_id;
+        if (tId && uId) {
+          tutorToUserMap[tId] = uId;
+          tutorToUserMap[String(tId)] = uId;
+          userToTutorMap[uId] = tId;
+        }
+      });
+      console.log("🗺️ [DEBUG] Bảng quy đổi tutorToUserMap:", tutorToUserMap);
+
+      const userConversations = convList; 
       const totalUnread = userConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
       setUnreadCount(totalUnread);
 
       const convWithUsers = await Promise.all(
         userConversations.map(async (conv) => {
-          const otherParticipantId = conv.participants.find(p => !myIds.includes(p));
-          let lookupUserId = otherParticipantId;
-          if (tutorToUserMap[otherParticipantId]) {
-            lookupUserId = tutorToUserMap[otherParticipantId];
+          const convId = conv.conversation_id || conv.id;
+          const participants = conv.users || conv.participants || [];
+          
+          console.log(`💬 [DEBUG] Đang xử lý hội thoại ID: [${convId}] với participants:`, participants);
+
+          // 1. Tìm người đối diện: Ưu tiên tìm participant có user_id khác với userId hiện tại của bạn
+          let otherParticipant = participants.find(p => {
+            const pId = (typeof p === 'object' && p !== null) ? (p.user_id || p.id || p._id) : p;
+            return String(pId) !== String(userId);
+          });
+
+          // Nếu lỡ không tìm thấy, lấy phần tử đầu tiên khác chính mình
+          if (!otherParticipant && participants.length > 0) {
+            otherParticipant = participants.find(p => {
+              const pId = (typeof p === 'object' && p !== null) ? (p.user_id || p.id || p._id) : p;
+              return String(pId) !== String(userId);
+            }) || participants[0];
           }
 
-          try {
-            const userRes = await userService.getUsers({ user_id: lookupUserId });
-            const users = Array.isArray(userRes) ? userRes : (userRes.data || []);
-            const otherUser = users[0] || { 
-              full_name: "Người dùng", 
+          // Trích xuất ID và thông tin chi tiết từ participant đó
+          let rawOtherId = (typeof otherParticipant === 'object' && otherParticipant !== null) 
+            ? (otherParticipant.user_id || otherParticipant.id || otherParticipant._id) 
+            : otherParticipant;
+
+          let lookupUserId = tutorToUserMap[rawOtherId] || tutorToUserMap[String(rawOtherId)] || rawOtherId;
+
+          // 2. LẤY TRỰC TIẾP THÔNG TIN TỪ OBJECT participant (Vì trong participants đã có sẵn thông tin chuẩn của gia sư test role tutor)
+          let otherUser = null;
+          if (typeof otherParticipant === 'object' && otherParticipant !== null) {
+            otherUser = otherParticipant;
+          } else {
+            // Nếu participant chỉ lưu dạng ID string, mới đi gọi API lấy thông tin user
+            try {
+              let userRes = await userService.getUsers({ user_id: lookupUserId });
+              let users = Array.isArray(userRes) ? userRes : (userRes.data || []);
+              otherUser = users[0];
+            } catch (err) {
+              console.error(`❌ Lỗi fetch user:`, err);
+            }
+          }
+
+          // Fallback an toàn nếu không có gì
+          if (!otherUser) {
+            otherUser = { 
+              full_name: "Gia sư", 
               avatar: "/img/default-avatar.svg",
               role: "tutor"
             };
-            return { ...conv, other_user: otherUser, other_user_id: lookupUserId };
-          } catch (err) {
-            return {
-              ...conv,
-              other_user: { full_name: "Người dùng", avatar: "/img/default-avatar.svg", role: "tutor" },
-              other_user_id: lookupUserId,
-            };
           }
+
+          console.log(`✅ [SUCCESS] Đã map chính xác gia sư cho hội thoại [${convId}]:`, otherUser);
+
+          return { ...conv, other_user: otherUser, other_user_id: lookupUserId };
         })
       );
+      
+      console.log("==========================================");
+      console.log("🚀 [DEBUG END] convWithUsers hoàn chỉnh:", convWithUsers);
       setConversations(convWithUsers);
     } catch (error) {
-      console.error("Lỗi lấy danh sách hội thoại:", error);
+      console.error("❌ Lỗi lấy danh sách hội thoại:", error);
       setConversations([]);
     }
   };
@@ -219,13 +257,17 @@ function MessengerContent() {
 
   const loadMoreMessages = useCallback(async () => {
     if (!selectedConversation || !hasMore) return;
-    await fetchMessages(selectedConversation.id, false);
+    const convId = selectedConversation.conversation_id || selectedConversation.id;
+    await fetchMessages(convId, false);
   }, [selectedConversation, hasMore]);
 
   const sendMessage = async (content) => {
     if (!selectedConversation || !user) return;
     if (isSendingRef.current) return;
-    
+
+    const convId = selectedConversation.conversation_id || selectedConversation.id;
+    if (!convId || convId === 'undefined') return;
+
     const isFile = typeof content === 'object' && content.file_data;
     if (!isFile && !content.trim()) return;
 
@@ -236,8 +278,8 @@ function MessengerContent() {
       const senderId = user.user_id || user.id;
       const receiverId = selectedConversation.other_user_id;
       const newMessage = {
-        id: isFile ? content.id : `msg_${Date.now()}`,
-        conversation_id: selectedConversation.id,
+        message_id: isFile ? content.id : `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        conversation_id: convId,
         sender_id: senderId,
         sender_role: user.role || "student",
         receiver_id: receiverId,
@@ -255,25 +297,26 @@ function MessengerContent() {
 
       setMessages(prev => {
         const updated = [...prev, newMessage];
-        saveMessagesToLocal(selectedConversation.id, updated);
+        saveMessagesToLocal(convId, updated);
         return updated;
       });
 
       const savedMsg = await messageService.sendMessage(newMessage);
       
       setMessages(prev => {
-        const updated = prev.map(m => m.id === newMessage.id ? (savedMsg || newMessage) : m);
-        saveMessagesToLocal(selectedConversation.id, updated);
+        const updated = prev.map(m => m.message_id === newMessage.message_id || m.id === newMessage.id ? (savedMsg || newMessage) : m);
+        saveMessagesToLocal(convId, updated);
         return updated;
       });
 
-      await messageService.updateConversation(selectedConversation.id, {
+      await messageService.updateConversation(convId, {
         last_message: isFile ? `📎 ${content.file_name}` : content.trim(),
         last_message_time: new Date().toISOString(),
         unread_count: 1,
       });
 
     } catch (error) {
+      console.error("Lỗi gửi tin nhắn:", error);
       alert("Không thể gửi tin nhắn. Vui lòng thử lại.");
     } finally {
       setSending(false);
@@ -282,21 +325,29 @@ function MessengerContent() {
   };
 
   const handleSelectConversation = async (conversation) => {
+    const convId = conversation.conversation_id || conversation.id;
     setSelectedConversation(conversation);
     setOffset(0);
     setHasMore(true);
     setMessages([]);
     isInitialLoadRef.current = true;
     lastMessageCountRef.current = 0;
-    await markAsRead(conversation.id);
-    await fetchMessages(conversation.id, true);
+
+    if (convId && convId !== 'undefined') {
+      await markAsRead(convId);
+      await fetchMessages(convId, true);
+    }
   };
 
   const markAsRead = async (conversationId) => {
     try {
+      // Đảm bảo conversationId không bị undefined
+      if (!conversationId || conversationId === 'undefined') return;
+
       await messageService.updateConversation(conversationId, { unread_count: 0 });
-      setConversations(prev => prev.map(conv => conv.id === conversationId ? { ...conv, unread_count: 0 } : conv));
-      const conv = conversations.find(c => c.id === conversationId);
+      setConversations(prev => prev.map(conv => ((conv.conversation_id || conv.id) === conversationId) ? { ...conv, unread_count: 0 } : conv));
+      
+      const conv = conversations.find(c => (c.conversation_id || c.id) === conversationId);
       if (conv) {
         setUnreadCount(prev => Math.max(0, prev - (conv.unread_count || 0)));
       }
@@ -311,18 +362,32 @@ function MessengerContent() {
       pollingRef.current = null;
       isPollingActiveRef.current = false;
     }
-    if (!selectedConversation) return;
+    if (!selectedConversation) {
+      console.log("⏸️ [POLLING] Chưa chọn conversation nào, bỏ qua polling.");
+      return;
+    }
+
+    // Bóc tách ID cẩn thận và in ra log để kiểm tra
+    const convId = selectedConversation.conversation_id || selectedConversation.id;
+    console.log("🎯 [POLLING SETUP] selectedConversation hiện tại:", selectedConversation);
+    console.log("🎯 [POLLING SETUP] convId rút ra được:", convId);
+
+    if (!convId || convId === 'undefined') {
+      console.warn("⚠️ [POLLING WARNING] convId không hợp lệ, hủy kích hoạt polling!");
+      return;
+    }
 
     isPollingActiveRef.current = true;
     const fetchNewMessages = async () => {
       if (!isPollingActiveRef.current) return;
       try {
-        const data = await messageService.getMessages(selectedConversation.id);
+        console.log(`🔄 [POLLING RUNNING] Đang gọi getMessages cho convId = ${convId}`);
+        const data = await messageService.getMessages(convId);
         if (!data || data.length === 0) return;
 
         setMessages(prev => {
-          const currentIds = prev.map(m => m.id);
-          const newMessages = data.filter(m => !currentIds.includes(m.id));
+          const currentIds = prev.map(m => m.id || m.message_id);
+          const newMessages = data.filter(m => !currentIds.includes(m.id || m.message_id));
           if (newMessages.length > 0) {
             return [...prev, ...newMessages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
           }
@@ -332,10 +397,10 @@ function MessengerContent() {
 
         if (data.length > 0) {
           const latestMsg = data[data.length - 1];
-          setConversations(prev => prev.map(c => c.id === selectedConversation.id ? { ...c, last_message: latestMsg.content, last_message_time: latestMsg.created_at } : c));
+          setConversations(prev => prev.map(c => ((c.conversation_id || c.id) === convId) ? { ...c, last_message: latestMsg.content, last_message_time: latestMsg.created_at } : c));
         }
       } catch (error) {
-        console.error("❌ Polling error:", error);
+        console.error("❌ [POLLING ERROR] Lỗi khi fetch tin nhắn mới:", error);
       }
     };
 
@@ -381,7 +446,7 @@ function MessengerContent() {
             <div className={styles.conversationListWrapper}>
               <ConversationList
                 conversations={conversations}
-                selectedId={selectedConversation?.id}
+                selectedId={selectedConversation?.conversation_id || selectedConversation?.id}
                 onSelect={handleSelectConversation}
                 currentUserId={user?.user_id || user?.id}
               />
