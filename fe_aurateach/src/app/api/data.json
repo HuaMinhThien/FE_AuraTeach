@@ -377,6 +377,10 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 660000,
       "available_balance": 37880000,
@@ -399,6 +403,10 @@
       "rating": 5,
       "verification_status": "approved",
       "experience": "1 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Sinh viên",
       "pending_balance": 100000,
       "available_balance": 3390000,
@@ -416,6 +424,10 @@
       "rating": 4.9,
       "verification_status": "approved",
       "experience": "6 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 2200000,
       "available_balance": 533900,
@@ -433,6 +445,10 @@
       "rating": 4.7,
       "verification_status": "approved",
       "experience": "4 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 1222000,
       "available_balance": 44390000,
@@ -450,6 +466,10 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -467,6 +487,10 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -484,6 +508,10 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -501,6 +529,10 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -518,6 +550,10 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -535,6 +571,10 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -552,6 +592,10 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -568,6 +612,10 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -584,6 +632,10 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -599,6 +651,10 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
       "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
@@ -1157,6 +1213,31 @@
       "status": "active",
       "students": [],
       "created_at": "2026-08-05T17:44:46.194Z"
+    },
+    {
+      "id": "e14c",
+      "course_id": "course_1786043585290",
+      "tutor_id": "tutor_01",
+      "title": "Ôn toán thi thpt",
+      "category_id": "cat-02",
+      "level": "Cấp 3",
+      "description": "Mở đầu (10 - 15 phút): Ôn tập kiến thức bài cũ, giải đáp thắc mắc bài tập về nhà.\nNội dung chính (60 - 70 phút): Giảng dạy lý thuyết bài mới, hướng dẫn ví dụ minh họa và cho học sinh thực hành làm bài tại chỗ.\nTổng kết (10 - 15 phút): Tóm tắt lại trọng tâm kiến thức, giao bài tập về nhà và dặn dò chuẩn bị cho buổi sau",
+      "max_students": 4,
+      "price_per_session": 100000,
+      "start_date": "2026-08-09",
+      "end_date": "2026-12-11",
+      "total_weeks": 18,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "07:00-09:00",
+      "image": "/img/class/default-class-1.jpg",
+      "permanent_room_url": "https://meet.google.com/tvb-ahfg-tme",
+      "status": "active",
+      "students": [],
+      "created_at": "2026-08-06T19:13:05.290Z"
     }
   ],
   "reviews": [
@@ -2291,6 +2372,10 @@
         "phone": "0912345678",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình"
@@ -2299,6 +2384,10 @@
         "phone": "0912345678",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình, Lý"
@@ -2315,6 +2404,10 @@
         "phone": "0912345678",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình"
@@ -2323,6 +2416,10 @@
         "phone": "0906761390",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 2 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình, Lý"
@@ -2339,6 +2436,10 @@
         "phone": "09106761390",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình",
@@ -2348,6 +2449,10 @@
         "phone": "09106761390",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình",
@@ -2369,6 +2474,10 @@
         "phone": "09106761390",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình",
@@ -2382,6 +2491,10 @@
         "phone": "09106761390",
         "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
         "experience": "Dưới 1 năm",
+        "teaching_levels": [
+          "Cấp 2",
+          "Cấp 3"
+        ],
         "level": "Giáo viên",
         "cv_link": "https://example.com/cv/tutor_01/profile",
         "expertise": "Toán, Tin học & Lập trình",
@@ -2591,5 +2704,7 @@
       "created_at": "2026-08-04T17:16:21.558Z"
     }
   ],
+  "class_requests": [],
+  "request_applications": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

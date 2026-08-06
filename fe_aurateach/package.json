@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "server": "json-server --watch src/app/api/data.json --port 3007",
+    "server_demo": "json-server --watch src/app/api/data_demo.json --port 3008",
     "start": "next start",
     "lint": "eslint"
   },
