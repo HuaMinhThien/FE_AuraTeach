@@ -6,6 +6,7 @@ import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import BookingDetailModal from "@/components/users/BookingDetailModal.jsx";
 import authService from "@/services/authService";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 import "../profile/profile.css";
 import "./lich-su-book.css";
 
@@ -142,9 +143,9 @@ export default function StudentBookingHistoryPage() {
     }
   };
 
-  const handleJoinClass = (meetUrl) => {
-    if (meetUrl) {
-      window.open(meetUrl, '_blank');
+  const handleJoinClass = (course) => {
+    if (course) {
+      window.open(getClassroomRoomPath(course, "student"), '_blank');
     }
   };
 

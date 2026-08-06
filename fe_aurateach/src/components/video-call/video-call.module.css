@@ -1,0 +1,369 @@
+/* src/components/video-call/video-call.module.css */
+
+/* ========== CONTAINER CHÍNH ========== */
+.videoRoom {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #1a1a2e;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+  position: relative;
+}
+
+/* ========== VIDEO GRID ========== */
+.videoGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 16px;
+  background: #0f0f1a;
+  overflow: hidden;
+}
+
+.videoGrid.multi {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.videoGrid.multi .videoWrapper:first-child {
+  grid-column: 1 / -1;
+  height: 60%;
+}
+
+.videoWrapper {
+  position: relative;
+  background: #2a2a3e;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.videoWrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Avatar fallback khi camera tắt */
+.videoFallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 48px;
+  color: #6b7280;
+}
+
+.videoFallback .name {
+  font-size: 16px;
+  color: #9ca3af;
+}
+
+/* ========== VIDEO LABEL ========== */
+.videoLabel {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.videoLabel .role {
+  font-size: 10px;
+  background: rgba(79, 70, 229, 0.7);
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+
+.videoLabel .micStatus {
+  font-size: 14px;
+}
+
+/* ========== CONTROLS BAR ========== */
+.controlsBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+}
+
+.controlsBar .controlBtn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controlsBar .controlBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.controlsBar .controlBtn.active {
+  background: #4f46e5;
+}
+
+.controlsBar .controlBtn.micOff {
+  background: #dc2626;
+}
+
+.controlsBar .controlBtn.cameraOff {
+  background: #dc2626;
+}
+
+.controlsBar .controlBtn.endCall {
+  background: #dc2626;
+  width: 56px;
+  height: 56px;
+}
+
+.controlsBar .controlBtn.endCall:hover {
+  background: #b91c1c;
+  transform: scale(1.05);
+}
+
+.controlsBar .timer {
+  margin: 0 12px;
+}
+
+.controlsBar .timerText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e5e7eb;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== CHAT BOX ========== */
+.chatBox {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(12px);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 10;
+}
+
+.chatBox.open {
+  transform: translateX(0);
+}
+
+.chatBox .chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chatBox .chatHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.chatBox .chatClose {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.chatBox .chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chatBox .chatMessage {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.chatBox .chatMessage.own {
+  align-self: flex-end;
+  background: #4f46e5;
+  border-bottom-right-radius: 4px;
+}
+
+.chatBox .chatMessage.other {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom-left-radius: 4px;
+}
+
+.chatBox .chatMessage .sender {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.chatBox .chatMessage .time {
+  font-size: 10px;
+  color: #6b7280;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.chatBox .chatEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  gap: 8px;
+}
+
+.chatBox .chatEmpty span {
+  font-size: 32px;
+}
+
+.chatBox .chatInput {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chatBox .chatInput input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.chatBox .chatInput input::placeholder {
+  color: #6b7280;
+}
+
+.chatBox .chatInput input:focus {
+  border-color: #4f46e5;
+}
+
+.chatBox .chatInput button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ========== PARTICIPANT LIST ========== */
+.participantList {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 16px 8px 16px;
+}
+
+.participantList span {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.participantBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.chatBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controlBtn {
+  position: relative;
+}
+
+/* Thêm vào cuối file */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: rgba(220, 38, 38, 0.9);
+  color: #fff;
+  border-radius: 8px;
+  margin: 8px 16px;
+  font-size: 14px;
+}
+
+.retryBtn {
+  padding: 6px 16px;
+  background: #fff;
+  color: #dc2626;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retryBtn:hover {
+  transform: scale(1.05);
+}

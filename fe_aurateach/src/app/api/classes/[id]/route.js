@@ -1,22 +1,33 @@
 // src/app/api/classes/[id]/route.js
 import { NextResponse } from "next/server";
-import laravelApi from "@/lib/laravelApi";
+
+const API_BASE = 'http://localhost:3007';
 
 export async function PATCH(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
 
-    console.log(`📡 PATCH /api/classes/${id} -> Laravel API`);
+    console.log(`📡 PATCH /api/classes/${id}`);
     console.log("📝 Update data:", body);
 
-    // Gọi Laravel API để cập nhật course
-    const response = await laravelApi.patch(`/courses/${id}`, body);
+    // Gọi JSON Server để cập nhật course
+    const response = await fetch(`${API_BASE}/courses/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error('Không thể cập nhật khóa học');
+    }
+
+    const data = await response.json();
 
     return NextResponse.json({
       success: true,
       message: "Cập nhật thành công!",
-      data: response.data?.data || response.data,
+      data: data,
     });
 
   } catch (error) {
@@ -24,9 +35,9 @@ export async function PATCH(request, { params }) {
     return NextResponse.json(
       { 
         success: false, 
-        message: error.response?.data?.message || "Lỗi cập nhật" 
+        message: error.message || "Lỗi cập nhật" 
       },
-      { status: error.response?.status || 500 }
+      { status: 500 }
     );
   }
 }
@@ -35,11 +46,20 @@ export async function GET(request, { params }) {
   try {
     const { id } = await params;
 
-    const response = await laravelApi.get(`/courses/${id}`);
+    const response = await fetch(`${API_BASE}/courses?course_id=${id}`, { cache: 'no-store' });
+    const data = await response.json();
+    const course = Array.isArray(data) ? data[0] : data;
+
+    if (!course) {
+      return NextResponse.json({
+        success: false,
+        message: "Không tìm thấy khóa học",
+      }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
-      data: response.data?.data || response.data,
+      data: course,
     });
 
   } catch (error) {
@@ -47,9 +67,9 @@ export async function GET(request, { params }) {
     return NextResponse.json(
       { 
         success: false, 
-        message: error.response?.data?.message || "Không tìm thấy khóa học" 
+        message: error.message || "Không tìm thấy khóa học" 
       },
-      { status: error.response?.status || 404 }
+      { status: 404 }
     );
   }
 }

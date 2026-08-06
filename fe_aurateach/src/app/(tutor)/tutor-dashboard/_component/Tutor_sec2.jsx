@@ -1,13 +1,14 @@
 "use client";
 import Image from "next/image";
 import styles from "../_css/sec2.module.css";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 
 export default function Tutor_sec2({ classesData }) {
   const list = classesData || [];
 
-  const handleJoinRoom = (url) => {
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
+  const handleJoinRoom = (course) => {
+    if (course) {
+      window.open(getClassroomRoomPath(course, "tutor"), "_blank", "noopener,noreferrer");
     } else {
       alert("Lớp học hiện tại chưa được cấu hình đường link phòng học!");
     }
@@ -70,7 +71,7 @@ export default function Tutor_sec2({ classesData }) {
                 {isUrgent ? (
                   <button 
                     className={styles.btnPrimary} 
-                    onClick={() => handleJoinRoom(item.permanent_room_url)}
+                    onClick={() => handleJoinRoom(item)}
                   >
                     Vào lớp
                   </button>

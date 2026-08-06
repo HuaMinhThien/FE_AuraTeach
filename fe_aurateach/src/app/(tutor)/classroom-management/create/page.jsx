@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./create-class.module.css"; 
+import { getClassroomBasePath } from "@/utils/roomUtils";
 
 const DEFAULT_IMAGES = [
   "/img/class/default-class-1.jpg",
@@ -32,10 +33,6 @@ export default function CreateClassPage() {
   const [description, setDescription] = useState("");
   const [maxStudents, setMaxStudents] = useState(15);
   const [hourlyRate, setHourlyRate] = useState(150000);
-  
-  // State quản lý link Google Meet
-  const [meetLink, setMeetLink] = useState("");
-  const [meetError, setMeetError] = useState("");
 
   // State danh mục động nạp từ API
   const [categoriesList, setCategoriesList] = useState([]);
@@ -55,6 +52,11 @@ export default function CreateClassPage() {
   const [conflictMessage, setConflictMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateErrorMessage, setDateErrorMessage] = useState("");
+  const [roomSeed] = useState(() => `course-${Date.now()}`);
+
+  const roomPreviewPath = getClassroomBasePath({
+    course_id: className || roomSeed,
+  });
 
   //  HÀM NGĂN CHẶN BẢO VỆ TRANG: Kiểm tra verification_status
   useEffect(() => {
@@ -202,26 +204,6 @@ export default function CreateClassPage() {
     checkScheduleConflict();
   }, [startDate, endDate, selectedDays, startTime, endTime]);
 
-  const validateGoogleMeet = (url) => {
-    if (!url.trim()) {
-      setMeetError("Vui lòng nhập đường liên kết lớp học Google Meet.");
-      return false;
-    }
-    const meetRegex = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
-    if (!meetRegex.test(url.trim())) {
-      setMeetError("Đường liên kết không hợp lệ. Định dạng chuẩn phải là: https://meet.google.com/abc-xxxx-def");
-      return false;
-    }
-    setMeetError("");
-    return true;
-  };
-
-  const handleMeetChange = (e) => {
-    const value = e.target.value;
-    setMeetLink(value);
-    if (value) validateGoogleMeet(value);
-  };
-
   const toggleDay = (day) => {
     setSelectedDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
@@ -251,9 +233,6 @@ export default function CreateClassPage() {
       return;
     }
 
-    const isMeetValid = validateGoogleMeet(meetLink);
-    if (!isMeetValid) return;
-
     if (conflictMessage) {
       alert("Vui lòng xử lý trùng lịch trước khi tạo lớp học!");
       return;
@@ -273,7 +252,6 @@ export default function CreateClassPage() {
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
-      permanent_room_url: meetLink.trim(),
     };
 
     try {
@@ -340,15 +318,13 @@ export default function CreateClassPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Đường liên kết phòng học Google Meet <span className={styles.required}>*</span></label>
+              <label>Đường liên kết phòng học AuraTeach</label>
               <input 
-                type="url" 
-                placeholder="Ví dụ: https://meet.google.com/abc-xxxx-def" 
-                value={meetLink}
-                onChange={handleMeetChange}
-                required
+                type="text"
+                value={roomPreviewPath}
+                readOnly
               />
-              {meetError && <p className={styles.errorAlert} style={{marginTop: "8px", fontSize: "14px"}}>{meetError}</p>}
+              <p className={styles.subText}>Hệ thống tự tạo phòng học nội bộ. Học viên và gia sư sẽ dùng link này để vào lớp.</p>
             </div>
 
             <div className={styles.rowGrid}>
@@ -557,7 +533,7 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed}
+              disabled={isSubmitting || !!conflictMessage || !!dateErrorMessage || !isAllowed}
             >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tiếp tục ➔"}
             </button>

@@ -1,20 +1,20 @@
 "use client";
 
 import styles from "../management.module.css";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 
 export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseClass, getStatusBadge }) {
   if (!selectedClass) return null;
 
   const handleJoinRoom = () => {
-    const url = selectedClass.permanent_room_url;
+    const url = getClassroomRoomPath(selectedClass, "tutor");
     
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
-      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học Google Meet!");
+      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học!");
     }
   };
-  console.log(selectedClass.permanent_room_url);
   
 
   return (
@@ -58,7 +58,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
                 gap: "6px"
               }}
             >
-              Vào phòng học (Google Meet) ➔
+              Vào phòng học AuraTeach ➔
             </button>
           </div>
 

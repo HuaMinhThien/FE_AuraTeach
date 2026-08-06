@@ -170,10 +170,10 @@ export default function BookingDetailModal({
             <button className="detail-close-btn" onClick={onClose}>
               Đóng
             </button>
-            {course?.permanent_room_url && course?.status === 'active' && (
+            {course?.status === 'active' && (
               <button 
                 className="detail-join-btn"
-                onClick={() => onJoinClass(course.permanent_room_url)}
+                onClick={() => onJoinClass(course)}
               >
                 🎯 Tham gia lớp học
               </button>

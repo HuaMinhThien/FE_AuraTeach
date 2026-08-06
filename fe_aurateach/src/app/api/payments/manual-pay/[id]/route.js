@@ -16,9 +16,9 @@ export async function POST(request, { params }) {
 
   try {
     // Tìm booking theo ID
-    const findRes = await fetch(`${API_BASE}/bookings?booking_id=${id}`, { cache: 'no-store' });
+const findRes = await fetch(`${API_BASE}/bookings?booking_id=${id}`, { cache: 'no-store' });
     const bookings = await findRes.json();
-    const booking = bookings[0];
+    let booking = bookings[0];
 
     if (!booking) {
       // Nếu không tìm thấy theo booking_id, thử tìm theo id JSON Server

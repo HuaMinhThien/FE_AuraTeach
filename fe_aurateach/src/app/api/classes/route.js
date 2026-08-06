@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { deriveRoomIdFromCourse, getClassroomBasePath } from "@/utils/roomUtils";
 
 // 1. LẤY DANH SÁCH LỚP HỌC THEO ID GIA SƯ ĐĂNG NHẬP
 export async function GET(request) {
@@ -101,6 +102,7 @@ export async function GET(request) {
       return {
         id: course.id,
         class_id: course.course_id || course.class_id || `cls-${Math.random()}`,
+        room_id: deriveRoomIdFromCourse(course),
         class_name: course.title || course.class_name || "Lớp học chưa đặt tên",
         start_date: course.start_date || "15/06/2024",
         end_date: course.end_date || "30/08/2024",
@@ -113,7 +115,7 @@ export async function GET(request) {
         students: studentIds,
         student_details: studentDetails,
         student_count: studentIds.length,
-        permanent_room_url: course.permanent_room_url || "" 
+        permanent_room_url: getClassroomBasePath(course)
       };
     });
 
@@ -163,9 +165,11 @@ export async function POST(request) {
 
     console.log("🔍 Tutor ID tạo lớp:", tutorId);
     
+    const createdId = `course-${Date.now()}`;
+
     const newClassData = {
-      id: `course-${Date.now()}`,
-      course_id: `course-${Date.now()}`, 
+      id: createdId,
+      course_id: createdId,
       tutor_id: tutorId, 
       title: body.class_name,
       category_id: body.category || "cat-02",
@@ -180,7 +184,8 @@ export async function POST(request) {
       time_slot: body.time_slot,
       thumbnail: body.thumbnail || "/img/default-class-1.jpg",
       status: "active",
-      permanent_room_url: body.permanent_room_url || "https://meet.google.com/abc-xyz-def",
+      room_id: deriveRoomIdFromCourse({ course_id: createdId }),
+      permanent_room_url: getClassroomBasePath({ course_id: createdId }),
       students: []
     };
 
