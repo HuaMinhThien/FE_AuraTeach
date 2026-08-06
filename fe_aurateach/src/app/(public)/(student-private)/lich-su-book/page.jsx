@@ -259,6 +259,7 @@ export default function StudentBookingHistoryPage() {
           course={selectedCourse}
           tutorName={selectedTutor?.full_name || getTutorName(selectedCourse.tutor_id)}
           tutorInfo={selectedTutor}
+          studentId={currentUser?.user_id || currentUser?.id}
           onClose={handleCloseModal}
           onJoinClass={handleJoinClass}
         />
