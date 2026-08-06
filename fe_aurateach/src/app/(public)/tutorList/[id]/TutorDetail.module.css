@@ -411,19 +411,33 @@
   font-weight: 500;
 }
 
+/* ✅ NÚT BÁO CÁO GIA SƯ - ĐÃ CHỈNH SỬA */
 .reportBtn {
-  color: #ef4444;
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
   text-align: center;
-  font-size: 12px;
-  margin-top: 20px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 6px;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .reportBtn:hover {
-  background-color: #fef2f2;
+  background-color: #fecaca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.reportBtn:active {
+  transform: translateY(0);
 }
 
 /* Khối liên quan */
@@ -580,5 +594,38 @@
   .contactBtn {
     font-size: 14px;
     padding: 12px;
+  }
+
+  .reportBtn {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerCard {
+    padding: 20px;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .tutorName {
+    font-size: 18px;
+  }
+
+  .statBox {
+    min-width: 80px;
+    padding: 8px 12px;
+  }
+
+  .sectionBlock {
+    padding: 16px;
+  }
+
+  .courseCard {
+    padding: 14px;
   }
 }

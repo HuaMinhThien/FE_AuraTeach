@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import "../../css/student-style/bookingDetailModal.css";
 
 export default function BookingDetailModal({ 
@@ -9,8 +10,10 @@ export default function BookingDetailModal({
   tutorName, 
   tutorInfo,
   onClose,
-  onJoinClass
+  onJoinClass,
+  studentId
 }) {
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
   const formatPrice = (price) => {
@@ -34,6 +37,17 @@ export default function BookingDetailModal({
       'pending': 'Chờ duyệt'
     };
     return statusMap[status] || status;
+  };
+
+  // ✅ Hàm xử lý tố cáo gia sư - Chuyển đến trang báo cáo với courseId
+  const handleReportTutor = () => {
+    if (!course?.tutor_id) {
+      alert('❌ Không tìm thấy thông tin gia sư để báo cáo');
+      return;
+    }
+    onClose();
+    // ✅ Chuyển đến trang báo cáo với tutorId và courseId
+    router.push(`/report-tutor/${course.tutor_id}?courseId=${course.course_id || course.id}`);
   };
 
   if (!course) {
@@ -167,22 +181,27 @@ export default function BookingDetailModal({
 
           {/* Actions */}
           <div className="booking-detail-actions">
-            <button className="detail-close-btn" onClick={onClose}>
-              Đóng
+            <button className="detail-report-btn" onClick={handleReportTutor}>
+              ⚠️ Tố cáo gia sư
             </button>
-            {course?.permanent_room_url && course?.status === 'active' && (
-              <button 
-                className="detail-join-btn"
-                onClick={() => onJoinClass(course.permanent_room_url)}
-              >
-                🎯 Tham gia lớp học
+            <div className="detail-action-right">
+              <button className="detail-close-btn" onClick={onClose}>
+                Đóng
               </button>
-            )}
-            {course?.status !== 'active' && (
-              <button className="detail-join-btn disabled" disabled>
-                {course?.status === 'closed' ? '🔒 Lớp đã đóng' : '⏳ Chờ duyệt'}
-              </button>
-            )}
+              {course?.permanent_room_url && course?.status === 'active' && (
+                <button 
+                  className="detail-join-btn"
+                  onClick={() => onJoinClass(course.permanent_room_url)}
+                >
+                  🎯 Tham gia lớp học
+                </button>
+              )}
+              {course?.status !== 'active' && (
+                <button className="detail-join-btn disabled" disabled>
+                  {course?.status === 'closed' ? '🔒 Lớp đã đóng' : '⏳ Chờ duyệt'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -266,6 +266,28 @@ export default function TutorDetailPage({ params }) {
     setShowBooking(true);
   };
 
+  // ===== HÀM XỬ LÝ BÁO CÁO GIA SƯ =====
+  const handleReport = () => {
+    if (!currentUser) {
+      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      return;
+    }
+    
+    // Kiểm tra nếu là học viên
+    if (currentUser.role !== 'student') {
+      alert('⚠️ Chỉ học viên mới có thể báo cáo gia sư!');
+      return;
+    }
+
+    // Chuyển đến trang báo cáo
+    const tutorId = tutorDetails?.tutor_id;
+    if (tutorId) {
+      router.push(`/report-tutor/${tutorId}`);
+    } else {
+      alert('❌ Không tìm thấy thông tin gia sư để báo cáo');
+    }
+  };
+
   // Hiển thị loading
   if (isLoading) {
     return (
@@ -452,7 +474,7 @@ export default function TutorDetailPage({ params }) {
         {/* ================= CỘT BÊN PHẢI: SIDEBAR TIỆN ÍCH ================= */}
         <div className={styles.rightColumn}>
           
-          {/* 🔥 NÚT LIÊN HỆ - ĐÃ SỬA */}
+          {/* Nút LIÊN HỆ */}
           <div className={styles.contactBox}>
             <button className={styles.contactBtn} onClick={handleContact}>
               💬 Liên hệ với {accountUser.full_name?.split(' ').pop() || 'gia sư'}
@@ -469,6 +491,7 @@ export default function TutorDetailPage({ params }) {
             )}
           </div>
 
+          {/* Thông tin hồ sơ */}
           <div className={styles.infoBox}>
             <h3 className={styles.infoBoxTitle}>Thông tin hồ sơ</h3>
             <div className={styles.infoList}>
@@ -486,13 +509,47 @@ export default function TutorDetailPage({ params }) {
               <div className={styles.subjectsDivider}>
                 <span className={styles.subjectsTitle}>Môn học giảng dạy:</span>
                 <div className={styles.tagsContainer}>
-                  <span className={styles.subjectTag}>Toán học</span>
-                  <span className={styles.subjectTag}>Ngữ Văn</span>
-                  <span className={styles.subjectTag}>Tiếng Anh</span>
+                  {tutorDetails.expertise ? (
+                    tutorDetails.expertise.split(',').map((subject, index) => (
+                      <span key={index} className={styles.subjectTag}>{subject.trim()}</span>
+                    ))
+                  ) : (
+                    <span className={styles.subjectTag}>Chưa cập nhật</span>
+                  )}
                 </div>
               </div>
             </div>
-            <div className={styles.reportBtn}>⚠️ Báo cáo gia sư</div>
+            
+            {/* ✅ NÚT BÁO CÁO GIA SƯ - ĐÃ SỬA */}
+            {currentUser?.role === 'student' ? (
+              <button 
+                className={styles.reportBtn} 
+                onClick={handleReport}
+                style={{ cursor: 'pointer' }}
+              >
+                ⚠️ Báo cáo gia sư
+              </button>
+            ) : currentUser ? (
+              <div 
+                className={styles.reportBtn} 
+                style={{ 
+                  opacity: 0.5, 
+                  cursor: 'not-allowed',
+                  backgroundColor: '#e5e7eb',
+                  color: '#6b7280'
+                }}
+              >
+                ⚠️ Báo cáo gia sư (Chỉ học viên)
+              </div>
+            ) : (
+              <Link 
+                href={`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`}
+                className={styles.reportBtn}
+                style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
+              >
+                ⚠️ Đăng nhập để báo cáo
+              </Link>
+            )}
           </div>
 
           {/* Danh sách Gia sư liên quan */}
@@ -548,4 +605,3 @@ export default function TutorDetailPage({ params }) {
     </div>
   );
 }
-
