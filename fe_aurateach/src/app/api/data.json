@@ -334,7 +334,7 @@
       "id": "509e",
       "user_id": "user_1785774015940_bn2etd",
       "email": "thanhliem147789@gmail.com",
-      "password": "123456",
+      "password": "123123",
       "full_name": "Liemtran",
       "phone": "0966713806",
       "avatar": "/img/avt/avt.jpg",
@@ -377,13 +377,18 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
+<<<<<<< Updated upstream
       "pending_balance": 660000,
       "available_balance": 37880000,
+=======
+      "pending_balance": 900000,
+      "available_balance": 53990000,
+>>>>>>> Stashed changes
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-08-05T06:44:21.240Z",
+      "updated_at": "2026-07-29T10:00:00.000Z",
       "rejection_reason": null
     },
     {
@@ -824,7 +829,8 @@
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
-        "u-student-1"
+        "u-student-1",
+        "107520814289236125008"
       ]
     },
     {
@@ -1071,25 +1077,33 @@
       "students": []
     },
     {
-      "id": "course-1785824128324",
-      "course_id": "course-1785824128324",
+      "id": "course-1785923262071",
+      "course_id": "course-1785923262071",
       "tutor_id": "tutor_01",
-      "title": "JS ",
+      "title": "toán10",
       "category_id": "cat-02",
-      "level": "Cấp 3",
+      "level": "Cấp 2",
       "description": "",
+<<<<<<< Updated upstream
       "max_students": 1,
       "price_per_session": 1000000,
       "start_date": "2026-08-04",
       "end_date": "2026-08-11",
       "total_weeks": 1,
+=======
+      "max_students": 10,
+      "hourly_rate": 200000,
+      "start_date": "2026-08-06",
+      "end_date": "2026-08-20",
+      "total_weeks": 2,
+>>>>>>> Stashed changes
       "schedule_days": [
         "Chủ Nhật"
       ],
-      "time_slot": "08:00-09:30",
-      "thumbnail": "/img/class/default-class-10.png",
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
-      "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
+      "permanent_room_url": "https://meet.google.com/gmo-otcd-kda",
       "students": []
     },
     {
@@ -1396,6 +1410,22 @@
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null
+    },
+    {
+      "id": "49fa",
+      "booking_id": "bk-1785919056217",
+      "student_id": "107520814289236125008",
+      "course_id": "c-08",
+      "tutor_id": "tutor_02",
+      "status": "pending",
+      "booking_date": "2026-08-05T08:37:36.217Z",
+      "created_at": "2026-08-05T08:37:36.217Z",
+      "updated_at": "2026-08-05T08:37:36.217Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 2080000,
+      "payment_method": "qr",
+      "transaction_id": null
     }
   ],
   "payments": [
@@ -1477,8 +1507,8 @@
         "u-student-1",
         "u-01"
       ],
-      "last_message": "hihi",
-      "last_message_time": "2026-07-23T19:24:10.325Z",
+      "last_message": "😒",
+      "last_message_time": "2026-08-04T12:19:08.266Z",
       "unread_count": 0
     },
     {
@@ -2127,6 +2157,28 @@
       "content": "ăedsfawedf",
       "created_at": "2026-07-29T12:31:44.620Z",
       "is_read": false
+    },
+    {
+      "id": "msg_1785845925838",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "bug một đống không lo fix",
+      "created_at": "2026-08-04T12:18:45.838Z",
+      "is_read": false
+    },
+    {
+      "id": "msg_1785845948231",
+      "conversation_id": "conv_001",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "😒",
+      "created_at": "2026-08-04T12:19:08.231Z",
+      "is_read": false
     }
   ],
   "notifications": [
@@ -2201,11 +2253,35 @@
       "related_type": "payment",
       "is_read": true,
       "created_at": "2026-07-29T10:05:00.000Z"
+    },
+    {
+      "id": "notif_1785919056231_816yfdvlr",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Học viên đã đăng ký khóa học \"Toán Tư Duy Tiểu Học & Khối Cấp 1\".",
+      "related_id": "bk-1785919056217",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-05T08:37:36.231Z"
+    },
+    {
+      "id": "notif_1785919056236_heg5adlwi",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên Học viên đã đăng ký khóa học \"Toán Tư Duy Tiểu Học & Khối Cấp 1\" với gia sư.",
+      "related_id": "bk-1785919056217",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-05T08:37:36.236Z"
     }
   ],
   "tutor_update_requests": [
     {
-      "tutor_update_req_id": "2078",
+      "id": "2078",
       "tutor_id": "1f17",
       "old_data": {
         "phone": "0912345678",
@@ -2224,11 +2300,10 @@
       "status": "rejected",
       "reject_reason": "Không đạt yêu cầu",
       "created_at": "2026-07-27T10:02:22.838Z",
-      "updated_at": "2026-07-27T11:15:45.401Z",
-      "id": "c208"
+      "updated_at": "2026-07-27T11:15:45.401Z"
     },
     {
-      "tutor_update_req_id": "1c26",
+      "id": "1c26",
       "tutor_id": "1f17",
       "old_data": {
         "phone": "0912345678",
@@ -2247,8 +2322,7 @@
       "status": "approved",
       "reject_reason": null,
       "created_at": "2026-07-27T11:16:19.358Z",
-      "updated_at": "2026-07-27T11:23:18.541Z",
-      "id": "12fd"
+      "updated_at": "2026-07-27T11:23:18.541Z"
     }
   ],
   "lesson_confirmations": [
@@ -2258,7 +2332,7 @@
       "tutor_id": "tutor_01",
       "lesson_number": 3,
       "lesson_date": "2026-08-01",
-      "record_url": "https://drive.google.com/file/d/1xABCxyz...",
+      "evidence_url": "https://drive.google.com/file/d/1xABCxyz...",
       "note": "Đã dạy xong bài...",
       "submitted_at": "2026-08-01T20:00:00.000Z",
       "holding_hours": 24,
@@ -2275,7 +2349,7 @@
       "tutor_id": "tutor_01",
       "lesson_number": 1,
       "lesson_date": "2026-07-27",
-      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "evidence_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
       "note": "ôn tập",
       "submitted_at": "2026-07-30T13:16:37.233Z",
       "holding_hours": 24,
@@ -2291,7 +2365,7 @@
       "tutor_id": "tutor_01",
       "lesson_number": 1,
       "lesson_date": "2026-07-29",
-      "record_url": "localhost:3000/tutor-dashboard",
+      "evidence_url": "localhost:3000/tutor-dashboard",
       "note": "",
       "submitted_at": "2026-07-30T14:49:19.781Z",
       "holding_hours": 24,
@@ -2299,6 +2373,7 @@
       "status": "approved",
       "lesson_amount": 300000,
       "payout_status": "transferred"
+<<<<<<< Updated upstream
     },
     {
       "id": "e4f3",
@@ -2445,6 +2520,8 @@
       "account_holder_name": "HUA MINH THIEN",
       "is_default": false,
       "created_at": "2026-08-04T17:16:21.558Z"
+=======
+>>>>>>> Stashed changes
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
