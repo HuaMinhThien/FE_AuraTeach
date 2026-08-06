@@ -214,7 +214,7 @@ export async function POST(request) {
       updated_at: new Date().toISOString(),
       notes: notes || "",
       payment_status: isPaid ? "paid" : "unpaid",
-      payment_amount: (course.hourly_rate || course.price_per_session || 0) * (course.total_weeks || 1),
+      payment_amount: (course.price_per_session || 0) * (course.total_weeks || 1),
       payment_method: paymentMethod || null,
       transaction_id: isPaid ? `txn-${Date.now()}` : null
     };
