@@ -153,22 +153,22 @@ export async function POST(request) {
       // }
 
       console.log(
-        `✅ Tutor ${user.full_name} đã được xác minh (${tutor.verification_status})`
+        ` Tutor ${user.full_name} đã được xác minh (${tutor.verification_status})`
       );
     }
 
     if (user.role === "student") {
-      console.log(`✅ Student ${user.full_name} đăng nhập thành công`);
+      console.log(` Student ${user.full_name} đăng nhập thành công`);
     }
 
     if (user.role === "admin") {
-      console.log(`✅ Admin ${user.full_name} đăng nhập thành công`);
+      console.log(` Admin ${user.full_name} đăng nhập thành công`);
     }
 
     // === 5. XÓA FIELD PASSWORD TRƯỚC KHI TRẢ VỀ CLIENT ===
     const { password: _, ...userInfo } = user;
 
-    console.log("✅ Login thành công cho user:", userInfo.email);
+    console.log(" Login thành công cho user:", userInfo.email);
     console.log("=== END LOGIN API ===");
 
     return NextResponse.json({

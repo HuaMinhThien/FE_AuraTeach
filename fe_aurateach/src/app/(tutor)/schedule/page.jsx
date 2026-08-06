@@ -251,9 +251,6 @@ export default function SchedulePage() {
           <h1>Lịch trình giảng dạy</h1>
           <p>Quản lý các tiết dạy và thời gian trống trong tuần này.</p>
         </div>
-        <button className={styles.addBtn}>
-          <span>➕</span> Thêm lịch trống
-        </button>
       </div>
 
       <div className={styles.navBar}>

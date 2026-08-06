@@ -15,7 +15,6 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
       alert("Lớp học hiện tại chưa được cấu hình đường link phòng học!");
     }
   };
-  
 
   return (
     <div className={styles.modalOverlay} onClick={onCloseModal}>
@@ -38,9 +37,6 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
           </div>
 
           <div>
-            {/* <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
-              🔗 <strong>Phòng học cố định:</strong> {selectedClass.permanent_room_url || "Chưa thiết lập"}
-            </p> */}
             <button 
               type="button"
               onClick={handleJoinRoom}
@@ -73,7 +69,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
 
           {/* Bảng danh sách học sinh tham gia */}
           <div className={styles.studentSection}>
-            <h4>👥 Thành viên lớp học ({selectedClass.students ? selectedClass.students.length : 0}):</h4>
+            <h4>👥 Thành viên lớp học ({selectedClass.students ? selectedClass.students.length : 0}/{selectedClass.max_students || "∞"}):</h4>
             {!selectedClass.students || selectedClass.students.length === 0 ? (
               <p className={styles.noStudent}>Chưa có học sinh nào đăng ký lớp học này.</p>
             ) : (
@@ -83,14 +79,16 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
                     <th>STT</th>
                     <th>Họ và Tên</th>
                     <th>Email Liên Hệ</th>
+                    <th>Số Điện Thoại</th>
                   </tr>
                 </thead>
                 <tbody>
                   {selectedClass.students.map((st, index) => (
-                    <tr key={st.student_id}>
+                    <tr key={st.student_id || index}>
                       <td>{index + 1}</td>
                       <td><strong>{st.full_name}</strong></td>
                       <td>{st.email}</td>
+                      <td>{st.phone || "Chưa cập nhật"}</td>
                     </tr>
                   ))}
                 </tbody>

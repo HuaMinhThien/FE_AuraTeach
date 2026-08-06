@@ -218,7 +218,7 @@ export default function StudentBookingHistoryPage() {
                               </div>
                             </td>
                             <td className="tutor-name-cell">👨‍🏫 {getTutorName(item.tutor_id)}</td>
-                            <td className="price-cell">{formatPrice(item.hourly_rate)}</td>
+                            <td className="price-cell">{formatPrice(item.price_per_session)}</td>
                             <td>
                               <span className={`status-badge ${status.className}`}>
                                 {status.label}

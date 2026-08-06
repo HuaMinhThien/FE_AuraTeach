@@ -1,8 +1,9 @@
 // src/app/api/classes/[id]/route.js
 import { NextResponse } from "next/server";
 
-const API_BASE = 'http://localhost:3007';
+const API_BASE = "http://localhost:3007";
 
+// PATCH: Cập nhật lớp học
 export async function PATCH(request, { params }) {
   try {
     const { id } = await params;
@@ -11,23 +12,35 @@ export async function PATCH(request, { params }) {
     console.log(`📡 PATCH /api/classes/${id}`);
     console.log("📝 Update data:", body);
 
-    // Gọi JSON Server để cập nhật course
-    const response = await fetch(`${API_BASE}/courses/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    // Tìm course trong JSON Server
+    const findRes = await fetch(`${API_BASE}/courses?course_id=${id}`, { cache: "no-store" });
+    const courses = await findRes.json();
+    const course = courses[0];
 
-    if (!response.ok) {
-      throw new Error('Không thể cập nhật khóa học');
+    if (!course) {
+      return NextResponse.json(
+        { success: false, message: "Không tìm thấy lớp học" },
+        { status: 404 }
+      );
     }
 
-    const data = await response.json();
+    // Cập nhật course
+    const updateRes = await fetch(`${API_BASE}/courses/${course.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if (!updateRes.ok) {
+      throw new Error("Không thể cập nhật lớp học");
+    }
+
+    const updatedCourse = await updateRes.json();
 
     return NextResponse.json({
       success: true,
       message: "Cập nhật thành công!",
-      data: data,
+      data: updatedCourse,
     });
 
   } catch (error) {
@@ -37,24 +50,33 @@ export async function PATCH(request, { params }) {
         success: false, 
         message: error.message || "Lỗi cập nhật" 
       },
-      { status: 500 }
+      { status: error.status || 500 }
     );
   }
 }
 
+// GET: Lấy chi tiết lớp học
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
 
-    const response = await fetch(`${API_BASE}/courses?course_id=${id}`, { cache: 'no-store' });
-    const data = await response.json();
-    const course = Array.isArray(data) ? data[0] : data;
+    const res = await fetch(`${API_BASE}/courses?course_id=${id}`, { cache: "no-store" });
+    
+    if (!res.ok) {
+      return NextResponse.json(
+        { success: false, message: "Không thể lấy thông tin lớp học" },
+        { status: 500 }
+      );
+    }
+
+    const courses = await res.json();
+    const course = courses[0];
 
     if (!course) {
-      return NextResponse.json({
-        success: false,
-        message: "Không tìm thấy khóa học",
-      }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "Không tìm thấy lớp học" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
@@ -69,7 +91,7 @@ export async function GET(request, { params }) {
         success: false, 
         message: error.message || "Không tìm thấy khóa học" 
       },
-      { status: 404 }
+      { status: error.status || 404 }
     );
   }
 }

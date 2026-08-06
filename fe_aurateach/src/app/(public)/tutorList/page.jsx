@@ -51,20 +51,21 @@ export default function TeacherListPage() {
             }
 
             const bioText = tutor.bio || "";
-            const qualificationText = tutor.qualification || "";
+            const expertiseText = tutor.expertise || tutor.qualification || "Gia sư";
+            const experienceText = tutor.experience || "Chưa cập nhật KN";
 
             return {
               id: tutor.tutor_id || tutor.id,
               name: user?.full_name || "Gia sư AuraTeach",
               rating: Number(tutor.rating) || 5.0,
-              reviews: Math.floor(Math.random() * 80) + 20, // Giả lập lượt review
-              location: "Hà Nội",
               desc:
                 bioText.length > 135
                   ? bioText.substring(0, 132) + "..."
                   : bioText || "Chưa có thông tin giới thiệu.",
-              qualification: qualificationText,
-              tags: ["Gia sư", qualificationText].filter(Boolean),
+              expertise: expertiseText,
+              experience: experienceText,
+              level: tutor.level || "Giáo viên",
+              tags: [expertiseText, experienceText].filter(Boolean),
               avatar: avatar,
               createdAt: tutor.created_at
                 ? new Date(tutor.created_at)
@@ -99,7 +100,7 @@ export default function TeacherListPage() {
       const descMatch = (tutor.desc || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-      const qualMatch = (tutor.qualification || "")
+      const qualMatch = (tutor.expertise || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
 
@@ -107,7 +108,7 @@ export default function TeacherListPage() {
 
       const matchesFilter =
         activeFilter === "Tất cả" ||
-        (tutor.qualification || "")
+        (tutor.expertise || "")
           .toLowerCase()
           .includes(activeFilter.toLowerCase()) ||
         tutor.tags.some((tag) =>
@@ -260,12 +261,16 @@ export default function TeacherListPage() {
                         <StarIcon />
                       </span>
                       <span>{tutor.rating.toFixed(1)}</span>
-                      <small>({tutor.reviews})</small>
                     </div>
                   </div>
 
                   <h3>{tutor.name}</h3>
-                  <p className={styles.meta}>Gia sư tại {tutor.location}</p>
+                  <p className={styles.meta}>
+                    {tutor.level}
+                  </p>
+                  <p className={styles.experienceText}>
+                    <strong>Kinh nghiệm:</strong> {tutor.experience}
+                  </p>
                   <p className={styles.desc}>{tutor.desc}</p>
 
                   <div className={styles.tags}>

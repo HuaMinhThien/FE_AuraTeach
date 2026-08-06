@@ -140,7 +140,7 @@ function CoursesSection() {
                       <p className="course-card__description">{course.description}</p>
                       <div className="course-card__footer">
                         <div className="course-card__price">
-                          <span className="course-card__price-value">{parseInt(course.hourly_rate).toLocaleString('vi-VN')} đ/h</span>
+                          <span className="course-card__price-value">{parseInt(course.price_per_session).toLocaleString('vi-VN')} đ/Buổi</span>
                         </div>
                         <div className="course-card__students">
                           <span>👨‍🎓 {course.current_students || course.students_count || 0}/{course.max_students} HS</span>

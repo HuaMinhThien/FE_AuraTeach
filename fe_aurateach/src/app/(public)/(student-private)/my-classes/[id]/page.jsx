@@ -195,8 +195,8 @@ export default function ClassDetailPage() {
                   <p>{course.schedule_days?.join(", ") || "Chưa cập nhật"}</p>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>💰 Học phí/giờ</label>
-                  <p>{formatCurrency(course.hourly_rate)}</p>
+                  <label>💰 Học phí/Buổi</label>
+                  <p>{formatCurrency(course.price_per_session)}</p>
                 </div>
                 <div className={`${styles.infoItem} ${styles.fullWidth}`}>
                   <label>📝 Mô tả</label>

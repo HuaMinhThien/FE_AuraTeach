@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
@@ -11,15 +11,14 @@ import "./profile.css";
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [studentInfo, setStudentInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
-    grade: "",
-    school_name: "",
     avatar: "",
     birth_date: "",
   });
@@ -28,21 +27,26 @@ export default function ProfilePage() {
 
   const API_BASE = "http://localhost:3007";
 
-  // Lấy thông tin student
-  const fetchStudentInfo = async (userId) => {
+  // Lấy thông tin user từ API để có dữ liệu mới nhất
+  const fetchUserData = async (userId) => {
     try {
-      const studentRes = await fetch(`${API_BASE}/students?user_id=${userId}`);
-      const students = await studentRes.json();
-      if (students.length > 0) {
-        setStudentInfo(students[0]);
-        setFormData(prev => ({
-          ...prev,
-          grade: students[0].grade || "",
-          school_name: students[0].school_name || "",
-        }));
+      const res = await fetch(`${API_BASE}/users?user_id=${userId}`);
+      const users = await res.json();
+      if (users.length > 0) {
+        const userData = users[0];
+        setUser(userData);
+        setFormData({
+          full_name: userData.full_name || userData.name || "",
+          phone: userData.phone || "",
+          avatar: userData.avatar || "",
+          birth_date: userData.birth_date || "",
+        });
+        return userData;
       }
+      return null;
     } catch (error) {
-      console.error("Lỗi tải thông tin student:", error);
+      console.error("Lỗi fetch user data:", error);
+      return null;
     }
   };
 
@@ -52,7 +56,6 @@ export default function ProfilePage() {
         setLoading(true);
         const currentUser = await authService.getCurrentUser();
         
-        // Kiểm tra cookie dự phòng
         const getCookie = (name) => {
           if (typeof window === "undefined") return null;
           const value = `; ${document.cookie}`;
@@ -67,18 +70,20 @@ export default function ProfilePage() {
           return;
         }
 
-        setUser(currentUser);
-        setFormData({
-          full_name: currentUser.full_name || "",
-          phone: currentUser.phone || "",
-          avatar: currentUser.avatar || "",
-          birth_date: currentUser.birth_date || "",
-          grade: "",
-          school_name: "",
-        });
-
-        // Lấy thông tin student
-        await fetchStudentInfo(currentUser.user_id);
+        // Lấy dữ liệu mới nhất từ API
+        const userId = currentUser.user_id || currentUser.id;
+        const freshUser = await fetchUserData(userId);
+        
+        if (!freshUser) {
+          // Fallback: dùng dữ liệu từ cookie
+          setUser(currentUser);
+          setFormData({
+            full_name: currentUser.full_name || currentUser.name || "",
+            phone: currentUser.phone || "",
+            avatar: currentUser.avatar || "",
+            birth_date: currentUser.birth_date || "",
+          });
+        }
 
       } catch (error) {
         console.error("Lỗi tải thông tin profile:", error);
@@ -97,9 +102,49 @@ export default function ProfilePage() {
       ...prev,
       [name]: value,
     }));
-    // Xóa thông báo lỗi khi user bắt đầu nhập
     if (error) setError("");
     if (success) setSuccess("");
+  };
+
+  // Xử lý upload avatar
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError("Vui lòng chọn file ảnh (JPG, PNG, GIF)");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Kích thước ảnh không được vượt quá 2MB");
+      return;
+    }
+
+    setIsUploading(true);
+    setError("");
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setFormData(prev => ({
+          ...prev,
+          avatar: base64String,
+        }));
+        setIsUploading(false);
+        setSuccess("Đã tải ảnh lên thành công! Nhấn 'Lưu thay đổi' để cập nhật.");
+      };
+      reader.onerror = () => {
+        setError("Lỗi khi đọc file ảnh");
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Lỗi upload avatar:", error);
+      setError("Lỗi khi tải ảnh lên");
+      setIsUploading(false);
+    }
   };
 
   // Bật chế độ chỉnh sửa
@@ -114,14 +159,11 @@ export default function ProfilePage() {
     setIsEditing(false);
     setError("");
     setSuccess("");
-    // Reset form về dữ liệu cũ
     setFormData({
-      full_name: user?.full_name || "",
+      full_name: user?.full_name || user?.name || "",
       phone: user?.phone || "",
       avatar: user?.avatar || "",
       birth_date: user?.birth_date || "",
-      grade: studentInfo?.grade || "",
-      school_name: studentInfo?.school_name || "",
     });
   };
 
@@ -132,60 +174,51 @@ export default function ProfilePage() {
       setSuccess("");
       setIsSaving(true);
 
-      // Validate
       if (!formData.full_name.trim()) {
         setError("Họ và tên không được để trống");
         setIsSaving(false);
         return;
       }
 
-      if (!formData.phone.trim()) {
-        setError("Số điện thoại không được để trống");
-        setIsSaving(false);
-        return;
-      }
-
-      // Validate phone (10 số)
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(formData.phone.trim())) {
+      if (formData.phone && !/^\d{10}$/.test(formData.phone.trim())) {
         setError("Số điện thoại phải có 10 chữ số");
         setIsSaving(false);
         return;
       }
 
-      // Chuẩn bị dữ liệu gửi lên
       const updateData = {
         full_name: formData.full_name.trim(),
         phone: formData.phone.trim(),
-        avatar: formData.avatar.trim() || "/img/default-avatar.svg",
+        avatar: formData.avatar || user?.avatar || "/img/default-avatar.svg",
         birth_date: formData.birth_date || "",
-        grade: formData.grade.trim(),
-        school_name: formData.school_name.trim(),
       };
 
-      // Gọi API cập nhật
-      const result = await authService.updateProfile(user.user_id, updateData);
+      const result = await authService.updateProfile(user.user_id || user.id, updateData);
 
       if (result.success) {
         setSuccess("Cập nhật thông tin thành công!");
         
-        // Cập nhật state user
-        setUser(result.user);
-        setFormData({
-          full_name: result.user.full_name || "",
-          phone: result.user.phone || "",
-          avatar: result.user.avatar || "",
-          birth_date: result.user.birth_date || "",
-          grade: formData.grade.trim(),
-          school_name: formData.school_name.trim(),
-        });
-
-        // Cập nhật lại studentInfo
-        if (result.user.user_id) {
-          await fetchStudentInfo(result.user.user_id);
+        // Cập nhật lại dữ liệu từ API
+        const updatedUser = await fetchUserData(user.user_id || user.id);
+        
+        if (updatedUser) {
+          // Cập nhật cookie
+          const userInfo = {
+            id: updatedUser.user_id || updatedUser.id,
+            user_id: updatedUser.user_id || updatedUser.id,
+            full_name: updatedUser.full_name,
+            name: updatedUser.full_name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            avatar: updatedUser.avatar,
+            phone: updatedUser.phone,
+            birth_date: updatedUser.birth_date,
+          };
+          document.cookie = `user_info=${encodeURIComponent(
+            JSON.stringify(userInfo)
+          )}; path=/; max-age=${30 * 24 * 60 * 60}`;
         }
 
-        // Tắt chế độ chỉnh sửa sau 1.5 giây
         setTimeout(() => {
           setIsEditing(false);
           setSuccess("");
@@ -216,13 +249,9 @@ export default function ProfilePage() {
   return (
     <>
       <Header />
-      <div className="profile-page" style={{ marginTop: "80px" }}>
+      <div className="profile-page">
         <div className="profile-container">
-          
-          {/* Student Sidebar */}
           <StudentSidebar />
-
-          {/* Profile Content */}
           <div className="profile-content">
             <div className="profile-header">
               <div className="profile-header-left">
@@ -236,7 +265,6 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Thông báo */}
             {error && (
               <div className="alert alert-error">
                 {error}
@@ -251,12 +279,38 @@ export default function ProfilePage() {
             <div className="profile-card">
               <div className="profile-avatar-section">
                 <div className="profile-avatar-wrapper">
-                  <Avatar 
-                    src={formData.avatar || user.avatar}
-                    alt={formData.full_name || user.full_name}
-                    size={100}
-                    fallbackText={formData.full_name?.charAt(0) || user.full_name?.charAt(0) || "U"}
-                  />
+                  {isEditing ? (
+                    <div className="avatar-upload-wrapper">
+                      <Avatar 
+                        src={formData.avatar || user.avatar}
+                        alt={formData.full_name || user.full_name}
+                        size={100}
+                        fallbackText={formData.full_name?.charAt(0) || user.full_name?.charAt(0) || "U"}
+                      />
+                      <button 
+                        className="avatar-upload-btn"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        title="Đổi ảnh đại diện"
+                      >
+                        📷
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        style={{ display: "none" }}
+                      />
+                    </div>
+                  ) : (
+                    <Avatar 
+                      src={user.avatar}
+                      alt={user.full_name || user.name}
+                      size={100}
+                      fallbackText={user.full_name?.charAt(0) || user.name?.charAt(0) || "U"}
+                    />
+                  )}
                 </div>
                 <div className="profile-name-section">
                   {isEditing ? (
@@ -269,9 +323,12 @@ export default function ProfilePage() {
                       placeholder="Họ và tên"
                     />
                   ) : (
-                    <h3>{user.full_name}</h3>
+                    <h3>{user.full_name || user.name}</h3>
                   )}
-                  <span className="profile-role-badge">🎓 Học viên</span>
+                  <span className="profile-role-badge">Học viên</span>
+                  {isEditing && (
+                    <p className="avatar-hint">Click vào icon camera để đổi ảnh đại diện</p>
+                  )}
                 </div>
               </div>
 
@@ -290,42 +347,10 @@ export default function ProfilePage() {
                       value={formData.phone}
                       onChange={handleInputChange}
                       className="input-edit"
-                      placeholder="Nhập số điện thoại"
+                      placeholder="Nhập số điện thoại (10 số)"
                     />
                   ) : (
                     <p>{user.phone || "Chưa cập nhật"}</p>
-                  )}
-                </div>
-
-                <div className="profile-info-item">
-                  <label>Lớp</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleInputChange}
-                      className="input-edit"
-                      placeholder="VD: Lớp 10, Lớp 12"
-                    />
-                  ) : (
-                    <p>{studentInfo?.grade || "Chưa cập nhật"}</p>
-                  )}
-                </div>
-
-                <div className="profile-info-item">
-                  <label>Trường</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="school_name"
-                      value={formData.school_name}
-                      onChange={handleInputChange}
-                      className="input-edit"
-                      placeholder="Tên trường"
-                    />
-                  ) : (
-                    <p>{studentInfo?.school_name || "Chưa cập nhật"}</p>
                   )}
                 </div>
 
@@ -359,13 +384,12 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Action buttons khi đang chỉnh sửa */}
               {isEditing && (
                 <div className="profile-actions">
                   <button 
                     className="btn-save" 
                     onClick={handleSave}
-                    disabled={isSaving}
+                    disabled={isSaving || isUploading}
                   >
                     {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
                   </button>

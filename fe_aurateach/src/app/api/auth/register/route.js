@@ -126,7 +126,7 @@ export async function POST(request) {
       password: password,
       full_name: fullName,
       phone: phone || "",
-      avatar: "/img/default-avatar.svg",
+      avatar: "/img/avt/avt.jpg",
       role: role,
       status: "active",
       created_at: new Date().toISOString()
@@ -178,7 +178,7 @@ export async function POST(request) {
         tutor_id: `tutor_${Date.now()}`,
         user_id: newUser.user_id,
         bio: "",
-        qualification: expertise,
+        expertise: expertise,
         rating: 0,
         verification_status: "pending",
         experience: "",
