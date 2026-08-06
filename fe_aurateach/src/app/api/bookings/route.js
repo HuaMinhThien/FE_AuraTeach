@@ -338,7 +338,7 @@ export async function POST(request) {
         const currentTotalEarnings = tutorInfo.total_earnings || 0;
         
         // Phí sàn 39%: Tutor nhận 61%, Admin giữ 39%
-        const tutorEarning = Math.round(tutorAmount * 0.61);
+        const tutorEarning = Math.round(tutorAmount * 0.65);
         const adminFee = tutorAmount - tutorEarning;
 
         console.log(`💰 Cập nhật ví tutor:`, {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import notificationService from '@/services/notificationService';
 
 const API_BASE = 'http://localhost:3007';
 
@@ -39,6 +40,9 @@ export async function GET() {
         bank_code: bank?.bank_code || '',
         account_number: bank?.account_number || 'Chưa cập nhật',
         account_holder_name: bank?.account_holder_name || 'Chưa cập nhật',
+        // Lưu thêm thông tin tutor và user để dùng cho notification
+        _tutor: tutor,
+        _user: user,
       };
     });
 
@@ -77,6 +81,15 @@ export async function PATCH(request) {
     }
     const currentPayoutReq = await payoutReqRes.json();
 
+    // Lấy thông tin tutor và user
+    const tutorsRes = await fetch(`${API_BASE}/tutors`, { cache: 'no-store' });
+    const tutors = await tutorsRes.json();
+    const currentTutor = tutors.find((t) => t.tutor_id === currentPayoutReq.tutor_id);
+
+    const usersRes = await fetch(`${API_BASE}/users`, { cache: 'no-store' });
+    const users = await usersRes.json();
+    const currentUser = users.find((u) => u.user_id === currentTutor?.user_id);
+
     // Cập nhật trạng thái của payout_request
     const updateReqRes = await fetch(`${API_BASE}/payout_requests/${id}`, {
       method: 'PATCH',
@@ -98,12 +111,8 @@ export async function PATCH(request) {
 
     const updatedPayoutReq = await updateReqRes.json();
 
-    // NẾU TỪ CHỐI (rejected): Hoàn trả lại số tiền rút vào ví khả dụng (available_balance) của Gia sư
+    // NẾU TỪ CHỐI (rejected): Hoàn trả lại số tiền
     if (status === 'rejected') {
-      const tutorsRes = await fetch(`${API_BASE}/tutors`, { cache: 'no-store' });
-      const tutors = await tutorsRes.json();
-      const currentTutor = tutors.find((t) => t.tutor_id === currentPayoutReq.tutor_id);
-
       if (currentTutor) {
         const restoredBalance = (currentTutor.available_balance || 0) + (currentPayoutReq.amount || 0);
         await fetch(`${API_BASE}/tutors/${currentTutor.id}`, {
@@ -114,6 +123,39 @@ export async function PATCH(request) {
             updated_at: new Date().toISOString(),
           }),
         });
+      }
+
+      // === GỬI THÔNG BÁO TỪ CHỐI CHO TUTOR ===
+      try {
+        if (currentUser && currentTutor) {
+          await notificationService.notifyPayoutStatus({
+            tutor: currentUser,
+            payoutRequest: currentPayoutReq,
+            status: 'rejected',
+            reason: rejection_reason || 'Không có lý do cụ thể',
+          });
+          console.log(`📬 Đã gửi thông báo từ chối rút tiền cho ${currentUser.email}`);
+        }
+      } catch (notifError) {
+        console.error("❌ Lỗi gửi thông báo từ chối rút tiền:", notifError);
+      }
+    }
+
+    // NẾU PHÊ DUYỆT (approved)
+    if (status === 'approved') {
+      // === GỬI THÔNG BÁO PHÊ DUYỆT CHO TUTOR ===
+      try {
+        if (currentUser && currentTutor) {
+          await notificationService.notifyPayoutStatus({
+            tutor: currentUser,
+            payoutRequest: currentPayoutReq,
+            status: 'approved',
+            reason: null,
+          });
+          console.log(`📬 Đã gửi thông báo phê duyệt rút tiền cho ${currentUser.email}`);
+        }
+      } catch (notifError) {
+        console.error("❌ Lỗi gửi thông báo phê duyệt rút tiền:", notifError);
       }
     }
 

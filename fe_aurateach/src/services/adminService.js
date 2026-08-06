@@ -32,7 +32,7 @@ class AdminService {
       const students = users.filter(u => u.role === 'student');
       const activeCourses = courses.filter(c => c.status === 'active');
       const paidPayments = payments.filter(p => p.payment_status === 'paid');
-      const totalRevenue = paidPayments.reduce((sum, p) => sum + (p.amount * 0.1), 0);
+      const totalRevenue = paidPayments.reduce((sum, p) => sum + (p.amount * 0.35), 0);
       const pendingWithdrawals = tutors.reduce((sum, t) => sum + (t.pending_balance || 0), 0);
 
       return {
@@ -139,7 +139,7 @@ class AdminService {
         
         const dayRevenue = payments
           .filter(p => p.payment_status === 'paid' && p.paid_at?.startsWith(dateStr))
-          .reduce((sum, p) => sum + (p.amount * 0.1), 0);
+          .reduce((sum, p) => sum + (p.amount * 0.35), 0);
 
         result.push({ date: dateStr, revenue: dayRevenue });
       }
