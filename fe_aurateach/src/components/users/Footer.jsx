@@ -31,14 +31,12 @@ function Footer() {
             <h4 className="aurateach-footer__menu-title">Dành cho học viên</h4>
             <ul className="aurateach-footer__menu-list">
               <li className="aurateach-footer__menu-item">
-                <a href="#find-tutor" className="aurateach-footer__link">Tìm gia sư</a>
+                <a href="/tutorList" className="aurateach-footer__link">Tìm gia sư</a>
               </li>
               <li className="aurateach-footer__menu-item">
-                <a href="#online-class" className="aurateach-footer__link">Lớp học trực tuyến</a>
+                <a href="/classList" className="aurateach-footer__link">Lớp học trực tuyến</a>
               </li>
-              <li className="aurateach-footer__menu-item">
-                <a href="#learning-process" className="aurateach-footer__link">Quy trình học tập</a>
-              </li>
+              
             </ul>
           </div>
 
@@ -47,29 +45,27 @@ function Footer() {
             <h4 className="aurateach-footer__menu-title">Dành cho gia sư</h4>
             <ul className="aurateach-footer__menu-list">
               <li className="aurateach-footer__menu-item">
-                <a href="#become-tutor" className="aurateach-footer__link">Trở thành gia sư</a>
+                <a href="/register/teacher" className="aurateach-footer__link">Trở thành gia sư</a>
               </li>
               <li className="aurateach-footer__menu-item">
-                <a href="#commission-policy" className="aurateach-footer__link">Chính sách hoa hồng</a>
+                <a href="/register" className="aurateach-footer__link">Chính sách hoa hồng</a>
               </li>
-              <li className="aurateach-footer__menu-item">
-                <a href="#community" className="aurateach-footer__link">Cộng đồng gia sư</a>
-              </li>
+              
             </ul>
           </div>
 
           {/* Cột 4: Hỗ trợ */}
           <div className="aurateach-footer__menu-col">
-            <h4 className="aurateach-footer__menu-title">Hỗ trợ</h4>
+            <h4 className="/register">Hỗ trợ</h4>
             <ul className="aurateach-footer__menu-list">
               <li className="aurateach-footer__menu-item">
-                <a href="#help-center" className="aurateach-footer__link">Trung tâm trợ giúp</a>
+                <a href="/register" className="aurateach-footer__link">Trung tâm trợ giúp</a>
               </li>
               <li className="aurateach-footer__menu-item">
-                <a href="#terms" className="aurateach-footer__link">Điều khoản dịch vụ</a>
+                <a href="/register" className="aurateach-footer__link">Điều khoản dịch vụ</a>
               </li>
               <li className="aurateach-footer__menu-item">
-                <a href="#privacy" className="aurateach-footer__link">Chính sách bảo mật</a>
+                <a href="/register" className="aurateach-footer__link">Chính sách bảo mật</a>
               </li>
             </ul>
           </div>

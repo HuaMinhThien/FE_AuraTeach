@@ -5,7 +5,7 @@ const API_BASE = "http://localhost:3007";
 
 export async function POST(request) {
   try {
-    const { userId, tutorId } = await request.json();
+    const { userId, tutorId, teaching_levels, level } = await request.json();
 
     if (!userId || !tutorId) {
       return NextResponse.json(
@@ -14,7 +14,21 @@ export async function POST(request) {
       );
     }
 
-    console.log(`✅ Approve tutor: userId=${userId}, tutorId=${tutorId}`);
+    if (!teaching_levels || teaching_levels.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "Vui lòng chọn ít nhất 1 cấp dạy cho gia sư" },
+        { status: 400 }
+      );
+    }
+
+    if (!level) {
+      return NextResponse.json(
+        { success: false, message: "Vui lòng chọn trình độ/cấp bậc cho gia sư" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`✅ Approve tutor: userId=${userId}, tutorId=${tutorId}, levels=${teaching_levels.join(", ")}, level=${level}`);
 
     // Lấy tutor hiện tại
     const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${tutorId}`);
@@ -35,12 +49,14 @@ export async function POST(request) {
       );
     }
 
-    // Cập nhật tutor status thành approved
+    // Cập nhật tutor status thành approved, gán danh sách teaching_levels và gán level do Admin duyệt
     const updateRes = await fetch(`${API_BASE}/tutors/${tutor.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         verification_status: "approved",
+        teaching_levels: teaching_levels,
+        level: level,
         rejection_reason: null
       })
     });
@@ -51,7 +67,6 @@ export async function POST(request) {
 
     // === GỬI THÔNG BÁO CHO TUTOR ===
     try {
-      // Lấy thông tin user của tutor
       const userRes = await fetch(`${API_BASE}/users?user_id=${userId}`);
       const users = await userRes.json();
       const user = users[0];
@@ -67,7 +82,6 @@ export async function POST(request) {
       }
     } catch (notifError) {
       console.error("❌ Lỗi gửi thông báo duyệt tutor:", notifError);
-      // Không throw lỗi để không ảnh hưởng đến luồng chính
     }
 
     console.log(`✅ Tutor ${tutorId} đã được duyệt thành công`);
@@ -77,7 +91,9 @@ export async function POST(request) {
       message: "Duyệt hồ sơ giảng viên thành công",
       data: {
         tutorId: tutorId,
-        status: "approved"
+        status: "approved",
+        teaching_levels: teaching_levels,
+        level: level
       }
     });
 

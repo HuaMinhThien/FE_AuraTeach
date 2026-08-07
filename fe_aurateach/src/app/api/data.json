@@ -353,6 +353,30 @@
       "role": "student",
       "status": "active",
       "created_at": "2026-08-03T16:39:30.840Z"
+    },
+    {
+      "id": "70fd",
+      "user_id": "user_1786117127190_0ef2r9",
+      "email": "emthien@gmail.com",
+      "password": "123123",
+      "full_name": "Em thiện",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-08-07T15:38:47.190Z"
+    },
+    {
+      "id": "34f3",
+      "user_id": "user_1786120063299_yt0bd1",
+      "email": "thien1g@gmail.com",
+      "password": "123123",
+      "full_name": "em thien1g",
+      "phone": "0906761390",
+      "avatar": "/img/avt/avt.jpg",
+      "role": "tutor",
+      "status": "active",
+      "created_at": "2026-08-07T16:27:43.299Z"
     }
   ],
   "admins": [
@@ -376,15 +400,24 @@
       "expertise": "Toán, Tin học & Lập trình",
       "rating": 0,
       "verification_status": "approved",
-      "experience": "Dưới 1 năm",
+      "experience": "2 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 1",
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 660000,
       "available_balance": 37880000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-08-05T06:44:21.240Z",
-      "rejection_reason": null
+      "updated_at": "2026-07-29T10:00:00.000Z",
+      "rejection_reason": null,
+      "certificates": [],
+      "available_days": "Thứ 2, Thứ 4, Thứ 6",
+      "available_time_slots": "17:00 - 19:00, 19:00 - 21:00"
     },
     {
       "id": "c95a",
@@ -394,7 +427,12 @@
       "expertise": "Toán",
       "rating": 5,
       "verification_status": "approved",
-      "experience": "5 năm kinh nghiệm",
+      "experience": "1 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Sinh viên",
       "pending_balance": 100000,
       "available_balance": 3390000,
       "state": "active",
@@ -411,6 +449,11 @@
       "rating": 4.9,
       "verification_status": "approved",
       "experience": "6 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 2200000,
       "available_balance": 533900,
       "state": "active",
@@ -427,6 +470,11 @@
       "rating": 4.7,
       "verification_status": "approved",
       "experience": "4 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 1222000,
       "available_balance": 44390000,
       "state": "active",
@@ -441,8 +489,13 @@
       "bio": "",
       "expertise": "Lịch sử",
       "rating": 0,
-      "verification_status": "pending",
+      "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -459,6 +512,11 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -475,6 +533,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -491,6 +554,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -507,6 +575,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -523,6 +596,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -539,6 +617,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
@@ -554,6 +637,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
@@ -569,6 +657,11 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://vn.linkedin.com",
@@ -583,10 +676,53 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
       "created_at": "2026-07-31T09:21:25.273Z",
+      "rejection_reason": null
+    },
+    {
+      "id": "a7cd",
+      "tutor_id": "tutor_1786117127200",
+      "user_id": "user_1786117127190_0ef2r9",
+      "bio": "",
+      "expertise": "Lập trình, Ngoại ngữ khác, Tiếng Anh",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "available_days": "Thứ 2, Thứ 4, Thứ 6",
+      "available_time_slots": "07:00 - 09:00, 11:00 - 13:00, 15:00 - 17:00, 09:00 - 11:00, 17:00 - 19:00, 13:00 - 15:00, 19:00 - 21:00",
+      "created_at": "2026-08-07T15:38:47.200Z",
+      "rejection_reason": null
+    },
+    {
+      "id": "d425",
+      "tutor_id": "tutor_1786120063307",
+      "user_id": "user_1786120063299_yt0bd1",
+      "bio": "",
+      "expertise": "Toán học, Tiếng Anh",
+      "rating": 0,
+      "verification_status": "approved",
+      "experience": "",
+      "pending_balance": 0,
+      "available_balance": 0,
+      "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "available_days": "Thứ 2, Thứ 4, Thứ 7",
+      "available_time_slots": "17:00 - 19:00, 21:00 - 23:00",
+      "created_at": "2026-08-07T16:27:43.307Z",
+      "teaching_levels": [
+        "Cấp 2"
+      ],
+      "level": "Sinh viên",
       "rejection_reason": null
     }
   ],
@@ -2315,6 +2451,42 @@
       "related_type": "account_status",
       "is_read": false,
       "created_at": "2026-08-06T20:59:19.868Z"
+    },
+    {
+      "id": "notif_1786117165808_nxolg3m06",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "✅ Hồ sơ gia sư đã được phê duyệt",
+      "message": "Hồ sơ của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo lớp học ngay!",
+      "related_id": "tutor_1786117127200",
+      "related_type": "tutor_approval",
+      "is_read": false,
+      "created_at": "2026-08-07T15:39:25.808Z"
+    },
+    {
+      "id": "notif_1786119968981_5x6vc7age",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "✅ Hồ sơ gia sư đã được phê duyệt",
+      "message": "Hồ sơ của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo lớp học ngay!",
+      "related_id": "tutor_1782855815613",
+      "related_type": "tutor_approval",
+      "is_read": false,
+      "created_at": "2026-08-07T16:26:08.981Z"
+    },
+    {
+      "id": "notif_1786120088595_9tz5wgxp0",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "✅ Hồ sơ gia sư đã được phê duyệt",
+      "message": "Hồ sơ của bạn đã được phê duyệt. Bạn có thể bắt đầu tạo lớp học ngay!",
+      "related_id": "tutor_1786120063307",
+      "related_type": "tutor_approval",
+      "is_read": false,
+      "created_at": "2026-08-07T16:28:08.595Z"
     }
   ],
   "tutor_update_requests": [
@@ -2363,6 +2535,36 @@
       "created_at": "2026-07-27T11:16:19.358Z",
       "updated_at": "2026-07-27T11:23:18.541Z",
       "id": "12fd"
+    },
+    {
+      "id": "7993",
+      "tutor_id": "1f17",
+      "old_data": {
+        "phone": "09106761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "Dưới 1 năm",
+        "level": "Giáo viên",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình",
+        "certificates": [],
+        "available_days": "",
+        "available_time_slots": ""
+      },
+      "new_data": {
+        "phone": "09106761390",
+        "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
+        "experience": "2 năm kinh nghiệm",
+        "level": "Giáo viên",
+        "cv_link": "https://example.com/cv/tutor_01/profile",
+        "expertise": "Toán, Tin học & Lập trình",
+        "certificates": [],
+        "available_days": "Thứ 2, Thứ 4, Thứ 6",
+        "available_time_slots": "17:00 - 19:00, 19:00 - 21:00"
+      },
+      "status": "approved",
+      "reject_reason": null,
+      "created_at": "2026-08-07T15:53:20.374Z",
+      "updated_at": "2026-08-07T16:18:01.212Z"
     }
   ],
   "lesson_confirmations": [

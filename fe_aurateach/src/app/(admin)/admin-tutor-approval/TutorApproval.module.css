@@ -135,6 +135,18 @@
   font-weight: 500;
 }
 
+.timeTag {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+  max-width: 200px;
+  word-break: break-word;
+}
+
 /* Buttons */
 .actionGroup {
   display: flex;
@@ -315,8 +327,6 @@
   font-size: 15px;
 }
 
-/* Thêm vào cuối file TutorApproval.module.css */
-
 .tableAvatar {
   width: 40px;
   height: 40px;
@@ -363,4 +373,71 @@
 
 .certImage:hover {
   transform: scale(1.05);
+}
+
+/* Phần chọn cấp dạy và trình độ trong Modal */
+.levelSelectionSection {
+  margin-top: 16px;
+  padding: 14px;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.requiredLabel {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.levelCheckboxGroup {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.errorHint {
+  color: #dc2626;
+  font-size: 12px;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  background-color: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.selectInput:focus {
+  border-color: #2563eb;
+}
+
+.rejectForm {
+  margin-bottom: 16px;
 }
