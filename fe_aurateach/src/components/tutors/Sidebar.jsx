@@ -105,6 +105,10 @@ export default function Sidebar() {
             text: "Lớp học của tôi"
         },
         {
+            path: "/proposed-class",
+            text: "Lớp học đề xuất"
+        },
+        {
             path: "/schedule",
             text: "Lịch trình"
         },
@@ -121,9 +125,7 @@ export default function Sidebar() {
             text: "Tin nhắn",
             badge: unreadCount > 0 ? unreadCount : null
         },
-        // {
-        //     path: 
-        // }
+
 
     ];
 

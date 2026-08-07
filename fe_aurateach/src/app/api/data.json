@@ -1277,6 +1277,31 @@
         "user_1782855725159_tqroz6"
       ],
       "created_at": "2026-08-05T17:44:46.194Z"
+    },
+    {
+      "id": "36b7",
+      "course_id": "course-1786128737260",
+      "tutor_id": "tutor_01",
+      "title": "Lớp ôn thi THPT QG môn Toán",
+      "category_id": "cat-02",
+      "level": "Cấp 3",
+      "description": "Cần tìm gia sư ôn thi đại học môn Toán cấp tốc",
+      "max_students": 1,
+      "price_per_session": 200000,
+      "start_date": "2026-08-10",
+      "total_weeks": 18,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "07:00-09:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-defg-hij",
+      "students": [
+        "u-student-1"
+      ]
     }
   ],
   "reviews": [
@@ -2763,5 +2788,80 @@
       "created_at": "2026-08-04T17:16:21.558Z"
     }
   ],
+  "class_requests": [
+    {
+      "id": "req-1786127748610",
+      "requests_id": "req-1786127748610",
+      "student_id": "user_1785316486801_kvbbi7",
+      "category_id": "cat-02",
+      "title": "Ôn cấp tốc",
+      "description": "Cần tìm gia sư là giáo viên có kinh nghiệm cao và có bằng cấp ABCD ",
+      "level": "Cấp 2",
+      "price_per_session": 130000,
+      "status": "pending",
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 7",
+        "Thứ 5"
+      ],
+      "time_slot": "07:00-09:00",
+      "max_students": 1,
+      "total_weeks": 18,
+      "start_date": "2026-08-16",
+      "schedule_type": "1_term",
+      "tutor_level": "Sinh viên",
+      "start_time": "07:00",
+      "end_time": "09:00",
+      "meet_link": "https://meet.google.com/nec-wney-sfs",
+      "created_at": "2026-08-07T18:35:48.610Z"
+    },
+    {
+      "id": "req-1786132742475",
+      "requests_id": "req-1786132742475",
+      "student_id": "u-student-1",
+      "category_id": "cat-02",
+      "title": "lớp mất gốc toán",
+      "description": "asadasd",
+      "level": "Cấp 2",
+      "price_per_session": 130000,
+      "status": "pending",
+      "schedule_days": [
+        "Thứ 2"
+      ],
+      "time_slot": "11:00-13:00",
+      "max_students": 1,
+      "total_weeks": 18,
+      "start_date": "2026-08-12",
+      "schedule_type": "1_term",
+      "tutor_level": "Sinh viên",
+      "start_time": "11:00",
+      "end_time": "13:00",
+      "meet_link": "https://meet.google.com/hhn-vgsy-rad",
+      "created_at": "2026-08-07T19:59:02.475Z"
+    },
+    {
+      "id": "req-1786133056145",
+      "requests_id": "req-1786133056145",
+      "student_id": "u-student-1",
+      "category_id": "cat-02",
+      "title": "ôn toan hinh",
+      "description": "azxvzxvcb",
+      "level": "Cấp 2",
+      "price_per_session": 230000,
+      "status": "pending",
+      "schedule_days": [],
+      "time_slot": "07:00-09:00",
+      "max_students": 1,
+      "total_weeks": 18,
+      "start_date": "2026-08-12",
+      "schedule_type": "1_term",
+      "tutor_level": "Giáo viên",
+      "start_time": "07:00",
+      "end_time": "09:00",
+      "meet_link": "https://meet.google.com/jyg-tdfw-pwd",
+      "created_at": "2026-08-07T20:04:16.146Z"
+    }
+  ],
+  "request_applications": [],
   "$schema": "./node_modules/json-server/schema.json"
 }
