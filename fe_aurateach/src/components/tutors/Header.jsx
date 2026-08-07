@@ -71,14 +71,14 @@ export default function Header() {
     }, []);
 
     const getValidAvatar = (avatar) => {
-        if (!avatar) return "/img/default-avatar.png";
+        if (!avatar) return "/img/avt/avt.jpg";
         if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
             return avatar;
         }
         if (avatar.startsWith('/')) {
             return avatar;
         }
-        return "/img/default-avatar.png";
+        return "/img/avt/avt.jpg";
     };
 
     return (

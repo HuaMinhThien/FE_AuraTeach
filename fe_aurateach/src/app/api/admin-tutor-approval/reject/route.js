@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import notificationService from "@/services/notificationService";
 
 const API_BASE = "http://localhost:3007";
 
@@ -53,6 +54,27 @@ export async function POST(request) {
 
     if (!updateRes.ok) {
       throw new Error("Không thể cập nhật trạng thái");
+    }
+
+    // === GỬI THÔNG BÁO CHO TUTOR ===
+    try {
+      // Lấy thông tin user của tutor
+      const userRes = await fetch(`${API_BASE}/users?user_id=${userId}`);
+      const users = await userRes.json();
+      const user = users[0];
+
+      if (user) {
+        await notificationService.notifyTutorApproval({
+          tutor,
+          user,
+          status: 'rejected',
+          reason: reason.trim(),
+        });
+        console.log(`📬 Đã gửi thông báo từ chối tutor cho ${user.email}`);
+      }
+    } catch (notifError) {
+      console.error("❌ Lỗi gửi thông báo từ chối tutor:", notifError);
+      // Không throw lỗi để không ảnh hưởng đến luồng chính
     }
 
     console.log(`❌ Tutor ${tutorId} đã bị từ chối với lý do: ${reason}`);

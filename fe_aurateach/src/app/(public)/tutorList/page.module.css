@@ -194,7 +194,7 @@
 }
 
 .sortBtn:hover {
-	border-color: #1259c9;
+	border-color: #0d47a1;
 	color: #1259c9;
 	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(18, 89, 201, 0.1);
@@ -285,7 +285,7 @@
 
 .card h3 {
 	color: #0f3f8f;
-	font-size: 24px;
+	font-size: 20px;
 	line-height: 1.25;
 	letter-spacing: -0.4px;
 	transition: color 0.3s ease;
@@ -298,8 +298,14 @@
 .meta {
 	color: #79879a;
 	font-size: 13px;
-	margin-top: 6px;
+	margin-top: 4px;
 	transition: color 0.3s ease;
+}
+
+.experienceText {
+	color: #2b384c;
+	font-size: 13px;
+	margin-top: 4px;
 }
 
 .card:hover .meta {
@@ -309,9 +315,9 @@
 .desc {
 	margin-top: 8px;
 	color: #4d5c70;
-	font-size: 14px;
+	font-size: 13px;
 	line-height: 1.5;
-	min-height: 84px;
+	min-height: 60px;
 	transition: color 0.3s ease;
 }
 
@@ -322,8 +328,9 @@
 .tags {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 6px;
 	margin-top: 8px;
+	margin-bottom: 12px;
 }
 
 .tags span {
@@ -345,8 +352,8 @@
 	box-shadow: 0 2px 8px rgba(18, 89, 201, 0.2);
 }
 
+/* Sửa lỗi tràn nút bằng cách cho width 100% thay vì fix cứng 300px */
 .detailBtn {
-	margin-top: auto;
 	border: none;
 	background: #edf0f4;
 	color: #40618f;
@@ -357,7 +364,8 @@
 	transition: all 0.3s ease;
 	position: relative;
 	overflow: hidden;
-	width: 300px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .detailBtn::after {
@@ -515,14 +523,15 @@
   display: block;
   text-decoration: none;
   margin-top: auto;
+  width: 100%;
 }
 
 .detailLink:hover .detailBtn,
 .detailLink:focus .detailBtn {
-  background: #1259c9;
+  background: #0d47a1;
   color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(18, 89, 201, 0.25);
+  box-shadow: 0 4px 12px rgba(13, 71, 161, 0.25);
 }
 
 .cardLink {
@@ -533,8 +542,6 @@
   transform: translateY(-4px);
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
-
-/* Thêm vào cuối file page.module.css */
 
 /* Sort Dropdown */
 .sortWrapper {

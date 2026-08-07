@@ -377,13 +377,18 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 660000,
       "available_balance": 37880000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-08-05T06:44:21.240Z",
+      "updated_at": "2026-07-29T10:00:00.000Z",
       "rejection_reason": null
     },
     {
@@ -394,7 +399,12 @@
       "expertise": "Toán",
       "rating": 5,
       "verification_status": "approved",
-      "experience": "5 năm kinh nghiệm",
+      "experience": "1 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Sinh viên",
       "pending_balance": 100000,
       "available_balance": 3390000,
       "state": "active",
@@ -411,6 +421,11 @@
       "rating": 4.9,
       "verification_status": "approved",
       "experience": "6 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 2200000,
       "available_balance": 533900,
       "state": "active",
@@ -427,6 +442,11 @@
       "rating": 4.7,
       "verification_status": "approved",
       "experience": "4 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 1222000,
       "available_balance": 44390000,
       "state": "active",
@@ -443,6 +463,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -463,6 +488,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -483,6 +513,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -499,6 +534,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -515,6 +555,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -531,6 +576,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -547,6 +597,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
@@ -562,6 +617,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
@@ -577,6 +637,11 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://vn.linkedin.com",
@@ -591,6 +656,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
@@ -1145,7 +1215,9 @@
       "image": "/img/class/default-class-9.png",
       "permanent_room_url": "https://meet.google.com/tvb-ahfg-tme",
       "status": "active",
-      "students": [],
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
       "created_at": "2026-08-05T17:44:46.194Z"
     }
   ],
@@ -1404,6 +1476,22 @@
       "payment_amount": 150000,
       "payment_method": "qr",
       "transaction_id": null
+    },
+    {
+      "booking_id": "bk-1786001001342",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course_1785951886194",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-08-06T07:23:21.343Z",
+      "created_at": "2026-08-06T07:23:21.343Z",
+      "updated_at": "2026-08-06T07:23:21.343Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 200000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "OEuvqNEBiZ8"
     }
   ],
   "payments": [
@@ -2209,6 +2297,102 @@
       "related_type": "payment",
       "is_read": true,
       "created_at": "2026-07-29T10:05:00.000Z"
+    },
+    {
+      "id": "ysv8T2d3JU8",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"toán đại số  \".",
+      "related_id": "bk-1786001001342",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-08-06T07:23:21.408Z"
+    },
+    {
+      "id": "g6-CunC4PLk",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"toán đại số  \" với gia sư.",
+      "related_id": "bk-1786001001342",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-08-06T07:23:21.429Z"
+    },
+    {
+      "id": "sPq6CwrGnt0",
+      "receiver_id": "user_1785775170840_q3ptft",
+      "receiver_role": "student",
+      "type": "account",
+      "title": "🔒 Tài khoản đã bị khóa",
+      "message": "Tài khoản của bạn đã bị khóa. Lý do: Vi phạm điều khoản sử dụng",
+      "related_id": "user_1785775170840_q3ptft",
+      "related_type": "account_status",
+      "is_read": false,
+      "created_at": "2026-08-06T20:55:40.032Z"
+    },
+    {
+      "id": "QTu-BpaEhlE",
+      "receiver_id": "user_1785775170840_q3ptft",
+      "receiver_role": "student",
+      "type": "account",
+      "title": "🔓 Tài khoản đã được mở khóa",
+      "message": "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập bình thường.",
+      "related_id": "user_1785775170840_q3ptft",
+      "related_type": "account_status",
+      "is_read": false,
+      "created_at": "2026-08-06T20:56:46.260Z"
+    },
+    {
+      "id": "Cl8Sdu7hd2U",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "type": "account",
+      "title": "🔒 Tài khoản đã bị khóa",
+      "message": "Tài khoản của bạn đã bị khóa. Lý do: Vi phạm điều khoản sử dụng",
+      "related_id": "user_1782855725159_tqroz6",
+      "related_type": "account_status",
+      "is_read": true,
+      "created_at": "2026-08-06T20:56:54.704Z"
+    },
+    {
+      "id": "oF9qPIkcpbM",
+      "receiver_id": "user_1782855725159_tqroz6",
+      "receiver_role": "student",
+      "type": "account",
+      "title": "🔓 Tài khoản đã được mở khóa",
+      "message": "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập bình thường.",
+      "related_id": "user_1782855725159_tqroz6",
+      "related_type": "account_status",
+      "is_read": true,
+      "created_at": "2026-08-06T20:57:12.482Z"
+    },
+    {
+      "id": "K5-_chkfsdM",
+      "receiver_id": "user_1785775170840_q3ptft",
+      "receiver_role": "student",
+      "type": "account",
+      "title": "🔒 Tài khoản đã bị khóa",
+      "message": "Tài khoản của bạn đã bị khóa. Lý do: Vi phạm điều khoản sử dụng",
+      "related_id": "user_1785775170840_q3ptft",
+      "related_type": "account_status",
+      "is_read": false,
+      "created_at": "2026-08-06T20:58:56.053Z"
+    },
+    {
+      "id": "_uRgQfPSJ-M",
+      "receiver_id": "user_1785775170840_q3ptft",
+      "receiver_role": "student",
+      "type": "account",
+      "title": "🔓 Tài khoản đã được mở khóa",
+      "message": "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập bình thường.",
+      "related_id": "user_1785775170840_q3ptft",
+      "related_type": "account_status",
+      "is_read": false,
+      "created_at": "2026-08-06T20:59:19.868Z"
     }
   ],
   "tutor_update_requests": [

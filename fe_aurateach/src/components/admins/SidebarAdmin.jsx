@@ -104,12 +104,13 @@ export default function Sidebar() {
   };
 
   const menuItems = [
+    { name: "Thông báo", path: "/admin-notifications", badge: unreadNotifCount },
     { name: "Bảng điều khiển", path: "/admin-dashboard" },
     { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
     { name: "Quản lý lớp học", path: "/admin-classes-management" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Duyệt yêu cầu rút tiền", path: "/admin-tutor-payout-requests" },
-    { name: "Thông báo", path: "/admin-notifications", badge: unreadNotifCount },
+    { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },
   ];
 
   if (!mounted || !adminData) {
