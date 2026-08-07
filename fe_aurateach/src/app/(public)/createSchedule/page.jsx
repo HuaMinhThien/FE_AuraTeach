@@ -1,53 +1,65 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-// import styles from './CreateClassRequest.module.css';
+import React, { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./CreateClassRequest.module.css";
 
-// Dữ liệu Danh mục mẫu theo yêu cầu
-const CATEGORIES = [
-  { "category_id": "cat-02", "category_name": "Toán" },
-  { "category_id": "cat-03", "category_name": "Ngữ văn" },
-  { "category_id": "cat-04", "category_name": "Lý" },
-  { "category_id": "cat-05", "category_name": "Hóa" },
-  { "category_id": "cat-06", "category_name": "Sinh" },
-  { "category_id": "cat-07", "category_name": "Sử" },
-  { "category_id": "cat-08", "category_name": "Địa" },
-  { "category_id": "cat-09", "category_name": "Ngoại ngữ" },
-  { "category_id": "cat-10", "category_name": "Tin học & Lập trình" },
-  { "category_id": "cat-11", "category_name": "Năng khiếu" }
-];
+// Helper đọc cookie phía client
+const getCookie = (name) => {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
 
-// Bảng quy định phân loại học phí dựa theo ảnh
+// Helper parse dữ liệu user_info từ Cookie
+const getUserInfoFromCookie = () => {
+  try {
+    const rawUserInfo = getCookie("user_info");
+    if (rawUserInfo) {
+      const decoded = decodeURIComponent(rawUserInfo);
+      return JSON.parse(decoded);
+    }
+  } catch (err) {
+    console.error("Lỗi parse cookie user_info:", err);
+  }
+  return null;
+};
+
+// Helper lấy ID học sinh đang đăng nhập từ Cookie
+const getCurrentStudentId = () => {
+  const userInfo = getUserInfoFromCookie();
+  if (userInfo && userInfo.user_id) {
+    return userInfo.user_id;
+  }
+  return (
+    getCookie("student_id") ||
+    getCookie("user_id") ||
+    getCookie("id") ||
+    "u-student-1"
+  );
+};
+
 const PRICE_LIMITS = {
   "Giáo viên": {
-    greaterThan3: {
-      "Cấp 1": { min: 40000, max: 60000, label: "40.000đ - 60.000đ / buổi" },
-      "Cấp 2": { min: 50000, max: 80000, label: "50.000đ - 80.000đ / buổi" },
-      "Cấp 3": { min: 70000, max: 100000, label: "70.000đ - 100.000đ / buổi" },
-    },
     lessThan3: {
-      "Cấp 1": { min: 100000, max: 300000, label: "100.000đ - 300.000đ / buổi" },
-      "Cấp 2": { min: 120000, max: 400000, label: "120.000đ - 400.000đ / buổi" },
-      "Cấp 3": { min: 150000, max: 1000000, label: "150.000đ - 1.000.000đ / buổi" },
-    }
+      "Cấp 1": { min: 200000, max: 250000, label: "200.000đ - 250.000đ / buổi" },
+      "Cấp 2": { min: 230000, max: 300000, label: "230.000đ - 300.000đ / buổi" },
+      "Cấp 3": { min: 250000, max: 350000, label: "250.000đ - 350.000đ / buổi" },
+    },
   },
   "Sinh viên": {
-    greaterThan3: {
-      "Cấp 1": { min: 30000, max: 50000, label: "30.000đ - 50.000đ / buổi" },
-      "Cấp 2": { min: 40000, max: 60000, label: "40.000đ - 60.000đ / buổi" },
-      "Cấp 3": { min: 50000, max: 80000, label: "50.000đ - 80.000đ / buổi" },
-    },
     lessThan3: {
-      "Cấp 1": { min: 80000, max: 200000, label: "80.000đ - 200.000đ / buổi" },
-      "Cấp 2": { min: 100000, max: 250000, label: "100.000đ - 250.000đ / buổi" },
-      "Cấp 3": { min: 120000, max: 350000, label: "120.000đ - 350.000đ / buổi" },
-    }
-  }
+      "Cấp 1": { min: 120000, max: 150000, label: "120.000đ - 150.000đ / buổi" },
+      "Cấp 2": { min: 130000, max: 170000, label: "130.000đ - 170.000đ / buổi" },
+      "Cấp 3": { min: 150000, max: 200000, label: "150.000đ - 200.000đ / buổi" },
+    },
+  },
 };
 
 const DAYS_OF_WEEK = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
 
-// Tạo danh sách giờ từ 07:00 đến 21:00 (để kết thúc là 23:00)
 const GENERATE_TIME_SLOTS = () => {
   const slots = [];
   for (let i = 7; i <= 21; i++) {
@@ -57,46 +69,211 @@ const GENERATE_TIME_SLOTS = () => {
   return slots;
 };
 
+const roundToThousand = (amount) => Math.round(amount / 1000) * 1000;
+
+// Helper tính ngày tối thiểu phải chọn (Cách ngày tạo/hiện tại 5 ngày)
+const getMinStartDate = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 5);
+  return date.toISOString().split("T")[0];
+};
+
 export default function CreateClassRequest() {
-  const [formData, setFormData] = useState({
-    title: '',
-    category_id: 'cat-02',
-    grade_level: 'Cấp 3',
-    tutor_level: 'Sinh viên',
+  const router = useRouter();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [requestsList, setRequestsList] = useState([]);
+  const [existingCourses, setExistingCourses] = useState([]);
+  const [editingRequestId, setEditingRequestId] = useState(null);
+  const [expandedRequestId, setExpandedRequestId] = useState(null);
+
+  // Form mặc định dùng để khởi tạo hoặc reset khi bấm tạo mới
+  const getInitialFormData = (defaultCatId = "") => ({
+    student_id: getCurrentStudentId(),
+    title: "",
+    category_id: defaultCatId,
+    grade_level: "Cấp 3",
+    tutor_level: "Sinh viên",
     max_students: 1,
-    price_per_session: '',
-    description: '',
-    schedule_type: '1_term',
+    price_per_session: "",
+    description: "",
+    schedule_type: "1_term",
     total_weeks: 18,
-    start_date: '',
+    start_date: getMinStartDate(),
     schedule_days: [],
-    start_time: '07:00',
-    meet_link: ''
+    start_time: "07:00",
+    meet_link: "",
   });
 
+  const [formData, setFormData] = useState(getInitialFormData());
   const [loading, setLoading] = useState(false);
+  const [conflictError, setConflictError] = useState("");
 
-  // Tính toán thời gian kết thúc (tự cộng 2 tiếng)
+  useEffect(() => {
+    const currentStudentId = getCurrentStudentId();
+    setFormData((prev) => ({ ...prev, student_id: currentStudentId }));
+  }, []);
+
+  const checkAuthAndRole = () => {
+    const userInfo = getUserInfoFromCookie();
+    const token = getCookie("token") || getCookie("user") || getCookie("auth") || userInfo;
+    const role = getCookie("role") || getCookie("user_role") || (userInfo && userInfo.role);
+
+    if (!token && !userInfo) {
+      alert("Bạn cần đăng nhập để sử dụng tính năng này!");
+      router.push("/register");
+      return false;
+    }
+
+    if (role && role !== "student") {
+      alert("Tính năng này chỉ dành cho tài khoản Học sinh (Student)!");
+      return false;
+    }
+
+    return true;
+  };
+
+  // Reset form khi tạo mới lớp học để không bị dính dữ liệu cũ
+  const handleOpenCreateModal = () => {
+    if (!checkAuthAndRole()) return;
+    setEditingRequestId(null);
+    const defaultCat = categories.length > 0 ? categories[0].category_id : "";
+    setFormData(getInitialFormData(defaultCat));
+    setIsModalOpen(true);
+  };
+
+  const fetchRequestsAndCourses = async () => {
+    try {
+      const currentStudentId = getCurrentStudentId();
+
+      const [resCat, resReq, resCourse, resApp, resTutors, resUsers] = await Promise.all([
+        fetch("http://localhost:3007/categories"),
+        fetch("http://localhost:3007/class_requests"),
+        fetch("http://localhost:3007/courses"),
+        fetch("http://localhost:3007/request_applications"),
+        fetch("http://localhost:3007/tutors"),
+        fetch("http://localhost:3007/users"),
+      ]);
+
+      let catList = [];
+      if (resCat.ok) {
+        const catData = await resCat.json();
+        catList = Array.isArray(catData) ? catData : [];
+        setCategories(catList);
+      }
+
+      let applications = [];
+      if (resApp.ok) {
+        applications = await resApp.json();
+      }
+
+      let tutorsList = [];
+      if (resTutors.ok) {
+        tutorsList = await resTutors.json();
+      }
+
+      let usersList = [];
+      if (resUsers.ok) {
+        usersList = await resUsers.json();
+      }
+
+      if (resReq.ok) {
+        const data = await resReq.json();
+        if (Array.isArray(data)) {
+          // Lọc các bản ghi của học sinh hiện tại và loại bỏ bản ghi trùng id/requests_id
+          const myRequestsMap = new Map();
+
+          data
+            .filter((item) => item.student_id === currentStudentId)
+            .forEach((req) => {
+              const reqId = req.requests_id || req.id;
+              
+              if (!myRequestsMap.has(reqId)) {
+                // Lọc ra các đơn ứng tuyển tương ứng với class_request này
+                const matchedApps = applications.filter(
+                  (app) => app.requests_id === reqId || app.request_id === reqId
+                );
+
+                // Ghép thông tin chi tiết gia sư và user
+                const appliedTutorsList = matchedApps.map((app) => {
+                  const tutorObj = tutorsList.find((t) => t.tutor_id === app.tutor_id) || {};
+                  const userObj = usersList.find((u) => u.user_id === tutorObj.user_id) || {};
+                  return {
+                    tutor_id: app.tutor_id,
+                    full_name: userObj.full_name || tutorObj.full_name || "Gia sư",
+                    avatar: userObj.avatar || tutorObj.avatar || "/img/avt/avt.jpg",
+                    level: tutorObj.level || "Gia sư",
+                    experience: tutorObj.experience || "Có kinh nghiệm",
+                    rating: tutorObj.rating || 5,
+                    app_id: app.id,
+                  };
+                });
+
+                myRequestsMap.set(reqId, {
+                  ...req,
+                  applied_tutors: req.applied_tutors && req.applied_tutors.length > 0 
+                    ? req.applied_tutors 
+                    : appliedTutorsList,
+                });
+              }
+            });
+
+          setRequestsList(Array.from(myRequestsMap.values()));
+        } else {
+          setRequestsList([]);
+        }
+      }
+
+      if (resCourse.ok) {
+        const courses = await resCourse.json();
+        setExistingCourses(courses);
+      }
+    } catch (err) {
+      console.error("Lỗi tải dữ liệu:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequestsAndCourses();
+  }, []);
+
   const endTime = useMemo(() => {
-    if (!formData.start_time) return '09:00';
-    const hour = parseInt(formData.start_time.split(':')[0], 10);
+    if (!formData.start_time) return "09:00";
+    const hour = parseInt(formData.start_time.split(":")[0], 10);
     const endHour = hour + 2;
     return endHour < 10 ? `0${endHour}:00` : `${endHour}:00`;
   }, [formData.start_time]);
 
-  // Xác định khoảng giá đề xuất dựa trên level, cấp học & số lượng học sinh
   const priceLimitInfo = useMemo(() => {
-    const groupKey = formData.max_students >= 3 ? 'greaterThan3' : 'lessThan3';
-    return PRICE_LIMITS[formData.tutor_level]?.[groupKey]?.[formData.grade_level] || null;
-  }, [formData.tutor_level, formData.max_students, formData.grade_level]);
+    const tutorCfg = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
+    const base1On1 = tutorCfg.lessThan3[formData.grade_level];
+    const numStudents = Number(formData.max_students) || 1;
 
-  // Tính tổng số buổi học và học phí dự kiến
+    if (numStudents >= 3 && base1On1) {
+      const minCalculated = roundToThousand(base1On1.min / numStudents);
+      const maxCalculated = roundToThousand(base1On1.max / numStudents);
+      return {
+        min: minCalculated,
+        max: maxCalculated,
+        label: `${minCalculated.toLocaleString("vi-VN")}đ - ${maxCalculated.toLocaleString("vi-VN")}đ / buổi / HS`,
+      };
+    }
+    return base1On1;
+  }, [formData.tutor_level, formData.grade_level, formData.max_students]);
+
+  // Kiểm tra tính hợp lệ của học phí nhập vào
+  const isPriceValid = useMemo(() => {
+    if (!formData.price_per_session || !priceLimitInfo) return true;
+    const price = Number(formData.price_per_session);
+    return price >= priceLimitInfo.min && price <= priceLimitInfo.max;
+  }, [formData.price_per_session, priceLimitInfo]);
+
   const { totalSessions, monthlyEstimate, totalCoursePrice } = useMemo(() => {
     const daysPerWeek = formData.schedule_days.length;
     const totalSessions = daysPerWeek * formData.total_weeks;
     const price = Number(formData.price_per_session) || 0;
-    
-    // Ước tính số buổi trong 1 tháng (4 tuần)
+
     const monthlySessions = daysPerWeek * 4;
     const monthlyEstimate = monthlySessions * price;
     const totalCoursePrice = totalSessions * price;
@@ -104,333 +281,757 @@ export default function CreateClassRequest() {
     return { totalSessions, monthlyEstimate, totalCoursePrice };
   }, [formData.schedule_days, formData.total_weeks, formData.price_per_session]);
 
-  // Xử lý chuyển đổi thứ trong tuần
+  const checkConflictSchedule = () => {
+    if (!formData.start_date || formData.schedule_days.length === 0) return false;
+
+    const newStartHour = parseInt(formData.start_time.split(":")[0], 10);
+    const newEndHour = newStartHour + 2;
+
+    for (const course of existingCourses) {
+      if (course.students && course.students.includes(formData.student_id)) {
+        const hasCommonDay = course.schedule_days?.some((day) =>
+          formData.schedule_days.includes(day)
+        );
+        if (hasCommonDay) {
+          const [cStart, cEnd] = (course.time_slot || "00:00-00:00")
+            .split("-")
+            .map((t) => parseInt(t.split(":")[0], 10));
+
+          if (
+            (newStartHour >= cStart && newStartHour < cEnd) ||
+            (newEndHour > cStart && newEndHour <= cEnd)
+          ) {
+            setConflictError(
+              `⚠️ Trùng lịch học với lớp "${course.title}" (${course.time_slot} vào các ngày ${course.schedule_days.join(", ")})`
+            );
+            return true;
+          }
+        }
+      }
+    }
+
+    setConflictError("");
+    return false;
+  };
+
+  useEffect(() => {
+    checkConflictSchedule();
+  }, [formData.start_date, formData.schedule_days, formData.start_time]);
+
   const toggleDay = (day) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const exists = prev.schedule_days.includes(day);
       return {
         ...prev,
         schedule_days: exists
-          ? prev.schedule_days.filter(d => d !== day)
-          : [...prev.schedule_days, day]
+          ? prev.schedule_days.filter((d) => d !== day)
+          : [...prev.schedule_days, day],
       };
     });
   };
 
-  // Xử lý thay đổi lộ trình học
   const handleScheduleTypeChange = (e) => {
     const val = e.target.value;
     let weeks = 18;
-    if (val === '2_terms') weeks = 36;
-    setFormData(prev => ({
+    if (val === "2_terms") weeks = 36;
+    if (val === "custom") weeks = 2;
+
+    setFormData((prev) => ({
       ...prev,
       schedule_type: val,
-      total_weeks: val === 'custom' ? prev.total_weeks : weeks
+      total_weeks: weeks,
     }));
   };
 
-  // Tạo link Google Meet demo
   const handleGenerateMeetLink = async () => {
+    if (!checkAuthAndRole()) return;
     try {
-      const res = await fetch('/api/student-class-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, start_time: formData.start_time, end_time: endTime })
+      const res = await fetch("/api/student-class-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, end_time: endTime }),
       });
       const result = await res.json();
       if (result.success && result.data?.meet_link) {
-        setFormData(prev => ({ ...prev, meet_link: result.data.meet_link }));
+        setFormData((prev) => ({ ...prev, meet_link: result.data.meet_link }));
       }
     } catch (err) {
       console.error("Lỗi tự động sinh Meet Link:", err);
     }
   };
 
-  // Submit form lên API
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!checkAuthAndRole()) return;
+
+    // Ràng buộc nghiêm ngặt mức giá tiền nhập vào
+    const priceEntered = Number(formData.price_per_session);
+    if (priceLimitInfo) {
+      if (priceEntered < priceLimitInfo.min || priceEntered > priceLimitInfo.max) {
+        alert(
+          `⚠️ Mức học phí nhập (${priceEntered.toLocaleString("vi-VN")}đ) không hợp lệ!\nChỉ cho phép nhập trong khoảng từ ${priceLimitInfo.min.toLocaleString("vi-VN")} VNĐ đến ${priceLimitInfo.max.toLocaleString("vi-VN")} VNĐ.`
+        );
+        return;
+      }
+    }
+
+    // Kiểm tra ràng buộc ngày khai giảng phải cách ít nhất 5 ngày
+    const selectedDate = new Date(formData.start_date);
+    const minDate = new Date(getMinStartDate());
+    selectedDate.setHours(0,0,0,0);
+    minDate.setHours(0,0,0,0);
+
+    if (selectedDate < minDate) {
+      alert("⚠️ Ngày bắt đầu học phải chọn gần nhất cách ngày tạo ít nhất 5 ngày!");
+      return;
+    }
+
     if (formData.schedule_days.length === 0) {
       alert("Vui lòng chọn ít nhất 1 thứ trong tuần!");
       return;
     }
 
+    if (formData.schedule_type === "custom" && formData.total_weeks > 2) {
+      alert("⚠️ Lựa chọn lớp riêng lẻ chỉ cho phép tối đa 2 tuần!");
+      return;
+    }
+
+    if (checkConflictSchedule()) {
+      alert("Vui lòng xử lý trùng lịch học trước khi đăng bài!");
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3008/api/student-class-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          end_time: endTime
-        })
-      });
+      let response;
+      const currentStudentId = getCurrentStudentId();
 
-      const resData = await response.json();
-      if (response.ok) {
-        alert("Đăng yêu cầu tìm gia sư thành công!");
-        console.log("Dữ liệu nhận về:", resData);
+      if (editingRequestId) {
+        response = await fetch(`http://localhost:3007/class_requests/${editingRequestId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingRequestId,
+            requests_id: editingRequestId,
+            student_id: currentStudentId,
+            category_id: formData.category_id,
+            title: formData.title,
+            description: formData.description,
+            level: formData.grade_level,
+            price_per_session: Number(formData.price_per_session),
+            status: "pending",
+            schedule_days: formData.schedule_days,
+            time_slot: `${formData.start_time}-${endTime}`,
+            max_students: Number(formData.max_students || 1),
+            total_weeks: Number(formData.total_weeks),
+            start_date: formData.start_date,
+            schedule_type: formData.schedule_type,
+            tutor_level: formData.tutor_level,
+            start_time: formData.start_time,
+            end_time: endTime,
+            meet_link: formData.meet_link,
+            updated_at: new Date().toISOString()
+          }),
+        });
       } else {
-        alert("Lỗi: " + resData.message);
+        response = await fetch("/api/student-class-requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            max_students: Number(formData.max_students || 1),
+            student_id: currentStudentId,
+            end_time: endTime
+          }),
+        });
+      }
+
+      if (response.ok) {
+        alert(editingRequestId ? "Cập nhật lớp thành công!" : "Tạo yêu cầu lớp học thành công!");
+        setIsModalOpen(false);
+        setEditingRequestId(null);
+        fetchRequestsAndCourses();
+      } else {
+        const resData = await response.json();
+        alert("Lỗi: " + (resData.message || "Không thể thực hiện action"));
       }
     } catch (error) {
-      console.error("Lỗi khi kết nối API:", error);
-      alert("Không thể kết nối đến server localhost:3008");
+      console.error("Lỗi kết nối:", error);
+      alert("Không thể kết nối đến hệ thống server!");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeleteRequest = async (requestId) => {
+    if (!checkAuthAndRole()) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa yêu cầu tạo lớp này?")) return;
+    try {
+      const res = await fetch(`http://localhost:3007/class_requests/${requestId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        alert("Đã xóa yêu cầu tạo lớp học!");
+        fetchRequestsAndCourses();
+      }
+    } catch (err) {
+      console.error("Lỗi xóa yêu cầu:", err);
+    }
+  };
+
+  const handleEditRequest = (req) => {
+    if (!checkAuthAndRole()) return;
+    const reqId = req.requests_id || req.id;
+    setEditingRequestId(reqId);
+    setFormData({
+      student_id: req.student_id || getCurrentStudentId(),
+      title: req.title,
+      category_id: req.category_id,
+      grade_level: req.level || req.grade_level,
+      tutor_level: req.tutor_level || "Sinh viên",
+      max_students: req.max_students,
+      price_per_session: req.price_per_session,
+      description: req.description,
+      schedule_type: req.schedule_type || "1_term",
+      total_weeks: req.total_weeks,
+      start_date: req.start_date || getMinStartDate(),
+      schedule_days: req.schedule_days || [],
+      start_time: req.start_time || (req.time_slot ? req.time_slot.split("-")[0] : "07:00"),
+      meet_link: req.meet_link || "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleAcceptTutor = async (req, tutor) => {
+    if (!checkAuthAndRole()) return;
+    if (!confirm(`Xác nhận chọn gia sư ${tutor.full_name} dạy lớp này?`)) return;
+
+    const newCoursePayload = {
+      course_id: `course-${Date.now()}`,
+      tutor_id: tutor.tutor_id,
+      title: req.title,
+      category_id: req.category_id,
+      level: req.level || req.grade_level,
+      description: req.description,
+      max_students: req.max_students,
+      price_per_session: req.price_per_session,
+      start_date: req.start_date,
+      total_weeks: req.total_weeks,
+      schedule_days: req.schedule_days,
+      time_slot: req.time_slot || `${req.start_time}-${req.end_time}`,
+      thumbnail: "/img/class/default-class-1.jpg",
+      status: "active",
+      permanent_room_url: req.meet_link,
+      students: [req.student_id],
+    };
+
+    try {
+      const resCourse = await fetch("http://localhost:3007/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCoursePayload),
+      });
+
+      if (resCourse.ok) {
+        const reqId = req.requests_id || req.id;
+        
+        // Xóa yêu cầu tạo lớp theo nhu cầu khỏi class_requests sau khi đã tạo khóa học thành công
+        await fetch(`http://localhost:3007/class_requests/${reqId}`, {
+          method: "DELETE",
+        });
+
+        alert("🎉 Nhận gia sư thành công! Lớp học đã được khởi tạo tự động và đã xóa yêu cầu tạo lớp.");
+        fetchRequestsAndCourses();
+      }
+    } catch (err) {
+      console.error("Lỗi khi khởi tạo lớp học:", err);
+    }
+  };
+
+  const getCategoryName = (catId) => {
+    const found = categories.find((c) => c.category_id === catId);
+    return found ? found.category_name : catId;
+  };
+
+  // Render bảng quy định khung giá quy định hệ thống
+  const renderPriceTable = () => {
+    const activeLevelConfig = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
+    const levels = ["Cấp 1", "Cấp 2", "Cấp 3"];
+    const numStudents = Number(formData.max_students) || 1;
+
+    return (
+      <div style={{ marginTop: "15px", marginBottom: "15px" }}>
+        {priceLimitInfo && numStudents >= 3 && (
+          <div style={{
+            padding: "10px 14px",
+            backgroundColor: "#fef2f2",
+            border: "1px solid #fca5a5",
+            borderRadius: "6px",
+            color: "#b91c1c",
+            fontSize: "13px",
+            marginBottom: "12px"
+          }}>
+            ⚠️ Mức phí cho {formData.grade_level} ({formData.tutor_level} - Lớp {numStudents} HS: Giá 1 kèm 1 / {numStudents}): phải nằm trong khoảng: <strong>{priceLimitInfo.label}</strong>
+          </div>
+        )}
+
+        <div style={{
+          border: "1px solid #e2e8f0",
+          borderRadius: "8px",
+          overflow: "hidden",
+          backgroundColor: "#f8fafc",
+          padding: "12px"
+        }}>
+          <h4 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#334155" }}>
+            Khung giá quy định hệ thống ({formData.tutor_level})
+          </h4>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#edf2f7", borderBottom: "1px solid #cbd5e1" }}>
+                <th style={{ padding: "8px" }}>Cấp học</th>
+                <th style={{ padding: "8px" }}>Lớp 1 - 2 học sinh (1-1)</th>
+                <th style={{ padding: "8px" }}>Lớp 3 - 5 học sinh (Chia đều cho {numStudents >= 3 ? numStudents : 3} HS)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {levels.map((lvl) => {
+                const isSelected = formData.grade_level === lvl;
+                const base = activeLevelConfig.lessThan3[lvl];
+                const divisor = numStudents >= 3 ? numStudents : 3;
+                const minDiv = roundToThousand(base.min / divisor);
+                const maxDiv = roundToThousand(base.max / divisor);
+
+                return (
+                  <tr
+                    key={lvl}
+                    style={{
+                      borderBottom: "1px solid #e2e8f0",
+                      backgroundColor: isSelected ? "#eff6ff" : "transparent",
+                      fontWeight: isSelected ? "bold" : "normal",
+                      color: isSelected ? "#1d4ed8" : "#475569"
+                    }}
+                  >
+                    <td style={{ padding: "8px" }}>{lvl}</td>
+                    <td style={{ padding: "8px" }}>{base.min.toLocaleString("vi-VN")}đ - {base.max.toLocaleString("vi-VN")}đ / buổi</td>
+                    <td style={{ padding: "8px" }}>{minDiv.toLocaleString("vi-VN")}đ - {maxDiv.toLocaleString("vi-VN")}đ / buổi / HS</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Đăng Yêu Cầu Tìm Gia Sư (Tạo Lớp Học)</h1>
+      <div className={styles.topBar}>
+        <h1 className={styles.title}>Quản Lý Yêu Cầu Tạo Lớp Học (Học Sinh)</h1>
+        <button
+          className={styles.openModalBtn}
+          onClick={handleOpenCreateModal}
+        >
+          + Đăng Yêu Cầu Tạo Lớp Theo Nhu Cầu
+        </button>
+      </div>
 
-      <div className={styles.layout}>
-        {/* Form bên trái */}
-        <form onSubmit={handleSubmit} className={styles.formSection}>
-          <div className={styles.sectionTitle}>Thông tin lớp học</div>
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <button className={styles.closeModalBtn} onClick={() => setIsModalOpen(false)}>
+              ✕
+            </button>
+            <h2 className={styles.sectionTitle}>
+              {editingRequestId ? "Chỉnh Sửa Yêu Cầu Tạo Lớp" : "Đăng Yêu Cầu Tạo Lớp Theo Nhu Cầu"}
+            </h2>
 
-          <div className={styles.formGroup}>
-            <label>Tên lớp học <span>*</span></label>
-            <input 
-              type="text" 
-              className={styles.input} 
-              placeholder="VD: Lớp ôn thi THPT QG môn Toán"
-              value={formData.title} 
-              onChange={e => setFormData({...formData, title: e.target.value})}
-              required 
-            />
-          </div>
+            <div className={styles.layout}>
+              <form onSubmit={handleSubmit} className={styles.formSection}>
+                {conflictError && <div className={styles.errorAlert}>{conflictError}</div>}
 
-          <div className={styles.rowTwo}>
-            <div className={styles.formGroup}>
-              <label>Môn học <span>*</span></label>
-              <select 
-                className={styles.select}
-                value={formData.category_id}
-                onChange={e => setFormData({...formData, category_id: e.target.value})}
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat.category_id} value={cat.category_id}>{cat.category_name}</option>
-                ))}
-              </select>
-            </div>
+                <div className={styles.formGroup}>
+                  <label>Tên lớp học <span>*</span></label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="VD: Lớp ôn thi THPT QG môn Toán"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
+                </div>
 
-            <div className={styles.formGroup}>
-              <label>Cấp học <span>*</span></label>
-              <select 
-                className={styles.select}
-                value={formData.grade_level}
-                onChange={e => setFormData({...formData, grade_level: e.target.value})}
-              >
-                <option value="Cấp 1">Cấp 1</option>
-                <option value="Cấp 2">Cấp 2</option>
-                <option value="Cấp 3">Cấp 3</option>
-              </select>
-            </div>
-          </div>
+                <div className={styles.rowTwo}>
+                  <div className={styles.formGroup}>
+                    <label>Môn học <span>*</span></label>
+                    <select
+                      className={styles.select}
+                      value={formData.category_id}
+                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                    >
+                      {categories.map((cat, idx) => (
+                        <option key={cat.category_id || `cat-${idx}`} value={cat.category_id}>
+                          {cat.category_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-          <div className={styles.rowTwo}>
-            <div className={styles.formGroup}>
-              <label>Yêu cầu trình độ Gia sư <span>*</span></label>
-              <select 
-                className={styles.select}
-                value={formData.tutor_level}
-                onChange={e => setFormData({...formData, tutor_level: e.target.value})}
-              >
-                <option value="Sinh viên">Sinh viên</option>
-                <option value="Giáo viên">Giáo viên</option>
-              </select>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label>Cấp học <span>*</span></label>
+                    <select
+                      className={styles.select}
+                      value={formData.grade_level}
+                      onChange={(e) => setFormData({ ...formData, grade_level: e.target.value })}
+                    >
+                      <option value="Cấp 1">Cấp 1</option>
+                      <option value="Cấp 2">Cấp 2</option>
+                      <option value="Cấp 3">Cấp 3</option>
+                    </select>
+                  </div>
+                </div>
 
-            <div className={styles.formGroup}>
-              <label>Số lượng học sinh (1 - 5 HS) <span>*</span></label>
-              <input 
-                type="number" 
-                min="1" 
-                max="5" 
-                className={styles.input}
-                value={formData.max_students}
-                onChange={e => setFormData({...formData, max_students: Math.min(5, Math.max(1, parseInt(e.target.value) || 1))})}
-                required 
-              />
-            </div>
-          </div>
+                <div className={styles.rowTwo}>
+                  <div className={styles.formGroup}>
+                    <label>Yêu cầu trình độ Gia sư <span>*</span></label>
+                    <select
+                      className={styles.select}
+                      value={formData.tutor_level}
+                      onChange={(e) => setFormData({ ...formData, tutor_level: e.target.value })}
+                    >
+                      <option value="Sinh viên">Sinh viên</option>
+                      <option value="Giáo viên">Giáo viên</option>
+                    </select>
+                  </div>
 
-          <div className={styles.formGroup}>
-            <label>Học phí chi trả mỗi buổi (VNĐ) <span>*</span></label>
-            <input 
-              type="number" 
-              className={styles.input}
-              placeholder="Nhập số tiền..."
-              value={formData.price_per_session}
-              min={priceLimitInfo?.min}
-              max={priceLimitInfo?.max}
-              onChange={e => setFormData({...formData, price_per_session: e.target.value})}
-              required 
-            />
-            {priceLimitInfo && (
-              <div className={styles.priceHint}>
-                Bảng giá đề xuất: <strong>{priceLimitInfo.label}</strong>
-              </div>
-            )}
-          </div>
+                  <div className={styles.formGroup}>
+                    <label>Số lượng học sinh (1 - 5 HS) <span>*</span></label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      className={styles.input}
+                      value={formData.max_students}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "") {
+                          setFormData({ ...formData, max_students: "" });
+                        } else {
+                          const parsed = parseInt(val, 10);
+                          setFormData({
+                            ...formData,
+                            max_students: isNaN(parsed) ? "" : Math.min(5, Math.max(1, parsed)),
+                          });
+                        }
+                      }}
+                      required
+                    />
+                  </div>
+                </div>
 
-          <div className={styles.formGroup}>
-            <label>Mô tả / Yêu cầu chi tiết</label>
-            <textarea 
-              className={styles.textarea} 
-              rows="3"
-              placeholder="Nhập mục tiêu học tập, điểm yếu cần cải thiện..."
-              value={formData.description}
-              onChange={e => setFormData({...formData, description: e.target.value})}
-            ></textarea>
-          </div>
+                <div className={styles.formGroup}>
+                  <label>Học phí chi trả mỗi buổi (VNĐ) <span>*</span></label>
+                  <input
+                    type="number"
+                    className={`${styles.input} ${!isPriceValid ? styles.inputError : ""}`}
+                    placeholder="Nhập số tiền..."
+                    value={formData.price_per_session}
+                    min={priceLimitInfo?.min}
+                    max={priceLimitInfo?.max}
+                    onChange={(e) => setFormData({ ...formData, price_per_session: e.target.value })}
+                    required
+                  />
 
-          {/* Phòng học trực tuyến (Tự động sinh Meet Link) */}
-          <div className={styles.formGroup}>
-            <label>Link Google Meet (Tự động khởi tạo từ BE)</label>
-            <div className={styles.meetBox}>
-              <input 
-                type="text" 
-                className={styles.meetInput} 
-                value={formData.meet_link || 'Chưa khởi tạo link...'} 
-                readOnly 
-              />
-              <button type="button" className={styles.genBtn} onClick={handleGenerateMeetLink}>
-                {formData.meet_link ? 'Tạo lại link' : 'Lấy link Meet'}
-              </button>
-            </div>
-          </div>
+                  {/* Hiển thị thông báo giới hạn & cảnh báo nhập sai */}
+                  {priceLimitInfo && (
+                    <small className={!isPriceValid ? styles.priceHintError : styles.priceHint}>
+                      {!isPriceValid
+                        ? `⚠️ Bạn chỉ được phép nhập mức giá từ ${priceLimitInfo.min.toLocaleString("vi-VN")}đ đến ${priceLimitInfo.max.toLocaleString("vi-VN")}đ / buổi.`
+                        : `* Mức giá cho phép: ${priceLimitInfo.min.toLocaleString("vi-VN")}đ - ${priceLimitInfo.max.toLocaleString("vi-VN")}đ / buổi.`}
+                    </small>
+                  )}
+                </div>
 
-          {/* Lịch học dự kiến */}
-          <div className={styles.sectionTitle} style={{ marginTop: '28px' }}>Lịch học dự kiến</div>
+                {/* Bảng giá đề xuất khung quy định */}
+                {renderPriceTable()}
 
-          <div className={styles.formGroup}>
-            <label>Lựa chọn hình thức / Lộ trình học <span>*</span></label>
-            <select className={styles.select} value={formData.schedule_type} onChange={handleScheduleTypeChange}>
-              <option value="1_term">Dạy theo 1 kỳ (Quy đổi thành 18 tuần học)</option>
-              <option value="2_terms">Dạy theo 2 kỳ (Quy đổi thành 36 tuần học)</option>
-              <option value="custom">Dạy riêng lẻ dành cho các lớp học thêm, củng cố kiến thức...</option>
-            </select>
-          </div>
+                <div className={styles.formGroup}>
+                  <label>Mô tả / Yêu cầu chi tiết</label>
+                  <textarea
+                    className={styles.textarea}
+                    rows="3"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  ></textarea>
+                </div>
 
-          <div className={styles.rowTwo}>
-            <div className={styles.formGroup}>
-              <label>Ngày bắt đầu dạy (Khai giảng) <span>*</span></label>
-              <input 
-                type="date" 
-                className={styles.input} 
-                value={formData.start_date}
-                onChange={e => setFormData({...formData, start_date: e.target.value})}
-                required 
-              />
-            </div>
+                <div className={styles.formGroup}>
+                  <label>Link Google Meet</label>
+                  <div className={styles.meetBox}>
+                    <input
+                      type="text"
+                      className={styles.meetInput}
+                      value={formData.meet_link || "Chưa khởi tạo..."}
+                      readOnly
+                    />
+                    <button type="button" className={styles.genBtn} onClick={handleGenerateMeetLink}>
+                      {formData.meet_link ? "Tạo lại link" : "Lấy link Meet"}
+                    </button>
+                  </div>
+                </div>
 
-            <div className={styles.formGroup}>
-              <label>Số tuần dự kiến hoàn thành</label>
-              <input 
-                type="number" 
-                className={styles.input} 
-                value={formData.total_weeks}
-                disabled={formData.schedule_type !== 'custom'}
-                onChange={e => setFormData({...formData, total_weeks: parseInt(e.target.value) || 1})}
-              />
-            </div>
-          </div>
+                <div className={styles.sectionTitle} style={{ marginTop: "20px" }}>
+                  Lịch học dự kiến
+                </div>
 
-          <div className={styles.formGroup}>
-            <label>Chọn các thứ trong tuần <span>*</span></label>
-            <div className={styles.daysGrid}>
-              {DAYS_OF_WEEK.map(day => (
+                <div className={styles.formGroup}>
+                  <label>Lộ trình học <span>*</span></label>
+                  <select
+                    className={styles.select}
+                    value={formData.schedule_type}
+                    onChange={handleScheduleTypeChange}
+                  >
+                    <option value="1_term">Dạy theo 1 kỳ (18 tuần)</option>
+                    <option value="2_terms">Dạy theo 2 kỳ (36 tuần)</option>
+                    <option value="custom">Dạy riêng lẻ (Tối đa 2 tuần)</option>
+                  </select>
+                </div>
+
+                <div className={styles.rowTwo}>
+                  <div className={styles.formGroup}>
+                    <label>Ngày khai giảng (Bắt đầu vào lớp) <span>*</span></label>
+                    <input
+                      type="date"
+                      className={styles.input}
+                      min={getMinStartDate()}
+                      value={formData.start_date}
+                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                      required
+                    />
+                    <small style={{ color: "#64748b", fontSize: "11px", marginTop: "4px", display: "block" }}>
+                      * Yêu cầu chọn ngày gần nhất cách hôm nay 5 ngày.
+                    </small>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Số tuần dự kiến</label>
+                    <input
+                      type="number"
+                      max={formData.schedule_type === "custom" ? 2 : 52}
+                      className={styles.input}
+                      value={formData.total_weeks}
+                      disabled={formData.schedule_type !== "custom"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          total_weeks:
+                            formData.schedule_type === "custom"
+                              ? Math.min(2, parseInt(e.target.value) || 1)
+                              : parseInt(e.target.value) || 1,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Chọn thứ trong tuần <span>*</span></label>
+                  <div className={styles.daysGrid}>
+                    {DAYS_OF_WEEK.map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        className={`${styles.dayBtn} ${
+                          formData.schedule_days.includes(day) ? styles.dayBtnSelected : ""
+                        }`}
+                        onClick={() => toggleDay(day)}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Giờ bắt đầu dạy (Tự động +2 tiếng) <span>*</span></label>
+                  <div className={styles.rowTwo}>
+                    <select
+                      className={styles.select}
+                      value={formData.start_time}
+                      onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                    >
+                      {GENERATE_TIME_SLOTS().map((time, idx) => (
+                        <option key={`${time}-${idx}`} value={time}>
+                          Bắt đầu: {time}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={`Kết thúc: ${endTime}`}
+                      disabled
+                    />
+                  </div>
+                </div>
+
                 <button
-                  key={day}
-                  type="button"
-                  className={`${styles.dayBtn} ${formData.schedule_days.includes(day) ? styles.dayBtnSelected : ''}`}
-                  onClick={() => toggleDay(day)}
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={loading || !isPriceValid}
                 >
-                  {day}
+                  {loading ? "Đang xử lý..." : editingRequestId ? "Cập Nhật Yêu Cầu" : "Gửi Yêu Cầu"}
                 </button>
-              ))}
-            </div>
-          </div>
+              </form>
 
-          <div className={styles.formGroup}>
-            <label>Chọn giờ bắt đầu dạy (Tự động +2 tiếng, từ 07:00 đến 23:00) <span>*</span></label>
-            <div className={styles.rowTwo} style={{ alignItems: 'center' }}>
-              <select 
-                className={styles.select}
-                value={formData.start_time}
-                onChange={e => setFormData({...formData, start_time: e.target.value})}
-              >
-                {GENERATE_TIME_SLOTS().map(time => (
-                  <option key={time} value={time}>Bắt đầu: {time}</option>
-                ))}
-              </select>
-              <span style={{ textAlign: 'center', fontWeight: 'bold' }}>$\rightarrow$</span>
-              <input 
-                type="text" 
-                className={styles.input} 
-                value={`Kết thúc: ${endTime}`} 
-                disabled 
-              />
-            </div>
-          </div>
+              <div className={styles.summarySection}>
+                <div className={styles.sectionTitle}>Tính toán chi phí</div>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Đang gửi yêu cầu...' : 'Tạo Yêu Cầu Lớp Học'}
-          </button>
-        </form>
+                <div className={styles.summaryCard}>
+                  <div className={styles.summaryRow}>
+                    <span>Số buổi / tuần:</span>
+                    <strong>{formData.schedule_days.length} buổi</strong>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Tổng số tuần học:</span>
+                    <strong>{formData.total_weeks} tuần</strong>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Tổng số buổi:</span>
+                    <strong>{totalSessions} buổi</strong>
+                  </div>
+                </div>
 
-        {/* Bảng tóm tắt phía bên phải */}
-        <div className={styles.summarySection}>
-          <div className={styles.sectionTitle}>Tóm tắt thông tin</div>
+                <div className={styles.summaryCard}>
+                  <div className={styles.summaryRow}>
+                    <span>Đơn giá / buổi:</span>
+                    <span>{Number(formData.price_per_session).toLocaleString("vi-VN")} VNĐ</span>
+                  </div>
 
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryRow}>
-              <span>Môn học:</span>
-              <strong>{CATEGORIES.find(c => c.category_id === formData.category_id)?.category_name}</strong>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Trình độ gia sư:</span>
-              <strong>{formData.tutor_level}</strong>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Số lượng học sinh:</span>
-              <strong>{formData.max_students} HS</strong>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Số buổi / tuần:</span>
-              <strong>{formData.schedule_days.length} buổi</strong>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Khung giờ học:</span>
-              <strong>{formData.start_time} - {endTime}</strong>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Tổng số tuần học:</span>
-              <strong>{formData.total_weeks} tuần</strong>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Tổng số buổi dự kiến:</span>
-              <strong>{totalSessions} buổi</strong>
-            </div>
-          </div>
-
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryRow}>
-              <span>Đơn giá / buổi:</span>
-              <span>{Number(formData.price_per_session).toLocaleString('vi-VN')} VNĐ</span>
-            </div>
-            <div className={styles.summaryRow}>
-              <span>Ước tính / 1 tháng (4 tuần):</span>
-              <span>{monthlyEstimate.toLocaleString('vi-VN')} VNĐ</span>
-            </div>
-            <div className={styles.summaryTotal}>
-              <span>Tổng chi phí cả khóa:</span>
-              <span>{totalCoursePrice.toLocaleString('vi-VN')} VNĐ</span>
+                  {formData.schedule_type !== "custom" ? (
+                    <div className={styles.summaryRow}>
+                      <span>Thanh toán 1 tháng (4 tuần):</span>
+                      <strong>{monthlyEstimate.toLocaleString("vi-VN")} VNĐ</strong>
+                    </div>
+                  ) : (
+                    <div className={styles.summaryTotal}>
+                      <span>Thanh toán trọn khóa:</span>
+                      <span>{totalCoursePrice.toLocaleString("vi-VN")} VNĐ</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      <div className={styles.requestsList}>
+        <div className={styles.sectionTitle}>Các Yêu Cầu Đã Đăng Của Bạn</div>
+
+        {requestsList.length === 0 ? (
+          <p style={{ color: "#64748b" }}>Bạn chưa đăng yêu cầu tạo lớp nào.</p>
+        ) : (
+          requestsList.map((req, idx) => {
+            const reqKey = req.requests_id || req.id || `req-${idx}`;
+            return (
+              <div key={reqKey} className={styles.requestCard}>
+                <div className={styles.requestHeader}>
+                  <h3>{req.title}</h3>
+                  <span
+                    className={`${styles.badge} ${
+                      req.status === "approved" ? styles.badgeApproved : styles.badgePending
+                    }`}
+                  >
+                    {req.status === "approved" ? "Đã Chọn Gia Sư" : "Đang Tìm Gia Sư"}
+                  </span>
+                </div>
+
+                <div className={styles.requestDetails}>
+                  <div><strong>Môn học:</strong> {getCategoryName(req.category_id)}</div>
+                  <div><strong>Cấp học:</strong> {req.level || req.grade_level}</div>
+                  <div><strong>Yêu cầu:</strong> {req.tutor_level || "Sinh viên"}</div>
+                  <div><strong>Đơn giá:</strong> {Number(req.price_per_session).toLocaleString()} VNĐ/buổi</div>
+                  <div><strong>Lịch học:</strong> {req.schedule_days?.join(", ")} ({req.time_slot || `${req.start_time}-${req.end_time}`})</div>
+                  <div><strong>Số tuần:</strong> {req.total_weeks} tuần</div>
+                  <div><strong>Ngày bắt đầu:</strong> {req.start_date || "Chưa chọn"}</div>
+                </div>
+
+                <div className={styles.actionRow}>
+                  <button className={styles.editBtn} onClick={() => handleEditRequest(req)}>
+                    Chỉnh Sửa Lớp
+                  </button>
+                  <button className={styles.deleteBtn} onClick={() => handleDeleteRequest(req.requests_id || req.id)}>
+                    Xóa Lớp
+                  </button>
+                  <button
+                    className={styles.viewTutorBtn}
+                    onClick={() => {
+                      if (!checkAuthAndRole()) return;
+                      setExpandedRequestId(expandedRequestId === reqKey ? null : reqKey);
+                    }}
+                  >
+                    {expandedRequestId === reqKey ? "Ẩn Chi Tiết Gia Sư" : "Xem Danh Sách Gia Sư Ứng Tuyển"}
+                  </button>
+                </div>
+
+                {expandedRequestId === reqKey && (
+                  <div className={styles.tutorsSection}>
+                    <h4 style={{ margin: "0 0 8px 0" }}>Gia Sư Đã Nhận Dạy:</h4>
+                    {(!req.applied_tutors || req.applied_tutors.length === 0) ? (
+                      <p style={{ fontSize: "13px", color: "#64748b" }}>Chưa có gia sư nào nhấn nhận dạy lớp này.</p>
+                    ) : (
+                      <div className={styles.tutorsGrid}>
+                        {req.applied_tutors.map((tutor, tIdx) => {
+                          const tutorKey = tutor.tutor_id ? `${tutor.tutor_id}-${tIdx}` : `tutor-${tIdx}`;
+                          return (
+                            <div key={tutorKey} className={styles.tutorCard}>
+                              <div className={styles.tutorInfo}>
+                                <img
+                                  src={tutor.avatar || "/img/avt/avt.jpg"}
+                                  alt={tutor.full_name}
+                                  className={styles.avatar}
+                                />
+                                <div className={styles.tutorMeta}>
+                                  <h4>{tutor.full_name}</h4>
+                                  <p>
+                                    {tutor.level} | {tutor.experience} | ⭐ {tutor.rating || 5}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className={styles.tutorActions}>
+                                <button
+                                  className={styles.viewTutorBtn}
+                                  onClick={() => {
+                                    if (!checkAuthAndRole()) return;
+                                    router.push(`/tutorList/${tutor.tutor_id}`);
+                                  }}
+                                >
+                                  Xem Chi Tiết
+                                </button>
+                                {req.status !== "approved" && (
+                                  <button
+                                    className={styles.acceptTutorBtn}
+                                    onClick={() => handleAcceptTutor(req, tutor)}
+                                  >
+                                    Chấp Nhận Dạy
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
