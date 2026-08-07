@@ -433,7 +433,7 @@ export default function TeacherRegisterPage() {
                 {/* ✅ Ngày trong tuần - Dropdown */}
                 <div className="aurateach-form-group">
                   <label>
-                    Ngày trong tuần <span style={{color: '#ef4444'}}>*</span>
+                    Ngày dạy trong tuần mong muốn <span style={{color: '#ef4444'}}>*</span>
                   </label>
                   
                   <div 
