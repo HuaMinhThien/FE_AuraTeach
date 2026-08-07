@@ -15,6 +15,10 @@ export default function TutorApprovalPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
 
+  // State cấp giảng dạy & trình độ khi admin duyệt gia sư mới
+  const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedTutorLevel, setSelectedTutorLevel] = useState("Sinh viên");
+
   // Load danh sách dữ liệu
   const loadData = async () => {
     setIsLoading(true);
@@ -64,21 +68,54 @@ export default function TutorApprovalPage() {
     };
   }, [activeTab]);
 
+  // Handle Toggle chọn cấp giảng dạy cho gia sư
+  const handleLevelToggle = (level) => {
+    if (selectedLevels.includes(level)) {
+      setSelectedLevels(selectedLevels.filter((l) => l !== level));
+    } else {
+      setSelectedLevels([...selectedLevels, level]);
+    }
+  };
+
+  // Mở modal chi tiết gia sư mới & tự động set cấp/trình độ nếu gia sư đã chọn sẵn
+  const handleOpenTutorDetail = (tutor) => {
+    setSelectedTutor(tutor);
+    setShowRejectModal(false);
+    setSelectedLevels(tutor.teaching_levels || []);
+    setSelectedTutorLevel(tutor.level || "Sinh viên");
+  };
+
   // Xử lý Duyệt Gia Sư Mới
   const handleApproveTutor = async (tutor) => {
-    if (!window.confirm(`Bạn có chắc muốn duyệt hồ sơ của ${tutor.full_name}?`)) return;
+    if (!selectedLevels || selectedLevels.length === 0) {
+      alert("⚠️ Vui lòng chọn ít nhất 1 cấp dạy (Cấp 1, Cấp 2, Cấp 3) cho gia sư trước khi duyệt!");
+      return;
+    }
+
+    if (!selectedTutorLevel) {
+      alert("⚠️ Vui lòng chọn trình độ/cấp bậc cho gia sư!");
+      return;
+    }
+
+    if (!window.confirm(`Bạn có chắc muốn duyệt hồ sơ của ${tutor.full_name} với Trình độ: [${selectedTutorLevel}] và các Cấp: [${selectedLevels.join(", ")}]?`)) return;
 
     try {
       const response = await fetch("/api/admin-tutor-approval/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: tutor.user_id, tutorId: tutor.tutor_id }),
+        body: JSON.stringify({ 
+          userId: tutor.user_id, 
+          tutorId: tutor.tutor_id,
+          teaching_levels: selectedLevels,
+          level: selectedTutorLevel
+        }),
       });
       const result = await response.json();
       if (result.success) {
         alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}.`);
         loadData();
         setSelectedTutor(null);
+        setSelectedLevels([]);
       } else {
         alert(result.message || "Có lỗi xảy ra");
       }
@@ -206,7 +243,7 @@ export default function TutorApprovalPage() {
                       <th>Họ tên</th>
                       <th>Email</th>
                       <th>Số điện thoại</th>
-                      <th>Trình độ</th>
+                      
                       <th>Lĩnh vực</th>
                       <th>Ngày đăng ký</th>
                       <th>Hành động</th>
@@ -225,31 +262,21 @@ export default function TutorApprovalPage() {
                         <td className={styles.boldText}>{tutor.full_name}</td>
                         <td>{tutor.email}</td>
                         <td>{tutor.phone}</td>
-                        <td>
-                          <span className={styles.badgeLevel}>{tutor.level || "Chưa chọn"}</span>
-                        </td>
+                        
                         <td>
                           <span className={styles.badgeExpertise}>
                             {tutor.expertise || "Chưa cập nhật"}
                           </span>
                         </td>
+                        
                         <td>{new Date(tutor.created_at).toLocaleDateString("vi-VN")}</td>
                         <td>
                           <div className={styles.actionGroup}>
                             <button
                               className={`${styles.btn} ${styles.btnInfo}`}
-                              onClick={() => {
-                                setSelectedTutor(tutor);
-                                setShowRejectModal(false);
-                              }}
+                              onClick={() => handleOpenTutorDetail(tutor)}
                             >
-                              Chi tiết
-                            </button>
-                            <button
-                              className={`${styles.btn} ${styles.btnSuccess}`}
-                              onClick={() => handleApproveTutor(tutor)}
-                            >
-                              Duyệt
+                              Chi tiết & Duyệt
                             </button>
                             <button
                               className={`${styles.btn} ${styles.btnDanger}`}
@@ -360,10 +387,7 @@ export default function TutorApprovalPage() {
                 <label>Số điện thoại:</label>
                 <p>{selectedTutor.phone}</p>
               </div>
-              <div className={styles.infoItem}>
-                <label>Cấp bậc / Trình độ:</label>
-                <p className={styles.badgeLevel}>{selectedTutor.level || "Chưa cập nhật"}</p>
-              </div>
+              
               <div className={styles.infoItem}>
                 <label>Lĩnh vực / Chuyên môn:</label>
                 <p className={styles.badgeExpertise}>{selectedTutor.expertise || "Chưa cập nhật"}</p>
@@ -372,6 +396,17 @@ export default function TutorApprovalPage() {
                 <label>Kinh nghiệm giảng dạy:</label>
                 <p>{selectedTutor.experience || "Chưa cập nhật"}</p>
               </div>
+
+              {/* Bổ sung ngày rảnh & khung giờ rảnh */}
+              <div className={styles.infoItem}>
+                <label>Ngày rảnh giảng dạy:</label>
+                <p className={styles.timeTag}>{selectedTutor.available_days || "Chưa cập nhật"}</p>
+              </div>
+              <div className={styles.infoItem}>
+                <label>Khung giờ rảnh:</label>
+                <p className={styles.timeTag}>{selectedTutor.available_time_slots || "Chưa cập nhật"}</p>
+              </div>
+
               <div className={styles.infoItem}>
                 <label>Giới thiệu bản thân (Bio):</label>
                 <div className={styles.bioBox}>
@@ -392,10 +427,53 @@ export default function TutorApprovalPage() {
                 </div>
               )}
 
+              {/* BẮT BUỘC CHỌN CẤP BẬC / TRÌNH ĐỘ (LEVEL) */}
+              <div className={styles.levelSelectionSection}>
+                <label className={styles.requiredLabel}>
+                  Phê duyệt Trình độ / Cấp bậc Gia sư:
+                </label>
+                <select
+                  value={selectedTutorLevel}
+                  onChange={(e) => setSelectedTutorLevel(e.target.value)}
+                  className={styles.selectInput}
+                >
+                  <option value="Sinh viên">Sinh viên</option>
+                  <option value="Giáo viên">Giáo viên</option>
+                  
+                </select>
+              </div>
+
+              {/* BẮT BUỘC CHỌN CẤP DẠY */}
+              <div className={styles.levelSelectionSection}>
+                <label className={styles.requiredLabel}>
+                  Phân cấp dạy cho Gia sư (Bắt buộc chọn ít nhất 1 cấp):
+                </label>
+                <div className={styles.levelCheckboxGroup}>
+                  {["Cấp 1", "Cấp 2", "Cấp 3"].map((level) => (
+                    <label key={level} className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={selectedLevels.includes(level)}
+                        onChange={() => handleLevelToggle(level)}
+                      />
+                      <span>{level}</span>
+                    </label>
+                  ))}
+                </div>
+                {selectedLevels.length === 0 && (
+                  <p className={styles.errorHint}>⚠️ Bạn phải chọn cấp giảng dạy thì mới có thể bấm duyệt.</p>
+                )}
+              </div>
+
               <div className={styles.modalActions} style={{ marginTop: "20px" }}>
                 <button
                   className={`${styles.btn} ${styles.btnSuccess}`}
                   onClick={() => handleApproveTutor(selectedTutor)}
+                  disabled={selectedLevels.length === 0}
+                  style={{
+                    opacity: selectedLevels.length === 0 ? 0.5 : 1,
+                    cursor: selectedLevels.length === 0 ? "not-allowed" : "pointer",
+                  }}
                 >
                   Duyệt hồ sơ này
                 </button>
@@ -480,6 +558,35 @@ export default function TutorApprovalPage() {
                       {selectedRequest.old_data?.experience}
                     </p>
                   </div>
+
+                  {/* ĐỐI CHIẾU NGÀY RẢNH & KHUNG GIỜ CỦ */}
+                  <div className={styles.infoItem}>
+                    <label>Ngày rảnh</label>
+                    <p
+                      className={
+                        selectedRequest.old_data?.available_days !==
+                        selectedRequest.new_data?.available_days
+                          ? styles.changedText
+                          : ""
+                      }
+                    >
+                      {selectedRequest.old_data?.available_days || "Chưa chọn"}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Khung giờ rảnh</label>
+                    <p
+                      className={
+                        selectedRequest.old_data?.available_time_slots !==
+                        selectedRequest.new_data?.available_time_slots
+                          ? styles.changedText
+                          : ""
+                      }
+                    >
+                      {selectedRequest.old_data?.available_time_slots || "Chưa chọn"}
+                    </p>
+                  </div>
+
                   <div className={styles.infoItem}>
                     <label>Giới thiệu (Bio)</label>
                     <div
@@ -561,6 +668,35 @@ export default function TutorApprovalPage() {
                       {selectedRequest.new_data?.experience}
                     </p>
                   </div>
+
+                  {/* ĐỐI CHIẾU NGÀY RẢNH & KHUNG GIỜ MỚI */}
+                  <div className={styles.infoItem}>
+                    <label>Ngày rảnh</label>
+                    <p
+                      className={
+                        selectedRequest.old_data?.available_days !==
+                        selectedRequest.new_data?.available_days
+                          ? styles.highlightNew
+                          : ""
+                      }
+                    >
+                      {selectedRequest.new_data?.available_days || "Chưa chọn"}
+                    </p>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <label>Khung giờ rảnh</label>
+                    <p
+                      className={
+                        selectedRequest.old_data?.available_time_slots !==
+                        selectedRequest.new_data?.available_time_slots
+                          ? styles.highlightNew
+                          : ""
+                      }
+                    >
+                      {selectedRequest.new_data?.available_time_slots || "Chưa chọn"}
+                    </p>
+                  </div>
+
                   <div className={styles.infoItem}>
                     <label>Giới thiệu (Bio)</label>
                     <div

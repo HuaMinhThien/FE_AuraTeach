@@ -241,6 +241,79 @@
   margin: 0;
 }
 
+/* Tag hiển thị dạng chip */
+.tagBadge {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Styles cho Dropdown */
+.dropdownTrigger {
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.dropdownBox {
+  margin-top: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #f8fafc;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.checkboxGridTwoCols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 24px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #334155;
+  user-select: none;
+}
+
+.checkboxInput {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.btnCloseDropdown {
+  padding: 6px 20px;
+  background-color: #e2e8f0;
+  color: #475569;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btnCloseDropdown:hover {
+  background-color: #cbd5e1;
+}
+
 /* Khối Upload Bằng cấp */
 .certUploadSection {
   display: flex;
