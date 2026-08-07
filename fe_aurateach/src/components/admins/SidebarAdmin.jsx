@@ -111,6 +111,8 @@ export default function Sidebar() {
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Duyệt yêu cầu rút tiền", path: "/admin-tutor-payout-requests" },
     { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },
+    { name: "Tạo lớp học", path: "/admin-create-class" },
+    { name: "Đề xuất lớp học", path: "/admin-proposals" },
   ];
 
   if (!mounted || !adminData) {

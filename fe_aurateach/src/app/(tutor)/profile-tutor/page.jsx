@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import styles from "./TutorProfile.module.css"; 
+import styles from "./TutorProfile.module.css";
+import ProposalToggle from "@/components/common/ProposalToggle";
 
 const API_BASE = "http://localhost:3007";
 
@@ -599,6 +600,21 @@ export default function TutorProfile() {
           </div>
         )}
       </div>
+
+      {/* ✅ THÊM TOGGLE NHẬN ĐỀ XUẤT VÀO ĐÂY */}
+      {tutorData && (
+        <div className={styles.preferencesSection} style={{ 
+          marginTop: '24px', 
+          paddingTop: '16px', 
+          borderTop: '1px solid #f3f4f6' 
+        }}>
+          <ProposalToggle 
+            userId={tutorData.user_id || tutorData.id}
+            initialValue={tutorData.preferences?.accept_proposals ?? true}
+          />
+        </div>
+      )}
+
     </div>
   );
 }

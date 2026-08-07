@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import Avatar from "@/components/common/Avatar.jsx";
+import ProposalToggle from "@/components/common/ProposalToggle";
 import authService from "@/services/authService";
 import "./profile.css";
 
@@ -403,6 +404,21 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+
+            {/* ✅ THÊM TOGGLE NHẬN ĐỀ XUẤT VÀO ĐÂY */}
+            {user && (
+              <div className="profile-preferences-section" style={{ 
+                marginTop: '24px', 
+                paddingTop: '16px', 
+                borderTop: '1px solid #f3f4f6' 
+              }}>
+                <ProposalToggle 
+                  userId={user.user_id || user.id}
+                  initialValue={user.preferences?.accept_proposals ?? true}
+                />
+              </div>
+            )}
+
           </div>
         </div>
       </div>
