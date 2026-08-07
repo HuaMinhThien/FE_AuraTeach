@@ -58,7 +58,9 @@ export async function POST(request) {
       expertise, 
       cvLink,
       grade,
-      schoolName
+      schoolName,
+      availableDays,      // ✅ Thêm
+      availableTimeSlots  // ✅ Thêm
     } = body;
 
     console.log("=== START REGISTER API ===");
@@ -174,6 +176,7 @@ export async function POST(request) {
         );
       }
 
+      // ✅ Thêm availableDays và availableTimeSlots vào profileData
       profileData = {
         tutor_id: `tutor_${Date.now()}`,
         user_id: newUser.user_id,
@@ -185,6 +188,8 @@ export async function POST(request) {
         pending_balance: 0,
         available_balance: 0,
         cv_link: cvLink || "",
+        available_days: availableDays || "",           // ✅ Thêm
+        available_time_slots: availableTimeSlots || "", // ✅ Thêm
         created_at: new Date().toISOString()
       };
 
