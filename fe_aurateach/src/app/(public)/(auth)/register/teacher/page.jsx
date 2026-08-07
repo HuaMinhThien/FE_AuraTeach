@@ -14,6 +14,10 @@ export default function TeacherRegisterPage() {
   const [selectedExpertise, setSelectedExpertise] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [cvLink, setCvLink] = useState("");
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState([]);
+  const [isDayDropdownOpen, setIsDayDropdownOpen] = useState(false);
+  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -34,70 +38,48 @@ export default function TeacherRegisterPage() {
 
   // Hàm kiểm tra link CV/Portfolio hợp lệ
   const isValidCvLink = (link) => {
-    if (!link) return true; // Cho phép để trống
+    if (!link) return true;
     
     try {
       const url = new URL(link);
       const hostname = url.hostname.toLowerCase();
       
-      // Danh sách domain được phép
       const allowedDomains = [
-        // Linkedin
-        'linkedin.com',
-        'www.linkedin.com',
-        // TopCV
-        'topcv.vn',
-        'www.topcv.vn',
-        // Google Drive
-        'drive.google.com',
-        'www.drive.google.com',
-        // Portfolio phổ biến
-        'portfolio.com',
-        'www.portfolio.com',
-        'myportfolio.com',
-        'www.myportfolio.com',
-        // Github
-        'github.com',
-        'www.github.com',
-        // Behance
-        'behance.net',
-        'www.behance.net',
-        // Dribbble
-        'dribbble.com',
-        'www.dribbble.com',
-        // Các domain khác
-        'docs.google.com',
-        'www.docs.google.com',
+        'linkedin.com', 'www.linkedin.com',
+        'topcv.vn', 'www.topcv.vn',
+        'drive.google.com', 'www.drive.google.com',
+        'portfolio.com', 'www.portfolio.com',
+        'myportfolio.com', 'www.myportfolio.com',
+        'github.com', 'www.github.com',
+        'behance.net', 'www.behance.net',
+        'dribbble.com', 'www.dribbble.com',
+        'docs.google.com', 'www.docs.google.com',
       ];
       
-      // Kiểm tra xem hostname có trong danh sách cho phép không
-      const isAllowed = allowedDomains.some(domain => 
+      return allowedDomains.some(domain => 
         hostname === domain || hostname.endsWith('.' + domain)
       );
-      
-      return isAllowed;
     } catch {
-      return false; // URL không hợp lệ
+      return false;
     }
   };
 
   const expertiseOptions = [
-    "Toán học",
-    "Ngữ văn",
-    "Tiếng Anh",
-    "Vật lý",
-    "Hóa học",
-    "Sinh học",
-    "Lịch sử",
-    "Địa lý",
-    "Tin học",
-    "Kỹ năng mềm",
-    "Lập trình",
-    "Ngoại ngữ khác",
-    "Âm nhạc - Nghệ thuật",
-    "Thể dục - Thể thao",
-    "Khác",
+    "Toán học", "Ngữ văn", "Tiếng Anh", "Vật lý", "Hóa học",
+    "Sinh học", "Lịch sử", "Địa lý", "Tin học", "Kỹ năng mềm",
+    "Lập trình", "Ngoại ngữ khác", "Âm nhạc - Nghệ thuật",
+    "Thể dục - Thể thao", "Khác",
   ];
+
+  const dayOptions = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+  // Tạo các khung giờ từ 7h đến 23h (mỗi khung 2 tiếng)
+  const timeSlotOptions = [];
+  for (let i = 7; i <= 22; i += 2) {
+    const start = i.toString().padStart(2, '0') + ':00';
+    const end = (i + 2).toString().padStart(2, '0') + ':00';
+    timeSlotOptions.push(`${start} - ${end}`);
+  }
 
   // Xử lý chọn/bỏ chọn môn học
   const toggleExpertise = (subject) => {
@@ -115,9 +97,49 @@ export default function TeacherRegisterPage() {
     setSelectedExpertise([]);
   };
 
+  // Xử lý chọn/bỏ chọn ngày
+  const toggleDay = (day) => {
+    setSelectedDays(prev => {
+      if (prev.includes(day)) {
+        return prev.filter(item => item !== day);
+      } else {
+        return [...prev, day];
+      }
+    });
+  };
+
+  // Xóa tất cả ngày đã chọn
+  const clearAllDays = () => {
+    setSelectedDays([]);
+  };
+
+  // Xử lý chọn/bỏ chọn khung giờ
+  const toggleTimeSlot = (slot) => {
+    setSelectedTimeSlots(prev => {
+      if (prev.includes(slot)) {
+        return prev.filter(item => item !== slot);
+      } else {
+        return [...prev, slot];
+      }
+    });
+  };
+
+  // Xóa tất cả khung giờ đã chọn
+  const clearAllTimeSlots = () => {
+    setSelectedTimeSlots([]);
+  };
+
   // Đóng dropdown khi click ra ngoài
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const toggleDayDropdown = () => {
+    setIsDayDropdownOpen(!isDayDropdownOpen);
+  };
+
+  const toggleTimeDropdown = () => {
+    setIsTimeDropdownOpen(!isTimeDropdownOpen);
   };
 
   const handleSubmit = async (e) => {
@@ -136,21 +158,28 @@ export default function TeacherRegisterPage() {
       return;
     }
 
-    // Kiểm tra email phải là Gmail
     if (!isValidGmail(email)) {
       setError("Vui lòng sử dụng email Gmail (@gmail.com)");
       return;
     }
 
-    // Kiểm tra số điện thoại
     if (!isValidPhone(phone)) {
       setError("Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số");
       return;
     }
 
-    // Kiểm tra link CV/Portfolio (nếu có nhập)
     if (cvLink && !isValidCvLink(cvLink)) {
       setError("Link CV/Portfolio không hợp lệ. Chỉ hỗ trợ: LinkedIn, TopCV, Google Drive, Github, Behance, Portfolio");
+      return;
+    }
+
+    if (selectedDays.length === 0) {
+      setError("Vui lòng chọn ít nhất 1 ngày trong tuần");
+      return;
+    }
+
+    if (selectedTimeSlots.length === 0) {
+      setError("Vui lòng chọn ít nhất 1 khung giờ");
       return;
     }
 
@@ -179,7 +208,9 @@ export default function TeacherRegisterPage() {
         phone: phone,
         role: "tutor",
         expertise: selectedExpertise.join(", "),
-        cvLink: cvLink
+        cvLink: cvLink,
+        availableDays: selectedDays.join(", "),
+        availableTimeSlots: selectedTimeSlots.join(", ")
       });
 
       if (result.success) {
@@ -328,14 +359,13 @@ export default function TeacherRegisterPage() {
                     Lĩnh vực chuyên môn <span style={{color: '#ef4444'}}>*</span>
                   </label>
                   
-                  {/* Dropdown toggle button */}
                   <div 
                     className={`aurateach-dropdown-toggle ${isDropdownOpen ? 'open' : ''}`}
                     onClick={toggleDropdown}
                   >
                     <span className="aurateach-dropdown-text">
                       {selectedExpertise.length > 0 
-                        ? `Đã chọn ${selectedExpertise.length} môn` 
+                        ? selectedExpertise.join(", ")
                         : 'Chọn lĩnh vực chuyên môn'}
                     </span>
                     <span className="aurateach-dropdown-arrow">
@@ -343,7 +373,6 @@ export default function TeacherRegisterPage() {
                     </span>
                   </div>
 
-                  {/* Dropdown content */}
                   {isDropdownOpen && (
                     <div className="aurateach-dropdown-content">
                       <div className="aurateach-dropdown-header">
@@ -399,6 +428,130 @@ export default function TeacherRegisterPage() {
                   <small style={{color: '#6b7280', fontSize: '0.75rem'}}>
                     Hỗ trợ: LinkedIn, TopCV, Google Drive, Github, Behance, Portfolio
                   </small>
+                </div>
+
+                {/* ✅ Ngày trong tuần - Dropdown */}
+                <div className="aurateach-form-group">
+                  <label>
+                    Ngày dạy trong tuần mong muốn <span style={{color: '#ef4444'}}>*</span>
+                  </label>
+                  
+                  <div 
+                    className={`aurateach-dropdown-toggle ${isDayDropdownOpen ? 'open' : ''}`}
+                    onClick={toggleDayDropdown}
+                  >
+                    <span className="aurateach-dropdown-text">
+                      {selectedDays.length > 0 
+                        ? selectedDays.join(", ")
+                        : 'Chọn ngày trong tuần'}
+                    </span>
+                    <span className="aurateach-dropdown-arrow">
+                      {isDayDropdownOpen ? '▲' : '▼'}
+                    </span>
+                  </div>
+
+                  {isDayDropdownOpen && (
+                    <div className="aurateach-dropdown-content">
+                      <div className="aurateach-dropdown-header">
+                        <span className="aurateach-dropdown-title">Chọn ngày</span>
+                        {selectedDays.length > 0 && (
+                          <button 
+                            type="button" 
+                            className="aurateach-clear-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearAllDays();
+                            }}
+                          >
+                            Xóa tất cả
+                          </button>
+                        )}
+                      </div>
+                      <div className="aurateach-expertise-list" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                        {dayOptions.map((day) => (
+                          <label key={day} className="aurateach-expertise-item">
+                            <input
+                              type="checkbox"
+                              checked={selectedDays.includes(day)}
+                              onChange={() => toggleDay(day)}
+                            />
+                            <span>{day}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="aurateach-dropdown-footer">
+                        <button 
+                          type="button" 
+                          className="aurateach-dropdown-close-btn"
+                          onClick={toggleDayDropdown}
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ✅ Khung giờ - Dropdown */}
+                <div className="aurateach-form-group">
+                  <label>
+                    Khung giờ mong muốn <span style={{color: '#ef4444'}}>*</span>
+                  </label>
+                  
+                  <div 
+                    className={`aurateach-dropdown-toggle ${isTimeDropdownOpen ? 'open' : ''}`}
+                    onClick={toggleTimeDropdown}
+                  >
+                    <span className="aurateach-dropdown-text">
+                      {selectedTimeSlots.length > 0 
+                        ? selectedTimeSlots.join(", ")
+                        : 'Chọn khung giờ'}
+                    </span>
+                    <span className="aurateach-dropdown-arrow">
+                      {isTimeDropdownOpen ? '▲' : '▼'}
+                    </span>
+                  </div>
+
+                  {isTimeDropdownOpen && (
+                    <div className="aurateach-dropdown-content">
+                      <div className="aurateach-dropdown-header">
+                        <span className="aurateach-dropdown-title">Chọn khung giờ</span>
+                        {selectedTimeSlots.length > 0 && (
+                          <button 
+                            type="button" 
+                            className="aurateach-clear-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearAllTimeSlots();
+                            }}
+                          >
+                            Xóa tất cả
+                          </button>
+                        )}
+                      </div>
+                      <div className="aurateach-expertise-list" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                        {timeSlotOptions.map((slot) => (
+                          <label key={slot} className="aurateach-expertise-item">
+                            <input
+                              type="checkbox"
+                              checked={selectedTimeSlots.includes(slot)}
+                              onChange={() => toggleTimeSlot(slot)}
+                            />
+                            <span>{slot}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="aurateach-dropdown-footer">
+                        <button 
+                          type="button" 
+                          className="aurateach-dropdown-close-btn"
+                          onClick={toggleTimeDropdown}
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="aurateach-form-group">
