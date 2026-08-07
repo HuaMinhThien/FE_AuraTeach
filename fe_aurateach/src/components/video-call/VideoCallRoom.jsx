@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useVideoCall } from "@/hooks/useVideoCall";
 import styles from "./video-call.module.css";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 
 export default function VideoCallRoom({ roomId, userName, userRole, tutorPeerId }) {
   const router = useRouter();

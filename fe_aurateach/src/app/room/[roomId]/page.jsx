@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import VideoCallRoom from "@/components/video-call/VideoCallRoom";
 import styles from "./page.module.css";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 
 export default function RoomPage() {
   const params = useParams();
