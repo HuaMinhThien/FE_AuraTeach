@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import Avatar from "@/components/common/Avatar.jsx";
-import ProposalToggle from "@/components/common/ProposalToggle";
 import authService from "@/services/authService";
 import "./profile.css";
 
