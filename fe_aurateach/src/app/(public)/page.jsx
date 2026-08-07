@@ -29,11 +29,7 @@ export default function Home() {
                         <div className="video-wrapper">
                             <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=1000" alt="AuraTeach Classroom" className="video-banner" />
                             
-                            <button className="play-trigger" aria-label="Play video">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                            </svg>
-                            </button>
+                            
                         </div>
 
                         <div className="stat-card">
