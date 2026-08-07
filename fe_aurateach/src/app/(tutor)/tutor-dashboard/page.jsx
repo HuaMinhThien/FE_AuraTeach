@@ -202,7 +202,7 @@ export default function TutorDashboardPage() {
                       tutor_db_id: tutorDetail.id,
                       lesson_date: dateStr,
                       time_slot: timeSlot,
-                      hourly_rate: course.hourly_rate || 0,
+                      price_per_session: course.price_per_session || 0,
                       duration_hours: durationHours,
                       students_count: course.students?.length || 0,
                       tutor_pending_balance: tutorDetail.pending_balance || 0
@@ -267,7 +267,7 @@ export default function TutorDashboardPage() {
             title: course.title || "Lớp học chưa đặt tên",
             level: course.level,
             description: course.description,
-            hourly_rate: course.hourly_rate,
+            price_per_session: course.price_per_session,
             schedule_days: course.schedule_days,
             time: timeSlot,
             studentsCount: course.students?.length || 0,

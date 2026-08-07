@@ -359,7 +359,7 @@ export default function ClassListPage() {
                     <div className={styles.tutorPrice}>
                       <span className={styles.priceLabel}>HỌC PHÍ THEO GIỜ</span>
                       <span className={styles.priceValue}>
-                        {formatPrice(course.hourly_rate)}đ / buổi
+                        {formatPrice(course.price_per_session)}đ / buổi
                       </span>
                     </div>
                     <div className={styles.studentCount}>

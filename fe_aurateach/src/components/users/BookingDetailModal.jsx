@@ -164,7 +164,7 @@ export default function BookingDetailModal({
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Học phí / giờ</span>
-                <span className="detail-info-value price">{formatPrice(course?.hourly_rate || course?.price)}</span>
+                <span className="detail-info-value price">{formatPrice(course?.price_per_session || course?.price)}</span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Số buổi</span>

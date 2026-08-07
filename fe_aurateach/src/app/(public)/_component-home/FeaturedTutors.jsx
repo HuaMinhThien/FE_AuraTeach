@@ -23,7 +23,7 @@ function FeaturedTutors() {
           let lowestPriceText = "Đang cập nhật";
           if (tutorCourses.length > 0) {
             const validPrices = tutorCourses
-              .map(c => Number(c.hourly_rate || c.price))
+              .map(c => Number(c.price_per_session || c.price))
               .filter(price => !isNaN(price) && price > 0);
 
             if (validPrices.length > 0) {

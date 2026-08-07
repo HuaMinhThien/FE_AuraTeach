@@ -1,4 +1,3 @@
-// src/app/(public)/(auth)/login/page.jsx
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -20,42 +19,80 @@ export default function LoginPage() {
   const [isSynced, setIsSynced] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // 🔥 Kiểm tra và đồng bộ session Google sang cookie/hệ thống
+  // 🔥 Đồng bộ session Google sang Laravel Backend và hệ thống Cookie
   useEffect(() => {
     if (isRedirecting) return;
-    
-    const hasUserInfo = document.cookie.includes("user_info");
-    const hasRole = document.cookie.includes("role");
-    
-    if (hasUserInfo && hasRole && status === "authenticated") {
-      setIsRedirecting(true);
-      window.location.href = "/";
-      return;
+
+    // ⚡ Kiểm tra xem người dùng vừa bấm đăng xuất chưa để tránh vòng lặp tự động đăng nhập lại
+    const isLoggedOut = sessionStorage.getItem("just_logged_out");
+    if (isLoggedOut === "true") {
+      return; 
     }
-    
-    if (status === "authenticated" && session?.user && !isSynced && !hasUserInfo) {
-      const userInfo = {
-        id: session.user.id || session.user.email,
-        user_id: session.user.id || session.user.email,
-        full_name: session.user.name,
-        name: session.user.name,
-        email: session.user.email,
-        role: session.user.role || "student",
-        avatar: session.user.image || "/img/default-avatar.png",
-      };
-      
-      const maxAge = 30 * 24 * 60 * 60;
-      document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=${maxAge}`;
-      document.cookie = `role=${userInfo.role}; path=/; max-age=${maxAge}`;
-      
-      setIsSynced(true);
-      
-      setTimeout(() => {
-        setIsRedirecting(true);
-        window.location.href = "/";
-      }, 300);
-    }
-  }, [session, status, isSynced, isRedirecting]);
+
+    const syncGoogleWithBackend = async () => {
+      if (status === "authenticated" && session?.user && !isSynced) {
+        setIsSynced(true);
+        setIsLoading(true);
+
+        try {
+          const response = await authService.syncGoogle({
+            email: session.user.email,
+            name: session.user.name,
+            avatar: session.user.image,
+          });
+
+          const data = response?.data || response;
+
+          if (!data || (!data.user && !data.access_token && !data.token)) {
+            throw new Error(data?.message || "Không thể đồng bộ tài khoản Google với máy chủ");
+          }
+
+          const userData = data.user || data;
+          const userInfo = {
+            user_id: userData.user_id || userData.id,
+            name: userData.full_name || userData.name,
+            full_name: userData.full_name || userData.name,
+            email: userData.email,
+            role: userData.role || "student",
+            avatar: userData.avatar || session.user.image || "/img/default-avatar.png",
+          };
+
+          const maxAgeSeconds = 30 * 24 * 60 * 60; // 30 ngày
+
+          document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=${maxAgeSeconds}`;
+          document.cookie = `role=${userInfo.role}; path=/; max-age=${maxAgeSeconds}`;
+          
+          if (data.access_token || data.token) {
+            document.cookie = `token=${data.access_token || data.token}; path=/; max-age=${maxAgeSeconds}`;
+          }
+
+          setIsRedirecting(true);
+
+          switch (userInfo.role) {
+            case "student":
+              router.push("/");
+              break;
+            case "tutor":
+              router.push("/tutor-dashboard");
+              break;
+            case "admin":
+              router.push("/admin-dashboard");
+              break;
+            default:
+              router.push("/");
+          }
+        } catch (err) {
+          console.error("❌ Chi tiết Lỗi đồng bộ Google:", err);
+          const errorMsg = err.response?.data?.message || err.message || "Đăng nhập Google thất bại";
+          setError(errorMsg);
+          setIsSynced(false);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    syncGoogleWithBackend();
+  }, [session, status, isSynced, isRedirecting, router]);
 
   // Hàm kiểm tra email Gmail chuẩn
   const isValidGmail = (email) => {
@@ -93,35 +130,35 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("=== LOGIN SUBMIT ===");
-      const data = await authService.login({ email, password });
-      console.log("Response data:", data);
+      const response = await authService.login({ email, password });
+      const data = response?.data || response;
 
-      if (!data || data.success === false || !data.user) {
+      if (!data || data.success === false || (!data.user && !data.access_token && !data.token)) {
         throw new Error(data?.message || "Dữ liệu đăng nhập không hợp lệ từ máy chủ");
       }
 
+      const userData = data.user || data;
+
       const userInfo = {
-        user_id: data.user.user_id || data.user.id,
-        name: data.user.full_name || data.user.name,
-        full_name: data.user.full_name || data.user.name,
-        email: data.user.email,
-        role: data.user.role,
-        avatar: data.user.avatar || "/img/avt.jpg",
+        user_id: userData.user_id || userData.id,
+        name: userData.full_name || userData.name,
+        full_name: userData.full_name || userData.name,
+        email: userData.email,
+        role: userData.role || "student",
+        avatar: userData.avatar || "/img/avt.jpg",
       };
 
       const expires = rememberMe ? 30 : 1;
       const maxAgeSeconds = expires * 24 * 60 * 60;
 
       document.cookie = `user_info=${encodeURIComponent(JSON.stringify(userInfo))}; path=/; max-age=${maxAgeSeconds}`;
-      document.cookie = `role=${data.user.role}; path=/; max-age=${maxAgeSeconds}`;
+      document.cookie = `role=${userInfo.role}; path=/; max-age=${maxAgeSeconds}`;
 
-      if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=${maxAgeSeconds}`;
+      if (data.access_token || data.token) {
+        document.cookie = `token=${data.access_token || data.token}; path=/; max-age=${maxAgeSeconds}`;
       }
 
-      // Chuyển hướng theo phân quyền (role)
-      switch (data.user.role) {
+      switch (userInfo.role) {
         case "student":
           router.push("/");
           break;
@@ -142,14 +179,14 @@ export default function LoginPage() {
     }
   };
 
-  // Đăng nhập với Google
+  // Kích hoạt bảng chọn tài khoản Google qua NextAuth
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { 
-        callbackUrl: "/login",
-        redirect: false
-      });
+      // ⚡ Xóa cờ "just_logged_out" đi để cho phép đồng bộ lại khi Google trả về session mới
+      sessionStorage.removeItem("just_logged_out");
+      
+      await signIn("google", { callbackUrl: "/login" });
     } catch (error) {
       console.error("❌ Google login error:", error);
       setError("Đăng nhập bằng Google thất bại, vui lòng thử lại");
@@ -169,7 +206,7 @@ export default function LoginPage() {
                 Truy cập vào hành trình học tập chuyên nghiệp của bạn
               </p>
 
-              {status === "authenticated" && session?.user && !isSynced && (
+              {status === "authenticated" && session?.user && (
                 <div style={{ 
                   background: '#fef3c7', 
                   padding: '10px', 
@@ -179,7 +216,7 @@ export default function LoginPage() {
                   color: '#92400e',
                   fontSize: '14px'
                 }}>
-                  ⏳ Đang đồng bộ tài khoản Google...
+                  ⏳ Đang đồng bộ tài khoản Google với hệ thống...
                 </div>
               )}
 

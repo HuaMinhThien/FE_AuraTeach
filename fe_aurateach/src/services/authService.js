@@ -95,5 +95,10 @@ export const authService = {
       return !!localStorage.getItem("access_token");
     }
     return false;
-  }
+  },
+
+  syncGoogle: async (googleData) => {
+    const response = await apiClient.post('/auth/google', googleData);
+    return response // hoặc return response tuỳ thuộc vào cách cấu hình apiClient
+  },
 };

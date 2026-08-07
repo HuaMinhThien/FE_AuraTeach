@@ -9,6 +9,7 @@ import Avatar from "@/components/common/Avatar"; // ✅ Import Avatar component
 import NotificationBell from "@/components/common/NotificationBell";
 import { conversationService } from "@/services/conversationService"; // ✅ Import service chat mới
 import { authService } from "@/services/authService";
+import { signOut } from "next-auth/react";
 
 export default function Header() {
     const pathname = usePathname(); 
@@ -86,6 +87,9 @@ export default function Header() {
     // Xử lý Đăng xuất - Xóa hết cookie & storage
     const handleLogout = async () => {
         try {
+            // ⚡ Đánh dấu cờ là người dùng chủ động đăng xuất để tránh bị NextAuth tự động ép đồng bộ lại ở trang login
+            sessionStorage.setItem("just_logged_out", "true");
+
             await authService.logout();
         } catch (error) {
             console.error("Logout error:", error);
@@ -93,11 +97,14 @@ export default function Header() {
             // Dọn dẹp sạch sẽ cookie và storage ở phía client
             document.cookie = "user_info=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
             document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+            document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0"; // Xóa luôn token cho chuẩn
             localStorage.removeItem("user");
             
             setUser(null);
             setIsDropdownOpen(false);
-            window.location.href = "/login";
+
+            // ⚡ QUAN TRỌNG: Đăng xuất khỏi NextAuth Google session và chuyển hướng về /login
+            await signOut({ callbackUrl: "/login", redirect: true });
         }
     };
 

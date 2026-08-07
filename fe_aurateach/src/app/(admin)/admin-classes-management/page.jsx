@@ -145,7 +145,7 @@ export default function AdminClassesManagement() {
             <h2>{selectedCourse.title}</h2>
             <div className={styles.courseDetailHeader}>
               <p><strong>Cấp độ:</strong> {selectedCourse.level}</p>
-              <p><strong>Học phí:</strong> {selectedCourse.hourly_rate?.toLocaleString()} VNĐ/giờ</p>
+              <p><strong>Học phí:</strong> {selectedCourse.price_per_session?.toLocaleString()} VNĐ/giờ</p>
               <p>
                 <strong>Lịch học:</strong>{' '}
                 {Array.isArray(selectedCourse.schedules) && selectedCourse.schedules.length > 0

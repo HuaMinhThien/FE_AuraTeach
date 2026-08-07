@@ -36,7 +36,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
 
           <div className={styles.mInfoGrid}>
             <p>🏷️ <strong>Mã lớp:</strong> {selectedClass.course_id}</p>
-            <p>💰 <strong>Học phí/giờ:</strong> {Number(selectedClass.hourly_rate).toLocaleString("vi-VN")} đ</p>
+            <p>💰 <strong>Học phí/giờ:</strong> {Number(selectedClass.price_per_session).toLocaleString("vi-VN")} đ</p>
             <p>👥 <strong>Sĩ số:</strong> {selectedClass.current_students} / {selectedClass.max_students} học viên</p>
             <p>📊 <strong>Cấp độ:</strong> {selectedClass.level}</p>
           </div>

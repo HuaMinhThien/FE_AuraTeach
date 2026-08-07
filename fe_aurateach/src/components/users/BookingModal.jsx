@@ -82,7 +82,7 @@ export default function BookingModal({
 
   // 🛠️ Lấy tổng số buổi đã được tính toán chuẩn xác từ component cha truyền sang
   const totalSessions = course?.totalSessions || (course?.total_weeks || 12) * (course?.sessionsPerWeek || 1);
-  const hourlyRate = course?.hourly_rate || course?.price_per_session || 0;
+  const hourlyRate = course?.price_per_session || course?.price_per_session || 0;
   const calculatedTotalPrice = hourlyRate * totalSessions;
 
   return (

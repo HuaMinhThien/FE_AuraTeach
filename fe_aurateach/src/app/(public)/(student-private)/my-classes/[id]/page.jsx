@@ -187,7 +187,7 @@ export default function ClassDetailPage() {
                 </div>
                 <div className={styles.infoItem}>
                   <label>💰 Học phí / buổi</label>
-                  <p>{formatCurrency(course.hourly_rate)}</p>
+                  <p>{formatCurrency(course.price_per_session)}</p>
                 </div>
                 <div className={`${styles.infoItem} ${styles.fullWidth}`}>
                   <label>📝 Mô tả</label>
