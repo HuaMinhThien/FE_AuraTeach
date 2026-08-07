@@ -22,7 +22,6 @@ const DEFAULT_IMAGES = [
 // Bảng giá tham khảo (Giá lớp kèm 1-1 cơ sở)
 const PRICE_LIMITS = {
   "Giáo viên": {
-
     lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh) - Giá 1 kèm 1
       "Cấp 1": { min: 200000, max: 250000, label: "200.000đ - 250.000đ / buổi" },
       "Cấp 2": { min: 230000, max: 300000, label: "230.000đ - 300.000đ / buổi" },
@@ -30,7 +29,6 @@ const PRICE_LIMITS = {
     },
   },
   "Sinh viên": {
-
     lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh) - Giá 1 kèm 1
       "Cấp 1": { min: 120000, max: 150000, label: "120.000đ - 150.000đ / buổi " },
       "Cấp 2": { min: 130000, max: 170000, label: "130.000đ - 170.000đ / buổi" },
@@ -55,6 +53,9 @@ const DAY_MAP = {
   "Thứ 6": 5,
   "Thứ 7": 6,
 };
+
+// Hàm bổ trợ làm tròn số tiền đến hàng nghìn gần nhất (ví dụ: 66.667 -> 67.000)
+const roundToThousand = (amount) => Math.round(amount / 1000) * 1000;
 
 export default function CreateClassPage() {
   const router = useRouter();
@@ -130,13 +131,13 @@ export default function CreateClassPage() {
   const numStudents = Math.min(Math.max(isNaN(parsedMaxStudents) ? 1 : parsedMaxStudents, 1), 5);
   const currentTutorConfig = PRICE_LIMITS[tutorLevel] || PRICE_LIMITS["Giáo viên"];
 
-  // LOGIC SỬA ĐỔI: Nếu số học sinh >= 3, lấy giá 1 kèm 1 (lessThan3) chia cho số lượng học sinh
+  // LOGIC SỬA ĐỔI: Nếu số học sinh >= 3, lấy giá 1 kèm 1 chia cho số lượng học sinh & LÀM TRÒN ĐẾN HÀNG NGHÌN
   let currentPriceConfig = null;
   if (numStudents >= 3) {
     const base1On1Config = currentTutorConfig.lessThan3[level];
     if (base1On1Config) {
-      const calculatedMin = Math.round(base1On1Config.min / numStudents);
-      const calculatedMax = Math.round(base1On1Config.max / numStudents);
+      const calculatedMin = roundToThousand(base1On1Config.min / numStudents);
+      const calculatedMax = roundToThousand(base1On1Config.max / numStudents);
       currentPriceConfig = {
         min: calculatedMin,
         max: calculatedMax,
@@ -250,17 +251,26 @@ export default function CreateClassPage() {
     };
   }, [router]);
 
+  // LOGIC NGÀY BẮT ĐẦU: TỐI THIỂU CÁCH NGÀY HIỆN TẠI 5 NGÀY
+  const getMinStartDateString = () => {
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 5);
+    return minDate.toISOString().split("T")[0];
+  };
+
   const validateStartDate = (dateString) => {
     if (!dateString) return true;
     
     const selectedDate = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const minAllowedDate = new Date();
+    minAllowedDate.setDate(minAllowedDate.getDate() + 5);
+    
+    minAllowedDate.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
     
-    if (selectedDate < today) {
-      const todayStr = today.toLocaleDateString("vi-VN");
-      setDateErrorMessage(`⚠️ Ngày bắt đầu phải từ hôm nay (${todayStr}) trở đi. Không thể tạo lớp trong quá khứ.`);
+    if (selectedDate < minAllowedDate) {
+      const minDateStr = minAllowedDate.toLocaleDateString("vi-VN");
+      setDateErrorMessage(`⚠️ Ngày bắt đầu phải cách hôm nay tối thiểu 5 ngày (từ ngày ${minDateStr} trở đi).`);
       return false;
     }
     
@@ -408,6 +418,9 @@ export default function CreateClassPage() {
   const totalMonthsCount = totalWeeksCount > 0 ? totalWeeksCount / 4 : 1;
   const monthlyNetEarnings = totalCourseNetEstimateBenefit / totalMonthsCount;
 
+  // Tiền thực nhận tối thiểu từ 1 HS trong 1 tháng (sau khi trừ 35% phí sàn)
+  const minMonthlyNetPerStudent = (monthlyFeePerStudent * 0.65);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -432,7 +445,7 @@ export default function CreateClassPage() {
     }
 
     if (!validateStartDate(startDate)) {
-      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (từ hôm nay trở đi)!");
+      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (cách hôm nay tối thiểu 5 ngày)!");
       return;
     }
 
@@ -477,11 +490,6 @@ export default function CreateClassPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const getTodayString = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
   };
 
   if (!isPermissionChecked) {
@@ -653,12 +661,12 @@ export default function CreateClassPage() {
                   {["Cấp 1", "Cấp 2", "Cấp 3"].map((lvl) => {
                     const cfgLess = PRICE_LIMITS[tutorLevel]?.lessThan3[lvl];
                     
-                    // Tính mức chia thực tế cho lớp >= 3 sinh dựa trên 1-1
+                    // Tính mức chia thực tế cho lớp >= 3 sinh dựa trên 1-1 và LÀM TRÒN ĐẾN HÀNG NGHÌN
                     let dividedLabel = "-";
                     if (cfgLess) {
                       const divNum = numStudents >= 3 ? numStudents : 3;
-                      const minDiv = Math.round(cfgLess.min / divNum);
-                      const maxDiv = Math.round(cfgLess.max / divNum);
+                      const minDiv = roundToThousand(cfgLess.min / divNum);
+                      const maxDiv = roundToThousand(cfgLess.max / divNum);
                       dividedLabel = `${minDiv.toLocaleString("vi-VN")}đ - ${maxDiv.toLocaleString("vi-VN")}đ / buổi / HS`;
                     }
 
@@ -754,7 +762,7 @@ export default function CreateClassPage() {
                   type="date" 
                   value={startDate} 
                   onChange={handleStartDateChange}
-                  min={getTodayString()}
+                  min={getMinStartDateString()}
                   required 
                 />
                 {dateErrorMessage && (
@@ -891,7 +899,7 @@ export default function CreateClassPage() {
                     <div className={styles.calcRow}>
                       <span className={styles.calcLabel}>Tổng tiền 1 tháng nhận được:</span>
                       <span className={styles.calcValueHighlight}>
-                        {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}
+                        {minMonthlyNetPerStudent > 0 ? `${Math.round(minMonthlyNetPerStudent).toLocaleString("vi-VN")}đ / tháng` : "0đ"} ~ {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}
                       </span>
                     </div>
                   </>
