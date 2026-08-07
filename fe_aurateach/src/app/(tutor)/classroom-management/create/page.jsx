@@ -82,9 +82,10 @@ export default function CreateClassPage() {
   const [maxStudents, setMaxStudents] = useState(3); // Giới hạn từ 1 đến 5 học sinh
   const [pricePerSession, setPricePerSession] = useState(50000);
 
-  // State quản lý link Google Meet
+  // State quản lý link Google Meet & đường dẫn phòng học AuraTeach
   const [meetLink, setMeetLink] = useState("");
   const [meetError, setMeetError] = useState("");
+  const [roomPreviewPath, setRoomPreviewPath] = useState(getClassroomBasePath() || "");
 
   // State danh mục động nạp từ API
   const [categoriesList, setCategoriesList] = useState([]);
@@ -517,7 +518,7 @@ export default function CreateClassPage() {
               <label>Đường liên kết phòng học AuraTeach</label>
               <input 
                 type="text"
-                // value={roomPreviewPath}
+                value={roomPreviewPath}
                 readOnly
               />
               {meetError && <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "14px" }}>{meetError}</p>}
