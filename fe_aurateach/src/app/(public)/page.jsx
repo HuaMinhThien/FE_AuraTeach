@@ -21,7 +21,7 @@ export default function Home() {
                             Xây dựng nền tảng kiến thức vững chắc cho hành trình học tập của con em bạn.
                         </p>
                         <div className="hero-buttons">
-                            <a href="/ProductList" className="btn-primary">Tìm Gia Sư Ngay</a>                          
+                            <a href="/tutorListor" className="btn-primary">Tìm Gia Sư Ngay</a>                          
                         </div>
                         </div>
 
