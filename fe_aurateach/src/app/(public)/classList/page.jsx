@@ -26,7 +26,7 @@ export default function ClassListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [priceRange, setPriceRange] = useState('all');
-  const [sortOption, setSortOption] = useState('students-desc');
+  const [sortOption, setSortOption] = useState('latest');
 
   // Fetch danh mục (categories) một lần khi load trang
   useEffect(() => {
@@ -254,10 +254,12 @@ export default function ClassListPage() {
             onChange={handleSortChange}
             className={styles.filterDropdown}
           >
-            <option value="students-desc">Học viên giảm dần</option>
-            <option value="students-asc">Học viên tăng dần</option>
-            <option value="price-low">Giá tăng dần</option>
-            <option value="price-high">Giá giảm dần</option>
+              <option value="latest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+              <option value="students-desc">Học viên giảm dần</option>
+              <option value="students-asc">Học viên tăng dần</option>
+              <option value="price-low">Giá tăng dần</option>
+              <option value="price-high">Giá giảm dần</option>
           </select>
         </div>
 

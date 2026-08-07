@@ -131,7 +131,6 @@ export default function PaymentModal({
       clearInterval(pollIntervalRef.current);
     }
 
-    console.log("🔄 [Polling Started] Kích hoạt vòng lặp checkStatus mỗi 3s cho ID:", currentPaymentId);
 
     pollIntervalRef.current = setInterval(async () => {
       if (statusRef.current === 'paid' || statusRef.current === 'expired') {
@@ -141,12 +140,9 @@ export default function PaymentModal({
       }
 
       try {
-        console.log(`⏳ [Polling Tick] Đang gọi checkStatus lúc ${new Date().toLocaleTimeString()}...`);
         const response = await paymentService.checkStatus(currentPaymentId);
         const result = response?.data?.success !== undefined ? response.data : response;
-        
-        console.log("📥 [Polling Response]:", result);
-        
+                
         if (result && result.success) {
           const currentStatus = result.status;
           setStatus(currentStatus);

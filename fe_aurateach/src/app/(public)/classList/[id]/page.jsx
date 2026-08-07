@@ -63,12 +63,24 @@ export default function ClassDetailPage({ params }) {
       const studentId = user?.user_id || user?.id;
       const currentCourseStudents = courseData.students || courseObj?.students || [];
 
-      // Kiểm tra xem học viên hiện tại đã nằm trong danh sách đăng ký hay chưa
-      if (studentId && currentCourseStudents.map(String).includes(String(studentId))) {
-        setIsBooked(true);
-      } else {
-        setIsBooked(false);
+      // 🔥 KIỂM TRA CHUẨN XÁC: 
+      // 1. Kiểm tra qua mảng students cũ
+      let isAlreadyBooked = studentId && currentCourseStudents.map(String).includes(String(studentId));
+
+      // 2. Kiểm tra sâu hơn: Nếu backend có trả về danh sách subscriptions của user hoặc course
+      // (Hoặc bạn có thể gọi thêm service courseSubscriptionService để check nếu cần, 
+      // nhưng nếu courseData đã bao gồm danh sách subscriptions active thì check ở đây)
+      const subscriptions = courseData.subscriptions || courseObj?.subscriptions || [];
+      if (studentId && subscriptions.length > 0) {
+        const activeSub = subscriptions.find(sub => 
+          String(sub.student_id) === String(studentId) && sub.status === 'active'
+        );
+        if (activeSub) {
+          isAlreadyBooked = true;
+        }
       }
+
+      setIsBooked(isAlreadyBooked);
 
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu trang chi tiết:", error);
@@ -144,7 +156,24 @@ export default function ClassDetailPage({ params }) {
     setIsBooked(true);
     setShowBookingModal(false);
     
-    // Đồng bộ lại dữ liệu mới từ backend (Cập nhật sĩ số, danh sách học viên và quyền mở link Google Meet)
+    // 🔥 Cập nhật trực tiếp học viên vào state course hiện tại để khóa nút ngay lập tức
+    if (currentUser) {
+      const studentId = currentUser.user_id || currentUser.id;
+      setCourse(prevCourse => {
+        if (!prevCourse) return prevCourse;
+        const currentStudents = prevCourse.students || [];
+        if (!currentStudents.map(String).includes(String(studentId))) {
+          return {
+            ...prevCourse,
+            students: [...currentStudents, studentId],
+            current_students: (prevCourse.current_students || currentStudents.length) + 1
+          };
+        }
+        return prevCourse;
+      });
+    }
+
+    // Sau đó mới gọi ngầm để đồng bộ dữ liệu chuẩn từ backend
     await fetchClassData(false);
   };
 

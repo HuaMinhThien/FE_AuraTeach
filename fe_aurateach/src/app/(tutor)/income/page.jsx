@@ -240,8 +240,8 @@ export default function TutorRevenuePage() {
     );
   }
 
-  const availableBalance = tutorData.available_balance || 0;
-  const pendingBalance = tutorData.pending_balance || 0;
+  const availableBalance = Number(tutorData.available_balance) || 0;
+  const pendingBalance = Number(tutorData.pending_balance) || 0;
   const totalIncome = availableBalance + pendingBalance;
 
   return (
