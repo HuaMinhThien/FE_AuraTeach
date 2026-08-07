@@ -5,48 +5,44 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../management.module.css";
 import Image from "next/image";
-import { tutorService } from "@/services/tutorService"; // 👈 Import service của bạn (điều chỉnh đường dẫn cho đúng thực tế)
+import { tutorService } from "@/services/tutorService";
+import { authService } from "@/services/authService"; // 👈 Import authService vào đây
 
 export default function FilterControl({ search, setSearch, statusFilter, onFilterChange }) {
   const router = useRouter();
   const [isApproved, setIsApproved] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
 
-  // Kiểm tra verification_status của Gia sư thông qua Service & ApiClient
-// Kiểm tra verification_status của Gia sư thông qua Service & ApiClient
+  // Kiểm tra verification_status của Gia sư thông qua authService & tutorService
   useEffect(() => {
     const checkVerification = async () => {
       try {
-        const cookies = document.cookie.split("; ");
-        const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
+        // 🚀 Dùng authService để lấy thông tin user hiện tại thay vì đọc cookie thủ công
+        const currentUser = await authService.getCurrentUser();
+        const userId = currentUser?.id || currentUser?.user_id;
 
-        if (userInfoCookie) {
-          const cookieValue = decodeURIComponent(userInfoCookie.split("=")[1]);
-          const userInfo = JSON.parse(cookieValue);
-          const userId = userInfo.id || userInfo.user_id;
+        if (userId) {
+          // Gọi qua service chuẩn của dự án để lấy thông tin gia sư
+          const data = await tutorService.getByUserId(userId);
+          
+          console.log("🔍 Dữ liệu tutor trả về từ Laravel:", data);
+          
+          const tutors = Array.isArray(data) ? data : (data?.data || []);
+          console.log("📋 Danh sách tutors sau khi xử lý:", tutors);
 
-          if (userInfo && userId) {
-              // 💡 Gọi qua service chuẩn của dự án
-            const data = await tutorService.getByUserId(userId);
+          if (tutors.length > 0) {
+            console.log("📌 Status thực tế trong DB:", tutors[0].verification_status);
+            const status = tutors[0]?.verification_status?.toLowerCase().trim();
             
-            // 🔍 DÁN CÁC DÒNG LOG NÀY VÀO ĐÂY ĐỂ KIỂM TRA
-            console.log("🔍 Dữ liệu tutor trả về từ Laravel:", data);
-            
-            const tutors = Array.isArray(data) ? data : (data?.data || []);
-            console.log("📋 Danh sách tutors sau khi xử lý:", tutors);
-
-            if (tutors.length > 0) {
-              console.log("📌 Status thực tế trong DB:", tutors[0].verification_status);
-              const status = tutors[0]?.verification_status?.toLowerCase().trim();
-              
-              // Chuyển về chữ thường để so sánh an toàn tuyệt đối
-              if (status === "approved" || status === "đã xác minh" || status === "da xac minh") {
-                setIsApproved(true);
-              }
-            } else {
-              console.warn("⚠️ Không tìm thấy bản ghi tutor nào khớp với user_id này!");
+            // Chuyển về chữ thường để so sánh an toàn tuyệt đối
+            if (status === "approved" || status === "đã xác minh" || status === "da xac minh") {
+              setIsApproved(true);
             }
+          } else {
+            console.warn("⚠️ Không tìm thấy bản ghi tutor nào khớp với user_id này!");
           }
+        } else {
+          console.warn("⚠️ Không lấy được thông tin người dùng hiện tại từ authService!");
         }
       } catch (error) {
         console.error("Lỗi kiểm tra quyền tạo lớp:", error);

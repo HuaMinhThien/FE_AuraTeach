@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { notificationService } from "@/services/notificationService"; // Điều chỉnh đường dẫn import service cho đúng
 import styles from "../_css/sec3.module.css";
-
-const API_BASE = "http://localhost:3007";
 
 const TYPE_ICONS = {
   booking: "📩",
@@ -51,16 +50,9 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
 
     const fetchNotifs = async () => {
       try {
-        console.log(`📡 [Tutor_sec3] Fetching notifications for user: ${userId}`);
-        const res = await fetch(`${API_BASE}/notifications?receiver_id=${userId}`);
+        console.log(`📡 [Tutor_sec3] Fetching notifications via service for user: ${userId}`);
+        const data = await notificationService.getNotifications(userId);
         
-        if (!res.ok) {
-          console.warn(`⚠️ [Tutor_sec3] API returned ${res.status}: ${res.statusText}`);
-          setNotifications([]);
-          return;
-        }
-        
-        const data = await res.json();
         console.log(`📊 [Tutor_sec3] Found ${data.length} notifications`);
         
         if (Array.isArray(data)) {
@@ -71,7 +63,7 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
           setNotifications([]);
         }
       } catch (error) {
-        console.warn("⚠️ [Tutor_sec3] Không thể kết nối đến JSON Server:", error.message);
+        console.warn("⚠️ [Tutor_sec3] Không thể tải thông báo từ service:", error.message);
         setNotifications([]);
       }
     };
@@ -97,7 +89,7 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
     });
   };
 
-  // ✅ Lấy notifications từ API
+  // ✅ Chuyển đổi dữ liệu từ API sang dạng hiển thị timeline
   const items = notifications.length > 0
     ? notifications.map((n, idx) => {
         let content = n.message || '';
@@ -105,7 +97,7 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
           content = `${n.title}: ${content}`;
         }
         return {
-          id: n.id || idx,
+          id: n.notification_id || n.id || idx,
           icon: TYPE_ICONS[n.type] || "🔔",
           iconClass: TYPE_CLASSES[n.type] || styles.blueIcon,
           content: content,
@@ -130,7 +122,7 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
               </div>
               <div className={styles.details}>
                 <div className={styles.contentBody}>
-                  {typeof act.content === "string" ? act.content : act.content}
+                  {act.content}
                 </div>
                 <span className={styles.timeLabel}>{act.time}</span>
               </div>

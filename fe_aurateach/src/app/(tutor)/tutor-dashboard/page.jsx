@@ -9,6 +9,7 @@ import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
 import { lessonConfirmationService } from "@/services/lessonConfirmationService";
 import { courseService } from "@/services/courseService";
+import { authService } from "@/services/authService"; // 👈 Import authService để lấy user chuẩn từ token
 
 export default function TutorDashboardPage() {
   const [userName, setUserName] = useState("Gia Sư");
@@ -24,50 +25,30 @@ export default function TutorDashboardPage() {
   const [pendingConfirmations, setPendingConfirmations] = useState([]);
   const [chartData, setChartData] = useState([]);
 
-  // Lấy thông tin user từ localStorage hoặc giải mã từ nguồn khác nếu cần
-  const getUserInfo = () => {
-    if (typeof window === "undefined") return null;
-    try {
-      // Nếu hệ thống của bạn lưu key khác (ví dụ: "user" hoặc "user_info"), hãy kiểm tra lại.
-      // Dựa trên ảnh của bạn, hiện tại chỉ có "access_token".
-      const userStr = localStorage.getItem("user_info") || localStorage.getItem("user");
-      if (userStr) {
-        return JSON.parse(userStr);
-      }
-      
-      // 💡 GIẢI PHÁP TẠM THỜI ĐỂ TEST: 
-      // Nếu bạn muốn ép nó nhận diện user ngay bằng access_token hoặc ID mẫu:
-      return {
-        user_id: "u-Wy4QdEzm", // Lấy ID khớp với log của Tutor_sec3 ở trên
-        full_name: "Gia Sư Demo",
-        role: "tutor"
-      };
-    } catch (e) {
-      return null;
-    }
-  };
-
-  // 🚀 FETCH DỮ LIỆU TỔNG HỢP SONG SONG DÙNG CÁC SERVICE CÓ SẴN (Đã thêm log debug)
+  // 🚀 FETCH DỮ LIỆU TỔNG HỢP SONG SONG SỬ DỤNG authService.getCurrentUser()
   const fetchDashboardData = async () => {
     console.log("🚀 [Dashboard] Bắt đầu chạy fetchDashboardData...");
     
-    const userData = getUserInfo();
+    // Gọi API lấy user hiện tại thông qua token đang lưu trong localStorage
+    const userData = await authService.getCurrentUser();
     if (!userData) {
-      console.warn("⚠️ [Dashboard] Dừng lại: Không tìm thấy hoặc không đọc được user_info trong localStorage.");
+      console.warn("⚠️ [Dashboard] Dừng lại: Không thể xác thực user hiện tại hoặc chưa đăng nhập.");
       return;
     }
 
     const userId = userData.user_id || userData.id;
-    console.log("👤 [Dashboard] User ID trích xuất được:", userId);
+    console.log("👤 [Dashboard] User ID trích xuất từ token/API:", userId);
     setUserName(userData.full_name || userData.name || "Gia Sư");
 
     try {
-      // 1. Lấy thông tin gia sư theo user_id bằng tutorService.getByUserId
+      // 1. Lấy thông tin gia sư theo user_id chính xác bằng tutorService.getByUserId
       console.log(`📡 [Dashboard] Đang gọi tutorService.getByUserId(${userId})...`);
       const tutorRes = await tutorService.getByUserId(userId);
       console.log("📦 [Dashboard] Kết quả trả về từ tutorRes:", tutorRes);
 
-      let tutorDetail = Array.isArray(tutorRes) ? tutorRes[0] : (tutorRes?.data?.[0] || tutorRes);
+      const tutorList = Array.isArray(tutorRes) ? tutorRes : (tutorRes?.data || [tutorRes]);
+      // Tìm đúng hồ sơ gia sư có user_id trùng khớp tuyệt đối với user hiện tại
+      let tutorDetail = tutorList.find(t => t.user_id === userId) || tutorList[0];      
       if (!tutorDetail) {
         console.warn("⚠️ [Dashboard] Không tìm thấy dữ liệu hồ sơ gia sư (tutorDetail) tương ứng với user này!");
         return;
@@ -75,9 +56,11 @@ export default function TutorDashboardPage() {
 
       const tutorId = tutorDetail.tutor_id || tutorDetail.id;
       console.log("🆔 [Dashboard] Tutor ID xác định được:", tutorId);
-
+      
       // 2. ⚡ GỘP FETCH DỮ LIỆU SONG SONG QUA CÁC SERVICE SẴN CÓ
       console.log("📡 [Dashboard] Đang gọi Promise.all lấy users, lessonConfirmations, courses...");
+      console.log("🔍 [Dashboard] Đang gọi getCourses với tutor_id:", tutorId);
+      
       const [usersRes, confRes, coursesRes] = await Promise.all([
         userService.getUsers(),
         lessonConfirmationService.getLessonConfirmations(tutorId),
@@ -88,7 +71,10 @@ export default function TutorDashboardPage() {
 
       const allUsers = Array.isArray(usersRes) ? usersRes : (usersRes?.data || []);
       let lessonConfirmations = Array.isArray(confRes) ? confRes : (confRes?.data || []);
-      const coursesData = Array.isArray(coursesRes) ? coursesRes : (coursesRes?.data || []);
+      let coursesData = Array.isArray(coursesRes) ? coursesRes : (coursesRes?.data || []);
+
+      // 🛡️ Lọc thủ công đảm bảo chỉ lấy đúng lớp của gia sư hiện tại sở hữu tutorId
+      coursesData = coursesData.filter(c => c.tutor_id === tutorId || c.instructor_id === tutorId);
 
       // 3. 🔄 Xử lý tự động giải ngân (holding payouts)
       const now = new Date();
