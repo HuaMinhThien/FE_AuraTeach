@@ -377,13 +377,18 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "Dưới 1 năm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 660000,
       "available_balance": 37880000,
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_01/profile",
       "created_at": "2025-01-15T08:30:00.000Z",
       "total_earnings": 3201500,
-      "updated_at": "2026-08-05T06:44:21.240Z",
+      "updated_at": "2026-07-29T10:00:00.000Z",
       "rejection_reason": null
     },
     {
@@ -394,7 +399,12 @@
       "expertise": "Toán",
       "rating": 5,
       "verification_status": "approved",
-      "experience": "5 năm kinh nghiệm",
+      "experience": "1 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Sinh viên",
       "pending_balance": 100000,
       "available_balance": 3390000,
       "state": "active",
@@ -411,6 +421,11 @@
       "rating": 4.9,
       "verification_status": "approved",
       "experience": "6 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 2200000,
       "available_balance": 533900,
       "state": "active",
@@ -427,6 +442,11 @@
       "rating": 4.7,
       "verification_status": "approved",
       "experience": "4 năm kinh nghiệm",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 1222000,
       "available_balance": 44390000,
       "state": "active",
@@ -443,6 +463,11 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -459,6 +484,11 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -475,6 +505,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -491,6 +526,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -507,6 +547,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -523,6 +568,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "state": "active",
@@ -539,6 +589,11 @@
       "rating": 0,
       "verification_status": "rejected",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
@@ -554,6 +609,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
@@ -569,6 +629,11 @@
       "rating": 0,
       "verification_status": "pending",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://vn.linkedin.com",
@@ -583,6 +648,11 @@
       "rating": 0,
       "verification_status": "approved",
       "experience": "",
+      "teaching_levels": [
+        "Cấp 2",
+        "Cấp 3"
+      ],
+      "level": "Giáo viên",
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
