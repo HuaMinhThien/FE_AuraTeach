@@ -19,30 +19,22 @@ const DEFAULT_IMAGES = [
   "/img/class/default-class-10.png",
 ];
 
-// Bảng giá quy định phân loại theo Level Gia sư, Số học sinh & Cấp học
+// Bảng giá tham khảo (Giá lớp kèm 1-1 cơ sở)
 const PRICE_LIMITS = {
   "Giáo viên": {
-    greaterThan3: { // Lớp >= 3 học sinh (3 đến 5 học sinh)
-      "Cấp 1": { min: 40000, max: 60000, label: "40.000đ - 60.000đ / buổi" },
-      "Cấp 2": { min: 50000, max: 80000, label: "50.000đ - 80.000đ / buổi" },
-      "Cấp 3": { min: 70000, max: 100000, label: "70.000đ - 100.000đ / buổi" },
-    },
-    lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh)
-      "Cấp 1": { min: 100000, max: 300000, label: "100.000đ - 300.000đ / buổi" },
-      "Cấp 2": { min: 120000, max: 400000, label: "120.000đ - 400.000đ / buổi" },
-      "Cấp 3": { min: 150000, max: 600000, label: "150.000đ - 600.000đ / buổi" },
+
+    lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh) - Giá 1 kèm 1
+      "Cấp 1": { min: 200000, max: 250000, label: "200.000đ - 250.000đ / buổi" },
+      "Cấp 2": { min: 120000, max: 300000, label: "120.000đ - 300.000đ / buổi" },
+      "Cấp 3": { min: 250000, max: 350000, label: "250.000đ - 350.000đ / buổi" },
     },
   },
   "Sinh viên": {
-    greaterThan3: { // Lớp >= 3 học sinh (3 đến 5 học sinh)
-      "Cấp 1": { min: 30000, max: 50000, label: "30.000đ - 50.000đ / buổi" },
-      "Cấp 2": { min: 40000, max: 60000, label: "40.000đ - 60.000đ / buổi" },
-      "Cấp 3": { min: 50000, max: 80000, label: "50.000đ - 80.000đ / buổi" },
-    },
-    lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh)
-      "Cấp 1": { min: 80000, max: 200000, label: "80.000đ - 200.000đ / buổi" },
-      "Cấp 2": { min: 100000, max: 250000, label: "100.000đ - 250.000đ / buổi" },
-      "Cấp 3": { min: 120000, max: 350000, label: "120.000đ - 350.000đ / buổi" },
+
+    lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh) - Giá 1 kèm 1
+      "Cấp 1": { min: 120000, max: 150000, label: "120.000đ - 150.000đ / buổi " },
+      "Cấp 2": { min: 130000, max: 170000, label: "130.000đ - 170.000đ / buổi" },
+      "Cấp 3": { min: 150000, max: 200000, label: "150.000đ - 200.000đ / buổi" },
     },
   },
 };
@@ -137,14 +129,28 @@ export default function CreateClassPage() {
   const parsedMaxStudents = parseInt(maxStudents, 10);
   const numStudents = Math.min(Math.max(isNaN(parsedMaxStudents) ? 1 : parsedMaxStudents, 1), 5);
   const currentTutorConfig = PRICE_LIMITS[tutorLevel] || PRICE_LIMITS["Giáo viên"];
-  const currentPriceConfig = numStudents >= 3 
-    ? currentTutorConfig.greaterThan3[level] 
-    : currentTutorConfig.lessThan3[level];
+
+  // LOGIC SỬA ĐỔI: Nếu số học sinh >= 3, lấy giá 1 kèm 1 (lessThan3) chia cho số lượng học sinh
+  let currentPriceConfig = null;
+  if (numStudents >= 3) {
+    const base1On1Config = currentTutorConfig.lessThan3[level];
+    if (base1On1Config) {
+      const calculatedMin = Math.round(base1On1Config.min / numStudents);
+      const calculatedMax = Math.round(base1On1Config.max / numStudents);
+      currentPriceConfig = {
+        min: calculatedMin,
+        max: calculatedMax,
+        label: `${calculatedMin.toLocaleString("vi-VN")}đ - ${calculatedMax.toLocaleString("vi-VN")}đ / buổi`,
+      };
+    }
+  } else {
+    currentPriceConfig = currentTutorConfig.lessThan3[level];
+  }
 
   // Tính toán giá trị lỗi kiểm tra giá
   const currentRate = parseInt(pricePerSession || 0, 10);
   const priceError = (currentPriceConfig && (currentRate < currentPriceConfig.min || currentRate > currentPriceConfig.max))
-    ? `⚠️ Mức phí cho ${level} (${tutorLevel} - ${numStudents >= 3 ? "Lớp ≥ 3 HS" : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`
+    ? `⚠️ Mức phí cho ${level} (${tutorLevel} - ${numStudents >= 3 ? `Lớp ${numStudents} HS: Giá 1 kèm 1 / ${numStudents}` : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`
     : "";
 
   // 1. Tự động gọi API lấy toàn bộ danh mục môn học
@@ -380,8 +386,11 @@ export default function CreateClassPage() {
   // Tính số buổi trong 1 tháng (quy ước chuẩn 4 tuần/tháng)
   const monthlySessionsCount = daysPerWeekCount * 4;
 
-  // Tổng tiền học sinh (mỗi HS) phải đóng trong 1 tháng
+  // Tổng tiền học sinh (mỗi HS) phải đóng trong 1 tháng (dành cho khóa học dài kỳ)
   const monthlyFeePerStudent = currentRate * monthlySessionsCount;
+
+  // Tổng tiền 1 học sinh đóng trọn gói toàn bộ khóa học
+  const totalFeePerStudent = currentRate * totalCourseSessions;
 
   // Tổng tiền tất cả học sinh đóng trong 1 tháng (chưa trừ phí)
   const monthlyGrossRevenue = monthlyFeePerStudent * numStudents;
@@ -608,7 +617,7 @@ export default function CreateClassPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Học phí mong muốn (đ/buổi/người) <span className={styles.required}>*</span></label>
+                <label>Học phí mong muốn (đ / buổi ) <span className={styles.required}>*</span></label>
                 <input 
                   type="number" 
                   step="10000"
@@ -636,20 +645,29 @@ export default function CreateClassPage() {
                 <thead>
                   <tr>
                     <th>Cấp học</th>
-                    <th>Lớp 1 - 2 học sinh</th>
-                    <th>Lớp 3 - 5 học sinh</th>
+                    <th>Lớp 1 - 2 học sinh (1-1)</th>
+                    <th>Lớp 3 - 5 học sinh (Chia đều {numStudents >= 3 ? numStudents : "N"} HS)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {["Cấp 1", "Cấp 2", "Cấp 3"].map((lvl) => {
                     const cfgLess = PRICE_LIMITS[tutorLevel]?.lessThan3[lvl];
-                    const cfgGreater = PRICE_LIMITS[tutorLevel]?.greaterThan3[lvl];
+                    
+                    // Tính mức chia thực tế cho lớp >= 3 sinh dựa trên 1-1
+                    let dividedLabel = "-";
+                    if (cfgLess) {
+                      const divNum = numStudents >= 3 ? numStudents : 3;
+                      const minDiv = Math.round(cfgLess.min / divNum);
+                      const maxDiv = Math.round(cfgLess.max / divNum);
+                      dividedLabel = `${minDiv.toLocaleString("vi-VN")}đ - ${maxDiv.toLocaleString("vi-VN")}đ / buổi / HS`;
+                    }
+
                     const isCurrentLvl = level === lvl;
                     return (
                       <tr key={lvl} className={isCurrentLvl ? styles.activeTableRow : ""}>
                         <td><strong>{lvl}</strong></td>
                         <td>{cfgLess?.label || "-"}</td>
-                        <td>{cfgGreater?.label || "-"}</td>
+                        <td>{dividedLabel}</td>
                       </tr>
                     );
                   })}
@@ -831,7 +849,7 @@ export default function CreateClassPage() {
                 <span className={styles.feeValue}>{currentRate.toLocaleString("vi-VN")}đ / Buổi</span>
               </div>
 
-              {/* TÍNH TOÁN TIỀN THEO THÁNG & TỔNG TIỀN TRỪ PHÍ VÍ SÀN 35% */}
+              {/* TÍNH TOÁN TIỀN THEO THÁNG / THEO KHÓA & TRỪ PHÍ VÍ SÀN 35% */}
               <div className={styles.calculationSection}>
                 <div className={styles.calcRow}>
                   <span className={styles.calcLabel}>Tổng số buổi dạy:</span>
@@ -853,19 +871,31 @@ export default function CreateClassPage() {
                   <span className={styles.calcValue}>{numStudents} học sinh</span>
                 </div>
 
-                <div className={styles.calcRow}>
-                  <span className={styles.calcLabel}>Học sinh đóng / tháng:</span>
-                  <span className={styles.calcValue}>
-                    {monthlyFeePerStudent > 0 ? `${monthlyFeePerStudent.toLocaleString("vi-VN")}đ` : "0đ"}
-                  </span>
-                </div>
+                {/* KIỂM TRA HÌNH THỨC HỌC CÓ PHẢI TÙY CHỌN SỐ TUẦN (CUSTOM) HAY KHÔNG */}
+                {courseType === "custom" ? (
+                  <div className={styles.calcRow}>
+                    <span className={styles.calcLabel}>Học sinh đóng toàn khóa (1 HS):</span>
+                    <span className={styles.calcValueHighlight}>
+                      {totalFeePerStudent > 0 ? `${totalFeePerStudent.toLocaleString("vi-VN")}đ` : "0đ"}
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.calcRow}>
+                      <span className={styles.calcLabel}>Học sinh đóng / tháng:</span>
+                      <span className={styles.calcValue}>
+                        {monthlyFeePerStudent > 0 ? `${monthlyFeePerStudent.toLocaleString("vi-VN")}đ` : "0đ"}
+                      </span>
+                    </div>
 
-                <div className={styles.calcRow}>
-                  <span className={styles.calcLabel}>Tổng tiền 1 tháng nhận được:</span>
-                  <span className={styles.calcValueHighlight}>
-                    {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}
-                  </span>
-                </div>
+                    <div className={styles.calcRow}>
+                      <span className={styles.calcLabel}>Tổng tiền 1 tháng nhận được:</span>
+                      <span className={styles.calcValueHighlight}>
+                        {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {/* TỔNG TIỀN TOÀN KHÓA */}
                 <div className={styles.calcRow} style={{ marginTop: "12px", paddingTop: "8px", borderTop: "1px dashed rgba(255, 255, 255, 0.25)" }}>
@@ -875,7 +905,7 @@ export default function CreateClassPage() {
                   </span>
                 </div>
 
-                {/* DÒNG PHÍ SÀN 35% ĐƯỢC THÊM MỚI */}
+                {/* DÒNG PHÍ SÀN 35% */}
                 <div className={styles.calcRow}>
                   <span className={styles.feeSubLabel}>Phí sàn 35%:</span>
                   <span className={styles.feeSubValue}>
@@ -893,10 +923,6 @@ export default function CreateClassPage() {
                   </span>
                 </div>
               </div>
-
-              {/* <p className={styles.feeFootnote}>
-                ℹ️ Mức phí tự điền phải nằm trong khung quy định nhằm đảm bảo cân bằng thị trường gia sư.
-              </p> */}
             </div>
 
             <div className={styles.tipsCard}>
