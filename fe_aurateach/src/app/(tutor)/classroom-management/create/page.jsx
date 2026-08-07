@@ -25,7 +25,7 @@ const PRICE_LIMITS = {
 
     lessThan3: { // Lớp < 3 học sinh (1 đến 2 học sinh) - Giá 1 kèm 1
       "Cấp 1": { min: 200000, max: 250000, label: "200.000đ - 250.000đ / buổi" },
-      "Cấp 2": { min: 120000, max: 300000, label: "120.000đ - 300.000đ / buổi" },
+      "Cấp 2": { min: 230000, max: 300000, label: "230.000đ - 300.000đ / buổi" },
       "Cấp 3": { min: 250000, max: 350000, label: "250.000đ - 350.000đ / buổi" },
     },
   },
