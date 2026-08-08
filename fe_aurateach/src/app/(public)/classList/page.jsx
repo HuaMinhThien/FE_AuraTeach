@@ -117,12 +117,13 @@ export default function ClassListPage() {
   const filteredCourses = useMemo(() => {
     let result = [...coursesWithDetails];
 
-// ✅ Chỉ hiện các lớp đã có tutor nhận (pending_student), đang mở (active),
-    // hoặc lớp do Admin tạo chờ gia sư nhận (pending_tutor).
+// ✅ Chỉ hiện các lớp ĐÃ CÓ TUTOR NHẬN DẠY.
+    // Luồng: Admin tạo lớp (pending_tutor, chưa có tutor) → Tutor nhận lớp
+    // (pending_student có tutor_id) → Học sinh thấy lớp trên trang này.
+    // Lớp chưa có tutor nhận (pending_tutor) sẽ KHÔNG hiển thị ở đây.
 result = result.filter(course =>
-      course.status === 'active' ||
-      course.status === 'pending_student' ||
-      course.status === 'pending_tutor'
+      (course.status === 'active' || course.status === 'pending_student') &&
+      course.tutor_id
     );
 
     // ✅ LOẠI BỎ các lớp riêng tư do student tạo (createSchedule) khỏi trang tìm lớp công khai.

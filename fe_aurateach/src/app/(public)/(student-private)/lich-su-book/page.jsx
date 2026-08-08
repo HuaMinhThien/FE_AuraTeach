@@ -66,6 +66,7 @@ export default function StudentBookingHistoryPage() {
         const bookingList = bookingsData.data || [];
         setBookings(bookingList);
 
+        // ✅ Lọc các lớp mà student đã đăng ký (có trong danh sách students của course)
         const filteredClasses = allCoursesData.filter(course => 
           course.students && course.students.includes(studentId)
         );
@@ -96,35 +97,6 @@ export default function StudentBookingHistoryPage() {
       ...tutor,
       full_name: user ? user.full_name : "Gia sư AuraTeach"
     };
-  };
-
-  const getBookingStatus = (courseId) => {
-    const booking = bookings.find(b => b.course_id === courseId);
-    if (!booking) {
-      return { label: 'Đã xác nhận', className: 'status-confirmed' };
-    }
-    
-    const statusMap = {
-      'pending': { label: '⏳ Chờ xác nhận', className: 'status-pending' },
-      'confirmed': { label: '✅ Đã xác nhận', className: 'status-confirmed' },
-      'completed': { label: '🎓 Đã hoàn thành', className: 'status-completed' },
-      'cancelled': { label: '❌ Đã hủy', className: 'status-cancelled' }
-    };
-    
-    return statusMap[booking.status] || { label: booking.status, className: '' };
-  };
-
-  const getPaymentStatus = (courseId) => {
-    const booking = bookings.find(b => b.course_id === courseId);
-    if (!booking) return null;
-    
-    const statusMap = {
-      'unpaid': { label: '⏳ Chưa thanh toán', className: 'payment-unpaid' },
-      'paid': { label: '✅ Đã thanh toán', className: 'payment-paid' },
-      'refunded': { label: '↩️ Đã hoàn tiền', className: 'payment-refunded' }
-    };
-    
-    return statusMap[booking.payment_status] || null;
   };
 
   const formatPrice = (price) => {
@@ -198,52 +170,32 @@ export default function StudentBookingHistoryPage() {
                         <th>Mã lớp</th>
                         <th>Tên lớp học</th>
                         <th>Gia sư giảng dạy</th>
-                        <th>Học phí / Giờ</th>
-                        <th>Trạng thái</th>
-                        <th>Thanh toán</th>
+                        <th>Học phí / Buổi</th>
                         <th>Hành động</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {bookedClasses.map((item) => {
-                        const status = getBookingStatus(item.course_id);
-                        const payment = getPaymentStatus(item.course_id);
-                        return (
-                          <tr key={item.course_id || item.id}>
-                            <td className="text-bold">{item.course_id || "N/A"}</td>
-                            <td>
-                              <div className="class-title-cell">
-                                <span className="class-name-text">{item.title}</span>
-                                <span className="class-flow-badge">{item.level || "Tiêu chuẩn"}</span>
-                              </div>
-                            </td>
-                            <td className="tutor-name-cell">👨‍🏫 {getTutorName(item.tutor_id)}</td>
-                            <td className="price-cell">{formatPrice(item.price_per_session)}</td>
-                            <td>
-                              <span className={`status-badge ${status.className}`}>
-                                {status.label}
-                              </span>
-                            </td>
-                            <td>
-                              {payment ? (
-                                <span className={`payment-badge ${payment.className}`}>
-                                  {payment.label}
-                                </span>
-                              ) : (
-                                <span className="payment-badge payment-na">N/A</span>
-                              )}
-                            </td>
-                            <td>
-                              <button 
-                                className="view-detail-btn"
-                                onClick={() => handleViewDetail(item.course_id || item.id)}
-                              >
-                                Chi tiết ➜
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {bookedClasses.map((item) => (
+                        <tr key={item.course_id || item.id}>
+                          <td className="text-bold">{item.course_id || "N/A"}</td>
+                          <td>
+                            <div className="class-title-cell">
+                              <span className="class-name-text">{item.title}</span>
+                              <span className="class-flow-badge">{item.level || "Tiêu chuẩn"}</span>
+                            </div>
+                          </td>
+                          <td className="tutor-name-cell">{getTutorName(item.tutor_id)}</td>
+                          <td className="price-cell">{formatPrice(item.price_per_session)}</td>
+                          <td>
+                            <button 
+                              className="view-detail-btn"
+                              onClick={() => handleViewDetail(item.course_id || item.id)}
+                            >
+                              Chi tiết ➜
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

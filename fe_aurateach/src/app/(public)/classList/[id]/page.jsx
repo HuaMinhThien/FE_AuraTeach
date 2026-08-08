@@ -146,6 +146,12 @@ const currentCourse = coursesData[0];
       return;
     }
 
+    // ✅ Yêu cầu lớp phải đã có tutor nhận mới được đăng ký/thanh toán.
+    if (!course.tutor_id) {
+      alert("⏳ Lớp này đang chờ gia sư nhận dạy. Bạn chưa thể đăng ký lúc này.");
+      return;
+    }
+
 const currentStudents = course.students || [];
     if (currentStudents.length >= course.max_students) {
       alert("Lớp học đã đủ số lượng học viên!");
@@ -289,10 +295,11 @@ const currentStudents = course.students || [];
   // Chỉ các trạng thái cancelled / completed / closed mới thực sự là "Đã đóng".
   const isClassOpen = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
 
-// ✅ Lớp "có thể đăng ký" (canBook) bao gồm cả lớp do Admin tạo đang chờ tutor
-  // (pending_tutor). Học viên vẫn có thể đăng ký và thanh toán để vào lớp ngay,
-  // không cần chờ gia sư nhận.
-  const canBook = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
+// ✅ Lớp "có thể đăng ký" (canBook) phải ĐÃ CÓ TUTOR NHẬN DẠY.
+  // Luồng: Admin tạo lớp (pending_tutor, chưa có tutor) → Tutor nhận lớp
+  // (pending_student có tutor_id) → Học sinh mới có thể đăng ký.
+  // Lớp chưa có tutor nhận (pending_tutor) sẽ không đăng ký được.
+  const canBook = course.tutor_id && ['active', 'pending_student'].includes(course.status);
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
@@ -530,7 +537,8 @@ const currentStudents = course.students || [];
 {bookingLoading ? "Đang xử lý..." : 
                isBooked ? "✅ Bạn đã đăng ký" : 
                isFull ? "🔴 Lớp đã đủ học viên" :
-               !isClassOpen ? "🔴 Lớp đã đóng" : 
+               !isClassOpen ? "🔴 Lớp đã đóng" :
+               !canBook ? "⏳ Đang chờ gia sư nhận lớp" : 
                "📝 Đăng ký học ngay"}
             </button>
             <button className={styles.consultButton}>💬 Đặt lịch tư vấn</button>
