@@ -1766,6 +1766,38 @@
       ],
       "created_by": "student_u-student-1",
       "id": "rcPPdYtgovo"
+    },
+    {
+      "id": "6f92",
+      "course_id": "course_1786164489692",
+      "tutor_id": "tutor_01",
+      "title": "Hỗ trợ bài tập về nhà cho hs cấp 1",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "Giúp hỗ trợ giải quyết bài tập ",
+      "max_students": 3,
+      "min_students": 2,
+      "price_per_session": 80000,
+      "start_date": "2026-08-30",
+      "end_date": "2026-09-25",
+      "total_weeks": 4,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "21:00-23:00",
+      "thumbnail": "/img/class/default-class-7.png",
+      "permanent_room_url": "https://meet.google.com/Y2OH30",
+      "status": "active",
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-08-08T04:48:09.692Z"
     }
   ],
   "reviews": [
