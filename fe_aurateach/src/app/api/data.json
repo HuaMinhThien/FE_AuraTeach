@@ -417,7 +417,9 @@
       "rejection_reason": null,
       "certificates": [],
       "available_days": "Thứ 2, Thứ 4, Thứ 6",
-      "available_time_slots": "17:00 - 19:00, 19:00 - 21:00"
+      "available_time_slots": "17:00 - 19:00, 19:00 - 21:00",
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "c95a",
@@ -438,7 +440,9 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_02/math-specialist",
       "created_at": "2025-02-20T14:15:00.000Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "12c3",
@@ -459,7 +463,9 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_03/literature-teacher",
       "created_at": "2025-03-10T09:45:00.000Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "e73f",
@@ -480,7 +486,9 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_04/ielts-expert",
       "created_at": "2025-04-05T11:20:00.000Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "d377",
@@ -501,7 +509,9 @@
       "state": "active",
       "cv_link": "https://example.com/cv/tutor_1782855815613/history",
       "created_at": "2025-05-12T16:30:00.000Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "5d17",
@@ -522,7 +532,9 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrE7zAcHpQGsUe-dcWYl-xXO_3hwUeLCIvMA7vkDKTRFr6-eHdfWTT0aAonOEALw_wcB",
       "created_at": "2026-07-16T09:47:30.288Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": false,
+      "suggestion_block_until": null
     },
     {
       "id": "4f61",
@@ -543,7 +555,9 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T09:59:51.707Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "7d7a",
@@ -564,7 +578,9 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T10:43:18.774Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "45da",
@@ -585,7 +601,9 @@
       "state": "active",
       "cv_link": "https://www.topcv.vn/mau-cv?ref_source=google_ads&gad_source=1&gad_campaignid=15510398822&gbraid=0AAAAADEWFkyQVWJzckwuQA5jKnQnm95LV&gclid=Cj0KCQjwguLSBhDLARIsAH-yPrEjUi5hEhvsRPyCEsfipCSbkGTvDqN65kzPWpyrLPR3jkoAyhplnGUaArD5EALw_wcB",
       "created_at": "2026-07-16T11:10:32.442Z",
-      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu"
+      "rejection_reason": "Không đủ bằng cấp/chứng chỉ theo yêu cầu",
+      "receive_suggestions": false,
+      "suggestion_block_until": null
     },
     {
       "id": "3a4c",
@@ -606,7 +624,9 @@
       "state": "active",
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-17T08:49:56.031Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "dc17",
@@ -626,7 +646,9 @@
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-22T09:36:48.264Z",
-      "rejection_reason": "Không liên hệ được với ứng viên"
+      "rejection_reason": "Không liên hệ được với ứng viên",
+      "receive_suggestions": false,
+      "suggestion_block_until": null
     },
     {
       "id": "0639",
@@ -646,7 +668,9 @@
       "available_balance": 0,
       "cv_link": "http://localhost:3000/register/teacher",
       "created_at": "2026-07-28T13:29:26.805Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "tutor_1785318296422",
@@ -665,7 +689,9 @@
       "pending_balance": 0,
       "available_balance": 0,
       "cv_link": "https://vn.linkedin.com",
-      "created_at": "2026-07-29T09:44:56.422Z"
+      "created_at": "2026-07-29T09:44:56.422Z",
+      "receive_suggestions": false,
+      "suggestion_block_until": null
     },
     {
       "id": "4bb7",
@@ -685,7 +711,9 @@
       "available_balance": 0,
       "cv_link": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
       "created_at": "2026-07-31T09:21:25.273Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "a7cd",
@@ -702,7 +730,9 @@
       "available_days": "Thứ 2, Thứ 4, Thứ 6",
       "available_time_slots": "07:00 - 09:00, 11:00 - 13:00, 15:00 - 17:00, 09:00 - 11:00, 17:00 - 19:00, 13:00 - 15:00, 19:00 - 21:00",
       "created_at": "2026-08-07T15:38:47.200Z",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     },
     {
       "id": "d425",
@@ -723,7 +753,9 @@
         "Cấp 2"
       ],
       "level": "Sinh viên",
-      "rejection_reason": null
+      "rejection_reason": null,
+      "receive_suggestions": true,
+      "suggestion_block_until": null
     }
   ],
   "students": [
@@ -800,6 +832,7 @@
       "level": "Cấp 2",
       "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán bền vững cấp 1, 2, 3.",
       "max_students": 1,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
@@ -815,7 +848,14 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "user_1785245928354_lwwbbd"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-01T00:00:00.000Z"
     },
     {
       "id": "8ab5",
@@ -826,6 +866,7 @@
       "level": "Cấp 3",
       "description": "Hướng dẫn phương pháp làm văn, phân tích tác phẩm trọng tâm ôn thi vào 10 và THPT Quốc gia.",
       "max_students": 1,
+      "min_students": 2,
       "price_per_session": 120000,
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
@@ -840,7 +881,14 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "user_1782855725159_tqroz6"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-05T00:00:00.000Z"
     },
     {
       "id": "1493",
@@ -851,6 +899,7 @@
       "level": "Cấp 3",
       "description": "Khóa bứt phá điểm 8+, 9+ thi THPT Quốc Gia môn Toán phần hình học không gian phẳng.",
       "max_students": 5,
+      "min_students": 2,
       "price_per_session": 180000,
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
@@ -866,7 +915,14 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-01T00:00:00.000Z"
     },
     {
       "id": "54d2",
@@ -877,6 +933,7 @@
       "level": "Cấp 2",
       "description": "Hệ thống toàn bộ kiến thức chuyển động cơ học, điện học khó mạch phức tạp cho học sinh lớp 9 ôn chuyên.",
       "max_students": 3,
+      "min_students": 2,
       "price_per_session": 160000,
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
@@ -889,7 +946,14 @@
       "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-05T00:00:00.000Z"
     },
     {
       "id": "1cab",
@@ -900,6 +964,7 @@
       "level": "Cấp 3",
       "description": "Lấy lại kiến thức căn bản hóa trị, cân bằng phương trình hóa học và phương pháp giải bài tập đồ thị vô cơ nhanh.",
       "max_students": 1,
+      "min_students": 2,
       "price_per_session": 140000,
       "start_date": "2026-07-10",
       "end_date": "2026-09-04",
@@ -912,7 +977,14 @@
       "thumbnail": "/img/class/default-class-6.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-10T00:00:00.000Z"
     },
     {
       "id": "2b7e",
@@ -923,6 +995,7 @@
       "level": "Cấp 3",
       "description": "Khóa học tập trung giải các bài toán di truyền biến dị phức tạp cấu trúc ADN, cam kết ôn thi đại học đạt điểm cao.",
       "max_students": 4,
+      "min_students": 2,
       "price_per_session": 170000,
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
@@ -936,7 +1009,14 @@
       "thumbnail": "/img/class/default-class-5.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-01T00:00:00.000Z"
     },
     {
       "id": "a6d5",
@@ -947,6 +1027,7 @@
       "level": "Cấp 1",
       "description": "Phát triển tư duy logic toán cho trẻ em cấp một, tính nhẩm nhanh và giải toán lời văn khoa học.",
       "max_students": 2,
+      "min_students": 2,
       "price_per_session": 130000,
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
@@ -961,7 +1042,14 @@
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
       "students": [
         "u-student-1"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-05T00:00:00.000Z"
     },
     {
       "id": "84c9",
@@ -972,6 +1060,7 @@
       "level": "Cấp 3",
       "description": "Phân tích chuyên sâu 9 tác phẩm văn học trọng tâm lớp 12, cách viết mở bài kết bài tạo ấn tượng thu hút người chấm thi.",
       "max_students": 6,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-07-10",
       "end_date": "2026-09-04",
@@ -984,7 +1073,14 @@
       "thumbnail": "/img/class/default-class-8.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-10T00:00:00.000Z"
     },
     {
       "id": "7494",
@@ -995,6 +1091,7 @@
       "level": "Cấp 2",
       "description": "Tổng hợp 12 thì tiếng Anh cơ bản, các cấu trúc câu điều kiện, câu bị động phục vụ kỳ thi chuyển cấp lớp 9 lên 10.",
       "max_students": 2,
+      "min_students": 2,
       "price_per_session": 140000,
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
@@ -1008,7 +1105,14 @@
       "thumbnail": "/img/class/default-class-2.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-01T00:00:00.000Z"
     },
     {
       "id": "84b4",
@@ -1019,6 +1123,7 @@
       "level": "Cấp 3",
       "description": "Chuyên đề dao động cơ học, sóng cơ và dòng điện xoay chiều lớp 12 giúp học sinh nắm chắc điểm 8 trong tay.",
       "max_students": 5,
+      "min_students": 2,
       "price_per_session": 160000,
       "start_date": "2026-07-05",
       "end_date": "2026-10-27",
@@ -1031,7 +1136,14 @@
       "thumbnail": "/img/class/default-class-1.jpg",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-05T00:00:00.000Z"
     },
     {
       "id": "5nyoHgVuYIk",
@@ -1042,6 +1154,7 @@
       "level": "Cấp 3",
       "description": "thể dục",
       "max_students": 3,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-07-03",
       "end_date": "2026-07-10",
@@ -1057,7 +1170,14 @@
         "u-student-1",
         "user_1782855725159_tqroz6",
         "user_1785245928354_lwwbbd"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-03T00:00:00.000Z"
     },
     {
       "id": "sjOefPzcfm0",
@@ -1068,6 +1188,7 @@
       "level": "Cấp 3",
       "description": "thể dục thôi mà",
       "max_students": 3,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-07-03",
       "end_date": "2026-09-25",
@@ -1082,7 +1203,14 @@
       "students": [
         "u-student-1",
         "user_1782855725159_tqroz6"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-03T00:00:00.000Z"
     },
     {
       "id": "Y6A2_TOIZcI",
@@ -1093,6 +1221,7 @@
       "level": "Cấp 3",
       "description": "thể dục siêu nâng cao",
       "max_students": 3,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-07-03",
       "end_date": "2026-07-10",
@@ -1107,7 +1236,14 @@
       "students": [
         "user_1782855725159_tqroz6",
         "u-student-1"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-03T00:00:00.000Z"
     },
     {
       "id": "course-1784279882327",
@@ -1118,6 +1254,7 @@
       "level": "Cấp 1",
       "description": "sinh hoc co ban",
       "max_students": 14,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-07-27",
       "end_date": "2026-10-19",
@@ -1133,7 +1270,14 @@
       "students": [
         "u-student-1",
         "user_1782855725159_tqroz6"
-      ]
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-27T00:00:00.000Z"
     },
     {
       "id": "course-1785319823221",
@@ -1144,6 +1288,7 @@
       "level": "Cấp 1",
       "description": "TA cơ bản",
       "max_students": 11,
+      "min_students": 2,
       "price_per_session": 300000,
       "start_date": "2026-08-01",
       "end_date": "2026-08-15",
@@ -1156,7 +1301,14 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-08-01T00:00:00.000Z"
     },
     {
       "id": "course-1785425982093",
@@ -1167,6 +1319,7 @@
       "level": "Cấp 2",
       "description": "",
       "max_students": 2,
+      "min_students": 2,
       "price_per_session": 100000,
       "start_date": "2026-07-31",
       "end_date": "2026-08-07",
@@ -1180,7 +1333,14 @@
       "thumbnail": "/img/class/default-class-10.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-07-31T00:00:00.000Z"
     },
     {
       "id": "course-1785435401738",
@@ -1191,6 +1351,7 @@
       "level": "Cấp 1",
       "description": "toán hình cấp 1 cho học sinh mất gốc ",
       "max_students": 15,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-08-02",
       "end_date": "2026-08-16",
@@ -1204,7 +1365,14 @@
       "thumbnail": "/img/class/default-class-9.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-08-02T00:00:00.000Z"
     },
     {
       "id": "course-1785824128324",
@@ -1215,6 +1383,7 @@
       "level": "Cấp 3",
       "description": "",
       "max_students": 1,
+      "min_students": 2,
       "price_per_session": 1000000,
       "start_date": "2026-08-04",
       "end_date": "2026-08-11",
@@ -1226,7 +1395,14 @@
       "thumbnail": "/img/class/default-class-10.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-08-04T00:00:00.000Z"
     },
     {
       "id": "course-1785938661050",
@@ -1237,6 +1413,7 @@
       "level": "Cấp 1",
       "description": "",
       "max_students": 15,
+      "min_students": 2,
       "price_per_session": 150000,
       "start_date": "2026-08-16",
       "end_date": "2026-08-23",
@@ -1249,7 +1426,14 @@
       "thumbnail": "/img/class/default-class-7.png",
       "status": "active",
       "permanent_room_url": "https://meet.google.com/fdo-dzqi-xxm",
-      "students": []
+      "students": [],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-08-16T00:00:00.000Z"
     },
     {
       "id": "b341",
@@ -1260,6 +1444,7 @@
       "level": "Cấp 1",
       "description": "",
       "max_students": 10,
+      "min_students": 2,
       "price_per_session": 50000,
       "start_date": "2026-08-16",
       "end_date": "2026-09-12",
@@ -1276,6 +1461,12 @@
       "students": [
         "user_1782855725159_tqroz6"
       ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
       "created_at": "2026-08-05T17:44:46.194Z"
     },
     {
@@ -1287,8 +1478,10 @@
       "level": "Cấp 3",
       "description": "Cần tìm gia sư ôn thi đại học môn Toán cấp tốc",
       "max_students": 1,
+      "min_students": 2,
       "price_per_session": 200000,
       "start_date": "2026-08-10",
+      "end_date": "2026-12-10",
       "total_weeks": 18,
       "schedule_days": [
         "Thứ 2",
@@ -1301,7 +1494,278 @@
       "permanent_room_url": "https://meet.google.com/abc-defg-hij",
       "students": [
         "u-student-1"
+      ],
+      "created_by": null,
+      "tutor_assigned_at": null,
+      "suggested_tutors": [],
+      "original_tutor": null,
+      "cancelled_at": null,
+      "cancelled_reason": null,
+      "created_at": "2026-08-10T00:00:00.000Z"
+    },
+    {
+      "course_id": "course_1786143402339",
+      "class_name": "hỗ trợ ôn sâu",
+      "title": "hỗ trợ ôn sâu",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "Mở đầu (10 - 15 phút): Ôn tập kiến thức bài cũ, giải đáp thắc mắc bài tập về nhà.\nNội dung chính (60 - 70 phút): Giảng dạy lý thuyết bài mới, hướng dẫn ví dụ minh họa và cho học sinh thực hành làm bài tại chỗ.\nTổng kết (10 - 15 phút): Tóm tắt lại trọng tâm kiến thức, giao bài tập về nhà và dặn dò chuẩn bị cho buổi sau.",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 200000,
+      "start_date": "2026-08-21",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "18:00-20:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [],
+      "permanent_room_url": "https://meet.google.com/room_1786143402339",
+      "created_at": "2026-08-07T22:56:42.339Z",
+      "id": "RGGK_qATmDs",
+      "suggested_tutors": [
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
       ]
+    },
+    {
+      "course_id": "course_1786143673154",
+      "class_name": "ôn nè",
+      "title": "ôn nè",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "ầu (10 - 15 phút): Ôn tập kiến thức bài cũ, giải đáp thắc mắc bài tập về nhà.\nNội dung chính (60 - 70 phút): Giảng dạy lý thuyết bài mới, hướng dẫn ví dụ minh họa và cho học sinh thực hành làm bài tại chỗ.\nTổng kết (10 - 15 phút): Tóm tắt lại trọng tâm kiến thức, gi",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 120000,
+      "start_date": "2026-08-18",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 3",
+        "Thứ 4"
+      ],
+      "time_slot": "19:00-21:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [],
+      "permanent_room_url": "https://meet.google.com/room_1786143673154",
+      "created_at": "2026-08-07T23:01:13.154Z",
+      "id": "K7Ti40KQoMg",
+      "suggested_tutors": [
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
+      ]
+    },
+    {
+      "course_id": "course_1786144738146",
+      "class_name": "ôn nè ní",
+      "title": "ôn nè ní",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "5 phút): Ôn tập kiến t",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 200000,
+      "start_date": "2026-08-21",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "12:00-14:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [],
+      "permanent_room_url": "https://meet.google.com/room_1786144738146",
+      "created_at": "2026-08-07T23:18:58.146Z",
+      "id": "ktf4dYKxTQM",
+      "suggested_tutors": [
+        "tutor_02",
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
+      ]
+    },
+    {
+      "course_id": "course_1786145415682",
+      "class_name": "ôn nữa nè ní",
+      "title": "ôn nữa nè ní",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "áp thắc mắc bài tập về nhà.\nNội dung chính (6",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 200000,
+      "start_date": "2026-08-21",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "07:00-09:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [],
+      "permanent_room_url": "https://meet.google.com/room_1786145415682",
+      "created_at": "2026-08-07T23:30:15.682Z",
+      "id": "oBsDbM2GGn4",
+      "suggested_tutors": [
+        "tutor_02",
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
+      ]
+    },
+    {
+      "course_id": "course_1786146756151",
+      "class_name": "ôn nè ní",
+      "title": "ôn nè ní",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": " (10 - 15 phút): Ôn tập kiến thức bài cũ, giải đáp thắc mắc bài tập về nhà.\nNội dung chính (60 - 70 phút): Giảng dạy lý thuyết bài mới, hướng dẫn ví dụ minh họa và cho học sinh thực hành làm bài tại chỗ.",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 200000,
+      "start_date": "2026-09-21",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "09:00-11:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [],
+      "permanent_room_url": "https://meet.google.com/room_1786146756151",
+      "created_at": "2026-08-07T23:52:36.151Z",
+      "id": "xb4zJ1Y2Urw",
+      "suggested_tutors": [
+        "tutor_01",
+        "tutor_02",
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
+      ]
+    },
+    {
+      "course_id": "course_1786147093264",
+      "class_name": "ôn nữa nè ní",
+      "title": "ôn nữa nè ní",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "nh (60 - 70 phút): Gi",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 200000,
+      "start_date": "2026-09-21",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "10:00-12:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [],
+      "permanent_room_url": "https://meet.google.com/room_1786147093264",
+      "created_at": "2026-08-07T23:58:13.264Z",
+      "id": "N2U6kkKnJj4",
+      "suggested_tutors": [
+        "tutor_01",
+        "tutor_02",
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
+      ]
+    },
+    {
+      "course_id": "course-1786149001862",
+      "tutor_id": "tutor_01",
+      "title": "ôn toan hinh",
+      "category_id": "cat-02",
+      "level": "Cấp 2",
+      "description": "azxvzxvcb",
+      "max_students": 1,
+      "price_per_session": 230000,
+      "start_date": "2026-08-12",
+      "total_weeks": 18,
+      "schedule_days": [],
+      "time_slot": "07:00-09:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/jyg-tdfw-pwd",
+      "students": [
+        "u-student-1"
+      ],
+      "created_by": "student_u-student-1",
+      "id": "rcPPdYtgovo"
     }
   ],
   "reviews": [
@@ -2512,6 +2976,750 @@
       "related_type": "tutor_approval",
       "is_read": false,
       "created_at": "2026-08-07T16:28:08.595Z"
+    },
+    {
+      "id": "pU684XlMG44",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.208Z"
+    },
+    {
+      "id": "ADjE3quof7A",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.231Z"
+    },
+    {
+      "id": "UI8iilVLrng",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.271Z"
+    },
+    {
+      "id": "8PQ_3TXQMsE",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.331Z"
+    },
+    {
+      "id": "YA1tMAKC16w",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.359Z"
+    },
+    {
+      "id": "Q-yP90IrBMs",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.446Z"
+    },
+    {
+      "id": "mLgyYnjlmvw",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.471Z"
+    },
+    {
+      "id": "O6Ib_L0DCD0",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hỗ trợ ôn sâu\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143402339",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T22:56:43.565Z"
+    },
+    {
+      "id": "789TvMUViCY",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:13.411Z"
+    },
+    {
+      "id": "IHHRsQ6jSnw",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:13.876Z"
+    },
+    {
+      "id": "I405pXyFX98",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:14.016Z"
+    },
+    {
+      "id": "rgebHd0MTg8",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:14.166Z"
+    },
+    {
+      "id": "8UVkjAhn9nE",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:14.396Z"
+    },
+    {
+      "id": "oefBDc--hbs",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:14.508Z"
+    },
+    {
+      "id": "31kH5Me7i_A",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:14.667Z"
+    },
+    {
+      "id": "jmYtfJm7iJg",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786143673154",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:01:14.889Z"
+    },
+    {
+      "id": "Y0KOva2Gmkw",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:58.358Z"
+    },
+    {
+      "id": "s2WMMiZH3s8",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:58.418Z"
+    },
+    {
+      "id": "KcU4LKmp3I4",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:58.505Z"
+    },
+    {
+      "id": "dLI3Re5Miuw",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:58.721Z"
+    },
+    {
+      "id": "YeANkbezDMw",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:58.873Z"
+    },
+    {
+      "id": "fILlMeqLK_0",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:59.035Z"
+    },
+    {
+      "id": "2sggS41jGug",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:59.276Z"
+    },
+    {
+      "id": "5NWh2Y8kSJo",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:18:59.502Z"
+    },
+    {
+      "id": "pEuDA1Ea7KM",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:19:00.032Z"
+    },
+    {
+      "id": "iRy2guQwt0U",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:19:00.188Z"
+    },
+    {
+      "id": "fQdAFpjKi9c",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786144738146",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:19:00.330Z"
+    },
+    {
+      "id": "lGf3Z-Y0j08",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:15.928Z"
+    },
+    {
+      "id": "RmD2mtnyt7w",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:15.961Z"
+    },
+    {
+      "id": "BXpE3D_NwsE",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.057Z"
+    },
+    {
+      "id": "U_BX4WahZn8",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.128Z"
+    },
+    {
+      "id": "pdjm3DVAubs",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.362Z"
+    },
+    {
+      "id": "YQeMYbeDvms",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.513Z"
+    },
+    {
+      "id": "NN-PZGURuFY",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.741Z"
+    },
+    {
+      "id": "kpclXOD1Y2Q",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.846Z"
+    },
+    {
+      "id": "RSdNZoY4meE",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:16.956Z"
+    },
+    {
+      "id": "T8C4okxckVI",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:17.080Z"
+    },
+    {
+      "id": "p0tTgSKJrO4",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786145415682",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:30:17.199Z"
+    },
+    {
+      "id": "7-v51Q9tjzc",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": true,
+      "created_at": "2026-08-07T23:52:36.429Z"
+    },
+    {
+      "id": "QOFYqX5UJ98",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:36.553Z"
+    },
+    {
+      "id": "W5DOS6nafPE",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:36.679Z"
+    },
+    {
+      "id": "PnLP4FNCRY0",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:36.819Z"
+    },
+    {
+      "id": "uNf8_1w29NI",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:36.939Z"
+    },
+    {
+      "id": "FiHgAP6NZwM",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.060Z"
+    },
+    {
+      "id": "moZvGDdXjCQ",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.204Z"
+    },
+    {
+      "id": "5PGjXdiz08Q",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.343Z"
+    },
+    {
+      "id": "0Fht2Q8gKww",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.447Z"
+    },
+    {
+      "id": "hNW8QK6YwSk",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.616Z"
+    },
+    {
+      "id": "CVTkYRBETK0",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.692Z"
+    },
+    {
+      "id": "E6omn_POFvA",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:52:37.810Z"
+    },
+    {
+      "id": "0Z6X1spa30k",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:13.436Z"
+    },
+    {
+      "id": "tJYKbN9R_5g",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:13.561Z"
+    },
+    {
+      "id": "Ju8kg1WiYmc",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:13.684Z"
+    },
+    {
+      "id": "AcoFawpLluk",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:13.783Z"
+    },
+    {
+      "id": "GCPt9ImUYV4",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:13.965Z"
+    },
+    {
+      "id": "7pSB2HUTOFw",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.093Z"
+    },
+    {
+      "id": "ubS-jOb_2Pc",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.213Z"
+    },
+    {
+      "id": "dxXARaqJbkw",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.326Z"
+    },
+    {
+      "id": "hQahXO7XRjk",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.433Z"
+    },
+    {
+      "id": "mm8OTT6_jI4",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.548Z"
+    },
+    {
+      "id": "C6FrYuLf4Vk",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.667Z"
+    },
+    {
+      "id": "2CPhuzzx6S0",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"ôn nữa nè ní\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-07T23:58:14.769Z"
     }
   ],
   "tutor_update_requests": [
@@ -2838,30 +4046,453 @@
       "end_time": "13:00",
       "meet_link": "https://meet.google.com/hhn-vgsy-rad",
       "created_at": "2026-08-07T19:59:02.475Z"
-    },
-    {
-      "id": "req-1786133056145",
-      "requests_id": "req-1786133056145",
-      "student_id": "u-student-1",
-      "category_id": "cat-02",
-      "title": "ôn toan hinh",
-      "description": "azxvzxvcb",
-      "level": "Cấp 2",
-      "price_per_session": 230000,
-      "status": "pending",
-      "schedule_days": [],
-      "time_slot": "07:00-09:00",
-      "max_students": 1,
-      "total_weeks": 18,
-      "start_date": "2026-08-12",
-      "schedule_type": "1_term",
-      "tutor_level": "Giáo viên",
-      "start_time": "07:00",
-      "end_time": "09:00",
-      "meet_link": "https://meet.google.com/jyg-tdfw-pwd",
-      "created_at": "2026-08-07T20:04:16.146Z"
     }
   ],
-  "request_applications": [],
+  "request_applications": [
+    {
+      "id": "6W8v71AcP1Q",
+      "requests_id": "req-1786133056145",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "created_at": "2026-08-08T00:23:17.747Z"
+    }
+  ],
+  "class_suggestions": [
+    {
+      "id": "VZzkN5tj-wU",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-07T22:56:42.794Z",
+      "status": "pending"
+    },
+    {
+      "id": "M1ZpbZv-7QE",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-07T22:56:42.809Z",
+      "status": "pending"
+    },
+    {
+      "id": "W_nqcpNajyw",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-07T22:56:42.816Z",
+      "status": "pending"
+    },
+    {
+      "id": "xxDsl22M8ec",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-07T22:56:42.943Z",
+      "status": "pending"
+    },
+    {
+      "id": "uwXmzG3hNw8",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-07T22:56:42.954Z",
+      "status": "pending"
+    },
+    {
+      "id": "vSJKXvAt2mA",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-07T22:56:42.969Z",
+      "status": "pending"
+    },
+    {
+      "id": "48j_2sMrqw0",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-07T22:56:42.978Z",
+      "status": "pending"
+    },
+    {
+      "id": "inCmfuRROF0",
+      "course_id": "course_1786143402339",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-07T22:56:43.016Z",
+      "status": "pending"
+    },
+    {
+      "id": "-tLPFyoWQF8",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-07T23:01:13.371Z",
+      "status": "pending"
+    },
+    {
+      "id": "VsmpgHQERyY",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-07T23:01:13.534Z",
+      "status": "pending"
+    },
+    {
+      "id": "sELiEPtVOCs",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-07T23:01:13.977Z",
+      "status": "pending"
+    },
+    {
+      "id": "Zoc-3Phb818",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-07T23:01:14.113Z",
+      "status": "pending"
+    },
+    {
+      "id": "QSk7KY4qu3o",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-07T23:01:14.359Z",
+      "status": "pending"
+    },
+    {
+      "id": "BkDqghzI_k0",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-07T23:01:14.481Z",
+      "status": "pending"
+    },
+    {
+      "id": "eg8m2MVwN3Q",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-07T23:01:14.582Z",
+      "status": "pending"
+    },
+    {
+      "id": "NB5cIlUCNJw",
+      "course_id": "course_1786143673154",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-07T23:01:14.851Z",
+      "status": "pending"
+    },
+    {
+      "id": "PydyPNjLKlA",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_02",
+      "suggested_at": "2026-08-07T23:18:58.341Z",
+      "status": "pending"
+    },
+    {
+      "id": "DxRBEg8PodQ",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-07T23:18:58.385Z",
+      "status": "pending"
+    },
+    {
+      "id": "GuYuOKJWKOw",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-07T23:18:58.466Z",
+      "status": "pending"
+    },
+    {
+      "id": "3qYQJs5vUww",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-07T23:18:58.665Z",
+      "status": "pending"
+    },
+    {
+      "id": "poBMA-oqqps",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-07T23:18:58.834Z",
+      "status": "pending"
+    },
+    {
+      "id": "pjM7rmCpfFo",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-07T23:18:58.991Z",
+      "status": "pending"
+    },
+    {
+      "id": "uynzUKZr42o",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-07T23:18:59.171Z",
+      "status": "pending"
+    },
+    {
+      "id": "hcIa_eV62VI",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-07T23:18:59.380Z",
+      "status": "pending"
+    },
+    {
+      "id": "cmIBPUoHBdo",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-07T23:18:59.984Z",
+      "status": "pending"
+    },
+    {
+      "id": "e7eFXxsgMKU",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-07T23:19:00.145Z",
+      "status": "pending"
+    },
+    {
+      "id": "kHy9oCxZJZA",
+      "course_id": "course_1786144738146",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-07T23:19:00.303Z",
+      "status": "pending"
+    },
+    {
+      "id": "XAkj_PDaK3w",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_02",
+      "suggested_at": "2026-08-07T23:30:15.909Z",
+      "status": "pending"
+    },
+    {
+      "id": "Q42ewqZo9qQ",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-07T23:30:15.937Z",
+      "status": "pending"
+    },
+    {
+      "id": "11hR6QPiyUE",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-07T23:30:15.988Z",
+      "status": "pending"
+    },
+    {
+      "id": "exzAwdYbfK0",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-07T23:30:16.084Z",
+      "status": "pending"
+    },
+    {
+      "id": "Sn25Mp9BE0M",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-07T23:30:16.197Z",
+      "status": "pending"
+    },
+    {
+      "id": "b37-2Z8WvL8",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-07T23:30:16.480Z",
+      "status": "pending"
+    },
+    {
+      "id": "JQOX8fvie5M",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-07T23:30:16.687Z",
+      "status": "pending"
+    },
+    {
+      "id": "xR3ntN118jI",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-07T23:30:16.815Z",
+      "status": "pending"
+    },
+    {
+      "id": "uUuQwMQ7vgA",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-07T23:30:16.910Z",
+      "status": "pending"
+    },
+    {
+      "id": "wqpPnqGH1bc",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-07T23:30:17.050Z",
+      "status": "pending"
+    },
+    {
+      "id": "vyS0JjjpM3Y",
+      "course_id": "course_1786145415682",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-07T23:30:17.155Z",
+      "status": "pending"
+    },
+    {
+      "id": "JY7uRjm4dOY",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_01",
+      "suggested_at": "2026-08-07T23:52:36.410Z",
+      "status": "pending"
+    },
+    {
+      "id": "YDDcYnPYSok",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_02",
+      "suggested_at": "2026-08-07T23:52:36.497Z",
+      "status": "pending"
+    },
+    {
+      "id": "nA78RZzYXdA",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-07T23:52:36.646Z",
+      "status": "pending"
+    },
+    {
+      "id": "fXmQSmODuc0",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-07T23:52:36.764Z",
+      "status": "pending"
+    },
+    {
+      "id": "jX0-203nU2c",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-07T23:52:36.896Z",
+      "status": "pending"
+    },
+    {
+      "id": "C9k2T3Olqwo",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-07T23:52:37.028Z",
+      "status": "pending"
+    },
+    {
+      "id": "Y72F4gySNt4",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-07T23:52:37.131Z",
+      "status": "pending"
+    },
+    {
+      "id": "0K52cUN20go",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-07T23:52:37.245Z",
+      "status": "pending"
+    },
+    {
+      "id": "cffCMrssPNo",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-07T23:52:37.370Z",
+      "status": "pending"
+    },
+    {
+      "id": "_Ti3UkcPhSk",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-07T23:52:37.582Z",
+      "status": "pending"
+    },
+    {
+      "id": "qyC_PPCm8zE",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-07T23:52:37.674Z",
+      "status": "pending"
+    },
+    {
+      "id": "5UUQc7e-ThM",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-07T23:52:37.734Z",
+      "status": "pending"
+    },
+    {
+      "id": "NkOLTsngYuE",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_01",
+      "suggested_at": "2026-08-07T23:58:13.365Z",
+      "status": "pending"
+    },
+    {
+      "id": "AQ33ZAoP0O4",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_02",
+      "suggested_at": "2026-08-07T23:58:13.473Z",
+      "status": "pending"
+    },
+    {
+      "id": "IB4XqtNKARI",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-07T23:58:13.593Z",
+      "status": "pending"
+    },
+    {
+      "id": "MIx6WiV0-8A",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-07T23:58:13.712Z",
+      "status": "pending"
+    },
+    {
+      "id": "cicl7S3kclY",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-07T23:58:13.836Z",
+      "status": "pending"
+    },
+    {
+      "id": "VdCnwfXHrPs",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-07T23:58:14.003Z",
+      "status": "pending"
+    },
+    {
+      "id": "PhISIYKxrSM",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-07T23:58:14.134Z",
+      "status": "pending"
+    },
+    {
+      "id": "8cba6H_e58c",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-07T23:58:14.240Z",
+      "status": "pending"
+    },
+    {
+      "id": "eYzF3AtjqQg",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-07T23:58:14.355Z",
+      "status": "pending"
+    },
+    {
+      "id": "m8LPz7tNI28",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-07T23:58:14.504Z",
+      "status": "pending"
+    },
+    {
+      "id": "m3VL6kVp6MI",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-07T23:58:14.593Z",
+      "status": "pending"
+    },
+    {
+      "id": "-1p9QJwwlKc",
+      "course_id": "course_1786147093264",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-07T23:58:14.733Z",
+      "status": "pending"
+    }
+  ],
+  "refunds": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

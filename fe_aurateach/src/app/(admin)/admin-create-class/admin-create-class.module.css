@@ -1,0 +1,830 @@
+/* src/app/(admin)/admin-create-class/admin-create-class.module.css */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}
+
+.headerCreate {
+  margin-bottom: 32px;
+}
+
+.headerCreate h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.headerCreate p {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Layout 2 cột */
+.formLayout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Left Column */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.cardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cardHeaderFlex h2 {
+  margin-bottom: 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.formGroup label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 90%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: border-color 0.2s;
+  outline: none;
+  font-family: inherit;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.inputError:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 13px;
+}
+
+.errorAlert {
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.rowGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Days Selector */
+.daysSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.daysSelector button {
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.daysSelector button:hover {
+  background: #f1f5f9;
+}
+
+.daysSelector .activeDay {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+/* Time Picker */
+.timePickerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.subLabel {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.timePickerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.timeInputWrapper {
+  display: flex;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.timeInputWrapper:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.timeInputIcon {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.timeInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 12px 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.timeArrowDivider {
+  font-size: 18px;
+  color: #94a3b8;
+  user-select: none;
+}
+
+/* Image Selection */
+.imageSelectionArea {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.subText {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: -12px;
+  margin-bottom: 16px;
+}
+
+.defaultGrid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.imgWrapper {
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  height: 60px;
+  width: 90px;
+}
+
+.imgWrapper:hover {
+  transform: translateY(-2px);
+}
+
+.selectedImg {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* Price Regulation Table */
+.priceRegulationTableBox {
+  margin-top: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.priceRegulationHeader {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.priceTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.priceTable th {
+  background-color: #edf2f7;
+  color: #334155;
+  font-weight: 600;
+  padding: 8px 10px;
+  text-align: left;
+  border: 1px solid #cbd5e1;
+}
+
+.priceTable td {
+  padding: 8px 10px;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+}
+
+.priceTable tr.activeTableRow td {
+  background-color: #eff6ff;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* Description Suggestion */
+.descriptionSuggestionBox {
+  margin-top: 10px;
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #0369a1;
+}
+
+.suggestionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.suggestionList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.suggestionList li {
+  margin-bottom: 4px;
+}
+
+.suggestionList li:last-child {
+  margin-bottom: 0;
+}
+
+/* Right Column */
+.rightColumn {
+  position: sticky;
+  top: 100px;
+}
+
+.stickyWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Tutor List */
+.hint {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.checkBtn {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.checkBtn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.checkBtn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.tutorStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 12px 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.tutorStats strong {
+  color: #0f172a;
+}
+
+.tutorActions {
+  display: flex;
+  gap: 8px;
+}
+
+.selectAllBtn,
+.deselectAllBtn {
+  padding: 4px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.selectAllBtn:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.deselectAllBtn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.tutorList {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.tutorList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tutorList::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.noTutor {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+}
+
+.tutorItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tutorItem:hover {
+  background: #f1f5f9;
+}
+
+.tutorItem input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tutorAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.tutorInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tutorName {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.tutorExpertise {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.tutorRating {
+  font-size: 12px;
+  color: #f59e0b;
+}
+
+.summaryBox {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.summaryBox p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.summaryNote {
+  color: #64748b;
+  font-size: 13px !important;
+  margin-top: 8px !important;
+}
+
+/* Fee Estimate Card - GIỐNG BÊN TUTOR */
+.feeEstimateCard {
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+  color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+}
+
+.feeEstimateCard h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.feeSubHeader {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.feeDisplay {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feeLabel {
+  display: block;
+  font-size: 13px;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.feeValue {
+  font-size: 26px;
+  font-weight: 600;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Calculation Section */
+.calculationSection {
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  padding-top: 14px;
+}
+
+.calcRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.calcLabel {
+  color: #e2e8f0;
+}
+
+.calcValue {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.calcValueHighlight {
+  font-weight: 700;
+  color: #86efac;
+}
+
+.feeSubLabel {
+  font-size: 13px;
+  color: #cbd5e1;
+  padding-left: 12px;
+}
+
+.feeSubValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fca5a5;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.totalLabel {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 14px;
+  max-width: 60%;
+}
+
+.totalValue {
+  font-weight: 800;
+  color: #fbbf24;
+  font-size: 20px;
+}
+
+/* Tips Card */
+.tipsCard {
+  background: #f5efe6;
+  border: 1px solid #e6dcce;
+  padding: 20px;
+  border-radius: 12px;
+  color: #5c4d3c;
+}
+
+.tipsCard h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #3e3327;
+}
+
+.tipsCard ul {
+  padding-left: 16px;
+  margin: 0;
+}
+
+.tipsCard li {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.tipsCard li:last-child {
+  margin-bottom: 0;
+}
+
+/* Submit Button */
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 16px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #047857;
+}
+
+.submitBtn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .formLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .rightColumn {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .rowGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 16px 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .timePickerRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .timeInputWrapper {
+    width: 100%;
+  }
+
+  .defaultGrid {
+    justify-content: center;
+  }
+
+  .feeValue {
+    font-size: 20px;
+  }
+
+  .totalValue {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutorStats {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}
+
+/* Thêm vào cuối file admin-create-class.module.css */
+
+.feeNote {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feeNote p {
+  font-size: 12px;
+  color: #93c5fd;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.formValidationHint {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 13px;
+  text-align: center;
+}
+
+.formValidationHint p {
+  margin: 0;
+}
+
+.disabledSelect {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  cursor: not-allowed;
+  font-weight: 600;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+/* ✅ Thêm style cho hint text */
+.hintText {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Thêm vào cuối file admin-create-class.module.css */
+
+.formValidationHint {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 13px;
+}
+
+.formValidationHint p {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.formValidationHint ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.formValidationHint ul li {
+  font-size: 13px;
+  color: #92400e;
+  padding: 2px 0;
+}

@@ -7,6 +7,25 @@ import FilterControl from "./_components/Sec1";
 import ClassGrid from "./_components/Sec2";
 import ClassDetailModal from "./_components/Sec3";
 
+// Hàm đọc cookie user_info
+function getUserInfoFromCookie() {
+  if (typeof document === 'undefined') return null;
+  const cookieArr = document.cookie.split(';');
+  for (let i = 0; i < cookieArr.length; i++) {
+    const cookiePair = cookieArr[i].split('=');
+    if (cookiePair[0].trim() === 'user_info') {
+      try {
+        const decodedValue = decodeURIComponent(cookiePair[1]);
+        return JSON.parse(decodedValue);
+      } catch (e) {
+        console.error("Lỗi khi giải mã cookie user_info:", e);
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 export default function ClassroomManagementPage() {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,15 +34,25 @@ export default function ClassroomManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({ totalPages: 1 });
   const [selectedClass, setSelectedClass] = useState(null);
+  const [tutorIdentifier, setTutorIdentifier] = useState(null);
+
+  // Lấy user_info từ cookie (user_id của gia sư đang đăng nhập)
+  useEffect(() => {
+    const userInfo = getUserInfoFromCookie();
+    if (userInfo && userInfo.user_id) {
+      setTutorIdentifier(userInfo.user_id);
+    }
+  }, []);
 
   useEffect(() => {
+    if (!tutorIdentifier) return;
     let isMounted = true;
 
     const loadData = async () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/classes?page=${currentPage}&limit=6&status=${statusFilter}&search=${search}`
+          `/api/classes?page=${currentPage}&limit=6&status=${statusFilter}&search=${search}&tutor_id=${tutorIdentifier}`
         );
         const resData = await res.json();
         
@@ -43,7 +72,7 @@ export default function ClassroomManagementPage() {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, statusFilter, search]);
+  }, [currentPage, statusFilter, search, tutorIdentifier]);
 
   const handleFilterChange = (status) => {
     setStatusFilter(status);

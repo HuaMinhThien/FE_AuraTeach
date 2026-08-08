@@ -1,3 +1,4 @@
+// src/components/admins/SidebarAdmin.jsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -108,13 +109,14 @@ export default function Sidebar() {
     { name: "Bảng điều khiển", path: "/admin-dashboard" },
     { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
     { name: "Quản lý lớp học", path: "/admin-classes-management" },
+    { name: "Tạo lớp học mới", path: "/admin-create-class" }, // ✅ THÊM MỚI
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Duyệt yêu cầu rút tiền", path: "/admin-tutor-payout-requests" },
     { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },
   ];
 
   if (!mounted || !adminData) {
-    return null; // Hoặc render Skeleton UI đơn giản
+    return null;
   }
 
   return (
@@ -158,7 +160,7 @@ export default function Sidebar() {
               height={36}
               className={styles.miniAvatar}
               onError={handleImageError}
-              unoptimized={avatarSrc.startsWith("http")} // Cho phép load ảnh URL ngoài không cần config domain trong next.config.js
+              unoptimized={avatarSrc.startsWith("http")}
             />
           </div>
           <div className={styles.adminInfo}>

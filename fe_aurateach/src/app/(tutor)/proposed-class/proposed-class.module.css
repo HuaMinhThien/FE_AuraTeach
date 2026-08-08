@@ -1,9 +1,12 @@
+/* src/app/(tutor)/proposed-class/proposed-class.module.css - CẬP NHẬT */
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 30px 20px;
   font-family: Arial, sans-serif;
   color: #333;
+  margin-top: 32px;
 }
 
 .headerSection {
@@ -43,6 +46,7 @@
 .filterTabs {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .tabBtn {
@@ -54,6 +58,9 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .tabBtn:hover {
@@ -63,6 +70,20 @@
 .activeTab {
   background-color: #2563eb;
   color: #fff;
+}
+
+.tabBadge {
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
 }
 
 .sectionTitle {
@@ -95,16 +116,38 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .badge {
   display: inline-block;
-  align-self: flex-start;
   background-color: #e0e7ff;
   color: #3730a3;
   font-size: 12px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 20px;
-  margin-bottom: 12px;
+}
+
+.statusBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.statusAvailable {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusAssigned {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .cardTitle {
@@ -150,8 +193,28 @@
   transition: background-color 0.2s;
 }
 
-.detailBtn:hover {
+.detailBtn:hover:not(:disabled) {
   background-color: #0369a1;
+}
+
+.detailBtn:disabled,
+.btnDisabled {
+  background-color: #9ca3af !important;
+  cursor: not-allowed !important;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
 }
 
 .emptyText {
@@ -162,7 +225,7 @@
   padding: 40px 0;
 }
 
-/* Modal Overlay & Card */
+/* Modal */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -200,11 +263,20 @@
   color: #64748b;
 }
 
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-right: 30px;
+  flex-wrap: wrap;
+}
+
 .modalTitle {
   font-size: 22px;
   font-weight: 700;
-  margin-bottom: 15px;
-  padding-right: 30px;
+  margin: 0;
 }
 
 .modalGroup {
@@ -231,11 +303,38 @@
   transition: background-color 0.2s;
 }
 
-.applyBtn:hover {
+.applyBtn:hover:not(:disabled) {
   background-color: #15803d;
 }
 
-.applyBtn:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
+.applyBtn:disabled,
+.applyBtn.btnDisabled {
+  background-color: #9ca3af !important;
+  cursor: not-allowed !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .headerSection {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterTabs {
+    width: 100%;
+  }
+
+  .tabBtn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .classList {
+    grid-template-columns: 1fr;
+  }
+
+  .modalHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

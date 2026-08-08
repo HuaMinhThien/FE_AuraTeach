@@ -3,6 +3,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./CreateClassRequest.module.css";
+import PaymentModal from "@/components/users/PaymentModal";
+import paymentService from "@/services/paymentService";
 
 // Helper đọc cookie phía client
 const getCookie = (name) => {
@@ -28,6 +30,7 @@ const getUserInfoFromCookie = () => {
 };
 
 // Helper lấy ID học sinh đang đăng nhập từ Cookie
+// Trả về null nếu CHƯA ĐĂNG NHẬP (không dùng hardcode fallback)
 const getCurrentStudentId = () => {
   const userInfo = getUserInfoFromCookie();
   if (userInfo && userInfo.user_id) {
@@ -37,7 +40,7 @@ const getCurrentStudentId = () => {
     getCookie("student_id") ||
     getCookie("user_id") ||
     getCookie("id") ||
-    "u-student-1"
+    null
   );
 };
 
@@ -85,8 +88,14 @@ export default function CreateClassRequest() {
   const [categories, setCategories] = useState([]);
   const [requestsList, setRequestsList] = useState([]);
   const [existingCourses, setExistingCourses] = useState([]);
-  const [editingRequestId, setEditingRequestId] = useState(null);
+const [editingRequestId, setEditingRequestId] = useState(null);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
+
+  // State cho thanh toán QR sau khi chấp nhận gia sư
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedNewCourse, setSelectedNewCourse] = useState(null);
+  const [paymentBooking, setPaymentBooking] = useState(null);
+  const [paymentStudentId, setPaymentStudentId] = useState(null);
 
   // Form mặc định dùng để khởi tạo hoặc reset khi bấm tạo mới
   const getInitialFormData = (defaultCatId = "") => ({
@@ -120,9 +129,9 @@ export default function CreateClassRequest() {
     const token = getCookie("token") || getCookie("user") || getCookie("auth") || userInfo;
     const role = getCookie("role") || getCookie("user_role") || (userInfo && userInfo.role);
 
-    if (!token && !userInfo) {
+if (!token && !userInfo) {
       alert("Bạn cần đăng nhập để sử dụng tính năng này!");
-      router.push("/register");
+      router.push("/login");
       return false;
     }
 
@@ -143,9 +152,16 @@ export default function CreateClassRequest() {
     setIsModalOpen(true);
   };
 
-  const fetchRequestsAndCourses = async () => {
+const fetchRequestsAndCourses = async () => {
     try {
       const currentStudentId = getCurrentStudentId();
+
+      // Nếu chưa đăng nhập → không hiển thị danh sách yêu cầu của bất kỳ ai
+      if (!currentStudentId) {
+        setRequestsList([]);
+        setExistingCourses([]);
+        return;
+      }
 
       const [resCat, resReq, resCourse, resApp, resTutors, resUsers] = await Promise.all([
         fetch("http://localhost:3007/categories"),
@@ -503,12 +519,15 @@ export default function CreateClassRequest() {
     setIsModalOpen(true);
   };
 
-  const handleAcceptTutor = async (req, tutor) => {
+const handleAcceptTutor = async (req, tutor) => {
     if (!checkAuthAndRole()) return;
     if (!confirm(`Xác nhận chọn gia sư ${tutor.full_name} dạy lớp này?`)) return;
 
+    const currentStudentId = req.student_id || getCurrentStudentId();
+    const newCourseId = `course-${Date.now()}`;
+
     const newCoursePayload = {
-      course_id: `course-${Date.now()}`,
+      course_id: newCourseId,
       tutor_id: tutor.tutor_id,
       title: req.title,
       category_id: req.category_id,
@@ -520,10 +539,13 @@ export default function CreateClassRequest() {
       total_weeks: req.total_weeks,
       schedule_days: req.schedule_days,
       time_slot: req.time_slot || `${req.start_time}-${req.end_time}`,
-      thumbnail: "/img/class/default-class-1.jpg",
+thumbnail: "/img/class/default-class-1.jpg",
       status: "active",
       permanent_room_url: req.meet_link,
-      students: [req.student_id],
+      // Để trống students để `/api/bookings` tự thêm học sinh sau khi thanh toán
+      students: [],
+      // Đánh dấu đây là lớp riêng tư do student tạo (chỉ hiện cho đúng student đó)
+      created_by: `student_${currentStudentId}`,
     };
 
     try {
@@ -533,20 +555,82 @@ export default function CreateClassRequest() {
         body: JSON.stringify(newCoursePayload),
       });
 
-      if (resCourse.ok) {
-        const reqId = req.requests_id || req.id;
-        
-        // Xóa yêu cầu tạo lớp theo nhu cầu khỏi class_requests sau khi đã tạo khóa học thành công
-        await fetch(`http://localhost:3007/class_requests/${reqId}`, {
+      if (!resCourse.ok) {
+        const errData = await resCourse.json().catch(() => ({}));
+        alert("Lỗi khi tạo khóa học: " + (errData.message || "Không thể tạo khóa học"));
+        return;
+      }
+
+      const createdCourse = await resCourse.json();
+      const courseWithId = createdCourse.id ? createdCourse : { ...newCoursePayload, id: createdCourse.id };
+
+      // Tạo booking (QR thanh toán) qua API có sẵn
+      const bookingRes = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: newCourseId,
+          studentId: currentStudentId,
+          tutorId: tutor.tutor_id,
+          notes: "Đăng ký lớp riêng theo yêu cầu tạo lịch học",
+          paymentMethod: "qr",
+        }),
+      });
+      const bookingResult = await bookingRes.json();
+
+      if (!bookingResult.success) {
+        // Nếu tạo booking thất bại, gỡ khóa học vừa tạo để tránh rác
+        await fetch(`http://localhost:3007/courses/${courseWithId.id}`, {
           method: "DELETE",
         });
-
-        alert("🎉 Nhận gia sư thành công! Lớp học đã được khởi tạo tự động và đã xóa yêu cầu tạo lớp.");
-        fetchRequestsAndCourses();
+        alert("Không thể tạo booking: " + (bookingResult.message || "Vui lòng thử lại."));
+        return;
       }
+
+      // Xóa yêu cầu tạo lớp sau khi đã tạo khóa học + booking thành công
+      const reqId = req.requests_id || req.id;
+      await fetch(`http://localhost:3007/class_requests/${reqId}`, {
+        method: "DELETE",
+      });
+
+      // Cập nhật trạng thái yêu cầu thành "approved" để không hiển thị nút chấp nhận nữa
+      setRequestsList((prev) => prev.filter((r) => (r.requests_id || r.id) !== reqId));
+
+// Mở PaymentModal hiển thị mã QR thanh toán
+      setSelectedNewCourse({ ...courseWithId, price_per_session: req.price_per_session, total_weeks: req.total_weeks });
+      setPaymentBooking(bookingResult.data);
+      setPaymentStudentId(currentStudentId);
+      setShowPaymentModal(true);
     } catch (err) {
       console.error("Lỗi khi khởi tạo lớp học:", err);
+      alert("Đã xảy ra lỗi khi khởi tạo lớp học. Vui lòng thử lại.");
     }
+  };
+
+  // Sau khi thanh toán QR thành công
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
+    setSelectedNewCourse(null);
+    setPaymentBooking(null);
+    setPaymentStudentId(null);
+    alert("🎉 Thanh toán thành công! Lớp học đã được khởi tạo và bạn đã được thêm vào lớp.");
+    fetchRequestsAndCourses();
+  };
+
+  // Khi đóng modal thanh toán mà chưa thanh toán -> hủy booking
+  const handlePaymentClose = async () => {
+    setShowPaymentModal(false);
+    if (paymentBooking && paymentBooking.booking_id) {
+      try {
+        await paymentService.cancelBooking(paymentBooking.booking_id);
+      } catch (err) {
+        console.error("Hủy booking không thành công:", err);
+      }
+    }
+    setSelectedNewCourse(null);
+    setPaymentBooking(null);
+    setPaymentStudentId(null);
+    fetchRequestsAndCourses();
   };
 
   const getCategoryName = (catId) => {
@@ -1028,11 +1112,24 @@ export default function CreateClassRequest() {
                     )}
                   </div>
                 )}
-              </div>
+</div>
             );
           })
         )}
       </div>
+
+      {/* PaymentModal hiển thị QR thanh toán sau khi chấp nhận gia sư */}
+      {showPaymentModal && selectedNewCourse && paymentBooking && (
+        <PaymentModal
+          course={selectedNewCourse}
+          bookingId={paymentBooking.booking_id}
+          studentId={paymentStudentId}
+          amount={(Number(selectedNewCourse.price_per_session) || 0) * (Number(selectedNewCourse.total_weeks) || 1)}
+          onClose={handlePaymentClose}
+          onSuccess={handlePaymentSuccess}
+          paymentService={paymentService}
+        />
+      )}
     </div>
   );
 }
