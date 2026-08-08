@@ -1643,7 +1643,9 @@
       "created_by": "admin_01",
       "tutor_id": null,
       "tutor_assigned_at": null,
-      "students": [],
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
       "permanent_room_url": "https://meet.google.com/room_1786145415682",
       "created_at": "2026-08-07T23:30:15.682Z",
       "id": "oBsDbM2GGn4",
@@ -1726,7 +1728,9 @@
       "created_by": "admin_01",
       "tutor_id": null,
       "tutor_assigned_at": null,
-      "students": [],
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
       "permanent_room_url": "https://meet.google.com/room_1786147093264",
       "created_at": "2026-08-07T23:58:13.264Z",
       "id": "N2U6kkKnJj4",

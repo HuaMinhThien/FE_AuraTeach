@@ -146,7 +146,7 @@ const currentCourse = coursesData[0];
       return;
     }
 
-    const currentStudents = course.students || [];
+const currentStudents = course.students || [];
     if (currentStudents.length >= course.max_students) {
       alert("Lớp học đã đủ số lượng học viên!");
       return;
@@ -279,7 +279,7 @@ const currentCourse = coursesData[0];
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
 
-const currentStudentsCount = course.students ? course.students.length : 0;
+  const currentStudentsCount = course.students ? course.students.length : 0;
   const isFull = currentStudentsCount >= course.max_students;
 
   // ✅ Lớp được coi là "Đang mở" khi thuộc một trong các trạng thái hoạt động:
@@ -288,6 +288,11 @@ const currentStudentsCount = course.students ? course.students.length : 0;
   //   - pending_tutor: do Admin tạo, đang chờ Tutor nhận
   // Chỉ các trạng thái cancelled / completed / closed mới thực sự là "Đã đóng".
   const isClassOpen = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
+
+// ✅ Lớp "có thể đăng ký" (canBook) bao gồm cả lớp do Admin tạo đang chờ tutor
+  // (pending_tutor). Học viên vẫn có thể đăng ký và thanh toán để vào lớp ngay,
+  // không cần chờ gia sư nhận.
+  const canBook = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
@@ -519,10 +524,10 @@ const currentStudentsCount = course.students ? course.students.length : 0;
 {/* Nút đăng ký */}
             <button 
               onClick={handleBooking} 
-              className={isBooked || isFull || !isClassOpen ? styles.bookedButton : styles.bookButton}
-              disabled={bookingLoading || isBooked || isFull || !isClassOpen}
+              className={isBooked || isFull || !isClassOpen || !canBook ? styles.bookedButton : styles.bookButton}
+              disabled={bookingLoading || isBooked || isFull || !isClassOpen || !canBook}
             >
-              {bookingLoading ? "Đang xử lý..." : 
+{bookingLoading ? "Đang xử lý..." : 
                isBooked ? "✅ Bạn đã đăng ký" : 
                isFull ? "🔴 Lớp đã đủ học viên" :
                !isClassOpen ? "🔴 Lớp đã đóng" : 

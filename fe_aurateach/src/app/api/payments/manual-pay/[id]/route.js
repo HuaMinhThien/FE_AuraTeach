@@ -111,7 +111,7 @@ export async function POST(request, { params }) {
         const currentPending = tutorInfo.pending_balance || 0;
         const currentTotalEarnings = tutorInfo.total_earnings || 0;
         
-        // Phí sàn 39%: Tutor nhận 61%
+        // Phí sàn 35%: Tutor nhận 65%
         const tutorEarning = Math.round(amount * 0.65);
         const adminFee = amount - tutorEarning;
 

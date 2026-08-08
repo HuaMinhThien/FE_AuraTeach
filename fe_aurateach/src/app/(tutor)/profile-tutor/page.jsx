@@ -1,31 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import styles from "./TutorProfile.module.css"; 
+import styles from "./TutorProfile.module.css";
 
 const API_BASE = "http://localhost:3007";
-
-// Danh sách cố định các khung giờ và thứ trong tuần
-const TIME_SLOT_OPTIONS = [
-  "07:00 - 09:00",
-  "09:00 - 11:00",
-  "11:00 - 13:00",
-  "13:00 - 15:00",
-  "15:00 - 17:00",
-  "17:00 - 19:00",
-  "19:00 - 21:00",
-  "21:00 - 23:00"
-];
-
-const DAY_OPTIONS = [
-  "Thứ 2",
-  "Thứ 3",
-  "Thứ 4",
-  "Thứ 5",
-  "Thứ 6",
-  "Thứ 7",
-  "Chủ Nhật"
-];
 
 const getUserIdFromCookie = () => {
   try {
@@ -55,12 +33,7 @@ export default function TutorProfile() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
-  
-  // Trạng thái bật/tắt dropdowns
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isTimeSlotsDropdownOpen, setIsTimeSlotsDropdownOpen] = useState(false);
-  const [isDaysDropdownOpen, setIsDaysDropdownOpen] = useState(false);
-  
   const [isEditing, setIsEditing] = useState(false);
 
   // States quản lý trường chỉnh sửa
@@ -71,14 +44,12 @@ export default function TutorProfile() {
     level: "Giáo viên",
     cv_link: "",
     expertise: [],
-    certificates: [],
-    available_days: [],
-    available_time_slots: []
+    certificates: []
   });
 
   const [newCertUrl, setNewCertUrl] = useState("");
 
-  // ✅ HÀM KIỂM TRA & TOGGLE CATEGORY
+  // ✅ HÀM KIỂM TRA CATEGORY ĐÃ CHỌN
   const isCategorySelected = (catName) => {
     if (!catName) return false;
     const cleanCat = catName.toLowerCase().trim();
@@ -87,6 +58,7 @@ export default function TutorProfile() {
     );
   };
 
+  // ✅ HÀM TOGGLE CATEGORY
   const handleToggleCategory = (catName) => {
     const cleanCatName = catName.trim();
     if (!cleanCatName) return;
@@ -104,50 +76,6 @@ export default function TutorProfile() {
         return {
           ...prev,
           expertise: [...prev.expertise, cleanCatName],
-        };
-      }
-    });
-  };
-
-  // ✅ HÀM KIỂM TRA & TOGGLE TIME SLOTS
-  const isTimeSlotSelected = (slot) => {
-    return editFields.available_time_slots.includes(slot);
-  };
-
-  const handleToggleTimeSlot = (slot) => {
-    setEditFields((prev) => {
-      const exists = isTimeSlotSelected(slot);
-      if (exists) {
-        return {
-          ...prev,
-          available_time_slots: prev.available_time_slots.filter((item) => item !== slot)
-        };
-      } else {
-        return {
-          ...prev,
-          available_time_slots: [...prev.available_time_slots, slot]
-        };
-      }
-    });
-  };
-
-  // ✅ HÀM KIỂM TRA & TOGGLE DAYS
-  const isDaySelected = (day) => {
-    return editFields.available_days.includes(day);
-  };
-
-  const handleToggleDay = (day) => {
-    setEditFields((prev) => {
-      const exists = isDaySelected(day);
-      if (exists) {
-        return {
-          ...prev,
-          available_days: prev.available_days.filter((item) => item !== day)
-        };
-      } else {
-        return {
-          ...prev,
-          available_days: [...prev.available_days, day]
         };
       }
     });
@@ -216,18 +144,6 @@ export default function TutorProfile() {
             ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
             : [];
 
-          const daysArray = mergedData.available_days
-            ? (Array.isArray(mergedData.available_days) 
-                ? mergedData.available_days 
-                : mergedData.available_days.split(",").map((i) => i.trim()).filter(Boolean))
-            : [];
-
-          const timeSlotsArray = mergedData.available_time_slots
-            ? (Array.isArray(mergedData.available_time_slots)
-                ? mergedData.available_time_slots
-                : mergedData.available_time_slots.split(",").map((i) => i.trim()).filter(Boolean))
-            : [];
-
           setEditFields({
             phone: mergedData.phone || "",
             bio: mergedData.bio || "",
@@ -235,9 +151,7 @@ export default function TutorProfile() {
             level: mergedData.level || "Giáo viên",
             cv_link: mergedData.cv_link || "",
             expertise: expArray,
-            certificates: mergedData.certificates || [],
-            available_days: daysArray,
-            available_time_slots: timeSlotsArray
+            certificates: mergedData.certificates || []
           });
 
           const currentTutorId = tutorObj.id || tutorObj.tutor_id;
@@ -271,9 +185,7 @@ export default function TutorProfile() {
         level: tutorData.level || "Giáo viên",
         cv_link: tutorData.cv_link || "",
         expertise: tutorData.expertise || "",
-        certificates: tutorData.certificates || [],
-        available_days: tutorData.available_days || "",
-        available_time_slots: tutorData.available_time_slots || ""
+        certificates: tutorData.certificates || []
       };
 
       const newPayload = {
@@ -283,9 +195,7 @@ export default function TutorProfile() {
         level: editFields.level,
         cv_link: editFields.cv_link,
         expertise: editFields.expertise.join(", "),
-        certificates: editFields.certificates,
-        available_days: editFields.available_days.join(", "),
-        available_time_slots: editFields.available_time_slots.join(", ")
+        certificates: editFields.certificates
       };
 
       const response = await fetch("/api/admin-tutor-update-requests", {
@@ -304,8 +214,6 @@ export default function TutorProfile() {
       if (result.success) {
         setIsEditing(false);
         setIsDropdownOpen(false);
-        setIsTimeSlotsDropdownOpen(false);
-        setIsDaysDropdownOpen(false);
         setHasPendingRequest(true);
         alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
       } else {
@@ -322,23 +230,6 @@ export default function TutorProfile() {
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount || 0);
-  };
-
-  // Helper hiển thị danh sách thứ & thời gian rảnh dạng mảng hoặc chuỗi
-  const renderListTags = (data, emptyMessage) => {
-    if (!data || (Array.isArray(data) && data.length === 0)) {
-      return <p className={styles.bioContent}>{emptyMessage}</p>;
-    }
-    const list = Array.isArray(data) ? data : data.split(",").map((item) => item.trim());
-    return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
-        {list.map((item, idx) => (
-          <span key={idx} className={styles.tagBadge}>
-            {item}
-          </span>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -361,12 +252,7 @@ export default function TutorProfile() {
         ) : (
           <div className={styles.btnActionGroup}>
             <button className={styles.btnSave} onClick={handleSave}>💾 Gửi yêu cầu duyệt</button>
-            <button className={styles.btnCancel} onClick={() => { 
-              setIsEditing(false); 
-              setIsDropdownOpen(false);
-              setIsTimeSlotsDropdownOpen(false);
-              setIsDaysDropdownOpen(false);
-            }}>Hủy</button>
+            <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); }}>Hủy</button>
           </div>
         )}
       </div>
@@ -393,7 +279,6 @@ export default function TutorProfile() {
           <div className={styles.badgeGroup}>
             <span className={`${styles.badge} ${styles.badgeRating}`}>⭐ {tutorData.rating ?? "0"} Đánh giá</span>
             
-            {/* Hiển thị & Chỉnh sửa Level */}
             {isEditing ? (
               <select
                 className={styles.inputField}
@@ -500,7 +385,17 @@ export default function TutorProfile() {
           <div style={{ marginTop: "12px", position: "relative" }}>
             <div 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={styles.dropdownTrigger}
+              style={{
+                border: "1px solid #3b82f6",
+                borderRadius: "8px",
+                padding: "12px 16px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                cursor: "pointer",
+                backgroundColor: "#ffffff",
+                boxShadow: "0 0 0 1px #3b82f6"
+              }}
             >
               <span style={{ color: editFields.expertise.length > 0 ? "#1e293b" : "#64748b", fontSize: "0.95rem" }}>
                 {editFields.expertise.length > 0 
@@ -511,24 +406,58 @@ export default function TutorProfile() {
             </div>
 
             {isDropdownOpen && (
-              <div className={styles.dropdownBox}>
+              <div 
+                style={{
+                  marginTop: "12px",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  backgroundColor: "#f8fafc",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)"
+                }}
+              >
                 <div style={{ fontWeight: "600", fontSize: "0.95rem", color: "#1e293b", marginBottom: "16px" }}>
                   Chọn lĩnh vực
                 </div>
 
-                <div className={styles.checkboxGridTwoCols}>
+                <div 
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "12px 24px",
+                    maxHeight: "260px",
+                    overflowY: "auto",
+                    paddingRight: "8px"
+                  }}
+                >
                   {categories.map((cat, idx) => {
                     const catName = getCategoryName(cat);
                     if (!catName) return null;
                     const checked = isCategorySelected(catName);
 
                     return (
-                      <label key={cat.id || idx} className={styles.checkboxLabel}>
+                      <label 
+                        key={cat.id || idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                          color: "#334155",
+                          userSelect: "none"
+                        }}
+                      >
                         <input 
                           type="checkbox"
                           checked={checked}
                           onChange={() => handleToggleCategory(catName)}
-                          className={styles.checkboxInput}
+                          style={{
+                            width: "16px",
+                            height: "16px",
+                            accentColor: "#2563eb",
+                            cursor: "pointer"
+                          }}
                         />
                         <span>{catName}</span>
                       </label>
@@ -540,7 +469,16 @@ export default function TutorProfile() {
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(false)}
-                    className={styles.btnCloseDropdown}
+                    style={{
+                      padding: "6px 20px",
+                      backgroundColor: "#e2e8f0",
+                      color: "#475569",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontWeight: "500",
+                      fontSize: "0.85rem",
+                      cursor: "pointer"
+                    }}
                   >
                     Đóng
                   </button>
@@ -549,123 +487,27 @@ export default function TutorProfile() {
             )}
           </div>
         ) : (
-          renderListTags(tutorData.expertise, "Chưa cập nhật lĩnh vực chuyên môn.")
-        )}
-      </div>
-
-      {/* KHỐI CÁC THỨ TRỐNG TRONG TUẦN */}
-      <div className={styles.bioCard} style={{ marginBottom: "1.5rem" }}>
-        <h3 className={styles.bioTitle}>Thứ trống trong tuần</h3>
-        
-        {isEditing ? (
-          <div style={{ marginTop: "12px", position: "relative" }}>
-            <div 
-              onClick={() => setIsDaysDropdownOpen(!isDaysDropdownOpen)}
-              className={styles.dropdownTrigger}
-            >
-              <span style={{ color: editFields.available_days.length > 0 ? "#1e293b" : "#64748b", fontSize: "0.95rem" }}>
-                {editFields.available_days.length > 0 
-                  ? editFields.available_days.join(", ") 
-                  : "Chọn các thứ rảnh trong tuần"}
-              </span>
-              <span style={{ fontSize: "0.8rem", color: "#64748b" }}>▼</span>
-            </div>
-
-            {isDaysDropdownOpen && (
-              <div className={styles.dropdownBox}>
-                <div style={{ fontWeight: "600", fontSize: "0.95rem", color: "#1e293b", marginBottom: "16px" }}>
-                  Chọn thứ trống
-                </div>
-
-                <div className={styles.checkboxGridTwoCols}>
-                  {DAY_OPTIONS.map((day, idx) => {
-                    const checked = isDaySelected(day);
-                    return (
-                      <label key={idx} className={styles.checkboxLabel}>
-                        <input 
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => handleToggleDay(day)}
-                          className={styles.checkboxInput}
-                        />
-                        <span>{day}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
-                  <button
-                    type="button"
-                    onClick={() => setIsDaysDropdownOpen(false)}
-                    className={styles.btnCloseDropdown}
-                  >
-                    Đóng
-                  </button>
-                </div>
-              </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+            {tutorData.expertise ? (
+              tutorData.expertise.split(",").map((exp, idx) => (
+                <span 
+                  key={idx} 
+                  style={{
+                    backgroundColor: "#eff6ff",
+                    color: "#1d4ed8",
+                    padding: "4px 12px",
+                    borderRadius: "6px",
+                    fontSize: "0.85rem",
+                    fontWeight: "500"
+                  }}
+                >
+                  {exp.trim()}
+                </span>
+              ))
+            ) : (
+              <p className={styles.bioContent}>Chưa cập nhật lĩnh vực chuyên môn.</p>
             )}
           </div>
-        ) : (
-          renderListTags(tutorData.available_days, "Chưa cập nhật thứ trống trong tuần.")
-        )}
-      </div>
-
-      {/* KHỐI KHUNG GIỜ RẢNH */}
-      <div className={styles.bioCard} style={{ marginBottom: "1.5rem" }}>
-        <h3 className={styles.bioTitle}>Khung giờ rảnh</h3>
-        
-        {isEditing ? (
-          <div style={{ marginTop: "12px", position: "relative" }}>
-            <div 
-              onClick={() => setIsTimeSlotsDropdownOpen(!isTimeSlotsDropdownOpen)}
-              className={styles.dropdownTrigger}
-            >
-              <span style={{ color: editFields.available_time_slots.length > 0 ? "#1e293b" : "#64748b", fontSize: "0.95rem" }}>
-                {editFields.available_time_slots.length > 0 
-                  ? editFields.available_time_slots.join(", ") 
-                  : "Chọn khung giờ rảnh"}
-              </span>
-              <span style={{ fontSize: "0.8rem", color: "#64748b" }}>▼</span>
-            </div>
-
-            {isTimeSlotsDropdownOpen && (
-              <div className={styles.dropdownBox}>
-                <div style={{ fontWeight: "600", fontSize: "0.95rem", color: "#1e293b", marginBottom: "16px" }}>
-                  Chọn khung giờ rảnh
-                </div>
-
-                <div className={styles.checkboxGridTwoCols}>
-                  {TIME_SLOT_OPTIONS.map((slot, idx) => {
-                    const checked = isTimeSlotSelected(slot);
-                    return (
-                      <label key={idx} className={styles.checkboxLabel}>
-                        <input 
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => handleToggleTimeSlot(slot)}
-                          className={styles.checkboxInput}
-                        />
-                        <span>{slot}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
-                  <button
-                    type="button"
-                    onClick={() => setIsTimeSlotsDropdownOpen(false)}
-                    className={styles.btnCloseDropdown}
-                  >
-                    Đóng
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          renderListTags(tutorData.available_time_slots, "Chưa cập nhật khung giờ rảnh.")
         )}
       </div>
 
