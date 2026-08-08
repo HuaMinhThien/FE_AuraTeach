@@ -1643,7 +1643,9 @@
       "created_by": "admin_01",
       "tutor_id": null,
       "tutor_assigned_at": null,
-      "students": [],
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
       "permanent_room_url": "https://meet.google.com/room_1786145415682",
       "created_at": "2026-08-07T23:30:15.682Z",
       "id": "oBsDbM2GGn4",
@@ -1726,7 +1728,9 @@
       "created_by": "admin_01",
       "tutor_id": null,
       "tutor_assigned_at": null,
-      "students": [],
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
       "permanent_room_url": "https://meet.google.com/room_1786147093264",
       "created_at": "2026-08-07T23:58:13.264Z",
       "id": "N2U6kkKnJj4",
@@ -2071,6 +2075,38 @@
       "payment_method": "qr",
       "transaction_id": null,
       "id": "OEuvqNEBiZ8"
+    },
+    {
+      "booking_id": "bk-1786170727948",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course_1786147093264",
+      "tutor_id": null,
+      "status": "pending",
+      "booking_date": "2026-08-08T06:32:07.948Z",
+      "created_at": "2026-08-08T06:32:07.948Z",
+      "updated_at": "2026-08-08T06:32:07.948Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 400000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "dGL5QpoWmUo"
+    },
+    {
+      "booking_id": "bk-1786170956799",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course_1786145415682",
+      "tutor_id": null,
+      "status": "pending",
+      "booking_date": "2026-08-08T06:35:56.799Z",
+      "created_at": "2026-08-08T06:35:56.799Z",
+      "updated_at": "2026-08-08T06:35:56.799Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 200000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "gILsfzM331I"
     }
   ],
   "payments": [
@@ -3752,6 +3788,30 @@
       "related_type": "class_suggestion",
       "is_read": false,
       "created_at": "2026-08-07T23:58:14.769Z"
+    },
+    {
+      "id": "xQtoEj4-NU8",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"ôn nữa nè ní\" với gia sư.",
+      "related_id": "bk-1786170727948",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-08T06:32:08.203Z"
+    },
+    {
+      "id": "YB9nx3qLw-o",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"ôn nữa nè ní\" với gia sư.",
+      "related_id": "bk-1786170956799",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-08T06:35:56.908Z"
     }
   ],
   "tutor_update_requests": [
@@ -4665,4 +4725,3 @@
   "refunds": [],
   "$schema": "./node_modules/json-server/schema.json"
 }
-

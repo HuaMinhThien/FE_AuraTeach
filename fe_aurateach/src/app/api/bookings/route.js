@@ -51,12 +51,15 @@ export async function GET(request) {
 // POST: Tạo booking mới
 export async function POST(request) {
   try {
-    const body = await request.json();
+const body = await request.json();
     const { courseId, studentId, tutorId, notes = "", paymentMethod = "wallet" } = body;
 
     console.log("📝 Tạo booking với dữ liệu:", { courseId, studentId, tutorId, notes, paymentMethod });
 
-    if (!courseId || !studentId || !tutorId) {
+    // ✅ Cho phép tutorId rỗng (null) khi lớp do Admin tạo đang ở trạng thái
+    // pending_tutor (chưa có gia sư nhận). Học viên vẫn có thể đăng ký và thanh
+    // toán ngay để vào lớp, không cần chờ gia sư.
+    if (!courseId || !studentId) {
       return NextResponse.json(
         { success: false, message: "Thiếu thông tin bắt buộc" },
         { status: 400 }
@@ -77,8 +80,14 @@ export async function POST(request) {
 
     console.log("📚 Course found:", { id: course.id, course_id: course.course_id, title: course.title });
 
-    // 2. Kiểm tra trạng thái lớp học
-    if (course.status !== "active") {
+// 2. Kiểm tra trạng thái lớp học
+    // ✅ Cho phép đăng ký ở các trạng thái đang tuyển sinh:
+    //   - active: lớp đang hoạt động
+    //   - pending_student: đã có tutor nhận, chờ học viên đăng ký
+    //   - pending_tutor: lớp do Admin tạo, chưa cần tutor vẫn cho học viên
+    //     đăng ký và thanh toán ngay.
+    const bookableStatuses = ['active', 'pending_student', 'pending_tutor'];
+    if (!bookableStatuses.includes(course.status)) {
       return NextResponse.json(
         { success: false, message: "Lớp học đã đóng hoặc không còn tuyển sinh" },
         { status: 400 }

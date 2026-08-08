@@ -404,21 +404,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* ✅ THÊM TOGGLE NHẬN ĐỀ XUẤT VÀO ĐÂY */}
-            {user && (
-              <div className="profile-preferences-section" style={{ 
-                marginTop: '24px', 
-                paddingTop: '16px', 
-                borderTop: '1px solid #f3f4f6' 
-              }}>
-                <ProposalToggle 
-                  userId={user.user_id || user.id}
-                  initialValue={user.preferences?.accept_proposals ?? true}
-                />
-              </div>
-            )}
-
-          </div>
+</div>
         </div>
       </div>
     </>
