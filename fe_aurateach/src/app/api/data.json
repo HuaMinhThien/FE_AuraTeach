@@ -1455,7 +1455,7 @@
         "Thứ 7"
       ],
       "time_slot": "10:00-11:00",
-      "image": "/img/class/default-class-9.png",
+      "thumbnail": "/img/class/default-class-7.png",
       "permanent_room_url": "https://meet.google.com/tvb-ahfg-tme",
       "status": "active",
       "students": [
@@ -1790,7 +1790,9 @@
       "thumbnail": "/img/class/default-class-7.png",
       "permanent_room_url": "https://meet.google.com/Y2OH30",
       "status": "active",
-      "students": [],
+      "students": [
+        "u-student-1"
+      ],
       "created_by": null,
       "tutor_assigned_at": null,
       "suggested_tutors": [],
@@ -2071,6 +2073,22 @@
       "payment_method": "qr",
       "transaction_id": null,
       "id": "OEuvqNEBiZ8"
+    },
+    {
+      "id": "241d",
+      "booking_id": "bk-1786170056088",
+      "student_id": "u-student-1",
+      "course_id": "course_1786164489692",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-08-08T06:20:56.088Z",
+      "created_at": "2026-08-08T06:20:56.088Z",
+      "updated_at": "2026-08-08T06:20:56.088Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 320000,
+      "payment_method": "qr",
+      "transaction_id": null
     }
   ],
   "payments": [
@@ -3752,6 +3770,30 @@
       "related_type": "class_suggestion",
       "is_read": false,
       "created_at": "2026-08-07T23:58:14.769Z"
+    },
+    {
+      "id": "notif_1786170056306_79cwgifmg",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học \"Hỗ trợ bài tập về nhà cho hs cấp 1\".",
+      "related_id": "bk-1786170056088",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-08T06:20:56.306Z"
+    },
+    {
+      "id": "notif_1786170056344_v3scaku0e",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học \"Hỗ trợ bài tập về nhà cho hs cấp 1\" với gia sư.",
+      "related_id": "bk-1786170056088",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-08T06:20:56.344Z"
     }
   ],
   "tutor_update_requests": [
