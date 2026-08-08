@@ -50,7 +50,30 @@ export default function ClassDetailPage({ params }) {
           setPageLoading(false);
           return;
         }
-        const currentCourse = coursesData[0];
+const currentCourse = coursesData[0];
+
+        // ✅ Lớp do Admin tạo (pending_tutor) vẫn cho phép xem chi tiết,
+        // nhưng nút đăng ký chỉ khả dụng khi lớp ở trạng thái active.
+        //
+        // ✅ Lớp riêng tư do student tạo (createSchedule) chỉ hiển thị cho:
+        //   - Đúng học viên tạo ra lớp đó
+        //   - Gia sư được giao dạy lớp đó
+        //   - Admin
+        const userNow = await authService.getCurrentUser();
+        const isPrivateStudentClass = currentCourse.created_by && currentCourse.created_by.startsWith('student');
+        if (isPrivateStudentClass) {
+          const ownerId = currentCourse.created_by.replace('student_', '');
+          const studentId = userNow?.user_id || userNow?.id;
+          const isOwner = studentId && studentId === ownerId;
+          const isAssignedTutor = userNow?.role === 'tutor' && currentCourse.tutor_id;
+          const isAdmin = userNow?.role === 'admin';
+          if (!isOwner && !isAdmin && !(isAssignedTutor)) {
+            setCourse(null);
+            setPageLoading(false);
+            return;
+          }
+        }
+
         setCourse(currentCourse);
 
         const categoriesRes = await fetch(`${API_BASE}/categories`);
@@ -256,8 +279,15 @@ export default function ClassDetailPage({ params }) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Không tìm thấy khóa học</div>;
   }
 
-  const currentStudentsCount = course.students ? course.students.length : 0;
+const currentStudentsCount = course.students ? course.students.length : 0;
   const isFull = currentStudentsCount >= course.max_students;
+
+  // ✅ Lớp được coi là "Đang mở" khi thuộc một trong các trạng thái hoạt động:
+  //   - active: đủ điều kiện, học viên có thể đăng ký
+  //   - pending_student: đã có tutor nhận, chờ học viên đăng ký
+  //   - pending_tutor: do Admin tạo, đang chờ Tutor nhận
+  // Chỉ các trạng thái cancelled / completed / closed mới thực sự là "Đã đóng".
+  const isClassOpen = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
@@ -295,9 +325,9 @@ export default function ClassDetailPage({ params }) {
           <div className={styles.tag}>
             <span className={styles.tagBadge}>📚 {getCategoryName(course.category_id)}</span>
           </div>
-          <div className={styles.tag}>
-            <span className={`${styles.tagBadge} ${course.status === 'active' ? styles.statusActive : styles.statusClosed}`}>
-              {course.status === 'active' ? '🟢 Đang mở' : '🔴 Đã đóng'}
+<div className={styles.tag}>
+            <span className={`${styles.tagBadge} ${isClassOpen ? styles.statusActive : styles.statusClosed}`}>
+              {isClassOpen ? '🟢 Đang mở' : '🔴 Đã đóng'}
             </span>
           </div>
         </div>
@@ -379,10 +409,10 @@ export default function ClassDetailPage({ params }) {
                   )}
                 </span>
               </div>
-              <div className={styles.detailItem}>
+<div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Trạng thái</span>
-                <span className={`${styles.detailValue} ${course.status === 'active' ? styles.statusActive : styles.statusClosed}`}>
-                  {course.status === 'active' ? 'Đang mở' : 'Đã đóng'}
+                <span className={`${styles.detailValue} ${isClassOpen ? styles.statusActive : styles.statusClosed}`}>
+                  {isClassOpen ? 'Đang mở' : 'Đã đóng'}
                 </span>
               </div>
             </div>
@@ -486,16 +516,16 @@ export default function ClassDetailPage({ params }) {
               </button>
             )}
 
-            {/* Nút đăng ký */}
+{/* Nút đăng ký */}
             <button 
               onClick={handleBooking} 
-              className={isBooked || isFull || course.status !== 'active' ? styles.bookedButton : styles.bookButton}
-              disabled={bookingLoading || isBooked || isFull || course.status !== 'active'}
+              className={isBooked || isFull || !isClassOpen ? styles.bookedButton : styles.bookButton}
+              disabled={bookingLoading || isBooked || isFull || !isClassOpen}
             >
               {bookingLoading ? "Đang xử lý..." : 
                isBooked ? "✅ Bạn đã đăng ký" : 
                isFull ? "🔴 Lớp đã đủ học viên" :
-               course.status !== 'active' ? "🔴 Lớp đã đóng" : 
+               !isClassOpen ? "🔴 Lớp đã đóng" : 
                "📝 Đăng ký học ngay"}
             </button>
             <button className={styles.consultButton}>💬 Đặt lịch tư vấn</button>

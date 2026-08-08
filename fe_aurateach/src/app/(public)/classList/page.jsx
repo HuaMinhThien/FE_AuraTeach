@@ -113,9 +113,23 @@ export default function ClassListPage() {
     });
   }, [courses, tutors, users, categories, getSafePrice]);
 
-  // Lọc và sắp xếp
+// Lọc và sắp xếp
   const filteredCourses = useMemo(() => {
     let result = [...coursesWithDetails];
+
+// ✅ Chỉ hiện các lớp đã có tutor nhận (pending_student), đang mở (active),
+    // hoặc lớp do Admin tạo chờ gia sư nhận (pending_tutor).
+result = result.filter(course =>
+      course.status === 'active' ||
+      course.status === 'pending_student' ||
+      course.status === 'pending_tutor'
+    );
+
+    // ✅ LOẠI BỎ các lớp riêng tư do student tạo (createSchedule) khỏi trang tìm lớp công khai.
+    // Chúng chỉ được hiển thị cho đúng học viên tạo ra lớp đó.
+    result = result.filter(course =>
+      !(course.created_by && course.created_by.startsWith('student'))
+    );
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();

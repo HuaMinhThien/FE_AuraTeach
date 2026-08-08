@@ -79,30 +79,68 @@ export default function MyClassesPage() {
         b => b.status === "confirmed" || b.status === "pending"
       );
       
-      console.log(`📋 Active bookings: ${activeBookings.length}`);
+console.log(`📋 Active bookings: ${activeBookings.length}`);
       
-      if (activeBookings.length === 0) {
-        console.warn("⚠️ Không có booking nào đang active");
-        setCourses([]);
-        return;
-      }
-      
-      // Lấy thông tin chi tiết từng course
-      const coursePromises = activeBookings.map(async (booking) => {
-        try {
-          const courseRes = await fetch(`${API_BASE}/courses?course_id=${booking.course_id}`);
-          const courses = await courseRes.json();
-          const course = courses[0];
-          
-          if (!course) {
-            console.warn(`⚠️ Không tìm thấy course ${booking.course_id}`);
+      // Lấy thông tin chi tiết từng course (từ bookings)
+      let coursesList = [];
+      if (activeBookings.length > 0) {
+        const coursePromises = activeBookings.map(async (booking) => {
+          try {
+            const courseRes = await fetch(`${API_BASE}/courses?course_id=${booking.course_id}`);
+            const courses = await courseRes.json();
+            const course = courses[0];
+            
+            if (!course) {
+              console.warn(`⚠️ Không tìm thấy course ${booking.course_id}`);
+              return null;
+            }
+            
+            // Lấy thông tin tutor
+            let tutorName = "Chưa có thông tin";
+            if (course.tutor_id) {
+              const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${course.tutor_id}`);
+              const tutors = await tutorRes.json();
+              const tutor = tutors[0];
+              if (tutor) {
+                const userRes = await fetch(`${API_BASE}/users?user_id=${tutor.user_id}`);
+                const users = await userRes.json();
+                const tutorUser = users[0];
+                tutorName = tutorUser?.full_name || "Gia sư";
+              }
+            }
+            
+            return {
+              ...course,
+              tutor_name: tutorName,
+              booking_status: booking.status,
+              booking_id: booking.booking_id,
+            };
+          } catch (err) {
+            console.error(`❌ Lỗi lấy course ${booking.course_id}:`, err);
             return null;
           }
-          
-          // Lấy thông tin tutor
+        });
+        
+        coursesList = (await Promise.all(coursePromises)).filter(c => c !== null);
+      }
+
+      // ✅ BỔ SUNG: Lấy các lớp riêng tư do chính student này tạo (createSchedule)
+      // Các lớp này không có booking nhưng vẫn phải hiển thị trong "Lịch học của tôi".
+      try {
+        const allCoursesRes = await fetch(`${API_BASE}/courses`);
+        const allCourses = await allCoursesRes.json();
+        
+        const myCreatedCourses = (Array.isArray(allCourses) ? allCourses : []).filter(
+          c => c.created_by === `student_${studentId}`
+        );
+
+        for (const c of myCreatedCourses) {
+          // Tránh trùng lặp với các lớp đã lấy từ booking
+          if (coursesList.some(existing => existing.course_id === c.course_id)) continue;
+
           let tutorName = "Chưa có thông tin";
-          if (course.tutor_id) {
-            const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${course.tutor_id}`);
+          if (c.tutor_id) {
+            const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${c.tutor_id}`);
             const tutors = await tutorRes.json();
             const tutor = tutors[0];
             if (tutor) {
@@ -112,20 +150,18 @@ export default function MyClassesPage() {
               tutorName = tutorUser?.full_name || "Gia sư";
             }
           }
-          
-          return {
-            ...course,
+
+          coursesList.push({
+            ...c,
             tutor_name: tutorName,
-            booking_status: booking.status,
-            booking_id: booking.booking_id,
-          };
-        } catch (err) {
-          console.error(`❌ Lỗi lấy course ${booking.course_id}:`, err);
-          return null;
+            booking_status: "confirmed",
+            booking_id: null,
+          });
         }
-      });
-      
-      const coursesList = (await Promise.all(coursePromises)).filter(c => c !== null);
+      } catch (err) {
+        console.error("❌ Lỗi lấy lớp riêng tư do student tạo:", err);
+      }
+
       console.log(`📚 Danh sách courses: ${coursesList.length}`);
       setCourses(coursesList);
       
