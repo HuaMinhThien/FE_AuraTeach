@@ -126,6 +126,26 @@ export default function CreateClassPage() {
     }
   };
 
+  // Xử lý thay đổi số tuần khi ở chế độ dạy riêng lẻ (Custom)
+  const handleWeeksChange = (value) => {
+    if (courseType === "custom") {
+      if (value === "") {
+        setTotalWeeks("");
+        return;
+      }
+      const parsed = parseInt(value, 10);
+      if (isNaN(parsed)) {
+        setTotalWeeks(1);
+      } else {
+        // Giới hạn số tuần trong khoảng từ 1 đến 4
+        const clamped = Math.min(4, Math.max(1, parsed));
+        setTotalWeeks(clamped);
+      }
+    } else {
+      setTotalWeeks(value);
+    }
+  };
+
   // Tự động kiểm tra cấu hình min/max giá dựa trên Level Gia sư, Cấp học và Số lượng HS
   const parsedMaxStudents = parseInt(maxStudents, 10);
   const numStudents = Math.min(Math.max(isNaN(parsedMaxStudents) ? 1 : parsedMaxStudents, 1), 5);
@@ -444,6 +464,11 @@ export default function CreateClassPage() {
       return;
     }
 
+    if (courseType === "custom" && (parseInt(totalWeeks, 10) < 1 || parseInt(totalWeeks, 10) > 4)) {
+      alert("⚠️ Lựa chọn lộ trình dạy riêng lẻ chỉ cho phép số tuần từ 1 đến 4 tuần!");
+      return;
+    }
+
     if (!validateStartDate(startDate)) {
       alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (cách hôm nay tối thiểu 5 ngày)!");
       return;
@@ -629,8 +654,6 @@ export default function CreateClassPage() {
                 <input 
                   type="number" 
                   step="10000"
-                  min={currentPriceConfig?.min}
-                  max={currentPriceConfig?.max}
                   value={pricePerSession}
                   onChange={(e) => setPricePerSession(e.target.value)}
                   required
@@ -751,7 +774,7 @@ export default function CreateClassPage() {
               >
                 <option value="1_term">Dạy theo 1 kỳ (Quy đổi thành 18 tuần học)</option>
                 <option value="2_terms">Dạy theo 2 kỳ (Quy đổi thành 36 tuần học)</option>
-                <option value="custom">Dạy riêng lẻ dành cho các lớp học thêm, lớp củng cố kiến thức,... (Tùy chọn số tuần)</option>
+                <option value="custom">Dạy riêng lẻ dành cho các lớp học thêm, lớp củng cố kiến thức,... (1 - 4 tuần)</option>
               </select>
             </div>
 
@@ -776,12 +799,25 @@ export default function CreateClassPage() {
                 <label>⏳ Số tuần dự kiến hoàn thành</label>
                 <input 
                   type="number" 
-                  min="1" 
+                  min={courseType === "custom" ? "1" : "1"} 
+                  max={courseType === "custom" ? "4" : undefined}
                   value={totalWeeks} 
-                  onChange={(e) => setTotalWeeks(e.target.value)} 
+                  onChange={(e) => handleWeeksChange(e.target.value)} 
+                  onBlur={() => {
+                    if (courseType === "custom") {
+                      const val = parseInt(totalWeeks, 10);
+                      if (isNaN(val) || val < 1) setTotalWeeks(1);
+                      else if (val > 4) setTotalWeeks(4);
+                    }
+                  }}
                   disabled={courseType !== "custom"}
                   required 
                 />
+                {courseType === "custom" && (
+                  <small style={{ color: "#64748b", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                    * Lớp dạy riêng lẻ cho phép chọn từ 1 đến 4 tuần.
+                  </small>
+                )}
               </div>
             </div>
 
