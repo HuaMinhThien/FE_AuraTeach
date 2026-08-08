@@ -1,4 +1,3 @@
-// src/app/(tutor)/proposed-class/page.jsx - CẬP NHẬT
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -69,7 +68,7 @@ export default function ProposedClassPage() {
       const res = await fetch(`/api/student-class-requests?tutor_id=${tutorId}`);
       if (res.ok) {
         const data = await res.json();
-        setProposedClasses(data.proposed_classes || []);
+        setProposedClasses(data.proposed_classes || data.data || []);
         setPendingClasses(data.pending_classes || []);
       }
     } catch (error) {
@@ -241,12 +240,12 @@ export default function ProposedClassPage() {
         </div>
       ) : (
         <div className={styles.classList}>
-          {filteredList.map((item) => {
+          {filteredList.map((item, index) => {
             const isAdminSuggestion = activeTab === 'admin';
             const isAssigned = isAdminSuggestion && item.tutor_id;
             
             return (
-              <div key={item.id || item.requests_id} className={styles.classCard}>
+              <div key={item.requests_id || item.course_id || item.id || index} className={styles.classCard}>
                 <div>
                   <div className={styles.cardHeader}>
                     <span className={styles.badge}>
@@ -266,7 +265,7 @@ export default function ProposedClassPage() {
                     <strong>Môn học:</strong> {item.category_name || 'Chưa phân loại'}
                   </p>
                   <p className={styles.cardMeta}>
-                    <strong>Lịch học:</strong> {item.schedule_days?.join(', ')} ({item.time_slot})
+                    <strong>Lịch học:</strong> {Array.isArray(item.schedule_days) ? item.schedule_days.join(', ') : item.schedule_days} ({item.time_slot})
                   </p>
                   <p className={styles.cardMeta}>
                     <strong>Ngày bắt đầu:</strong> {item.start_date}
@@ -276,7 +275,7 @@ export default function ProposedClassPage() {
                   </p>
                   <p className={styles.cardDesc}>{item.description || 'Không có mô tả'}</p>
                   <p className={styles.price}>
-                    {Number(item.price_per_session).toLocaleString('vi-VN')} VNĐ / buổi
+                    {Number(item.price_per_session || 0).toLocaleString('vi-VN')} VNĐ / buổi
                   </p>
                 </div>
 
@@ -320,7 +319,7 @@ export default function ProposedClassPage() {
                 <strong>Môn học:</strong> {selectedClass.category_name || 'Chưa phân loại'}
               </div>
               <div className={styles.modalGroup}>
-                <strong>Lịch học:</strong> {selectedClass.schedule_days?.join(', ')} ({selectedClass.time_slot})
+                <strong>Lịch học:</strong> {Array.isArray(selectedClass.schedule_days) ? selectedClass.schedule_days.join(', ') : selectedClass.schedule_days} ({selectedClass.time_slot})
               </div>
               <div className={styles.modalGroup}>
                 <strong>Ngày bắt đầu:</strong> {selectedClass.start_date}
@@ -329,7 +328,7 @@ export default function ProposedClassPage() {
                 <strong>Số tuần:</strong> {selectedClass.total_weeks} tuần
               </div>
               <div className={styles.modalGroup}>
-                <strong>Học phí:</strong> {Number(selectedClass.price_per_session).toLocaleString('vi-VN')} VNĐ / buổi
+                <strong>Học phí:</strong> {Number(selectedClass.price_per_session || 0).toLocaleString('vi-VN')} VNĐ / buổi
               </div>
               <div className={styles.modalGroup}>
                 <strong>Mô tả:</strong> {selectedClass.description || 'Không có mô tả'}
@@ -348,7 +347,7 @@ export default function ProposedClassPage() {
                 disabled={submitting}
                 onClick={() => handleApplyClass(selectedClass.requests_id || selectedClass.id)}
               >
-                {submitting ? 'Đang xử lý...' : '✅ Nhận dạy'}
+                {submitting ? 'Đang xử lý...' : 'Nhận dạy'}
               </button>
             ) : (
               <button
@@ -358,7 +357,7 @@ export default function ProposedClassPage() {
               >
                 {selectedClass.tutor_id 
                   ? '❌ Lớp đã có tutor' 
-                  : submitting ? 'Đang xử lý...' : '✅ Nhận lớp'
+                  : submitting ? 'Đang xử lý...' : 'Nhận lớp'
                 }
               </button>
             )}

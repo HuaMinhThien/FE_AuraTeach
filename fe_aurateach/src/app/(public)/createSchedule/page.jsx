@@ -30,7 +30,6 @@ const getUserInfoFromCookie = () => {
 };
 
 // Helper lấy ID học sinh đang đăng nhập từ Cookie
-// Trả về null nếu CHƯA ĐĂNG NHẬP (không dùng hardcode fallback)
 const getCurrentStudentId = () => {
   const userInfo = getUserInfoFromCookie();
   if (userInfo && userInfo.user_id) {
@@ -74,7 +73,6 @@ const GENERATE_TIME_SLOTS = () => {
 
 const roundToThousand = (amount) => Math.round(amount / 1000) * 1000;
 
-// Helper tính ngày tối thiểu phải chọn (Cách ngày tạo/hiện tại 5 ngày)
 const getMinStartDate = () => {
   const date = new Date();
   date.setDate(date.getDate() + 5);
@@ -88,7 +86,7 @@ export default function CreateClassRequest() {
   const [categories, setCategories] = useState([]);
   const [requestsList, setRequestsList] = useState([]);
   const [existingCourses, setExistingCourses] = useState([]);
-const [editingRequestId, setEditingRequestId] = useState(null);
+  const [editingRequestId, setEditingRequestId] = useState(null);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
 
   // State cho thanh toán QR sau khi chấp nhận gia sư
@@ -97,7 +95,6 @@ const [editingRequestId, setEditingRequestId] = useState(null);
   const [paymentBooking, setPaymentBooking] = useState(null);
   const [paymentStudentId, setPaymentStudentId] = useState(null);
 
-  // Form mặc định dùng để khởi tạo hoặc reset khi bấm tạo mới
   const getInitialFormData = (defaultCatId = "") => ({
     student_id: getCurrentStudentId(),
     title: "",
@@ -129,7 +126,7 @@ const [editingRequestId, setEditingRequestId] = useState(null);
     const token = getCookie("token") || getCookie("user") || getCookie("auth") || userInfo;
     const role = getCookie("role") || getCookie("user_role") || (userInfo && userInfo.role);
 
-if (!token && !userInfo) {
+    if (!token && !userInfo) {
       alert("Bạn cần đăng nhập để sử dụng tính năng này!");
       router.push("/login");
       return false;
@@ -143,7 +140,6 @@ if (!token && !userInfo) {
     return true;
   };
 
-  // Reset form khi tạo mới lớp học để không bị dính dữ liệu cũ
   const handleOpenCreateModal = () => {
     if (!checkAuthAndRole()) return;
     setEditingRequestId(null);
@@ -152,11 +148,10 @@ if (!token && !userInfo) {
     setIsModalOpen(true);
   };
 
-const fetchRequestsAndCourses = async () => {
+  const fetchRequestsAndCourses = async () => {
     try {
       const currentStudentId = getCurrentStudentId();
 
-      // Nếu chưa đăng nhập → không hiển thị danh sách yêu cầu của bất kỳ ai
       if (!currentStudentId) {
         setRequestsList([]);
         setExistingCourses([]);
@@ -197,7 +192,6 @@ const fetchRequestsAndCourses = async () => {
       if (resReq.ok) {
         const data = await resReq.json();
         if (Array.isArray(data)) {
-          // Lọc các bản ghi của học sinh hiện tại và loại bỏ bản ghi trùng id/requests_id
           const myRequestsMap = new Map();
 
           data
@@ -206,12 +200,10 @@ const fetchRequestsAndCourses = async () => {
               const reqId = req.requests_id || req.id;
               
               if (!myRequestsMap.has(reqId)) {
-                // Lọc ra các đơn ứng tuyển tương ứng với class_request này
                 const matchedApps = applications.filter(
                   (app) => app.requests_id === reqId || app.request_id === reqId
                 );
 
-                // Ghép thông tin chi tiết gia sư và user
                 const appliedTutorsList = matchedApps.map((app) => {
                   const tutorObj = tutorsList.find((t) => t.tutor_id === app.tutor_id) || {};
                   const userObj = usersList.find((u) => u.user_id === tutorObj.user_id) || {};
@@ -254,6 +246,39 @@ const fetchRequestsAndCourses = async () => {
     fetchRequestsAndCourses();
   }, []);
 
+  // Danh sách môn học hiển thị linh hoạt (Tự động thêm lựa chọn khi Cấp 1)
+  const availableCategories = useMemo(() => {
+    const list = [...categories];
+    if (formData.grade_level === "Cấp 1") {
+      const exists = list.some((c) => c.category_id === "cap1_homework");
+      if (!exists) {
+        list.push({
+          category_id: "cap1_homework",
+          category_name: "Hỗ trợ bài tập về nhà các môn",
+        });
+      }
+    }
+    return list;
+  }, [categories, formData.grade_level]);
+
+  // Xử lý khi thay đổi cấp học
+  const handleGradeLevelChange = (e) => {
+    const newGrade = e.target.value;
+    setFormData((prev) => {
+      let nextCatId = prev.category_id;
+      if (newGrade === "Cấp 1") {
+        nextCatId = "cap1_homework";
+      } else if (prev.category_id === "cap1_homework") {
+        nextCatId = categories.length > 0 ? categories[0].category_id : "";
+      }
+      return {
+        ...prev,
+        grade_level: newGrade,
+        category_id: nextCatId,
+      };
+    });
+  };
+
   const endTime = useMemo(() => {
     if (!formData.start_time) return "09:00";
     const hour = parseInt(formData.start_time.split(":")[0], 10);
@@ -278,7 +303,6 @@ const fetchRequestsAndCourses = async () => {
     return base1On1;
   }, [formData.tutor_level, formData.grade_level, formData.max_students]);
 
-  // Kiểm tra tính hợp lệ của học phí nhập vào
   const isPriceValid = useMemo(() => {
     if (!formData.price_per_session || !priceLimitInfo) return true;
     const price = Number(formData.price_per_session);
@@ -350,7 +374,7 @@ const fetchRequestsAndCourses = async () => {
     const val = e.target.value;
     let weeks = 18;
     if (val === "2_terms") weeks = 36;
-    if (val === "custom") weeks = 2;
+    if (val === "custom") weeks = 4;
 
     setFormData((prev) => ({
       ...prev,
@@ -379,9 +403,10 @@ const fetchRequestsAndCourses = async () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
     if (!checkAuthAndRole()) return;
 
-    // Ràng buộc nghiêm ngặt mức giá tiền nhập vào
+    // Validation giá & ngày học
     const priceEntered = Number(formData.price_per_session);
     if (priceLimitInfo) {
       if (priceEntered < priceLimitInfo.min || priceEntered > priceLimitInfo.max) {
@@ -392,7 +417,6 @@ const fetchRequestsAndCourses = async () => {
       }
     }
 
-    // Kiểm tra ràng buộc ngày khai giảng phải cách ít nhất 5 ngày
     const selectedDate = new Date(formData.start_date);
     const minDate = new Date(getMinStartDate());
     selectedDate.setHours(0,0,0,0);
@@ -408,8 +432,8 @@ const fetchRequestsAndCourses = async () => {
       return;
     }
 
-    if (formData.schedule_type === "custom" && formData.total_weeks > 2) {
-      alert("⚠️ Lựa chọn lớp riêng lẻ chỉ cho phép tối đa 2 tuần!");
+    if (formData.schedule_type === "custom" && formData.total_weeks > 4) {
+      alert("⚠️ Lựa chọn lớp riêng lẻ chỉ cho phép tối đa 4 tuần!");
       return;
     }
 
@@ -420,58 +444,45 @@ const fetchRequestsAndCourses = async () => {
 
     setLoading(true);
     try {
-      let response;
       const currentStudentId = getCurrentStudentId();
 
-      if (editingRequestId) {
-        response = await fetch(`http://localhost:3007/class_requests/${editingRequestId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: editingRequestId,
-            requests_id: editingRequestId,
-            student_id: currentStudentId,
-            category_id: formData.category_id,
-            title: formData.title,
-            description: formData.description,
-            level: formData.grade_level,
-            price_per_session: Number(formData.price_per_session),
-            status: "pending",
-            schedule_days: formData.schedule_days,
-            time_slot: `${formData.start_time}-${endTime}`,
-            max_students: Number(formData.max_students || 1),
-            total_weeks: Number(formData.total_weeks),
-            start_date: formData.start_date,
-            schedule_type: formData.schedule_type,
-            tutor_level: formData.tutor_level,
-            start_time: formData.start_time,
-            end_time: endTime,
-            meet_link: formData.meet_link,
-            updated_at: new Date().toISOString()
-          }),
-        });
-      } else {
-        response = await fetch("/api/student-class-requests", {
-          method: "POST",
+      // 1. Nếu đang chọn lộ trình / chỉnh sửa lớp đã có requests_id
+      if (editingRequestId || formData.requests_id) {
+        const targetId = editingRequestId || formData.requests_id || formData.id;
+        await fetch(`http://localhost:3007/class_requests/${targetId}`, {
+          method: "PUT", // Dùng PUT/PATCH để cập nhật
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...formData,
-            max_students: Number(formData.max_students || 1),
+            id: targetId,
+            requests_id: targetId,
             student_id: currentStudentId,
-            end_time: endTime
-          }),
+            updated_at: new Date().toISOString()
+          })
         });
+        alert("Cập nhật lớp thành công!");
+      } else {
+        // 2. Chỉ POST khi thực sự tạo mới một lớp
+        const newId = `req-${Date.now()}`;
+        await fetch(`http://localhost:3007/class_requests`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            ...formData, 
+            id: newId, 
+            requests_id: newId, 
+            student_id: currentStudentId,
+            created_at: new Date().toISOString() 
+          })
+        });
+        alert("Tạo yêu cầu lớp học thành công!");
       }
 
-      if (response.ok) {
-        alert(editingRequestId ? "Cập nhật lớp thành công!" : "Tạo yêu cầu lớp học thành công!");
-        setIsModalOpen(false);
-        setEditingRequestId(null);
-        fetchRequestsAndCourses();
-      } else {
-        const resData = await response.json();
-        alert("Lỗi: " + (resData.message || "Không thể thực hiện action"));
-      }
+      // Đóng modal và tải lại danh sách
+      setIsModalOpen(false);
+      setEditingRequestId(null);
+      fetchRequestsAndCourses();
+
     } catch (error) {
       console.error("Lỗi kết nối:", error);
       alert("Không thể kết nối đến hệ thống server!");
@@ -519,7 +530,7 @@ const fetchRequestsAndCourses = async () => {
     setIsModalOpen(true);
   };
 
-const handleAcceptTutor = async (req, tutor) => {
+  const handleAcceptTutor = async (req, tutor) => {
     if (!checkAuthAndRole()) return;
     if (!confirm(`Xác nhận chọn gia sư ${tutor.full_name} dạy lớp này?`)) return;
 
@@ -539,12 +550,10 @@ const handleAcceptTutor = async (req, tutor) => {
       total_weeks: req.total_weeks,
       schedule_days: req.schedule_days,
       time_slot: req.time_slot || `${req.start_time}-${req.end_time}`,
-thumbnail: "/img/class/default-class-1.jpg",
+      thumbnail: "/img/class/default-class-1.jpg",
       status: "active",
       permanent_room_url: req.meet_link,
-      // Để trống students để `/api/bookings` tự thêm học sinh sau khi thanh toán
       students: [],
-      // Đánh dấu đây là lớp riêng tư do student tạo (chỉ hiện cho đúng student đó)
       created_by: `student_${currentStudentId}`,
     };
 
@@ -564,7 +573,6 @@ thumbnail: "/img/class/default-class-1.jpg",
       const createdCourse = await resCourse.json();
       const courseWithId = createdCourse.id ? createdCourse : { ...newCoursePayload, id: createdCourse.id };
 
-      // Tạo booking (QR thanh toán) qua API có sẵn
       const bookingRes = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -579,7 +587,6 @@ thumbnail: "/img/class/default-class-1.jpg",
       const bookingResult = await bookingRes.json();
 
       if (!bookingResult.success) {
-        // Nếu tạo booking thất bại, gỡ khóa học vừa tạo để tránh rác
         await fetch(`http://localhost:3007/courses/${courseWithId.id}`, {
           method: "DELETE",
         });
@@ -587,16 +594,13 @@ thumbnail: "/img/class/default-class-1.jpg",
         return;
       }
 
-      // Xóa yêu cầu tạo lớp sau khi đã tạo khóa học + booking thành công
       const reqId = req.requests_id || req.id;
       await fetch(`http://localhost:3007/class_requests/${reqId}`, {
         method: "DELETE",
       });
 
-      // Cập nhật trạng thái yêu cầu thành "approved" để không hiển thị nút chấp nhận nữa
       setRequestsList((prev) => prev.filter((r) => (r.requests_id || r.id) !== reqId));
 
-// Mở PaymentModal hiển thị mã QR thanh toán
       setSelectedNewCourse({ ...courseWithId, price_per_session: req.price_per_session, total_weeks: req.total_weeks });
       setPaymentBooking(bookingResult.data);
       setPaymentStudentId(currentStudentId);
@@ -607,7 +611,6 @@ thumbnail: "/img/class/default-class-1.jpg",
     }
   };
 
-  // Sau khi thanh toán QR thành công
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
     setSelectedNewCourse(null);
@@ -617,7 +620,6 @@ thumbnail: "/img/class/default-class-1.jpg",
     fetchRequestsAndCourses();
   };
 
-  // Khi đóng modal thanh toán mà chưa thanh toán -> hủy booking
   const handlePaymentClose = async () => {
     setShowPaymentModal(false);
     if (paymentBooking && paymentBooking.booking_id) {
@@ -634,11 +636,11 @@ thumbnail: "/img/class/default-class-1.jpg",
   };
 
   const getCategoryName = (catId) => {
+    if (catId === "cap1_homework") return "Hỗ trợ bài tập về nhà các môn";
     const found = categories.find((c) => c.category_id === catId);
     return found ? found.category_name : catId;
   };
 
-  // Render bảng quy định khung giá quy định hệ thống
   const renderPriceTable = () => {
     const activeLevelConfig = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
     const levels = ["Cấp 1", "Cấp 2", "Cấp 3"];
@@ -749,30 +751,30 @@ thumbnail: "/img/class/default-class-1.jpg",
 
                 <div className={styles.rowTwo}>
                   <div className={styles.formGroup}>
+                    <label>Cấp học <span>*</span></label>
+                    <select
+                      className={styles.select}
+                      value={formData.grade_level}
+                      onChange={handleGradeLevelChange}
+                    >
+                      <option value="Cấp 1">Cấp 1</option>
+                      <option value="Cấp 2">Cấp 2</option>
+                      <option value="Cấp 3">Cấp 3</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
                     <label>Môn học <span>*</span></label>
                     <select
                       className={styles.select}
                       value={formData.category_id}
                       onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                     >
-                      {categories.map((cat, idx) => (
+                      {availableCategories.map((cat, idx) => (
                         <option key={cat.category_id || `cat-${idx}`} value={cat.category_id}>
                           {cat.category_name}
                         </option>
                       ))}
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>Cấp học <span>*</span></label>
-                    <select
-                      className={styles.select}
-                      value={formData.grade_level}
-                      onChange={(e) => setFormData({ ...formData, grade_level: e.target.value })}
-                    >
-                      <option value="Cấp 1">Cấp 1</option>
-                      <option value="Cấp 2">Cấp 2</option>
-                      <option value="Cấp 3">Cấp 3</option>
                     </select>
                   </div>
                 </div>
@@ -828,7 +830,6 @@ thumbnail: "/img/class/default-class-1.jpg",
                     required
                   />
 
-                  {/* Hiển thị thông báo giới hạn & cảnh báo nhập sai */}
                   {priceLimitInfo && (
                     <small className={!isPriceValid ? styles.priceHintError : styles.priceHint}>
                       {!isPriceValid
@@ -838,7 +839,6 @@ thumbnail: "/img/class/default-class-1.jpg",
                   )}
                 </div>
 
-                {/* Bảng giá đề xuất khung quy định */}
                 {renderPriceTable()}
 
                 <div className={styles.formGroup}>
@@ -879,7 +879,7 @@ thumbnail: "/img/class/default-class-1.jpg",
                   >
                     <option value="1_term">Dạy theo 1 kỳ (18 tuần)</option>
                     <option value="2_terms">Dạy theo 2 kỳ (36 tuần)</option>
-                    <option value="custom">Dạy riêng lẻ (Tối đa 2 tuần)</option>
+                    <option value="custom">Dạy riêng lẻ (Tối đa 4 tuần)</option>
                   </select>
                 </div>
 
@@ -903,7 +903,7 @@ thumbnail: "/img/class/default-class-1.jpg",
                     <label>Số tuần dự kiến</label>
                     <input
                       type="number"
-                      max={formData.schedule_type === "custom" ? 2 : 52}
+                      max={formData.schedule_type === "custom" ? 4 : 52}
                       className={styles.input}
                       value={formData.total_weeks}
                       disabled={formData.schedule_type !== "custom"}
@@ -912,7 +912,7 @@ thumbnail: "/img/class/default-class-1.jpg",
                           ...formData,
                           total_weeks:
                             formData.schedule_type === "custom"
-                              ? Math.min(2, parseInt(e.target.value) || 1)
+                              ? Math.min(4, parseInt(e.target.value) || 1)
                               : parseInt(e.target.value) || 1,
                         })
                       }
@@ -1112,13 +1112,12 @@ thumbnail: "/img/class/default-class-1.jpg",
                     )}
                   </div>
                 )}
-</div>
+              </div>
             );
           })
         )}
       </div>
 
-      {/* PaymentModal hiển thị QR thanh toán sau khi chấp nhận gia sư */}
       {showPaymentModal && selectedNewCourse && paymentBooking && (
         <PaymentModal
           course={selectedNewCourse}
