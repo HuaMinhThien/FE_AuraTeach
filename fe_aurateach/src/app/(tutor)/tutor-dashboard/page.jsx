@@ -7,7 +7,6 @@ import Tutor_sec3 from "./_component/Tutor_sec3";
 import Tutor_sec4 from "./_component/Tutor_sec4";
 import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
-import { lessonConfirmationService } from "@/services/lessonConfirmationService";
 import { courseService } from "@/services/courseService";
 import { authService } from "@/services/authService"; // 👈 Import authService để lấy user chuẩn từ token
 
@@ -63,7 +62,6 @@ export default function TutorDashboardPage() {
       
       const [usersRes, confRes, coursesRes] = await Promise.all([
         userService.getUsers(),
-        lessonConfirmationService.getLessonConfirmations(tutorId),
         courseService.getCourses({ tutor_id: tutorId })
       ]);
 
@@ -112,7 +110,7 @@ export default function TutorDashboardPage() {
       }
 
       // 4. Xử lý tính toán thống kê, khóa học và lịch học
-      const activeClasses = coursesData.filter(c => c.status === "active");
+      const activeClasses = coursesData.filter(c => c.status === "active" || !c.status);
       const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
       
       const availableWallet = tutorDetail?.available_balance || 0;
@@ -129,20 +127,20 @@ export default function TutorDashboardPage() {
       });
 
       const dayMap = {
-        "Chủ Nhật": 0, "Chủ nhật": 0, "CN": 0,
-        "Thứ 2": 1, "Thứ hai": 1, "T2": 1,
-        "Thứ 3": 2, "Thứ ba": 2, "T3": 2,
-        "Thứ 4": 3, "Thứ tư": 3, "T4": 3,
-        "Thứ 5": 4, "Thứ năm": 4, "T5": 4,
-        "Thứ 6": 5, "Thứ sáu": 5, "T6": 5,
-        "Thứ 7": 6, "Thứ bảy": 6, "T7": 6
+        "Chủ Nhật": 0, "Chủ nhật": 0, "CN": 0, "Sunday": 0,
+        "Thứ 2": 1, "Thứ hai": 1, "T2": 1, "Monday": 1,
+        "Thứ 3": 2, "Thứ ba": 2, "T3": 2, "Tuesday": 2,
+        "Thứ 4": 3, "Thứ tư": 3, "T4": 3, "Wednesday": 3,
+        "Thứ 5": 4, "Thứ năm": 4, "T5": 4, "Thursday": 4,
+        "Thứ 6": 5, "Thứ sáu": 5, "T6": 5, "Friday": 5,
+        "Thứ 7": 6, "Thứ bảy": 6, "T7": 6, "Saturday": 6
       };
 
       const confirmableList = [];
 
       const formattedClasses = coursesData
         .map((course) => {
-          if (course.status !== "active") return null;
+          if (course.status && course.status !== "active") return null;
 
           const timeSlot = course.time_slot || "18:00-20:00";
           const scheduleDays = Array.isArray(course.schedule_days) ? course.schedule_days : [];
@@ -150,10 +148,9 @@ export default function TutorDashboardPage() {
           const [startHour, startMinute] = (startStr || "00:00").split(":").map(Number);
           const [endHour, endMinute] = (endStr || "23:59").split(":").map(Number);
 
-          const startDate = course.start_date ? new Date(course.start_date) : new Date();
+          const startDate = course.start_date ? new Date(course.start_date) : new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           const totalWeeks = course.total_weeks || 12;
-          const endDate = new Date(startDate.getTime());
-          endDate.setDate(endDate.getDate() + (totalWeeks * 7));
+          const endDate = course.end_date ? new Date(course.end_date) : new Date(startDate.getTime() + totalWeeks * 7 * 24 * 60 * 60 * 1000);
 
           const enrolledStudents = (course.students || []).map(stId => {
             const u = allUsers.find(usr => usr.user_id === stId || usr.id === stId);
@@ -161,59 +158,59 @@ export default function TutorDashboardPage() {
                      : { user_id: stId, full_name: "Học sinh " + stId };
           });
 
+          // Quét lịch sử 14 ngày gần nhất để tạo danh sách chờ xác nhận
           for (let i = 0; i <= 14; i++) {
             const checkDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-            if (checkDate >= startDate && checkDate <= endDate) {
-              const dayOfWeek = checkDate.getDay();
-              if (scheduleDays.some(d => dayMap[d] === dayOfWeek)) {
-                const sessionEnd = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), endHour, endMinute, 0);
+            const dayOfWeek = checkDate.getDay();
+            const isMatchSchedule = scheduleDays.length === 0 || scheduleDays.some(d => dayMap[d] === dayOfWeek);
 
-                if (now >= sessionEnd) {
-                  const yearStr = checkDate.getFullYear();
-                  const monthStr = String(checkDate.getMonth() + 1).padStart(2, "0");
-                  const dateNumStr = String(checkDate.getDate()).padStart(2, "0");
-                  const dateStr = `${yearStr}-${monthStr}-${dateNumStr}`;
+            if (isMatchSchedule) {
+              const sessionEnd = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), endHour, endMinute, 0);
 
-                  const confirmationId = `${course.course_id || course.id}_${dateStr}`;
-                  const isAlreadySubmitted = lessonConfirmations.some(lc => lc.comfirmation_id === confirmationId);
+              if (now >= sessionEnd) {
+                const yearStr = checkDate.getFullYear();
+                const monthStr = String(checkDate.getMonth() + 1).padStart(2, "0");
+                const dateNumStr = String(checkDate.getDate()).padStart(2, "0");
+                const dateStr = `${yearStr}-${monthStr}-${dateNumStr}`;
 
-                  if (!isAlreadySubmitted) {
-                    const durationHours = Math.max(((endHour * 60 + endMinute) - (startHour * 60 + startMinute)) / 60, 0.5);
-                    
-                    confirmableList.push({
-                      comfirmation_id: confirmationId,
-                      course_id: course.course_id || course.id,
-                      course_title: course.title,
-                      tutor_id: tutorId,
-                      tutor_db_id: tutorDetail.id,
-                      lesson_date: dateStr,
-                      time_slot: timeSlot,
-                      price_per_session: course.price_per_session || 0,
-                      duration_hours: durationHours,
-                      students_count: course.students?.length || 0,
-                      tutor_pending_balance: tutorDetail.pending_balance || 0
-                    });
-                  }
+                const confirmationId = `${course.course_id || course.id}_${dateStr}`;
+                const isAlreadySubmitted = lessonConfirmations.some(lc => lc.comfirmation_id === confirmationId);
+
+                if (!isAlreadySubmitted) {
+                  const durationHours = Math.max(((endHour * 60 + endMinute) - (startHour * 60 + startMinute)) / 60, 0.5);
+                  
+                  confirmableList.push({
+                    comfirmation_id: confirmationId,
+                    course_id: course.course_id || course.id,
+                    course_title: course.title,
+                    tutor_id: tutorId,
+                    tutor_db_id: tutorDetail.id,
+                    lesson_date: dateStr,
+                    time_slot: timeSlot,
+                    price_per_session: course.price_per_session || 0,
+                    duration_hours: durationHours,
+                    students_count: course.students?.length || 0,
+                    tutor_pending_balance: tutorDetail.pending_balance || 0
+                  });
                 }
               }
             }
           }
 
-          if (now > endDate) return null;
-
+          // Quét tìm buổi học sắp tới trong vòng 30 ngày tới
           let nextStartDateTime = null;
           let nextEndDateTime = null;
           
-          for (let i = 0; i <= 14; i++) {
+          for (let i = 0; i <= 30; i++) {
             const checkDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-            if (checkDate >= startDate && checkDate <= endDate) {
-              const dayOfWeek = checkDate.getDay();
-              if (scheduleDays.some(d => dayMap[d] === dayOfWeek)) {
-                const sessionStart = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), startHour, startMinute, 0);
-                const sessionEnd = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), endHour, endMinute, 0);
+            const dayOfWeek = checkDate.getDay();
+            const isMatchSchedule = scheduleDays.length === 0 || scheduleDays.some(d => dayMap[d] === dayOfWeek);
 
-                if (now > sessionEnd) continue;
+            if (isMatchSchedule) {
+              const sessionStart = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), startHour, startMinute, 0);
+              const sessionEnd = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate(), endHour, endMinute, 0);
 
+              if (now <= sessionEnd) {
                 nextStartDateTime = sessionStart;
                 nextEndDateTime = sessionEnd;
                 break;
@@ -221,7 +218,12 @@ export default function TutorDashboardPage() {
             }
           }
 
-          if (!nextStartDateTime) return null;
+          // Fallback dự phòng nếu không tìm được ngày khớp chính xác
+          if (!nextStartDateTime) {
+            nextStartDateTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            nextStartDateTime.setHours(startHour, startMinute, 0, 0);
+            nextEndDateTime = new Date(nextStartDateTime.getTime() + 2 * 60 * 60 * 1000);
+          }
 
           const canJoinTime = new Date(nextStartDateTime.getTime() - 15 * 60 * 1000);
           const isLive = now >= canJoinTime && now <= nextEndDateTime;
@@ -268,7 +270,7 @@ export default function TutorDashboardPage() {
 
       formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
 
-      setClassesList(formattedClasses.slice(0, 3));
+      setClassesList(formattedClasses);
       setPendingConfirmations(confirmableList);
 
       const mockChart = [

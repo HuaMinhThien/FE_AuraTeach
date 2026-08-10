@@ -235,6 +235,27 @@ export default function TutorDetailPage({ params }) {
     setShowBooking(true);
   };
 
+   const handleReport = () => {
+    if (!currentUser) {
+      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      return;
+    }
+    
+    // Kiểm tra nếu là học viên
+    if (currentUser.role !== 'student') {
+      alert('⚠️ Chỉ học viên mới có thể báo cáo gia sư!');
+      return;
+    }
+
+    // Chuyển đến trang báo cáo
+    const tutorId = tutorDetails?.tutor_id;
+    if (tutorId) {
+      router.push(`/report-tutor/${tutorId}`);
+    } else {
+      alert('❌ Không tìm thấy thông tin gia sư để báo cáo');
+    }
+  };
+
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#475569' }}>
@@ -450,9 +471,36 @@ export default function TutorDetailPage({ params }) {
                 </div>
               </div>
             </div>
-            <div className={styles.reportBtn}>⚠️ Báo cáo gia sư</div>
           </div>
-
+            {currentUser?.role === 'student' ? (
+              <button 
+                className={styles.reportBtn} 
+                onClick={handleReport}
+                style={{ cursor: 'pointer' }}
+              >
+                ⚠️ Báo cáo gia sư
+              </button>
+            ) : currentUser ? (
+              <div 
+                className={styles.reportBtn} 
+                style={{ 
+                  opacity: 0.5, 
+                  cursor: 'not-allowed',
+                  backgroundColor: '#e5e7eb',
+                  color: '#6b7280'
+                }}
+              >
+                ⚠️ Báo cáo gia sư (Chỉ học viên)
+              </div>
+            ) : (
+              <Link 
+                href={`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`}
+                className={styles.reportBtn}
+                style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
+              >
+                ⚠️ Đăng nhập để báo cáo
+              </Link>
+            )}
           <div className={styles.relatedBox}>
             <h3 className={styles.relatedBoxTitle}>Gia sư liên quan</h3>
             {relatedTutorsList.length > 0 ? (

@@ -17,32 +17,38 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
   useEffect(() => {
     const checkVerification = async () => {
       try {
-        // 🚀 Dùng authService để lấy thông tin user hiện tại thay vì đọc cookie thủ công
         const currentUser = await authService.getCurrentUser();
         const userId = currentUser?.id || currentUser?.user_id;
 
         if (userId) {
-          // Gọi qua service chuẩn của dự án để lấy thông tin gia sư
-          const data = await tutorService.getByUserId(userId);
-          
-          console.log("🔍 Dữ liệu tutor trả về từ Laravel:", data);
-          
-          const tutors = Array.isArray(data) ? data : (data?.data || []);
-          console.log("📋 Danh sách tutors sau khi xử lý:", tutors);
+          const response = await tutorService.getByUserId(userId);
+          console.log("🔍 Dữ liệu tutor trả về từ Laravel:", response);
 
-          if (tutors.length > 0) {
-            console.log("📌 Status thực tế trong DB:", tutors[0].verification_status);
-            const status = tutors[0]?.verification_status?.toLowerCase().trim();
-            
-            // Chuyển về chữ thường để so sánh an toàn tuyệt đối
-            if (status === "approved" || status === "đã xác minh" || status === "da xac minh") {
+          // Xử lý linh hoạt mọi cấu trúc dữ liệu trả về (Mảng, Object bọc data, hoặc Object đơn)
+          let tutorObj = null;
+          if (Array.isArray(response)) {
+            tutorObj = response[0];
+          } else if (response?.data) {
+            tutorObj = Array.isArray(response.data) ? response.data[0] : response.data;
+          } else {
+            tutorObj = response;
+          }
+
+          console.log("📌 Tutor Object sau khi bóc tách:", tutorObj);
+
+          if (tutorObj && tutorObj.verification_status) {
+            const status = String(tutorObj.verification_status).toLowerCase().trim();
+            console.log("📌 Status thực tế sau khi chuẩn hóa:", status);
+
+            // Chấp nhận tất cả các biến thể trạng thái đã duyệt phổ biến
+            if (["approved", "aprroved", "đã xác minh", "da xac minh", "verified", "active"].includes(status)) {
               setIsApproved(true);
             }
           } else {
-            console.warn("⚠️ Không tìm thấy bản ghi tutor nào khớp với user_id này!");
+            console.warn("⚠️ Không tìm thấy trường verification_status trong đối tượng tutor!");
           }
         } else {
-          console.warn("⚠️ Không lấy được thông tin người dùng hiện tại từ authService!");
+          console.warn("⚠️ Không lấy được user_id hiện tại!");
         }
       } catch (error) {
         console.error("Lỗi kiểm tra quyền tạo lớp:", error);

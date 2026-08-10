@@ -64,21 +64,19 @@ export default function TeacherListPage() {
             }
 
             const bioText = tutor.bio || "";
-            const expertiseText = tutor.expertise || "";
+            const expertiseText = tutor.expertise || tutor.qualification || "Gia sư";
+            const experienceText = tutor.experience || "Chưa cập nhật KN";
 
             return {
               id: tutor.tutor_id || tutor.id,
               name: user.full_name || "Gia sư AuraTeach",
               // Lấy rating từ BE, nếu null/undefined thì fallback về 0 hoặc 5.0
               rating: tutor.rating !== null && tutor.rating !== undefined ? Number(tutor.rating) : 0,
-              
-              // Lấy số lượng review từ BE (ưu tiên các tên biến phổ biến như reviews_count, total_reviews, hoặc reviews)
-              reviews: tutor.reviews_count ?? tutor.total_reviews ?? tutor.reviews ?? 0,
-              
-              location: "Hà Nội",
               desc: bioText.length > 135 ? bioText.substring(0, 132) + "..." : bioText || "Chưa có thông tin giới thiệu.",
               expertise: expertiseText,
-              tags: ["Gia sư", expertiseText].filter(Boolean),
+              experience: experienceText,
+              level: tutor.level || "Giáo viên",
+              tags: [expertiseText, experienceText].filter(Boolean),
               avatar: avatar,
             };
           });
@@ -238,9 +236,13 @@ export default function TeacherListPage() {
                   </div>
 
                   <h3>{tutor.name}</h3>
-                  <p className={styles.meta}>Gia sư tại {tutor.location}</p>
                   <p className={styles.desc}>{tutor.desc}</p>
-
+                  <p className={styles.meta}>
+                    {tutor.level}
+                  </p>
+                  <p className={styles.experienceText}>
+                    <strong>Kinh nghiệm:</strong> {tutor.experience}
+                  </p>
                   <div className={styles.tags}>
                     {tutor.tags.map((tag, index) => (
                       <span key={index}>{tag}</span>

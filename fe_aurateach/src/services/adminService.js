@@ -117,4 +117,24 @@ export const adminService = {
     return await apiClient.patch('/admin-tutor-payout-requests', payload);
   },
 
+  getReports: async (params = {}) => {
+    // params có thể là { status: 'pending', tutor_id: '...' }
+    return await apiClient.get("/admin-tutor-reports", { params });
+  },
+
+  // Gửi báo cáo mới
+  createReport: async (reportData) => {
+    // reportData cần gửi đủ các trường: tutor_id, student_id, course_id, reason, ...
+    return await apiClient.post("/admin-tutor-reports", reportData);
+  },  
+
+  updateReport: async (report_id, updateData) => {
+    // updateData gồm: { status: '...', admin_note: '...' }
+    return await apiClient.put(`/admin-tutor-reports/${report_id}`, updateData);
+  },
+
+  // DELETE: Xóa báo cáo
+  deleteReport: async (report_id) => {
+    return await apiClient.delete(`/admin-tutor-reports/${report_id}`);
+  },
 };

@@ -220,7 +220,6 @@ export default function ClassListPage() {
         <div className={styles.heroImageWrapper}>
           <img 
             src="https://image.plo.vn/w1000/Uploaded/2026/vrwqqxjwp/2021_09_13/hoc-online_opku.jpeg.webp" 
-            alt="Gia sư hỗ trợ học online" 
             className={styles.heroImage}
           />
           <div className={styles.badge}>2.5k+<br />HỌC VIÊN ĐĂNG KÝ</div>

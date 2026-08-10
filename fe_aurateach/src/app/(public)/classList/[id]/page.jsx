@@ -63,13 +63,31 @@ export default function ClassDetailPage({ params }) {
       const studentId = user?.user_id || user?.id;
       const currentCourseStudents = courseData.students || courseObj?.students || [];
 
-      // 🔥 KIỂM TRA CHUẨN XÁC: 
-      // 1. Kiểm tra qua mảng students cũ
-      let isAlreadyBooked = studentId && currentCourseStudents.map(String).includes(String(studentId));
+      let isAlreadyBooked = false;
+      if (studentId) {
+        const stringStudentId = String(studentId);
+        
+        // 1. Kiểm tra trong mảng sinh viên của khóa học
+        isAlreadyBooked = currentCourseStudents.map(String).includes(stringStudentId);
 
-      // 2. Kiểm tra sâu hơn: Nếu backend có trả về danh sách subscriptions của user hoặc course
-      // (Hoặc bạn có thể gọi thêm service courseSubscriptionService để check nếu cần, 
-      // nhưng nếu courseData đã bao gồm danh sách subscriptions active thì check ở đây)
+        // 2. Kiểm tra trong mảng subscriptions nếu chưa thấy
+        if (!isAlreadyBooked) {
+          const subscriptions = courseData.subscriptions || courseObj?.subscriptions || [];
+          if (subscriptions.length > 0) {
+            const activeSub = subscriptions.find(sub => 
+              String(sub.student_id) === stringStudentId && 
+              ['active', 'paid', 'approved'].includes(sub.status) // Mở rộng thêm các trạng thái đã thanh toán/phê duyệt nếu có
+            );
+            if (activeSub) {
+              isAlreadyBooked = true;
+            }
+          }
+        }
+      }
+
+      setIsBooked(isAlreadyBooked);
+
+
       const subscriptions = courseData.subscriptions || courseObj?.subscriptions || [];
       if (studentId && subscriptions.length > 0) {
         const activeSub = subscriptions.find(sub => 
@@ -151,29 +169,9 @@ export default function ClassDetailPage({ params }) {
     }
   };
 
-  // 🔥 Đã cập nhật: Tự động gọi lại fetchClassData(false) để làm mới dữ liệu ngay sau khi thanh toán thành công
   const handleBookingSuccess = async () => {
     setIsBooked(true);
     setShowBookingModal(false);
-    
-    // 🔥 Cập nhật trực tiếp học viên vào state course hiện tại để khóa nút ngay lập tức
-    if (currentUser) {
-      const studentId = currentUser.user_id || currentUser.id;
-      setCourse(prevCourse => {
-        if (!prevCourse) return prevCourse;
-        const currentStudents = prevCourse.students || [];
-        if (!currentStudents.map(String).includes(String(studentId))) {
-          return {
-            ...prevCourse,
-            students: [...currentStudents, studentId],
-            current_students: (prevCourse.current_students || currentStudents.length) + 1
-          };
-        }
-        return prevCourse;
-      });
-    }
-
-    // Sau đó mới gọi ngầm để đồng bộ dữ liệu chuẩn từ backend
     await fetchClassData(false);
   };
 
@@ -207,6 +205,26 @@ export default function ClassDetailPage({ params }) {
     });
   };
 
+  // 🔥 Hàm tính số tháng chênh lệch từ Ngày bắt đầu và Ngày kết thúc
+  const calculateTotalMonths = (startDate, endDate) => {
+    if (!startDate || !endDate) return 1;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 1;
+
+    const diffYears = end.getFullYear() - start.getFullYear();
+    const diffMonths = end.getMonth() - start.getMonth();
+    let totalMonths = diffYears * 12 + diffMonths;
+
+    const diffDays = (end - start) / (1000 * 60 * 60 * 24);
+    if (totalMonths <= 0) {
+      totalMonths = Math.max(1, Math.round(diffDays / 30));
+    }
+
+    return Math.max(1, totalMonths);
+  };
+
   if (pageLoading) {
     return <div className={styles.container} style={{marginTop: "100px", textAlign: "center"}}>Đang tải thông tin lớp học từ Server...</div>;
   }
@@ -236,6 +254,11 @@ export default function ClassDetailPage({ params }) {
   const displayStartDate = firstSchedule.start_time || firstSchedule.start_date || course.start_date;
   const displayEndDate = firstSchedule.end_time || firstSchedule.end_date || course.end_date;
   const roomUrl = firstSchedule.meeting_platform || firstSchedule.room_url || course.permanent_room_url;
+
+  // 🔥 Tính toán tài chính khóa học
+  const totalCoursePrice = (course.price_per_session || 0) * totalSessions;
+  const calculatedMonths = calculateTotalMonths(displayStartDate, displayEndDate);
+  const pricePerMonth = Math.round(totalCoursePrice / calculatedMonths);
 
   const handleJoinClass = () => {
     if (roomUrl) {
@@ -426,10 +449,16 @@ export default function ClassDetailPage({ params }) {
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
               <span className={styles.price}>
-                {course.price_per_session ? `${formatPrice(course.price_per_session * totalSessions)}đ` : 'Liên hệ'}
+                {course.price_per_session ? `${formatPrice(pricePerMonth)}đ` : 'Liên hệ'}
               </span>
-              {course.price_per_session && <span className={styles.priceUnit}>/trọn gói</span>}
+              {course.price_per_session && <span className={styles.priceUnit}>/1 tháng</span>}
             </div>
+
+            {course.price_per_session && (
+              <div style={{ fontSize: "13px", color: "#666", marginBottom: "15px", textAlign: "center" }}>
+                Tổng học phí cả kỳ ({calculatedMonths} tháng): <strong>{formatPrice(totalCoursePrice)}đ</strong>
+              </div>
+            )}
 
             <div className={styles.priceDetails}>
               <div className={styles.detailRow}>
@@ -446,7 +475,7 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>📚</span>
-                <span>{totalSessions} buổi học ({sessionsPerWeek} buổi/tuần)</span>
+                <span>{totalSessions} buổi học ({sessionsPerWeek} buổi/tuần - {calculatedMonths} tháng)</span>
               </div>
             </div>
 
@@ -462,12 +491,12 @@ export default function ClassDetailPage({ params }) {
               disabled={bookingLoading || isBooked || isFull || course.status !== 'active'}
             >
               {bookingLoading ? "Đang xử lý..." : 
-               isBooked ? "✅ Đã đăng ký khóa học" : 
-               isFull ? "🔴 Lớp đã đủ học viên" :
-               course.status !== 'active' ? "🔴 Lớp đã đóng" : 
-               "📝 Đăng ký học ngay"}
+              isBooked ? "Đã đăng ký khóa học" : 
+              isFull ? "Lớp đã đủ học viên" :
+              course.status !== 'active' ? "Lớp đã đóng" : 
+              "📝 Đăng ký học ngay"}
             </button>
-            <button className={styles.consultButton}>💬 Đặt lịch tư vấn</button>
+            <button className={styles.consultButton}>Đặt lịch tư vấn</button>
           </div>
 
           {/* Tutor Card */}

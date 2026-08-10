@@ -6,7 +6,8 @@ import styles from "./management.module.css";
 import FilterControl from "./_components/Sec1";
 import ClassGrid from "./_components/Sec2";
 import ClassDetailModal from "./_components/Sec3";
-import { courseService } from "@/services/courseService"; // 👈 Sử dụng courseService chuẩn
+import { courseService } from "@/services/courseService";
+import { authService } from "@/services/authService"; // 👈 Sử dụng authService chuẩn
 
 export default function ClassroomManagementPage() {
   const [classes, setClasses] = useState([]);
@@ -23,19 +24,9 @@ export default function ClassroomManagementPage() {
     const loadData = async () => {
       setLoading(true);
       try {
-        // 🛡️ Lấy user_id từ cookie an toàn trước khi gọi API
-        let currentUserId = "";
-        const cookies = document.cookie.split("; ");
-        const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
-
-        if (userInfoCookie) {
-          try {
-            const userInfo = JSON.parse(decodeURIComponent(userInfoCookie.split("=")[1]));
-            currentUserId = userInfo.user_id || userInfo.id || "";
-          } catch (err) {
-            console.error("Lỗi phân tích cookie user_info:", err);
-          }
-        }
+        // 🚀 Lấy thông tin user hiện tại thông qua authService chuẩn
+        const currentUser = await authService.getCurrentUser();
+        const currentUserId = currentUser?.user_id || currentUser?.id || "";
 
         // 🚀 Gọi qua courseService.getTutorManagedCourses để hiển thị tất cả trạng thái của gia sư
         const resData = await courseService.getTutorManagedCourses({
@@ -73,6 +64,13 @@ export default function ClassroomManagementPage() {
   };
 
   const handleCloseClass = async (classId) => {
+    // 🛡️ Kiểm tra phòng hờ nếu classId bị nhận nhầm là React Event
+    if (!classId || typeof classId === 'object') {
+      console.error("❌ Lỗi: classId truyền vào không hợp lệ:", classId);
+      alert("Không thể xác định mã lớp học.");
+      return;
+    }
+
     const confirmClose = window.confirm("Bạn có chắc chắn muốn khóa lớp này (Dừng nhận thêm học viên) không?");
     if (!confirmClose) return;
 
@@ -82,12 +80,18 @@ export default function ClassroomManagementPage() {
       if (result && (result.success !== false)) {
         // 💡 1. Cập nhật ngay lập tức trạng thái trong danh sách lớp (Grid)
         setClasses(prev => 
-          prev.map(c => (c.course_id === classId || c.id === classId) ? { ...c, status: "closed" } : c)
+          prev.map(c => {
+            const currentId = c.course_id || c.id;
+            return currentId === classId ? { ...c, status: "closed" } : c;
+          })
         );
 
         // 💡 2. Cập nhật ngay lập tức trạng thái trong modal chi tiết đang mở (nếu có)
-        if (selectedClass && (selectedClass.course_id === classId || selectedClass.id === classId)) {
-          setSelectedClass(prev => ({ ...prev, status: "closed" }));
+        if (selectedClass) {
+          const selectedId = selectedClass.course_id || selectedClass.id;
+          if (selectedId === classId) {
+            setSelectedClass(prev => ({ ...prev, status: "closed" }));
+          }
         }
 
         alert("🔒 Đã khóa tuyển sinh lớp học thành công!");

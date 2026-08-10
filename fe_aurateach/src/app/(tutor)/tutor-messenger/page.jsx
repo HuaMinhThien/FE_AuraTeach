@@ -34,10 +34,7 @@ export default function TutorMessengerPage() {
   useEffect(() => {
     const initPage = async () => {
       try {
-        console.log("🚀 [DB DEBUG 1] Bắt đầu khởi tạo trang Messenger...");
         const currentUser = await authService.getCurrentUser();
-        console.log("👤 [DB DEBUG 2] Thông tin User từ DB/Session:", currentUser);
-        
         if (!currentUser) {
           router.push("/login");
           return;
@@ -45,8 +42,6 @@ export default function TutorMessengerPage() {
         setUser(currentUser);
         
         const userId = currentUser.user_id || currentUser.id;
-        console.log("📡 [DB DEBUG 3] User ID sử dụng truy vấn:", userId);
-        
         if (!userId) {
           setError("Không tìm thấy mã định danh người dùng từ Database.");
           setLoading(false);
@@ -73,32 +68,40 @@ export default function TutorMessengerPage() {
     }
   };
 
+  const saveMessagesToLocal = (conversationId, msgs) => {
+    try {
+      localStorage.setItem(`tutor_messages_${conversationId}`, JSON.stringify(msgs));
+    } catch (e) {
+      console.warn("⚠️ Cannot save to localStorage:", e);
+    }
+  };
+
+  const loadMessagesFromLocal = (conversationId) => {
+    try {
+      const saved = localStorage.getItem(`tutor_messages_${conversationId}`);
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
   // 📡 Lấy danh sách hội thoại trực tiếp từ Database qua API
   const fetchConversationsFromDB = async (userId) => {
     try {
-      console.log(`📡 [DB DEBUG 4] Gọi API lấy conversations với user_id = ${userId}`);
       const rawRes = await conversationService.getConversations(userId);
-      console.log("📦 [DB DEBUG 5] Dữ liệu thô (Raw Response) từ DB:", rawRes);
-
       const convList = Array.isArray(rawRes) ? rawRes : (rawRes?.data || []);
-      console.log("📋 [DB DEBUG 6] Mảng hội thoại sau khi trích xuất:", convList);
 
       if (convList.length === 0) {
-        console.warn("⚠️ [DB WARNING] Database trả về mảng hội thoại rỗng (0 bản ghi).");
         setConversations([]);
         setUnreadCount(0);
         return;
       }
 
-      // Chuẩn hóa id và participants (phòng trường hợp DB trả về chuỗi JSON string)
       const normalizedConvList = convList.map(conv => {
-        // Nếu DB trả về mảng users chứa các object user/tutor, ta map lấy các ID của họ
         let participantIds = conv.participants;
-        
         if (!participantIds && Array.isArray(conv.users)) {
           participantIds = conv.users.map(u => u.user_id || u.id || u.tutor_id);
         }
-
         if (typeof participantIds === 'string') {
           try {
             participantIds = JSON.parse(participantIds);
@@ -106,7 +109,6 @@ export default function TutorMessengerPage() {
             participantIds = [];
           }
         }
-
         return {
           ...conv,
           id: conv.id || conv.conversation_id,
@@ -114,7 +116,6 @@ export default function TutorMessengerPage() {
         };
       });
 
-      // Lấy danh sách gia sư từ DB để map ID tương ứng
       const allTutorsRes = await tutorService.getTutors();
       const tutorsList = Array.isArray(allTutorsRes) ? allTutorsRes : (allTutorsRes?.data || []);
       
@@ -129,17 +130,8 @@ export default function TutorMessengerPage() {
 
       const myIds = [userId];
       if (userToTutorMap[userId]) myIds.push(userToTutorMap[userId]);
-      console.log("🔍 [DB DEBUG 7] Danh sách các ID của tôi dùng để đối chiếu participants:", myIds);
 
-      const userConversations = normalizedConvList.filter(conv => {
-        const matched = conv.participants.some(p => myIds.includes(p));
-        if (!matched) {
-          console.log(`ℹ️ [DB FILTER] Bỏ qua hội thoại ID ${conv.id} vì participants [${conv.participants}] không khớp với myIds`);
-        }
-        return matched;
-      });
-      console.log("📋 [DB DEBUG 8] Các hội thoại khớp với user:", userConversations);
-
+      const userConversations = normalizedConvList.filter(conv => conv.participants.some(p => myIds.includes(p)));
       const totalUnread = userConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
       setUnreadCount(totalUnread);
 
@@ -149,14 +141,10 @@ export default function TutorMessengerPage() {
           let lookupUserId = tutorToUserMap[otherParticipantId] || otherParticipantId;
           
           try {
-            // Lấy toàn bộ user hoặc danh sách user về
             const usersRes = await userService.getUsers();
             const users = Array.isArray(usersRes) ? usersRes : (usersRes?.data || []);
-            
-            // Tự lọc chính xác user khớp với lookupUserId hoặc khớp trong mảng users của conversation
             let matchedUser = users.find(u => (u.user_id === lookupUserId || u.id === lookupUserId));
             
-            // Phòng hờ nếu API getUsers không trả về, ta lấy luôn từ mảng conv.users nếu có sẵn trong DB
             if (!matchedUser && Array.isArray(conv.users)) {
               matchedUser = conv.users.find(u => (u.user_id === lookupUserId || u.id === lookupUserId || u.tutor_id === lookupUserId));
             }
@@ -177,8 +165,7 @@ export default function TutorMessengerPage() {
           }
         })
       );
-      console.log("👥 [OTHER USER CHECK]", convWithUsers);
-      console.log("✅ [DB DEBUG 9] Hoàn tất nạp dữ liệu hội thoại từ DB:", convWithUsers);
+      
       setConversations(convWithUsers);
     } catch (error) {
       console.error("❌ [DB ERROR] Lỗi khi truy vấn conversations từ DB:", error);
@@ -187,44 +174,46 @@ export default function TutorMessengerPage() {
   };
 
   const fetchMessagesFromDB = async (conversationId, resetOffset = true) => {
-    if (!conversationId || isFetchingRef.current) return;
-    isFetchingRef.current = true;
+    if (!conversationId) return;
     
+    let messagesToUse = null;
     try {
-      console.log(`💬 [CHECK SENDER DEBUG 1] Đang tải tin nhắn cho conversation_id: ${conversationId}`);
       const data = await messageService.getMessages(conversationId);
       const msgList = Array.isArray(data) ? data : (data?.data || []);
-      
-      console.log(`💬 [CHECK SENDER DEBUG 2] Lấy được ${msgList.length} tin nhắn từ DB. Danh sách messages thô:`, msgList);
-
-      const currentConv = conversations.find(c => (c.id === conversationId || c.conversation_id === conversationId));
-      console.log(`👥 [CHECK SENDER DEBUG 3] Participants của cuộc trò chuyện này là:`, currentConv?.participants || currentConv?.users);
-      console.log(`👤 [CHECK SENDER DEBUG 4] Current User ID của bạn hiện tại là:`, user?.user_id || user?.id);
-
-      if (currentConv && currentConv.participants) {
-        msgList.forEach((msg, index) => {
-          const isSenderInConv = currentConv.participants.includes(msg.sender_id);
-          console.log(`🔍 [CHECK SENDER DEBUG 5 - Tin nhắn #${index + 1}] ID: ${msg.id} | sender_id: "${msg.sender_id}" --> Có nằm trong participants không? 👉 ${isSenderInConv ? "✅ KHỚP" : "❌ LỆCH (Không có trong conversation)"}`);
-        });
+      if (msgList && msgList.length > 0) {
+        messagesToUse = msgList;
+        saveMessagesToLocal(conversationId, msgList);
+        lastMessageCountRef.current = msgList.length;
       }
-
-      if (resetOffset) {
-        setMessages(msgList);
-      } else {
-        setMessages(prev => [...prev, ...msgList]);
-      }
-      lastMessageCountRef.current = msgList.length;
     } catch (error) {
-      console.error("❌ [DB ERROR] Lỗi lấy tin nhắn từ DB:", error);
-    } finally {
-      setHasMore(false);
-      isFetchingRef.current = false;
+      console.error("❌ [DB ERROR] Lỗi lấy tin nhắn từ API:", error);
     }
+
+    if (!messagesToUse || messagesToUse.length === 0) {
+      const localMessages = loadMessagesFromLocal(conversationId);
+      if (localMessages && localMessages.length > 0) {
+        messagesToUse = localMessages;
+      }
+    }
+
+    if (messagesToUse && messagesToUse.length > 0) {
+      if (resetOffset) {
+        setMessages(messagesToUse);
+      } else {
+        setMessages(prev => [...prev, ...messagesToUse]);
+      }
+    } else {
+      if (resetOffset) setMessages([]);
+    }
+    setHasMore(false);
   };
 
+  // 🚀 TỐI ƯU HÓA: Gửi tin nhắn ổn định, cập nhật ngay lập tức và ngăn lỗi thông báo chưa đọc ảo trên Production
   const sendMessage = async (content) => {
     if (!selectedConversation || !user || isSendingRef.current) return;
-    if (!content.trim()) return;
+    
+    const isFile = typeof content === 'object' && content.file_data;
+    if (!isFile && (!content || !content.trim())) return;
 
     isSendingRef.current = true;
     setSending(true);
@@ -233,49 +222,134 @@ export default function TutorMessengerPage() {
       const senderId = user.user_id || user.id;
       const receiverId = selectedConversation.other_user_id;
       const convId = selectedConversation.id || selectedConversation.conversation_id;
+      const nowTime = new Date().toISOString();
+      
+      const messageContentText = isFile ? `[${content.file_type.startsWith('image') ? 'Hình ảnh' : content.file_type.startsWith('video') ? 'Video' : 'File'}] ${content.file_name}` : content.trim();
+      const tempMessageId = isFile ? content.id : `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-      const nowTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-      const newMessageData = {
-        message_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      const newMessage = {
+        message_id: tempMessageId,
+        id: tempMessageId,
         conversation_id: convId,
         sender_id: senderId,
         sender_role: user.role || "tutor",
         receiver_id: receiverId,
         receiver_role: selectedConversation.other_user?.role || "student",
-        content: content.trim(),
-        is_read: false,
-        created_at: nowTime, // Chỉ giữ lại created_at (nếu bảng có cột này, nếu bảng báo lỗi không có created_at thì bạn xóa luôn dòng này)
+        content: messageContentText,
+        created_at: nowTime,
+        is_read: true,
+        ...(isFile ? {
+          file_name: content.file_name,
+          file_type: content.file_type,
+          file_size: content.file_size,
+          file_data: content.file_data,
+        } : {}),
       };
 
-      console.log("📤 [DB DEBUG] Đang gửi tin nhắn lên Database...", newMessageData);
-      const savedMsgRes = await messageService.sendMessage(newMessageData);
+      // 1. Cập nhật UI ngay lập tức
+      setMessages(prev => {
+        const updated = [...prev, newMessage];
+        saveMessagesToLocal(convId, updated);
+        return updated;
+      });
+
+      // 2. Gửi API ngầm lên Server
+      const savedMsgRes = await messageService.sendMessage(newMessage);
       const savedMsg = savedMsgRes?.data || savedMsgRes;
 
       if (savedMsg) {
-        setMessages(prev => [...prev, savedMsg]);
-        await messageService.updateConversation(convId, {
-          last_message: content.trim(),
-          last_message_time: nowTime,
+        setMessages(prev => {
+          const updated = prev.map(m => (m.message_id === tempMessageId || m.id === tempMessageId) ? (savedMsg.data || savedMsg) : m);
+          saveMessagesToLocal(convId, updated);
+          return updated;
         });
       }
+
+      // 3. Cập nhật trạng thái hội thoại, đánh dấu unread_count = 0 để chính mình nhắn không bị báo chưa đọc
+      await messageService.updateConversation(convId, {
+        last_message: messageContentText,
+        last_message_time: nowTime,
+        unread_count: 0,
+      });
+
+      setConversations(prev => prev.map(c => {
+        if ((c.id || c.conversation_id) === convId) {
+          return { ...c, last_message: messageContentText, last_message_time: nowTime, unread_count: 0 };
+        }
+        return c;
+      }));
+
     } catch (error) {
       console.error("❌ [DB ERROR] Lỗi gửi tin nhắn vào DB:", error);
-      alert("Không thể gửi tin nhắn lên cơ sở dữ liệu.");
     } finally {
       setSending(false);
       isSendingRef.current = false;
     }
   };
 
+  const markAsRead = async (conversationId) => {
+    try {
+      if (!conversationId) return;
+      await messageService.updateConversation(conversationId, { unread_count: 0 });
+      setConversations(prev => prev.map(conv => ((conv.id || conv.conversation_id) === conversationId) ? { ...conv, unread_count: 0 } : conv));
+      
+      const conv = conversations.find(c => (c.id || c.conversation_id) === conversationId);
+      if (conv) {
+        setUnreadCount(prev => Math.max(0, prev - (conv.unread_count || 0)));
+      }
+    } catch (error) {
+      console.error("❌ Lỗi đánh dấu đã đọc:", error);
+    }
+  };
+
   const handleSelectConversation = async (conversation) => {
-    if (isFetchingRef.current) return;
     setSelectedConversation(conversation);
     setMessages([]);
+    isInitialLoadRef.current = true;
     
     const convId = conversation.id || conversation.conversation_id;
+    await markAsRead(convId);
     await fetchMessagesFromDB(convId, true);
   };
+
+  // 🔄 Tích hợp Polling tự động làm mới tin nhắn ngầm mỗi 3 giây
+  useEffect(() => {
+    stopPolling();
+    if (!selectedConversation) return;
+
+    const convId = selectedConversation.id || selectedConversation.conversation_id;
+    if (!convId) return;
+
+    isPollingActiveRef.current = true;
+    const fetchNewMessages = async () => {
+      if (!isPollingActiveRef.current) return;
+      try {
+        const data = await messageService.getMessages(convId);
+        const msgList = Array.isArray(data) ? data : (data?.data || []);
+        if (!msgList || msgList.length === 0) return;
+
+        setMessages(prev => {
+          const currentIds = prev.map(m => m.id || m.message_id);
+          const newMessages = msgList.filter(m => !currentIds.includes(m.id || m.message_id));
+          if (newMessages.length > 0) {
+            return [...prev, ...newMessages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+          }
+          if (prev.length === 0 && msgList.length > 0) return msgList;
+          return prev;
+        });
+
+        if (msgList.length > 0) {
+          const latestMsg = msgList[msgList.length - 1];
+          setConversations(prev => prev.map(c => ((c.id || c.conversation_id) === convId) ? { ...c, last_message: latestMsg.content, last_message_time: latestMsg.created_at } : c));
+        }
+      } catch (error) {
+        console.error("❌ [POLLING ERROR] Lỗi khi fetch tin nhắn mới:", error);
+      }
+    };
+
+    pollingRef.current = setInterval(fetchNewMessages, 3000);
+    return () => stopPolling();
+  }, [selectedConversation]);
 
   if (loading) {
     return (

@@ -58,10 +58,6 @@ export default function AccountManager() {
   // Bộ lọc Client-side tìm kiếm
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
-      if (user.role === 'tutor' && user.verification_status === 'pending') {
-        return false;
-      }
-
       const matchSearch = 
         (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (user.phone || '').includes(searchTerm) ||
@@ -110,7 +106,11 @@ export default function AccountManager() {
       if (result && (result.success !== false)) {
         alert("Phê duyệt hồ sơ thành công!");
         loadDataFromServer();
-        setSelectedUser(prev => ({ ...prev, verification_status: 'Đã xác minh' }));
+        setSelectedUser(prev => ({ 
+          ...prev, 
+          verification_status: 'Đã xác minh',
+          status: prev.status || 'active' // Đảm bảo status không bị mất
+        }));
       }
     } catch (error) {
       alert(error.message || "Lỗi khi gửi yêu cầu duyệt!");

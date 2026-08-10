@@ -39,12 +39,13 @@ export default function TutorProfile() {
     phone: "",
     bio: "",
     experience: "",
+    level: "Giáo viên",
     cv_link: "",
-    expertise: []
+    expertise: [],
+    certificates: []
   });
 
-  // 🛡️ Dùng useRef để đánh dấu request check update đã được gọi hay chưa, tránh lặp lại
-  const hasCheckedRequest = useRef(false);
+  const [newCertUrl, setNewCertUrl] = useState("");
 
   const isCategorySelected = (catName) => {
     if (!catName) return false;
@@ -74,6 +75,38 @@ export default function TutorProfile() {
         };
       }
     });
+  };
+
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditFields((prev) => ({
+          ...prev,
+          certificates: [...prev.certificates, reader.result]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // ✅ HÀM THÊM BẰNG CẤP BẰNG URL
+  const handleAddCertUrl = () => {
+    if (!newCertUrl.trim()) return;
+    setEditFields((prev) => ({
+      ...prev,
+      certificates: [...prev.certificates, newCertUrl.trim()]
+    }));
+    setNewCertUrl("");
+  };
+
+  // ✅ HÀM XÓA ẢNH BẰNG CẤP KHI ĐANG CHỈNH SỬA
+  const handleRemoveCert = (index) => {
+    setEditFields((prev) => ({
+      ...prev,
+      certificates: prev.certificates.filter((_, idx) => idx !== index)
+    }));
   };
 
   useEffect(() => {
@@ -122,8 +155,10 @@ export default function TutorProfile() {
               phone: mergedData.phone || "",
               bio: mergedData.bio || "",
               experience: mergedData.experience || "",
+              level: mergedData.level || "Giáo viên",
               cv_link: mergedData.cv_link || "",
-              expertise: expArray
+              expertise: expArray,
+              certificates: mergedData.certificates || []
             });
           }
 
@@ -170,16 +205,20 @@ export default function TutorProfile() {
         phone: tutorData.phone || "",
         bio: tutorData.bio || "",
         experience: tutorData.experience || "",
+        level: tutorData.level || "Giáo viên",
         cv_link: tutorData.cv_link || "",
-        expertise: tutorData.expertise || ""
+        expertise: tutorData.expertise || "",
+        certificates: tutorData.certificates || []
       };
 
       const newPayload = {
         phone: editFields.phone,
         bio: editFields.bio,
         experience: editFields.experience,
+        level: editFields.level,
         cv_link: editFields.cv_link,
-        expertise: editFields.expertise.join(", ")
+        expertise: editFields.expertise.join(", "),
+        certificates: editFields.certificates
       };
 
       const tutorId = tutorData.id || tutorData.tutor_id;
@@ -262,7 +301,21 @@ export default function TutorProfile() {
 
           <div className={styles.badgeGroup}>
             <span className={`${styles.badge} ${styles.badgeRating}`}>⭐ {tutorData.rating ?? "0"} Đánh giá</span>
-            
+            {isEditing ? (
+              <select
+                className={styles.inputField}
+                style={{ width: "130px", padding: "4px 8px" }}
+                value={editFields.level}
+                onChange={(e) => setEditFields({ ...editFields, level: e.target.value })}
+              >
+                <option value="Giáo viên">Giáo viên</option>
+              </select>
+            ) : (
+              <span className={`${styles.badge} ${styles.badgeLevel}`}>
+                🎓 {tutorData.level || "Giáo viên"}
+              </span>
+            )}
+
             {isEditing ? (
               <input 
                 type="text" 
@@ -494,6 +547,75 @@ export default function TutorProfile() {
           <p className={styles.bioContent}>
             {tutorData.bio || "Gia sư chưa cập nhật thông tin giới thiệu chi tiết."}
           </p>
+        )}
+      </div>
+            <div className={styles.bioCard} style={{ marginBottom: "1.5rem", marginTop: "1.5rem" }}>
+        <h3 className={styles.bioTitle}>Bằng cấp, chứng chỉ & Giải thưởng (Show cho học sinh)</h3>
+
+        {isEditing ? (
+          <div>
+            <div className={styles.certUploadSection}>
+              <div className={styles.uploadGroup}>
+                <label className={styles.uploadBtn}>
+                  📁 Chọn ảnh tải lên từ máy
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileUpload}
+                    style={{ display: "none" }}
+                  />
+                </label>
+              </div>
+
+              <div className={styles.urlUploadGroup}>
+                <input
+                  type="text"
+                  className={styles.inputField}
+                  placeholder="Hoặc dán Link URL hình ảnh bằng cấp..."
+                  value={newCertUrl}
+                  onChange={(e) => setNewCertUrl(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className={styles.btnAddUrl}
+                  onClick={handleAddCertUrl}
+                >
+                Thêm Link
+                </button>
+              </div>
+            </div>
+
+            {/* Danh sách ảnh bằng cấp đang sửa */}
+            <div className={styles.certGrid}>
+              {editFields.certificates.map((cert, index) => (
+                <div key={index} className={styles.certItem}>
+                  <img src={cert} alt={`Cert ${index}`} className={styles.certImage} />
+                  <button
+                    type="button"
+                    className={styles.btnDeleteCert}
+                    onClick={() => handleRemoveCert(index)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.certGrid}>
+            {tutorData.certificates && tutorData.certificates.length > 0 ? (
+              tutorData.certificates.map((cert, index) => (
+                <div key={index} className={styles.certItem}>
+                  <a href={cert} target="_blank" rel="noreferrer">
+                    <img src={cert} alt={`Bằng cấp ${index + 1}`} className={styles.certImage} />
+                  </a>
+                </div>
+              ))
+            ) : (
+              <p className={styles.bioContent}>Gia sư chưa tải lên hình ảnh bằng cấp hoặc chứng chỉ.</p>
+            )}
+          </div>
         )}
       </div>
     </div>

@@ -19,6 +19,19 @@ export default function LoginPage() {
   const [isSynced, setIsSynced] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  useEffect(() => {
+    // Load email và password đã lưu từ localStorage
+    const savedEmail = localStorage.getItem("remembered_email");
+    const savedPassword = localStorage.getItem("remembered_password");
+    const savedRememberMe = localStorage.getItem("remember_me") === "true";
+
+    if (savedRememberMe && savedEmail) {
+      setEmail(savedEmail);
+      setPassword(savedPassword || "");
+      setRememberMe(true);
+    }
+  }, []);
+
   // 🔥 Đồng bộ session Google sang Laravel Backend và hệ thống Cookie
   useEffect(() => {
     if (isRedirecting) return;
@@ -122,6 +135,16 @@ export default function LoginPage() {
       hasError = true;
     }
 
+    if (rememberMe) {
+      localStorage.setItem("remembered_email", email);
+      localStorage.setItem("remembered_password", password);
+      localStorage.setItem("remember_me", "true");
+    } else {
+      localStorage.removeItem("remembered_email");
+      localStorage.removeItem("remembered_password");
+      localStorage.removeItem("remember_me");
+    }
+
     if (hasError) {
       setErrors(newErrors);
       return;
@@ -191,6 +214,18 @@ export default function LoginPage() {
       console.error("❌ Google login error:", error);
       setError("Đăng nhập bằng Google thất bại, vui lòng thử lại");
       setIsLoading(false);
+    }
+  };
+
+  const handleRememberMeChange = (e) => {
+    const checked = e.target.checked;
+    setRememberMe(checked);
+    
+    // Nếu bỏ chọn, xóa dữ liệu đã lưu
+    if (!checked) {
+      localStorage.removeItem("remembered_email");
+      localStorage.removeItem("remembered_password");
+      localStorage.removeItem("remember_me");
     }
   };
 
@@ -275,7 +310,7 @@ export default function LoginPage() {
                     <input
                       type="checkbox"
                       checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                      onChange={handleRememberMeChange}
                     />
                     <span>Ghi nhớ đăng nhập</span>
                   </label>

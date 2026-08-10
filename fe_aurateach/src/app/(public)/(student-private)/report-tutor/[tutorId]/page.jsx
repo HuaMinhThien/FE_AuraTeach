@@ -4,23 +4,22 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Header from "@/components/users/Header";
 import StudentSidebar from "@/components/users/StudentSidebar";
+import { adminService } from "@/services/adminService"; // 🚀 Import service
 import "./report.css";
-
-const API_BASE = "http://localhost:3007";
 
 export default function ReportTutorPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const tutorId = params.tutorId;
-  const preSelectedCourseId = searchParams.get("courseId"); // ✅ Lấy courseId từ URL
+  const preSelectedCourseId = searchParams.get("courseId");
 
   const [tutor, setTutor] = useState(null);
   const [student, setStudent] = useState(null);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(preSelectedCourseId || ""); // ✅ Set mặc định từ URL
+  const [selectedCourse, setSelectedCourse] = useState(preSelectedCourseId || "");
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [evidenceFiles, setEvidenceFiles] = useState([]);
@@ -41,10 +40,11 @@ export default function ReportTutorPage() {
   ];
 
   useEffect(() => {
-    const fetchData = async () => {
+    const initData = async () => {
       try {
         setLoading(true);
 
+        // Lấy thông tin user từ cookie (Logic này giữ nguyên vì thuộc về xử lý client-side)
         const getCookie = (name) => {
           const value = `; ${document.cookie}`;
           const parts = value.split(`; ${name}=`);
@@ -59,91 +59,66 @@ export default function ReportTutorPage() {
         const user = JSON.parse(decodeURIComponent(userCookie));
         setStudent(user);
 
-        const [usersRes, tutorsRes, coursesRes, bookingsRes] = await Promise.all([
-          fetch(`${API_BASE}/users`),
-          fetch(`${API_BASE}/tutors`),
-          fetch(`${API_BASE}/courses`),
-          fetch(`${API_BASE}/bookings`)
-        ]);
+        // 🚀 Gọi qua Service thay vì fetch trực tiếp
+        const data = await adminService.getInitialReportData(tutorId, user.user_id || user.id);
 
-        if (!usersRes.ok || !tutorsRes.ok || !coursesRes.ok || !bookingsRes.ok) {
-          throw new Error("Không thể tải dữ liệu");
-        }
-
-        const users = await usersRes.json();
-        const tutors = await tutorsRes.json();
-        const allCourses = await coursesRes.json();
-        const bookings = await bookingsRes.json();
-
-        const tutorProfile = tutors.find(
-          (t) => t.tutor_id === tutorId || t.id === tutorId
-        );
-
-        if (!tutorProfile) {
-          setError("Không tìm thấy thông tin gia sư");
-          setLoading(false);
-          return;
-        }
-
-        const userId = tutorProfile.user_id;
-        const tutorUser = users.find(
-          (u) => u.user_id === userId || u.id === userId
-        );
-
-        if (tutorUser) {
-          setTutor({
-            ...tutorUser,
-            ...tutorProfile,
-            avatar: tutorUser.avatar || null
-          });
+        if (data.error) {
+          setError(data.error);
         } else {
-          setError("Không tìm thấy thông tin người dùng của gia sư");
-          setLoading(false);
-          return;
+          setTutor(data.tutor);
+          setCourses(data.courses);
         }
-
-        const studentId = user.user_id || user.id;
-        
-        const studentBookings = bookings.filter(
-          (b) => b.student_id === studentId && b.tutor_id === tutorId
-        );
-
-        const bookedCourseIds = studentBookings.map((b) => b.course_id);
-
-        const tutorCourses = allCourses.filter(
-          (c) => c.tutor_id === tutorId && bookedCourseIds.includes(c.course_id)
-        );
-
-        setCourses(tutorCourses);
-
-        // ✅ Nếu có preSelectedCourseId, kiểm tra xem có tồn tại trong danh sách không
-        if (preSelectedCourseId) {
-          const courseExists = tutorCourses.some(
-            (c) => c.course_id === preSelectedCourseId || c.id === preSelectedCourseId
-          );
-          if (!courseExists) {
-            // Nếu course không tồn tại, reset selectedCourse
-            setSelectedCourse("");
-          }
-        }
-
-        if (tutorCourses.length === 0 && !hasLoggedNoCourses.current) {
-          console.warn(`⚠️ Học viên chưa đăng ký khóa học nào với gia sư này`);
-          hasLoggedNoCourses.current = true;
-        }
-
-      } catch (error) {
-        console.error("Lỗi tải dữ liệu:", error.message);
-        setError("Không thể tải dữ liệu. Vui lòng thử lại.");
+      } catch (err) {
+        console.error("Lỗi khởi tạo dữ liệu:", err);
+        setError("Không thể tải dữ liệu báo cáo.");
       } finally {
         setLoading(false);
       }
     };
 
-    if (tutorId) {
-      fetchData();
+    if (tutorId) initData();
+  }, [tutorId, router]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    try {
+      // Xử lý file sang Base64 hoặc FormData tùy theo cấu trúc của service
+      const evidenceUrls = await Promise.all(
+        evidenceFiles.map((file) => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
+      const reportData = {
+        tutor_id: tutorId,
+        student_id: student.user_id || student.id,
+        course_id: selectedCourse,
+        reason: reason === "Lý do khác" ? description : reason,
+        description,
+        evidence: evidenceUrls,
+      };
+
+      // 🚀 Sử dụng hoàn toàn service
+      const result = await adminService.createReport(reportData);
+
+      if (result.success) {
+        setSuccess(true);
+      } else {
+        setError(result.message || "Gửi báo cáo thất bại");
+      }
+    } catch (err) {
+      setError("Có lỗi xảy ra khi gửi báo cáo.");
+    } finally {
+      setSubmitting(false);
     }
-  }, [tutorId, router, preSelectedCourseId]);
+  };
 
   const handleAvatarError = (e) => {
     if (!hasLoggedAvatarError.current) {
@@ -182,78 +157,6 @@ export default function ReportTutorPage() {
     setEvidenceFiles([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess(false);
-    setSubmitting(true);
-
-    if (!selectedCourse) {
-      setError("Vui lòng chọn lớp học");
-      setSubmitting(false);
-      return;
-    }
-
-    if (!reason) {
-      setError("Vui lòng chọn lý do báo cáo");
-      setSubmitting(false);
-      return;
-    }
-
-    if (reason === "Lý do khác" && !description.trim()) {
-      setError("Vui lòng nhập mô tả chi tiết");
-      setSubmitting(false);
-      return;
-    }
-
-    try {
-      const evidenceUrls = await Promise.all(
-        evidenceFiles.map((file) => {
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              resolve(reader.result);
-            };
-            reader.readAsDataURL(file);
-          });
-        })
-      );
-
-      const reportData = {
-        tutorId: tutorId,
-        studentId: student.user_id || student.id,
-        courseId: selectedCourse,
-        reason: reason === "Lý do khác" ? description : reason,
-        description: reason === "Lý do khác" ? description : description,
-        evidence: evidenceUrls.length > 0 ? evidenceUrls : null,
-        reportedBy: student.user_id || student.id,
-      };
-
-      const response = await fetch("/api/admin-tutor-reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reportData),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setSuccess(true);
-        resetForm();
-        setTimeout(() => {
-          setSuccess(false);
-        }, 5000);
-      } else {
-        setError(result.message || "Gửi báo cáo thất bại");
-      }
-    } catch (error) {
-      console.error("Lỗi gửi báo cáo:", error);
-      setError("Có lỗi xảy ra. Vui lòng thử lại.");
-    } finally {
-      setSubmitting(false);
     }
   };
 
