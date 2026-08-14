@@ -274,6 +274,31 @@ const body = await request.json();
     const updatedCourse = await updateRes.json();
     console.log("✅ Course updated:", updatedCourse);
 
+    // 8. Tự động đóng lớp khi đạt max_students
+    if (updatedStudents.length >= course.max_students) {
+      console.log(`🔒 Lớp ${course.course_id} đã đủ sĩ số. Đang đóng lớp...`);
+      const closeRes = await fetch(`${API_BASE}/courses/${course.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "closed" })
+      });
+      if (closeRes.ok) {
+        console.log(`✅ Đã đóng lớp ${course.course_id}`);
+        
+        // Kiểm tra xem tất cả các section cùng parent_course_id đã đóng chưa
+        if (course.parent_course_id) {
+          const allSecRes = await fetch(`${API_BASE}/courses?parent_course_id=${course.parent_course_id}`);
+          const allSecs = await allSecRes.json();
+          const allClosed = allSecs.every(s => s.status === 'closed' || s.status === 'completed' || s.status === 'cancelled');
+          
+          if (allClosed) {
+            console.log(`🏁 Tất cả mã lớp của khóa học ${course.parent_course_id} đã đóng.`);
+            // Có thể cập nhật trạng thái của "parent entity" nếu có
+          }
+        }
+      }
+    }
+
     // ============================================================
     // 🔥 PHẦN QUAN TRỌNG: GỬI THÔNG BÁO & CẬP NHẬT VÍ TUTOR
     // ============================================================

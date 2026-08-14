@@ -288,6 +288,103 @@
   margin: 0;
 }
 
+/* Sections List */
+.sectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.sectionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.sectionItem:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.activeSection {
+  border: 2px solid #2563eb;
+  background: #eff6ff;
+}
+
+.sectionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sectionMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sectionCode {
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 14px;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.sectionTutor {
+  font-weight: 600;
+  color: #374151;
+  font-size: 15px;
+}
+
+.sectionStats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionSlots {
+  font-size: 14px;
+  color: #059669;
+  font-weight: 500;
+}
+
+.slotsFull {
+  color: #dc2626;
+}
+
+.viewSecBtn {
+  padding: 8px 16px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.viewSecBtn:hover {
+  background: #1d4ed8;
+}
+
+.currentLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .noReviews {
   color: #6b7280;
   text-align: center;

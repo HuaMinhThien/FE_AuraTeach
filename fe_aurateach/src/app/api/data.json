@@ -1682,11 +1682,13 @@
       ],
       "time_slot": "09:00-11:00",
       "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "pending_tutor",
+      "status": "pending_student",
       "created_by": "admin_01",
-      "tutor_id": null,
-      "tutor_assigned_at": null,
-      "students": [],
+      "tutor_id": "tutor_01",
+      "tutor_assigned_at": "2026-08-08T07:31:58.685Z",
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
       "permanent_room_url": "https://meet.google.com/room_1786146756151",
       "created_at": "2026-08-07T23:52:36.151Z",
       "id": "xb4zJ1Y2Urw",
@@ -1724,10 +1726,10 @@
       ],
       "time_slot": "10:00-12:00",
       "thumbnail": "/img/class/default-class-1.jpg",
-      "status": "pending_tutor",
+      "status": "pending_student",
       "created_by": "admin_01",
-      "tutor_id": null,
-      "tutor_assigned_at": null,
+      "tutor_id": "tutor_01",
+      "tutor_assigned_at": "2026-08-08T07:32:50.402Z",
       "students": [
         "user_1782855725159_tqroz6"
       ],
@@ -1804,6 +1806,47 @@
       "cancelled_at": null,
       "cancelled_reason": null,
       "created_at": "2026-08-08T04:48:09.692Z"
+    },
+    {
+      "course_id": "course_1786172663741",
+      "class_name": "hâha",
+      "title": "hâha",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "gưefadv",
+      "max_students": 2,
+      "min_students": 2,
+      "price_per_session": 120000,
+      "start_date": "2026-08-24",
+      "total_weeks": 2,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "20:00-22:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "students": [
+        "user_1782855725159_tqroz6"
+      ],
+      "permanent_room_url": "https://meet.google.com/room_1786172663741",
+      "created_at": "2026-08-08T07:04:23.741Z",
+      "id": "1ciGogBZw2c",
+      "suggested_tutors": [
+        "tutor_03",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273",
+        "tutor_1786117127200",
+        "tutor_1786120063307"
+      ]
     }
   ],
   "reviews": [
@@ -2093,6 +2136,38 @@
       "payment_amount": 320000,
       "payment_method": "qr",
       "transaction_id": null
+    },
+    {
+      "booking_id": "bk-1786172731277",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course_1786172663741",
+      "tutor_id": null,
+      "status": "pending",
+      "booking_date": "2026-08-08T07:05:31.277Z",
+      "created_at": "2026-08-08T07:05:31.277Z",
+      "updated_at": "2026-08-08T07:05:31.277Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 240000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "U11IQlxHll4"
+    },
+    {
+      "booking_id": "bk-1786174415643",
+      "student_id": "user_1782855725159_tqroz6",
+      "course_id": "course_1786146756151",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "booking_date": "2026-08-08T07:33:35.643Z",
+      "created_at": "2026-08-08T07:33:35.643Z",
+      "updated_at": "2026-08-08T07:33:35.643Z",
+      "notes": "",
+      "payment_status": "unpaid",
+      "payment_amount": 200000,
+      "payment_method": "qr",
+      "transaction_id": null,
+      "id": "poKwqY1b3wc"
     }
   ],
   "payments": [
@@ -3796,8 +3871,440 @@
       "message": "Học viên Liêm Tran đã đăng ký khóa học \"Hỗ trợ bài tập về nhà cho hs cấp 1\" với gia sư.",
       "related_id": "bk-1786170056088",
       "related_type": "booking",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-08-08T06:20:56.344Z"
+    },
+    {
+      "id": "Ag1ojgExzek",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.149Z"
+    },
+    {
+      "id": "W0_UFQj6VeY",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.496Z"
+    },
+    {
+      "id": "UEAnhz3ySC0",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.536Z"
+    },
+    {
+      "id": "snP3KZCRDsE",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.573Z"
+    },
+    {
+      "id": "dkI8omdBpGk",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.706Z"
+    },
+    {
+      "id": "6ExU0Rk53Gk",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.835Z"
+    },
+    {
+      "id": "FcO1SQ5qzl0",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:24.942Z"
+    },
+    {
+      "id": "icpX8Znc3SQ",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:25.211Z"
+    },
+    {
+      "id": "gz-pHt0w1aA",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"hâha\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1786172663741",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:04:25.295Z"
+    },
+    {
+      "id": "zJvxgFU65Rc",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"hâha\" với gia sư.",
+      "related_id": "bk-1786172731277",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-08-08T07:05:31.362Z"
+    },
+    {
+      "id": "FcjAZc7_63k",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "🎉 Bạn đã nhận lớp thành công!",
+      "message": "Bạn đã nhận lớp \"ôn nè ní\". Học sinh sẽ đăng ký trong thời gian tới.",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": true,
+      "created_at": "2026-08-08T07:31:58.726Z"
+    },
+    {
+      "id": "vHPeI9x9pd4",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:58.764Z"
+    },
+    {
+      "id": "bYIsf2Yu8ec",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:58.835Z"
+    },
+    {
+      "id": "7qg_t-mSu3k",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:58.942Z"
+    },
+    {
+      "id": "dPx0Sg4ETh8",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.070Z"
+    },
+    {
+      "id": "Kqww6K7oKzM",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.202Z"
+    },
+    {
+      "id": "oZCL8fyeiiE",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.294Z"
+    },
+    {
+      "id": "1TEZpBBwtvY",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.392Z"
+    },
+    {
+      "id": "PokBHbgW-QU",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.485Z"
+    },
+    {
+      "id": "W2Pku-G9U50",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.660Z"
+    },
+    {
+      "id": "emi_lAu3_bw",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.755Z"
+    },
+    {
+      "id": "5-M4U_3Ziyk",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786146756151",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:31:59.796Z"
+    },
+    {
+      "id": "CVPYS6sVjwE",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "🎉 Bạn đã nhận lớp thành công!",
+      "message": "Bạn đã nhận lớp \"ôn nữa nè ní\". Học sinh sẽ đăng ký trong thời gian tới.",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": true,
+      "created_at": "2026-08-08T07:32:50.434Z"
+    },
+    {
+      "id": "5rE5cHZ0Ls4",
+      "receiver_id": "u-02",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.459Z"
+    },
+    {
+      "id": "eiZWbgzRM1Q",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.489Z"
+    },
+    {
+      "id": "qrPgaop6kv4",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.517Z"
+    },
+    {
+      "id": "whoZ6Dzd83c",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.546Z"
+    },
+    {
+      "id": "r8RAYys5xhI",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.572Z"
+    },
+    {
+      "id": "P7BVfCPER3Y",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.740Z"
+    },
+    {
+      "id": "N_Lv8_cvZq4",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.795Z"
+    },
+    {
+      "id": "8jgMBkh5QJI",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.945Z"
+    },
+    {
+      "id": "CnD_tvN5Nww",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:50.971Z"
+    },
+    {
+      "id": "g4gEcosag7U",
+      "receiver_id": "user_1786117127190_0ef2r9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:51.121Z"
+    },
+    {
+      "id": "AHgA66C5C_g",
+      "receiver_id": "user_1786120063299_yt0bd1",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "❌ Lớp đã có tutor",
+      "message": "Lớp \"ôn nữa nè ní\" đã có tutor nhận. Hẹn bạn lần sau!",
+      "related_id": "course_1786147093264",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-08T07:32:51.209Z"
+    },
+    {
+      "id": "8-Bb73viB74",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"ôn nè ní\".",
+      "related_id": "bk-1786174415643",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-08T07:33:35.770Z"
+    },
+    {
+      "id": "m5UlzZc01U8",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "type": "booking",
+      "title": "📊 Đăng ký khóa học mới",
+      "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"ôn nè ní\" với gia sư.",
+      "related_id": "bk-1786174415643",
+      "related_type": "booking",
+      "is_read": true,
+      "created_at": "2026-08-08T07:33:35.798Z"
     }
   ],
   "tutor_update_requests": [
@@ -4544,119 +5051,119 @@
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_01",
       "suggested_at": "2026-08-07T23:52:36.410Z",
-      "status": "pending"
+      "status": "accepted"
     },
     {
       "id": "YDDcYnPYSok",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_02",
       "suggested_at": "2026-08-07T23:52:36.497Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "nA78RZzYXdA",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_03",
       "suggested_at": "2026-08-07T23:52:36.646Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "fXmQSmODuc0",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_04",
       "suggested_at": "2026-08-07T23:52:36.764Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "jX0-203nU2c",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1782855815613",
       "suggested_at": "2026-08-07T23:52:36.896Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "C9k2T3Olqwo",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1784195991707",
       "suggested_at": "2026-08-07T23:52:37.028Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "Y72F4gySNt4",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1784198598774",
       "suggested_at": "2026-08-07T23:52:37.131Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "0K52cUN20go",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1784278196031",
       "suggested_at": "2026-08-07T23:52:37.245Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "cffCMrssPNo",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1785245366805",
       "suggested_at": "2026-08-07T23:52:37.370Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "_Ti3UkcPhSk",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1785489685273",
       "suggested_at": "2026-08-07T23:52:37.582Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "qyC_PPCm8zE",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1786117127200",
       "suggested_at": "2026-08-07T23:52:37.674Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "5UUQc7e-ThM",
       "course_id": "course_1786146756151",
       "tutor_id": "tutor_1786120063307",
       "suggested_at": "2026-08-07T23:52:37.734Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "NkOLTsngYuE",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_01",
       "suggested_at": "2026-08-07T23:58:13.365Z",
-      "status": "pending"
+      "status": "accepted"
     },
     {
       "id": "AQ33ZAoP0O4",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_02",
       "suggested_at": "2026-08-07T23:58:13.473Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "IB4XqtNKARI",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_03",
       "suggested_at": "2026-08-07T23:58:13.593Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "MIx6WiV0-8A",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_04",
       "suggested_at": "2026-08-07T23:58:13.712Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "cicl7S3kclY",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1782855815613",
       "suggested_at": "2026-08-07T23:58:13.836Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "VdCnwfXHrPs",
@@ -4670,41 +5177,104 @@
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1784198598774",
       "suggested_at": "2026-08-07T23:58:14.134Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "8cba6H_e58c",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1784278196031",
       "suggested_at": "2026-08-07T23:58:14.240Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "eYzF3AtjqQg",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1785245366805",
       "suggested_at": "2026-08-07T23:58:14.355Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "m8LPz7tNI28",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1785489685273",
       "suggested_at": "2026-08-07T23:58:14.504Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "m3VL6kVp6MI",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1786117127200",
       "suggested_at": "2026-08-07T23:58:14.593Z",
-      "status": "pending"
+      "status": "expired"
     },
     {
       "id": "-1p9QJwwlKc",
       "course_id": "course_1786147093264",
       "tutor_id": "tutor_1786120063307",
       "suggested_at": "2026-08-07T23:58:14.733Z",
+      "status": "expired"
+    },
+    {
+      "id": "hj83sg6spc4",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-08T07:04:24.039Z",
+      "status": "pending"
+    },
+    {
+      "id": "ayCVcmjYHac",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-08T07:04:24.336Z",
+      "status": "pending"
+    },
+    {
+      "id": "Uo8r3WnOPZg",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-08T07:04:24.510Z",
+      "status": "pending"
+    },
+    {
+      "id": "30IfPQuzE8w",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-08T07:04:24.550Z",
+      "status": "pending"
+    },
+    {
+      "id": "T26En1yLwMk",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-08T07:04:24.632Z",
+      "status": "pending"
+    },
+    {
+      "id": "7Onj8TC99Dc",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-08T07:04:24.804Z",
+      "status": "pending"
+    },
+    {
+      "id": "i4cmWV5-uHA",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-08T07:04:24.923Z",
+      "status": "pending"
+    },
+    {
+      "id": "DK63VsKy5Fw",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1786117127200",
+      "suggested_at": "2026-08-08T07:04:25.025Z",
+      "status": "pending"
+    },
+    {
+      "id": "vo2q0Av-5G8",
+      "course_id": "course_1786172663741",
+      "tutor_id": "tutor_1786120063307",
+      "suggested_at": "2026-08-08T07:04:25.248Z",
       "status": "pending"
     }
   ],
