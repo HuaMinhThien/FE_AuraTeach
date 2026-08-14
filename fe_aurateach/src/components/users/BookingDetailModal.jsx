@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import apiClient from "@/services/apiClient";
 import "../../css/student-style/bookingDetailModal.css";
+import { useRouter } from "next/navigation"; // <-- Thêm dòng này vào
 
 export default function BookingDetailModal({ 
   course, 

@@ -1,8 +1,48 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import MessageInput from "./MessageInput";
 import styles from "./ChatWindow.module.css";
+
+// Tách hàm định dạng ra ngoài để tránh khởi tạo lại liên tục
+const formatTime = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+};
+
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Hôm nay";
+  if (date.toDateString() === yesterday.toDateString()) return "Hôm qua";
+  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+};
+
+// Helper kiểm tra và render nội dung tin nhắn (Ảnh hoặc Văn bản)
+const renderMessageContent = (content, styles) => {
+  const textContent = content || "";
+  const isImage = textContent.startsWith('http') && 
+    (/\.(jpg|jpeg|png|gif|webp|bmp|svg)($|\?)/i.test(textContent) || textContent.includes('cloudinary.com'));
+
+  if (isImage) {
+    return (
+      <div className={styles.filePreview}>
+        <img
+          src={textContent}
+          alt="Hình ảnh đính kèm"
+          className={styles.messageImage}
+          onClick={() => window.open(textContent, '_blank')}
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  return <p className={styles.messageText}>{textContent}</p>;
+};
 
 export default function ChatWindow({
   conversation,
@@ -17,29 +57,24 @@ export default function ChatWindow({
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
-  const prevMessageCountRef = useRef(messages.length);
 
-  const getCurrentUserId = () => {
+  const getCurrentUserId = useCallback(() => {
     return currentUser?.user_id || currentUser?.id;
-  };
+  }, [currentUser]);
 
-  // ✅ Lấy thông tin người khác
+  // Thông tin người trò chuyện cùng
   const otherUser = conversation?.other_user || {};
   const otherUserName = otherUser.full_name || "Người dùng";
   const otherUserAvatar = otherUser.avatar || "/img/default-avatar.svg";
   const otherUserRole = otherUser.role || "student";
 
-  // ✅ Khi messages load/change: scroll xuống tin nhắn cuối + auto-focus input
+  // Auto scroll xuống dưới khi có tin nhắn mới hoặc load lần đầu
   useEffect(() => {
     if (messages.length > 0 && messagesEndRef.current) {
       const lastMsg = messages[messages.length - 1];
       const currentUserId = getCurrentUserId();
       
-      // ✅ Scroll xuống cuối nếu:
-      // 1. User vừa gửi tin nhắn (lastMsg.sender_id === currentUserId)
-      // 2. Hoặc đây là lần load đầu tiên (isInitialLoad)
       if (isInitialLoad?.current || lastMsg?.sender_id === currentUserId) {
-        // Dùng requestAnimationFrame để scroll sau khi DOM update
         requestAnimationFrame(() => {
           messagesEndRef.current?.scrollIntoView({ 
             behavior: isInitialLoad?.current ? "auto" : "smooth" 
@@ -51,54 +86,24 @@ export default function ChatWindow({
         }
       }
     }
-    
-    prevMessageCountRef.current = messages.length;
-  }, [messages, isInitialLoad]);
+  }, [messages, isInitialLoad, getCurrentUserId]);
 
-  // ✅ Auto-focus input khi conversation thay đổi
+  // Auto-focus input khi đổi cuộc trò chuyện
   useEffect(() => {
     if (inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 200);
+      const timer = setTimeout(() => inputRef.current?.focus(), 200);
+      return () => clearTimeout(timer);
     }
   }, [conversation?.id]);
 
   const handleScroll = (e) => {
-    const { scrollTop } = e.target;
-    if (scrollTop === 0 && hasMore && onLoadMore) {
+    if (e.target.scrollTop === 0 && hasMore && onLoadMore) {
       onLoadMore();
     }
   };
 
-  const formatTime = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString("vi-VN", { 
-      hour: "2-digit", 
-      minute: "2-digit" 
-    });
-  };
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return "Hôm nay";
-    }
-    if (date.toDateString() === yesterday.toDateString()) {
-      return "Hôm qua";
-    }
-    return date.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
-  const groupMessagesByDate = () => {
+  // Gom nhóm tin nhắn theo ngày
+  const messageGroups = React.useMemo(() => {
     const groups = [];
     let currentDate = "";
 
@@ -116,42 +121,40 @@ export default function ChatWindow({
     });
 
     return groups;
-  };
+  }, [messages]);
 
-  const messageGroups = groupMessagesByDate();
+  const renderUserInfoHeader = () => (
+    <div className={styles.chatHeader}>
+      <div className={styles.userInfo}>
+        {otherUserAvatar && otherUserAvatar !== "/img/default-avatar.svg" ? (
+          <img
+            src={otherUserAvatar}
+            alt={otherUserName}
+            className={styles.headerAvatar}
+            onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
+          />
+        ) : (
+          <div className={styles.headerAvatarPlaceholder}>
+            {otherUserName?.charAt(0) || "?"}
+          </div>
+        )}
+        <div>
+          <span className={styles.headerName}>{otherUserName}</span>
+          <span className={styles.headerRole}>
+            {otherUserRole === "tutor" ? "👨‍🏫 Gia sư" : "🎓 Học viên"}
+          </span>
+        </div>
+      </div>
+      <div className={styles.headerActions}>
+        <button className={styles.headerBtn} title="Làm mới">🔄</button>
+      </div>
+    </div>
+  );
 
   if (messageGroups.length === 0) {
     return (
       <div className={styles.chatWindow}>
-        <div className={styles.chatHeader}>
-          <div className={styles.userInfo}>
-            {otherUserAvatar && otherUserAvatar !== "/img/default-avatar.svg" ? (
-              <img
-                src={otherUserAvatar}
-                alt={otherUserName}
-                className={styles.headerAvatar}
-                onError={(e) => {
-                  e.target.src = "/img/default-avatar.svg";
-                }}
-              />
-            ) : (
-              <div className={styles.headerAvatarPlaceholder}>
-                {otherUserName?.charAt(0) || "?"}
-              </div>
-            )}
-            <div>
-              <span className={styles.headerName}>{otherUserName}</span>
-              <span className={styles.headerRole}>
-                {otherUserRole === "tutor" ? "👨‍🏫 Gia sư" : "🎓 Học viên"}
-              </span>
-            </div>
-          </div>
-          <div className={styles.headerActions}>
-            <button className={styles.headerBtn} title="Làm mới">
-              🔄
-            </button>
-          </div>
-        </div>
+        {renderUserInfoHeader()}
         <div className={styles.emptyMessages}>
           <span className={styles.emptyIcon}>💬</span>
           <p>Chưa có tin nhắn nào</p>
@@ -162,37 +165,11 @@ export default function ChatWindow({
     );
   }
 
+  const currentUserId = getCurrentUserId();
+
   return (
     <div className={styles.chatWindow}>
-      <div className={styles.chatHeader}>
-        <div className={styles.userInfo}>
-          {otherUserAvatar && otherUserAvatar !== "/img/default-avatar.svg" ? (
-            <img
-              src={otherUserAvatar}
-              alt={otherUserName}
-              className={styles.headerAvatar}
-              onError={(e) => {
-                e.target.src = "/img/default-avatar.svg";
-              }}
-            />
-          ) : (
-            <div className={styles.headerAvatarPlaceholder}>
-              {otherUserName?.charAt(0) || "?"}
-            </div>
-          )}
-          <div>
-            <span className={styles.headerName}>{otherUserName}</span>
-            <span className={styles.headerRole}>
-              {otherUserRole === "tutor" ? "👨‍🏫 Gia sư" : "🎓 Học viên"}
-            </span>
-          </div>
-        </div>
-        <div className={styles.headerActions}>
-          <button className={styles.headerBtn} title="Làm mới">
-            🔄
-          </button>
-        </div>
-      </div>
+      {renderUserInfoHeader()}
 
       <div 
         className={styles.messagesContainer} 
@@ -211,80 +188,12 @@ export default function ChatWindow({
             <div className={styles.dateDivider}>
               <span>{group.dateDisplay}</span>
             </div>
-              {group.messages.map((msg, index) => {
-              const currentUserId = getCurrentUserId();
+            {group.messages.map((msg, index) => {
               const isOwn = msg.sender_id === currentUserId;
-
-              const renderFileContent = () => {
-                if (!msg.file_type) return null;
-                
-                const fileDataUrl = msg.file_data || msg.data;
-                const isImage = msg.file_type.startsWith('image/');
-                const isVideo = msg.file_type.startsWith('video/');
-
-                if (isImage && fileDataUrl) {
-                  return (
-                    <div className={styles.filePreview}>
-                      <img
-                        src={fileDataUrl}
-                        alt={msg.file_name || "Hình ảnh"}
-                        className={styles.messageImage}
-                        onClick={() => window.open(fileDataUrl, '_blank')}
-                        loading="lazy"
-                      />
-                    </div>
-                  );
-                }
-
-                if (isVideo && fileDataUrl) {
-                  return (
-                    <div className={styles.filePreview}>
-                      <video
-                        controls
-                        className={styles.messageVideo}
-                        preload="metadata"
-                      >
-                        <source src={fileDataUrl} type={msg.file_type} />
-                        Trình duyệt không hỗ trợ video
-                      </video>
-                    </div>
-                  );
-                }
-
-                // File attachment (PDF, DOC, ZIP, etc.)
-                const formatFileSize = (bytes) => {
-                  if (!bytes) return "";
-                  if (bytes < 1024) return `${bytes}B`;
-                  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-                  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-                };
-
-                return (
-                  <div className={styles.fileAttachment}>
-                    <div className={styles.fileIcon}>
-                      📎
-                    </div>
-                    <div className={styles.fileInfo}>
-                      <span className={styles.fileName}>{msg.file_name || "File đính kèm"}</span>
-                      <span className={styles.fileSize}>{formatFileSize(msg.file_size)}</span>
-                    </div>
-                    {fileDataUrl && (
-                      <a
-                        href={fileDataUrl}
-                        download={msg.file_name}
-                        className={styles.fileDownloadBtn}
-                        title="Tải xuống"
-                      >
-                        ⬇
-                      </a>
-                    )}
-                  </div>
-                );
-              };
 
               return (
                 <div
-                  key={msg.id || index}
+                  key={msg.id || msg.message_id || index}
                   className={`${styles.messageWrapper} ${isOwn ? styles.own : styles.other}`}
                 >
                   {!isOwn && (
@@ -294,9 +203,7 @@ export default function ChatWindow({
                           src={otherUserAvatar}
                           alt=""
                           className={styles.msgAvatar}
-                          onError={(e) => {
-                            e.target.src = "/img/default-avatar.svg";
-                          }}
+                          onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
                         />
                       ) : (
                         <div className={styles.msgAvatarPlaceholder}>
@@ -307,11 +214,7 @@ export default function ChatWindow({
                   )}
                   <div className={styles.messageContent}>
                     <div className={`${styles.messageBubble} ${isOwn ? styles.ownBubble : styles.otherBubble}`}>
-                      {msg.file_type ? (
-                        renderFileContent()
-                      ) : (
-                        <p className={styles.messageText}>{msg.content}</p>
-                      )}
+                      {renderMessageContent(msg.content, styles)}
                     </div>
                     <span className={styles.messageTime}>{formatTime(msg.created_at)}</span>
                   </div>

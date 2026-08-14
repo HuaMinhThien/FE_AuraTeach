@@ -209,7 +209,8 @@ export default function LoginPage() {
       // ⚡ Xóa cờ "just_logged_out" đi để cho phép đồng bộ lại khi Google trả về session mới
       sessionStorage.removeItem("just_logged_out");
       
-      await signIn("google", { callbackUrl: "/login" });
+      // Sửa lại thành thế này:
+      await signIn("google"); 
     } catch (error) {
       console.error("❌ Google login error:", error);
       setError("Đăng nhập bằng Google thất bại, vui lòng thử lại");

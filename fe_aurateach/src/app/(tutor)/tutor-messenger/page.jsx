@@ -28,7 +28,6 @@ export default function TutorMessengerPage() {
   const isInitialLoadRef = useRef(true);
   const isSendingRef = useRef(false);
   const isPollingActiveRef = useRef(false);
-  const isFetchingRef = useRef(false);
   const lastMessageCountRef = useRef(0);
 
   useEffect(() => {
@@ -85,7 +84,6 @@ export default function TutorMessengerPage() {
     }
   };
 
-  // 📡 Lấy danh sách hội thoại trực tiếp từ Database qua API
   const fetchConversationsFromDB = async (userId) => {
     try {
       const rawRes = await conversationService.getConversations(userId);
@@ -208,7 +206,7 @@ export default function TutorMessengerPage() {
     setHasMore(false);
   };
 
-  // 🚀 TỐI ƯU HÓA: Gửi tin nhắn ổn định, cập nhật ngay lập tức và ngăn lỗi thông báo chưa đọc ảo trên Production
+  // 🚀 TỐI ƯU HÓA: Gửi tin nhắn và file trực tiếp dưới dạng URL Cloudinary vào content
   const sendMessage = async (content) => {
     if (!selectedConversation || !user || isSendingRef.current) return;
     
@@ -224,7 +222,8 @@ export default function TutorMessengerPage() {
       const convId = selectedConversation.id || selectedConversation.conversation_id;
       const nowTime = new Date().toISOString();
       
-      const messageContentText = isFile ? `[${content.file_type.startsWith('image') ? 'Hình ảnh' : content.file_type.startsWith('video') ? 'Video' : 'File'}] ${content.file_name}` : content.trim();
+      // 🛠️ QUAN TRỌNG: Nếu là file (ảnh/video), lưu trực tiếp URL vào content để FE tự động nhận diện hiển thị
+      const messageContentText = isFile ? content.file_data : content.trim();
       const tempMessageId = isFile ? content.id : `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
       const newMessage = {
@@ -238,12 +237,6 @@ export default function TutorMessengerPage() {
         content: messageContentText,
         created_at: nowTime,
         is_read: true,
-        ...(isFile ? {
-          file_name: content.file_name,
-          file_type: content.file_type,
-          file_size: content.file_size,
-          file_data: content.file_data,
-        } : {}),
       };
 
       // 1. Cập nhật UI ngay lập tức
@@ -265,16 +258,17 @@ export default function TutorMessengerPage() {
         });
       }
 
-      // 3. Cập nhật trạng thái hội thoại, đánh dấu unread_count = 0 để chính mình nhắn không bị báo chưa đọc
+      // 3. Cập nhật trạng thái hội thoại
+      const previewText = isFile ? "[Hình ảnh]" : messageContentText;
       await messageService.updateConversation(convId, {
-        last_message: messageContentText,
+        last_message: previewText,
         last_message_time: nowTime,
         unread_count: 0,
       });
 
       setConversations(prev => prev.map(c => {
         if ((c.id || c.conversation_id) === convId) {
-          return { ...c, last_message: messageContentText, last_message_time: nowTime, unread_count: 0 };
+          return { ...c, last_message: previewText, last_message_time: nowTime, unread_count: 0 };
         }
         return c;
       }));
@@ -312,7 +306,7 @@ export default function TutorMessengerPage() {
     await fetchMessagesFromDB(convId, true);
   };
 
-  // 🔄 Tích hợp Polling tự động làm mới tin nhắn ngầm mỗi 3 giây
+  // 🔄 Polling tự động làm mới tin nhắn ngầm mỗi 3 giây
   useEffect(() => {
     stopPolling();
     if (!selectedConversation) return;
@@ -340,7 +334,9 @@ export default function TutorMessengerPage() {
 
         if (msgList.length > 0) {
           const latestMsg = msgList[msgList.length - 1];
-          setConversations(prev => prev.map(c => ((c.id || c.conversation_id) === convId) ? { ...c, last_message: latestMsg.content, last_message_time: latestMsg.created_at } : c));
+          const isImg = latestMsg.content && latestMsg.content.includes('http');
+          const previewText = isImg ? "[Hình ảnh]" : latestMsg.content;
+          setConversations(prev => prev.map(c => ((c.id || c.conversation_id) === convId) ? { ...c, last_message: previewText, last_message_time: latestMsg.created_at } : c));
         }
       } catch (error) {
         console.error("❌ [POLLING ERROR] Lỗi khi fetch tin nhắn mới:", error);

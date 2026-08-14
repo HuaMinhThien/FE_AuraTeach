@@ -10,9 +10,9 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
   const fileInputRef = useRef(null);
   const menuRef = useRef(null);
 
-  // ✅ Sử dụng ref từ ngoài nếu có, không thì dùng ref nội bộ
   const inputRef = externalInputRef || textareaRef;
 
+  // Tự động co giãn textarea
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
@@ -20,7 +20,7 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
     }
   }, [message, inputRef]);
 
-  // ✅ Đóng menu khi click ra ngoài
+  // Đóng menu khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -36,7 +36,6 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
     if (message.trim() && !sending) {
       onSend(message);
       setMessage("");
-      // ✅ Focus lại input sau khi gửi để có thể gõ tiếp
       if (inputRef.current) {
         inputRef.current.style.height = "auto";
         inputRef.current.focus();
@@ -51,32 +50,23 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
     }
   };
 
-  // ✅ Focus input khi component mount hoặc khi key (conversation) thay đổi
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [inputRef]);
-
-  // ✅ Xử lý chọn file
   const handleFileSelect = (type) => {
     setShowMenu(false);
-    if (fileInputRef.current) {
-      if (type === "image") {
-        fileInputRef.current.accept = "image/*";
-        fileInputRef.current.multiple = true;
-      } else if (type === "video") {
-        fileInputRef.current.accept = "video/*";
-        fileInputRef.current.multiple = false;
-      } else if (type === "file") {
-        fileInputRef.current.accept = "*";
-        fileInputRef.current.multiple = true;
-      }
-      fileInputRef.current.click();
+    if (!fileInputRef.current) return;
+    
+    if (type === "image") {
+      fileInputRef.current.accept = "image/*";
+      fileInputRef.current.multiple = true;
+    } else if (type === "video") {
+      fileInputRef.current.accept = "video/*";
+      fileInputRef.current.multiple = false;
+    } else {
+      fileInputRef.current.accept = "*";
+      fileInputRef.current.multiple = true;
     }
+    fileInputRef.current.click();
   };
 
-  // ✅ Xử lý file sau khi chọn
   const handleFilesChange = (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -84,35 +74,24 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const fileData = {
+        onSend({
           id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           name: file.name,
           type: file.type,
           size: file.size,
-          data: event.target.result, // base64
-        };
-        onSend(fileData);
+          data: event.target.result,
+        });
       };
       reader.readAsDataURL(file);
     });
 
-    // Reset input
     e.target.value = "";
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return `${bytes}B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+    if (inputRef.current) inputRef.current.focus();
   };
 
   return (
     <form className={styles.inputContainer} onSubmit={handleSubmit}>
       <div className={styles.inputWrapper}>
-        {/* Hidden file input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -120,12 +99,11 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
           onChange={handleFilesChange}
         />
 
-        {/* Nút 3 chấm */}
         <div className={styles.menuContainer} ref={menuRef}>
           <button
             type="button"
             className={styles.menuBtn}
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={() => setShowMenu(prev => !prev)}
             title="Đính kèm file"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -137,29 +115,14 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
 
           {showMenu && (
             <div className={styles.dropdownMenu}>
-              <button
-                type="button"
-                className={styles.menuItem}
-                onClick={() => handleFileSelect("image")}
-              >
-                <span className={styles.menuIcon}>🖼️</span>
-                <span>Hình ảnh</span>
+              <button type="button" className={styles.menuItem} onClick={() => handleFileSelect("image")}>
+                <span className={styles.menuIcon}>🖼️</span> <span>Hình ảnh</span>
               </button>
-              <button
-                type="button"
-                className={styles.menuItem}
-                onClick={() => handleFileSelect("video")}
-              >
-                <span className={styles.menuIcon}>🎬</span>
-                <span>Video</span>
+              <button type="button" className={styles.menuItem} onClick={() => handleFileSelect("video")}>
+                <span className={styles.menuIcon}>🎬</span> <span>Video</span>
               </button>
-              <button
-                type="button"
-                className={styles.menuItem}
-                onClick={() => handleFileSelect("file")}
-              >
-                <span className={styles.menuIcon}>📎</span>
-                <span>File</span>
+              <button type="button" className={styles.menuItem} onClick={() => handleFileSelect("file")}>
+                <span className={styles.menuIcon}>📎</span> <span>File</span>
               </button>
             </div>
           )}
@@ -176,16 +139,13 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
           disabled={sending}
           autoFocus
         />
+
         <button 
           type="submit" 
           className={styles.sendBtn}
           disabled={!message.trim() || sending}
         >
-          {sending ? (
-            <span className={styles.sendingSpinner}></span>
-          ) : (
-            "➤"
-          )}
+          {sending ? <span className={styles.sendingSpinner}></span> : "➤"}
         </button>
       </div>
     </form>

@@ -97,8 +97,8 @@
 }
 
 .status-cancelled {
-  background: #fee2e2;
-  color: #991b1b;
+  background-color: #fee2e2; /* Màu nền đỏ nhạt */
+  color: #dc2626;          /* Màu chữ đỏ đậm */
 }
 
 /* Payment Badges */
@@ -245,6 +245,12 @@
     padding: 3px 10px;
   }
 }
+
+.payment-badge.payment-cancelled {
+  background-color: #fee2e2; /* Màu nền đỏ nhạt */
+  color: #dc2626;          /* Màu chữ đỏ đậm */
+}
+
 
 @media (max-width: 480px) {
   .booking-table td {

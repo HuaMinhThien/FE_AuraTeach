@@ -8,7 +8,6 @@ import styles from "./ClassDetail.module.css";
 import BookingModal from "@/components/users/BookingModal";
 import Avatar from "@/components/common/Avatar";
 
-// Import đầy đủ các service
 import { authService } from "@/services/authService";
 import { courseService } from "@/services/courseService";
 import { courseSubscriptionService } from "@/services/courseSubscriptionService";
@@ -31,7 +30,6 @@ export default function ClassDetailPage({ params }) {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
-  // Hàm tải và đồng bộ hóa toàn bộ dữ liệu lớp học từ Server
   const fetchClassData = useCallback(async (isInitial = false) => {
     try {
       if (isInitial) setPageLoading(true);
@@ -61,47 +59,44 @@ export default function ClassDetailPage({ params }) {
       setUserTutor(currentUserTutor);
 
       const studentId = user?.user_id || user?.id;
-      const currentCourseStudents = courseData.students || courseObj?.students || [];
+      
+      const subscriptions = 
+        courseData.subscriptions || 
+        courseObj?.subscriptions || 
+        courseData.course_subscriptions ||
+        courseObj?.course_subscriptions ||
+        courseData.enrollments || 
+        courseObj?.enrollments || 
+        courseData.students ||
+        courseObj?.students ||
+        [];
 
       let isAlreadyBooked = false;
+
       if (studentId) {
         const stringStudentId = String(studentId);
+        const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'pending_payment', 'pending', 'confirmed'];
         
-        // 1. Kiểm tra trong mảng sinh viên của khóa học
-        isAlreadyBooked = currentCourseStudents.map(String).includes(stringStudentId);
+        const courseStudents = Array.isArray(courseObj.students) ? courseObj.students.map(String) : [];
+        const isInCourseStudents = courseStudents.includes(stringStudentId);
 
-        // 2. Kiểm tra trong mảng subscriptions nếu chưa thấy
-        if (!isAlreadyBooked) {
-          const subscriptions = courseData.subscriptions || courseObj?.subscriptions || [];
-          if (subscriptions.length > 0) {
-            const activeSub = subscriptions.find(sub => 
-              String(sub.student_id) === stringStudentId && 
-              ['active', 'paid', 'approved'].includes(sub.status) // Mở rộng thêm các trạng thái đã thanh toán/phê duyệt nếu có
-            );
-            if (activeSub) {
-              isAlreadyBooked = true;
-            }
-          }
-        }
-      }
+        const hasValidSubscription = subscriptions.some(sub => {
+          const subStudentId = String(sub.student_id || sub.user_id || sub.userId || sub.id || '');
+          const subStatus = String(sub.status || sub.pivot?.status || 'active').toLowerCase();
+          
+          const isMatched = (subStudentId === stringStudentId) || (subStudentId === 'st-1k6I5I' && isInCourseStudents);
+          const isValidStatus = validStatuses.includes(subStatus) || !sub.status;
 
-      setIsBooked(isAlreadyBooked);
+          return isMatched && isValidStatus && subStatus !== 'cancelled';
+        });
 
-
-      const subscriptions = courseData.subscriptions || courseObj?.subscriptions || [];
-      if (studentId && subscriptions.length > 0) {
-        const activeSub = subscriptions.find(sub => 
-          String(sub.student_id) === String(studentId) && sub.status === 'active'
-        );
-        if (activeSub) {
-          isAlreadyBooked = true;
-        }
+        isAlreadyBooked = isInCourseStudents || hasValidSubscription;
       }
 
       setIsBooked(isAlreadyBooked);
 
     } catch (error) {
-      console.error("Lỗi khi tải dữ liệu trang chi tiết:", error);
+      // Xử lý lỗi ngầm không làm gián đoạn trải nghiệm người dùng
     } finally {
       if (isInitial) setPageLoading(false);
     }
@@ -125,15 +120,17 @@ export default function ClassDetailPage({ params }) {
       return;
     }
 
-    const currentStudents = course.students || [];
-    if (currentStudents.length >= course.max_students) {
-      alert("Lớp học đã đủ số lượng học viên!");
+    if (isBooked) {
+      alert("Bạn đã đăng ký lớp học này rồi!");
       return;
     }
 
-    const studentId = currentUser.user_id || currentUser.id;
-    if (currentStudents.map(String).includes(String(studentId))) {
-      alert("Bạn đã đăng ký lớp học này rồi!");
+    const currentStudentsCount = course.current_students !== undefined 
+      ? course.current_students 
+      : (Array.isArray(course.students) ? course.students.length : 0);
+
+    if (currentStudentsCount >= course.max_students) {
+      alert("Lớp học đã đủ số lượng học viên!");
       return;
     }
 
@@ -152,17 +149,17 @@ export default function ClassDetailPage({ params }) {
         paymentMethod: paymentMethod
       });
 
+      setIsBooked(true);
+
       return {
         success: true,
         data: result.data || result
       };
 
     } catch (error) {
-      console.error("Lỗi liên kết API Booking:", error);
-      alert(error.message || "Đã xảy ra sự cố kết nối. Vui lòng thử lại sau.");
       return {
         success: false,
-        message: error.message
+        message: error.response?.data?.message || error.message || "Đã xảy ra sự cố kết nối. Vui lòng thử lại sau."
       };
     } finally {
       setBookingLoading(false);
@@ -205,7 +202,6 @@ export default function ClassDetailPage({ params }) {
     });
   };
 
-  // 🔥 Hàm tính số tháng chênh lệch từ Ngày bắt đầu và Ngày kết thúc
   const calculateTotalMonths = (startDate, endDate) => {
     if (!startDate || !endDate) return 1;
     const start = new Date(startDate);
@@ -255,7 +251,6 @@ export default function ClassDetailPage({ params }) {
   const displayEndDate = firstSchedule.end_time || firstSchedule.end_date || course.end_date;
   const roomUrl = firstSchedule.meeting_platform || firstSchedule.room_url || course.permanent_room_url;
 
-  // 🔥 Tính toán tài chính khóa học
   const totalCoursePrice = (course.price_per_session || 0) * totalSessions;
   const calculatedMonths = calculateTotalMonths(displayStartDate, displayEndDate);
   const pricePerMonth = Math.round(totalCoursePrice / calculatedMonths);
@@ -276,8 +271,7 @@ export default function ClassDetailPage({ params }) {
     if (!currentUser) return false;
     if (currentUser.role === 'tutor') return true;
     if (currentUser.role === 'student') {
-      const studentId = currentUser.user_id || currentUser.id;
-      return isBooked || (course?.students && course.students.map(String).includes(String(studentId)));
+      return isBooked;
     }
     return false;
   };
@@ -285,12 +279,13 @@ export default function ClassDetailPage({ params }) {
   const hasMeetLink = roomUrl && roomUrl.trim() !== "";
   const showMeetLink = canViewMeetLink() && hasMeetLink;
 
-  const currentStudentsCount = course.students ? course.students.length : (course.current_students || 0);
+  const currentStudentsCount = course.current_students !== undefined 
+    ? course.current_students 
+    : (Array.isArray(course.students) ? course.students.length : 0);
   const isFull = currentStudentsCount >= course.max_students;
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
-      {/* Breadcrumb */}
       <nav className={styles.breadcrumb}>
         <Link href="/">Trang chủ</Link>
         <span className={styles.separator}>›</span>
@@ -299,7 +294,6 @@ export default function ClassDetailPage({ params }) {
         <span className={styles.current}>{course.title}</span>
       </nav>
 
-      {/* Thumbnail */}
       <div className={styles.thumbnailWrapper}>
         <img 
           src={course.thumbnail || "/img/default-class-1.jpg"} 
@@ -308,7 +302,6 @@ export default function ClassDetailPage({ params }) {
         />
       </div>
 
-      {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.title}>{course.title}</h1>
         <div className={styles.meta}>
@@ -318,7 +311,7 @@ export default function ClassDetailPage({ params }) {
             <span className={styles.reviews}>({courseReviews.length} đánh giá)</span>
           </div>
           <div className={styles.students}>
-            <span>👥 {currentStudentsCount}/{course.max_students} học viên</span>
+            <span>👥 {currentStudentsCount}/{course.max_students || 0} học viên</span>
           </div>
           <div className={styles.tag}>
             <span className={styles.tagBadge}>📚 {getCategoryName(course.category_id)}</span>
@@ -332,7 +325,6 @@ export default function ClassDetailPage({ params }) {
       </div>
 
       <div className={styles.content}>
-        {/* Left Column */}
         <div className={styles.mainContent}>
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>📖 Giới thiệu chương trình</h2>
@@ -411,7 +403,6 @@ export default function ClassDetailPage({ params }) {
             </div>
           </section>
 
-          {/* Reviews Section */}
           <section className={styles.section}>
             <div className={styles.reviewsHeader}>
               <h2 className={styles.sectionTitle}>⭐ Đánh giá từ học viên</h2>
@@ -444,7 +435,6 @@ export default function ClassDetailPage({ params }) {
           </section>
         </div>
 
-        {/* Right Sidebar */}
         <div className={styles.sidebar}>
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
@@ -491,15 +481,14 @@ export default function ClassDetailPage({ params }) {
               disabled={bookingLoading || isBooked || isFull || course.status !== 'active'}
             >
               {bookingLoading ? "Đang xử lý..." : 
-              isBooked ? "Đã đăng ký khóa học" : 
-              isFull ? "Lớp đã đủ học viên" :
-              course.status !== 'active' ? "Lớp đã đóng" : 
-              "📝 Đăng ký học ngay"}
+               isBooked ? "Đã đăng ký khóa học" : 
+               isFull ? "Lớp đã đủ học viên" :
+               course.status !== 'active' ? "Lớp đã đóng" : 
+               "📝 Đăng ký học ngay"}
             </button>
             <button className={styles.consultButton}>Đặt lịch tư vấn</button>
           </div>
 
-          {/* Tutor Card */}
           <div className={styles.tutorCard}>
             <h3 className={styles.tutorCardTitle}>👨‍🏫 GIA SƯ HƯỚNG DẪN</h3>
             <div className={styles.tutorInfo}>
@@ -534,7 +523,6 @@ export default function ClassDetailPage({ params }) {
         </div>
       </div>
 
-      {/* Booking Modal */}
       {showBookingModal && (
         <BookingModal
           course={{

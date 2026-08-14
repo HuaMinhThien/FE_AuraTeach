@@ -120,7 +120,8 @@ export default function StudentBookingHistoryPage() {
     const statusMap = {
       'unpaid': { label: ' Chưa thanh toán', className: 'payment-unpaid' },
       'paid': { label: ' Đã thanh toán', className: 'payment-paid' },
-      'refunded': { label: ' Đã hoàn tiền', className: 'payment-refunded' }
+      'refunded': { label: ' Đã hoàn tiền', className: 'payment-refunded' },
+      'cancelled': { label: ' Đã hủy', className: 'payment-cancelled' }
     };
     return statusMap[paymentKey] || null;
   };
@@ -205,7 +206,7 @@ export default function StudentBookingHistoryPage() {
                         const payment = getPaymentStatus(item.payment_status);
                         
                         return (
-                          <tr key={courseId || index}>
+                          <tr key={`${courseId}-${index}`}>
                             <td className="text-bold">{courseId || "N/A"}</td>
                             <td>
                               <div className="class-title-cell">

@@ -8,7 +8,6 @@ export const authService = {
    */
   async register(userData) {
     try {
-      // Gọi trực tiếp đến Next.js API Route hoặc Backend API
       const response = await apiClient.post("/auth/register", {
         full_name: userData.full_name || userData.fullName,
         email: userData.email,
@@ -67,18 +66,22 @@ export const authService = {
    */
   async logout() {
     try {
-      await apiClient.post("/api/auth/logout");
+      await apiClient.post("/auth/logout");
     } finally {
       localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_token");
     }
   },
 
+  /**
+   * Lấy thông tin user hiện tại
+   */
   async getCurrentUser() {
     try {
       const response = await apiClient.get("/auth/me");
       const resData = response.data !== undefined ? response.data : response;
       
-      // Nếu API trả về dạng { user: { user_id: ... } } thì bóc lấy phần user bên trong
       if (resData && resData.user) {
         return resData.user;
       }
@@ -90,15 +93,74 @@ export const authService = {
     }
   },
 
+  /**
+   * Kiểm tra trạng thái đăng nhập
+   */
   isAuthenticated() {
     if (typeof window !== "undefined") {
-      return !!localStorage.getItem("access_token");
+      return !!(
+        localStorage.getItem("access_token") || 
+        localStorage.getItem("token") || 
+        localStorage.getItem("user_token")
+      );
     }
     return false;
   },
 
-  syncGoogle: async (googleData) => {
-    const response = await apiClient.post('/auth/google', googleData);
-    return response // hoặc return response tuỳ thuộc vào cách cấu hình apiClient
+  /**
+   * Đồng bộ tài khoản Google
+   */
+  async syncGoogle(googleData) {
+    try {
+      const response = await apiClient.post('/auth/google', googleData);
+      
+      // ⚡ BỔ SUNG: Kiểm tra và lưu token vào localStorage nếu có
+      // Giả sử response trả về cấu trúc có access_token
+      if (response && response.access_token) {
+        localStorage.setItem("access_token", response.access_token);
+      } else if (response.data && response.data.access_token) {
+        // Trường hợp response được bao bọc trong object data
+        localStorage.setItem("access_token", response.data.access_token);
+      }
+      
+      return response;
+    } catch (error) {
+      throw new Error(error.message || "Đồng bộ Google thất bại");
+    }
+  },
+
+  /**
+   * 🔑 Gửi mã OTP quên mật khẩu
+   */
+  async forgotPassword(email) {
+    try {
+      return await apiClient.post("/auth/forgot-password", { email });
+    } catch (error) {
+      throw new Error(error.message || "Không thể gửi mã xác nhận");
+    }
+  },
+
+  /**
+   * 🔑 Xác thực mã OTP
+   */
+  async verifyOtp(email, otp) {
+    try {
+      return await apiClient.post("/auth/verify-otp", { email, otp });
+    } catch (error) {
+      throw new Error(error.message || "Mã xác nhận không đúng");
+    }
+  },
+
+  /**
+   * 🔑 Đặt lại mật khẩu mới
+   */
+  async resetPassword(email, otp, password) {
+    try {
+      return await apiClient.post("/auth/reset-password", { email, otp, password });
+    } catch (error) {
+      throw new Error(error.message || "Đặt lại mật khẩu thất bại");
+    }
   },
 };
+
+export default authService;

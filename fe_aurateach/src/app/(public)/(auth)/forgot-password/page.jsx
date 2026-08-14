@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
+import authService from "@/services/authService";
 import "./forgot-password.css";
 
 export default function ForgotPasswordPage() {
@@ -19,7 +20,7 @@ export default function ForgotPasswordPage() {
     const [resendTimer, setResendTimer] = useState(0);
     const [verifiedEmail, setVerifiedEmail] = useState(""); // Lưu email đã xác thực
 
-    // Gửi mã OTP
+    // Gửi mã OTP sử dụng authService
     const handleSendOTP = async (e) => {
         e.preventDefault();
         setError("");
@@ -27,15 +28,10 @@ export default function ForgotPasswordPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch("/api/auth/forgot-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
+            const data = await authService.forgotPassword(email);
 
-            const data = await response.json();
-
-            if (data.success) {
+            // Kiểm tra kết quả trả về từ service/apiClient
+            if (data && (data.success !== false)) {
                 setSuccess("✅ Mã xác nhận đã được gửi đến email của bạn!");
                 setVerifiedEmail(email); // Lưu email đã gửi
                 setStep(2);
@@ -50,16 +46,16 @@ export default function ForgotPasswordPage() {
                     });
                 }, 1000);
             } else {
-                setError(data.message || "Có lỗi xảy ra");
+                setError(data?.message || "Có lỗi xảy ra");
             }
         } catch (error) {
-            setError(error.message || "Lỗi kết nối");
+            setError(error.message || "Không thể gửi mã xác nhận");
         } finally {
             setIsLoading(false);
         }
     };
 
-    // 🔥 KIỂM TRA OTP TRƯỚC KHI CHUYỂN BƯỚC
+    // 🔥 KIỂM TRA OTP TRƯỚC KHI CHUYỂN BƯỚC SỬ DỤNG authService
     const handleVerifyOTP = async (e) => {
         e.preventDefault();
         setError("");
@@ -73,29 +69,22 @@ export default function ForgotPasswordPage() {
         setIsLoading(true);
 
         try {
-            // Gọi API kiểm tra OTP
-            const response = await fetch("/api/auth/verify-otp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: verifiedEmail, otp }),
-            });
+            const data = await authService.verifyOtp(verifiedEmail, otp);
 
-            const data = await response.json();
-
-            if (data.success) {
+            if (data && (data.success !== false)) {
                 setSuccess("✅ Mã xác nhận chính xác! Vui lòng nhập mật khẩu mới.");
                 setStep(3); // Chỉ chuyển sang bước 3 khi OTP đúng
             } else {
-                setError(data.message || "Mã xác nhận không đúng hoặc đã hết hạn");
+                setError(data?.message || "Mã xác nhận không đúng hoặc đã hết hạn");
             }
         } catch (error) {
-            setError(error.message || "Lỗi kết nối");
+            setError(error.message || "Mã xác nhận không đúng");
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Đặt lại mật khẩu
+    // Đặt lại mật khẩu sử dụng authService
     const handleResetPassword = async (e) => {
         e.preventDefault();
         setError("");
@@ -114,24 +103,18 @@ export default function ForgotPasswordPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch("/api/auth/reset-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: verifiedEmail, otp, newPassword }),
-            });
+            const data = await authService.resetPassword(verifiedEmail, otp, newPassword);
 
-            const data = await response.json();
-
-            if (data.success) {
+            if (data && (data.success !== false)) {
                 setSuccess("✅ Đặt lại mật khẩu thành công!");
                 setTimeout(() => {
                     router.push("/login");
                 }, 2000);
             } else {
-                setError(data.message || "Có lỗi xảy ra");
+                setError(data?.message || "Có lỗi xảy ra");
             }
         } catch (error) {
-            setError(error.message || "Lỗi kết nối");
+            setError(error.message || "Đặt lại mật khẩu thất bại");
         } finally {
             setIsLoading(false);
         }

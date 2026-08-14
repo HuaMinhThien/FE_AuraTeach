@@ -303,7 +303,7 @@ export default function CreateClassPage() {
           end: endDate,
           days: selectedDays.join(","),
           slot: timeSlot,
-          id_tutor: tutorId,
+          tutor_id: tutorId,
         };
 
         const result = await courseService.checkScheduleConflict(params);

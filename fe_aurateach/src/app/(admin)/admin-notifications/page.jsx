@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import styles from "./notifications.module.css";
+import notificationService from "@/services/notificationService";
 
-const API_BASE = "http://localhost:3007";
+const ADMIN_USER_ID = "u-admin-1"; // ID mặc định của Admin
 
 export default function AdminNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
@@ -11,44 +12,21 @@ export default function AdminNotificationsPage() {
   const [filter, setFilter] = useState("all");
   const [error, setError] = useState(null);
 
+  // 🚀 Tải danh sách thông báo thông qua service chuẩn
   const fetchNotifications = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
+      const data = await notificationService.getNotifications(ADMIN_USER_ID);
       
-      console.log("📡 [Admin Notif] Fetching notifications...");
-      
-      // ✅ Lấy tất cả notifications, sau đó sort trong JS
-      const res = await fetch(`${API_BASE}/notifications?receiver_id=u-admin-1`);
-      
-      console.log("📡 [Admin Notif] Response status:", res.status);
-      
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-      
-      const data = await res.json();
-      console.log("📊 [Admin Notif] Data received:", data);
-      
-      let notifData = [];
-      if (Array.isArray(data)) {
-        // ✅ Sort mới nhất lên đầu
-        notifData = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      } else if (data && typeof data === 'object') {
-        notifData = data.data || data.notifications || [];
-        if (Array.isArray(notifData)) {
-          notifData = notifData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        } else {
-          notifData = [];
-        }
-      }
-      
-      console.log("📊 [Admin Notif] Final data length:", notifData.length);
-      setNotifications(notifData);
-      
-    } catch (error) {
-      console.error("❌ [Admin Notif] Fetch error:", error);
-      setError(error.message || "Không thể tải thông báo");
+      // Sort mới nhất lên đầu dựa vào created_at
+      const sortedData = Array.isArray(data) 
+        ? data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        : [];
+        
+      setNotifications(sortedData);
+    } catch (err) {
+      console.error("❌ [Admin Notif] Fetch error:", err);
+      setError(err.message || "Không thể tải thông báo");
       setNotifications([]);
     } finally {
       setLoading(false);
@@ -57,24 +35,15 @@ export default function AdminNotificationsPage() {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000);
+    const interval = setInterval(fetchNotifications, 10000); // Polling mỗi 10s
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
+  // 🚀 Đánh dấu 1 thông báo đã đọc qua service
   const handleMarkAsRead = async (notif) => {
+    if (notif.is_read) return;
     try {
-      console.log(`📝 [Admin Notif] Marking as read: ${notif.id}`);
-      
-      const res = await fetch(`${API_BASE}/notifications/${notif.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_read: true }),
-      });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      
+      await notificationService.markAsRead(notif.id);
       setNotifications(prev =>
         prev.map(n => (n.id === notif.id ? { ...n, is_read: true } : n))
       );
@@ -83,24 +52,13 @@ export default function AdminNotificationsPage() {
     }
   };
 
+  // 🚀 Đánh dấu tất cả đã đọc qua service
   const handleMarkAllAsRead = async () => {
     try {
-      const unread = notifications.filter(n => !n.is_read);
-      if (unread.length === 0) return;
-      
-      console.log(`📝 [Admin Notif] Marking ${unread.length} notifications as read`);
-      
-      await Promise.all(
-        unread.map(n =>
-          fetch(`${API_BASE}/notifications/${n.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ is_read: true }),
-          })
-        )
-      );
-      
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      const result = await notificationService.markAllAsRead(ADMIN_USER_ID);
+      if (result.success && result.count > 0) {
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      }
     } catch (error) {
       console.error("❌ [Admin Notif] Mark all as read error:", error);
     }
@@ -139,10 +97,6 @@ export default function AdminNotificationsPage() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  console.log("🔔 [Admin Notif] Render - notifications:", notifications.length);
-  console.log("🔔 [Admin Notif] Render - filtered:", filteredNotifications.length);
-  console.log("🔔 [Admin Notif] Render - unreadCount:", unreadCount);
-
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -170,16 +124,9 @@ export default function AdminNotificationsPage() {
           <p style={{ color: '#dc2626', fontSize: '16px', marginBottom: '12px' }}>
             ❌ {error}
           </p>
-          <p style={{ color: '#6b7280', fontSize: '14px' }}>
-            💡 Hãy đảm bảo JSON Server đang chạy: <br/>
-            <code style={{ background: '#f3f4f6', padding: '4px 8px', borderRadius: '4px' }}>
-              npx json-server --watch src/app/api/data.json --port 3007
-            </code>
-          </p>
           <button 
             onClick={fetchNotifications}
             style={{
-              marginTop: '16px',
               padding: '8px 24px',
               background: '#4f46e5',
               color: 'white',
@@ -245,7 +192,7 @@ export default function AdminNotificationsPage() {
             <div
               key={notif.id}
               className={`${styles.notifItem} ${!notif.is_read ? styles.unread : ""}`}
-              onClick={() => !notif.is_read && handleMarkAsRead(notif)}
+              onClick={() => handleMarkAsRead(notif)}
             >
               <div className={styles.notifIcon}>
                 {getTypeIcon(notif.type)}

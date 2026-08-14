@@ -48,42 +48,68 @@ export default function ClassDetailPage() {
 
   const fetchCourseDetail = async (id, currentUserId) => {
     try {
-      console.log(`📡 Fetching course detail: ${id}`);
+      console.log(`📡 [DEBUG] Bắt đầu fetch chi tiết khóa học ID: ${id}`);
       
-      // 1. Lấy thông tin chi tiết khóa học kèm các quan hệ từ Backend
       const courseData = await courseService.getCourseDetail(id);
-      
+      console.log("📥 [DEBUG] Dữ liệu courseData gốc từ API:", courseData);
+
       if (!courseData) {
+        console.warn("⚠️ [DEBUG] Không tìm thấy courseData!");
         setError("Không tìm thấy lớp học");
         return;
       }
 
-      // 2. Lấy danh sách các buổi học trực tiếp từ dữ liệu backend trả về (ưu tiên hàng đầu)
-      let sessions = courseData.class_sessions || courseData.classSessions || [];
+      // --- KIỂM TRA QUAN HỆ TUTOR & USERS ---
+      console.log("🔍 [DEBUG] Kiểm tra trường tutor_id:", courseData.tutor_id);
+      console.log("🔍 [DEBUG] Kiểm tra object tutor:", courseData.tutor);
+      console.log("🔍 [DEBUG] Kiểm tra bảng users bên trong tutor:", courseData.tutor?.user || courseData.tutor?.users);
 
-      // Dự phòng: Nếu API courseDetail chưa gom sẵn, mới gọi service phụ để lọc
+      // Bóc tách tên gia sư linh hoạt từ nhiều tầng dữ liệu quan hệ
+      const tutorName = 
+        courseData.tutor?.user?.full_name || 
+        courseData.tutor?.users?.full_name || 
+        courseData.tutor?.full_name || 
+        courseData.tutor_name || 
+        "Gia sư";
+
+      console.log("✅ [DEBUG] Tên gia sư sau khi bóc tách:", tutorName);
+
+      // Lấy danh sách buổi học từ course_schedules
+      let sessions = courseData.class_sessions || courseData.classSessions || [];
+      console.log("📋 [DEBUG] Danh sách sessions:", sessions);
+
       if (sessions.length === 0) {
         try {
           const allSessions = await courseScheduleService.getCourseSchedules();
           sessions = (Array.isArray(allSessions) ? allSessions : allSessions.data || [])
             .filter(session => String(session.course_id) === String(id));
+          console.log("📋 [DEBUG] Danh sách sessions lọc từ service phụ:", sessions);
         } catch (err) {
-          console.warn("⚠️ Không thể tải danh sách buổi học phụ:", err);
+          console.warn("⚠️ [DEBUG] Lỗi tải danh sách buổi học phụ:", err);
         }
       }
 
-      // Sắp xếp các buổi học theo thời gian tăng dần
-      sessions.sort((a, b) => new Date(a.actual_date) - new Date(b.actual_date));
+      sessions.sort((a, b) => new Date(a.start_time || a.actual_date) - new Date(b.start_time || b.actual_date));
       setClassSessions(sessions);
+
+      const primarySchedule = (courseData.schedules && courseData.schedules[0]) || sessions[0] || {};
+      console.log("📅 [DEBUG] Lịch học chính (primarySchedule):", primarySchedule);
 
       setCourse({
         ...courseData,
-        tutor_name: courseData.tutor_name || "Gia sư",
+        tutor_name: tutorName,
         booking_status: courseData.booking_status || "confirmed",
+        // Lấy đúng ngày bắt đầu/kết thúc từ bảng course_schedules (thường API trả về qua quan hệ schedules)
+        start_date: primarySchedule.start_time || primarySchedule.actual_date || courseData.start_date,
+        end_date: primarySchedule.end_time || courseData.end_date,
+        // Lấy đúng khung giờ (ví dụ: "10:00-12:00")
+        time_slot: primarySchedule.time_slot || courseData.time_slot,
+        schedule_days: primarySchedule.day_of_week ? [primarySchedule.day_of_week] : courseData.schedule_days,
+        permanent_room_url: primarySchedule.meeting_platform || courseData.permanent_room_url,
       });
       
     } catch (error) {
-      console.error("❌ Lỗi lấy chi tiết lớp học:", error);
+      console.error("❌ [DEBUG] Lỗi nghiêm trọng tại fetchCourseDetail:", error);
       setError("Không thể tải chi tiết lớp học");
     }
   };

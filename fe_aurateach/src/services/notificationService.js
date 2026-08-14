@@ -38,11 +38,11 @@ export const notificationService = {
       const newNotification = {
         receiver_id,
         receiver_role,
-        type, // 'booking', 'payment', 'system', 'message'
+        type, 
         title,
         message,
         related_id: related_id || null,
-        related_type: related_type || null, // 'booking', 'course', 'payment'
+        related_type: related_type || null,
         is_read: false,
       };
 
@@ -62,7 +62,6 @@ export const notificationService = {
   async notifyNewBooking(bookingData, tutorUserId, studentName, courseTitle) {
     const results = [];
 
-    // 1. Thông báo cho tutor
     const tutorNotif = await this.createNotification({
       receiver_id: tutorUserId,
       receiver_role: 'tutor',
@@ -74,7 +73,6 @@ export const notificationService = {
     });
     results.push(tutorNotif);
 
-    // 2. Thông báo cho admin
     const adminNotif = await this.createNotification({
       receiver_id: 'u-admin-1',
       receiver_role: 'admin',
@@ -95,7 +93,6 @@ export const notificationService = {
   async notifyPaymentSuccess(bookingData, tutorUserId, studentName, courseTitle, amount) {
     const results = [];
 
-    // 1. Thông báo cho tutor
     const tutorNotif = await this.createNotification({
       receiver_id: tutorUserId,
       receiver_role: 'tutor',
@@ -107,7 +104,6 @@ export const notificationService = {
     });
     results.push(tutorNotif);
 
-    // 2. Thông báo cho admin
     const adminNotif = await this.createNotification({
       receiver_id: 'u-admin-1',
       receiver_role: 'admin',

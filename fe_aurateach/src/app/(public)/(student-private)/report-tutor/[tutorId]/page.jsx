@@ -1,72 +1,76 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Header from "@/components/users/Header";
 import StudentSidebar from "@/components/users/StudentSidebar";
-import { adminService } from "@/services/adminService"; // 🚀 Import service
+import { adminService } from "@/services/adminService";
+import { uploadService } from "@/services/uploadService";
 import "./report.css";
+
+const REPORT_REASONS = [
+  "Gia sư không đúng chuyên môn",
+  "Gia sư không đến đúng giờ / hủy buổi học đột xuất",
+  "Thái độ không chuyên nghiệp, thiếu tôn trọng học viên",
+  "Nội dung giảng dạy không đúng cam kết",
+  "Yêu cầu thanh toán ngoài nền tảng",
+  "Hành vi không phù hợp",
+  "Lý do khác",
+];
+
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
 
 export default function ReportTutorPage() {
   const router = useRouter();
-  const params = useParams();
+  const { tutorId } = useParams();
   const searchParams = useSearchParams();
-  const tutorId = params.tutorId;
-  const preSelectedCourseId = searchParams.get("courseId");
+  const preSelectedCourseId = searchParams.get("courseId") || "";
 
   const [tutor, setTutor] = useState(null);
   const [student, setStudent] = useState(null);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(preSelectedCourseId || "");
+  const [selectedCourse, setSelectedCourse] = useState(preSelectedCourseId);
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [evidenceFiles, setEvidenceFiles] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
   const fileInputRef = useRef(null);
   const hasLoggedAvatarError = useRef(false);
-  const hasLoggedNoCourses = useRef(false);
 
-  const reportReasons = [
-    "Gia sư không đúng chuyên môn",
-    "Gia sư không đến đúng giờ / hủy buổi học đột xuất",
-    "Thái độ không chuyên nghiệp, thiếu tôn trọng học viên",
-    "Nội dung giảng dạy không đúng cam kết",
-    "Yêu cầu thanh toán ngoài nền tảng",
-    "Hành vi không phù hợp",
-    "Lý do khác",
-  ];
-
+  // 1. Khởi tạo dữ liệu người dùng và gia sư
   useEffect(() => {
     const initData = async () => {
-      try {
-        setLoading(true);
+      if (!tutorId) {
+        setError("Không tìm thấy thông tin gia sư trên đường dẫn URL.");
+        setLoading(false);
+        return;
+      }
 
-        // Lấy thông tin user từ cookie (Logic này giữ nguyên vì thuộc về xử lý client-side)
-        const getCookie = (name) => {
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(";").shift();
-          return null;
-        };
-        const userCookie = getCookie("user_info");
+      try {
+        const userCookie = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("user_info="))
+          ?.split("=")[1];
+
         if (!userCookie) {
           router.push("/login");
           return;
         }
+
         const user = JSON.parse(decodeURIComponent(userCookie));
         setStudent(user);
 
-        // 🚀 Gọi qua Service thay vì fetch trực tiếp
         const data = await adminService.getInitialReportData(tutorId, user.user_id || user.id);
 
         if (data.error) {
           setError(data.error);
         } else {
           setTutor(data.tutor);
-          setCourses(data.courses);
+          setCourses(data.courses || []);
         }
       } catch (err) {
         console.error("Lỗi khởi tạo dữ liệu:", err);
@@ -76,45 +80,50 @@ export default function ReportTutorPage() {
       }
     };
 
-    if (tutorId) initData();
+    initData();
   }, [tutorId, router]);
 
+  // 2. Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const currentStudentId = student?.student_id || student?.user_id || student?.id;
+    if (!currentStudentId) {
+      setError("Không tìm thấy thông tin định danh của học viên. Vui lòng đăng nhập lại.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      // Xử lý file sang Base64 hoặc FormData tùy theo cấu trúc của service
-      const evidenceUrls = await Promise.all(
-        evidenceFiles.map((file) => {
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(file);
-          });
-        })
-      );
+      // Upload đồng thời các file lên Cloudinary
+      const uploadPromises = evidenceFiles.map((file) => uploadService.uploadFile(file, "reports"));
+      const uploadResults = await Promise.all(uploadPromises);
+      
+      const uploadedUrls = uploadResults
+        .filter((res) => res && (res.url || res.success))
+        .map((res) => res.url);
 
       const reportData = {
         tutor_id: tutorId,
-        student_id: student.user_id || student.id,
+        student_id: currentStudentId,
         course_id: selectedCourse,
         reason: reason === "Lý do khác" ? description : reason,
         description,
-        evidence: evidenceUrls,
+        evidence: uploadedUrls.join(","),
       };
 
-      // 🚀 Sử dụng hoàn toàn service
-      const result = await adminService.createReport(reportData);
+      const reportResult = await adminService.createReport(reportData);
 
-      if (result.success) {
+      if (reportResult.success) {
         setSuccess(true);
       } else {
-        setError(result.message || "Gửi báo cáo thất bại");
+        setError(reportResult.message || "Gửi báo cáo thất bại");
       }
     } catch (err) {
-      setError("Có lỗi xảy ra khi gửi báo cáo.");
+      console.error("Lỗi khi gửi báo cáo:", err);
+      setError("Có lỗi xảy ra khi tải ảnh hoặc gửi báo cáo.");
     } finally {
       setSubmitting(false);
     }
@@ -125,7 +134,7 @@ export default function ReportTutorPage() {
       console.warn(`⚠️ Avatar không tìm thấy cho gia sư: ${tutor?.full_name || tutorId}`);
       hasLoggedAvatarError.current = true;
     }
-    e.target.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+    e.target.src = DEFAULT_AVATAR;
   };
 
   const handleFileUpload = (e) => {
@@ -141,9 +150,7 @@ export default function ReportTutorPage() {
     }
 
     setEvidenceFiles((prev) => [...prev, ...validFiles]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeFile = (index) => {
@@ -155,9 +162,7 @@ export default function ReportTutorPage() {
     setReason("");
     setDescription("");
     setEvidenceFiles([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   if (loading) {
@@ -189,10 +194,7 @@ export default function ReportTutorPage() {
                 <div className="report-success-actions">
                   <button 
                     className="report-success-btn"
-                    onClick={() => {
-                      setSuccess(false);
-                      resetForm();
-                    }}
+                    onClick={() => { setSuccess(false); resetForm(); }}
                   >
                     📝 Gửi báo cáo mới
                   </button>
@@ -229,7 +231,7 @@ export default function ReportTutorPage() {
               <div className="report-tutor-info">
                 <div className="tutor-avatar">
                   <img
-                    src={tutor?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"}
+                    src={tutor?.avatar || DEFAULT_AVATAR}
                     alt={tutor?.full_name || "Gia sư"}
                     onError={handleAvatarError}
                   />
@@ -253,7 +255,7 @@ export default function ReportTutorPage() {
                   >
                     <option value="">-- Chọn lớp học --</option>
                     {courses.map((course) => (
-                      <option key={course.id || course.course_id} value={course.course_id}>
+                      <option key={course.id || course.course_id} value={course.course_id || course.id}>
                         {course.title} - {course.level || "Không xác định"}
                       </option>
                     ))}
@@ -275,10 +277,8 @@ export default function ReportTutorPage() {
                     required
                   >
                     <option value="">-- Chọn lý do --</option>
-                    {reportReasons.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
+                    {REPORT_REASONS.map((r) => (
+                      <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 </div>
@@ -332,9 +332,10 @@ export default function ReportTutorPage() {
                 <button
                   type="submit"
                   className="submit-btn"
-                  disabled={submitting}
+                  disabled={submitting || courses.length === 0 || !selectedCourse}
+                  style={{ opacity: (courses.length === 0 || !selectedCourse) ? 0.6 : 1 }}
                 >
-                  {submitting ? " Đang gửi..." : "Gửi báo cáo"}
+                  {submitting ? " Đang gửi..." : courses.length === 0 ? "Không thể báo cáo (Chưa học lớp nào)" : "Gửi báo cáo"}
                 </button>
               </form>
             </div>

@@ -12,12 +12,14 @@ export default function BookingModal({
   tutorName, 
   onClose, 
   onConfirm,
+  onSuccess, 
   loading 
 }) {
   const [notes, setNotes] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false); 
   const [bookingData, setBookingData] = useState(null);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false); // 🔒 Khóa trạng thái khi đã thanh toán thành công
   const [error, setError] = useState(null);
 
   const formatPrice = (price) => {
@@ -26,16 +28,15 @@ export default function BookingModal({
   };
 
   const handleConfirmBooking = async () => {
+    if (isSuccess) return;
     setError(null);
     setIsBookingLoading(true);
     
     try {
-      // Gọi API tạo booking
       const result = await onConfirm(notes, 'qr');
       
       if (result && result.success) {
         setBookingData(result.data);
-        // Mở Payment Modal
         setShowPaymentModal(true);
       } else {
         setError(result?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
@@ -49,18 +50,26 @@ export default function BookingModal({
   };
 
   const handlePaymentSuccess = () => {
+    if (isSuccess) return; // Chống gọi lặp lại nhiều lần
+    setIsSuccess(true); // 🔒 Khóa cứng giao diện ngay khi thành công
     setShowPaymentModal(false);
-    // Booking đã được confirm sau khi thanh toán thành công
     onClose();
-    // Hiển thị thông báo thành công
+    
+    // 1️⃣ Gọi callback truyền từ component cha (nếu có)
+    if (typeof onSuccess === 'function') {
+      onSuccess();
+    }
+
+    // 2️⃣ Thông báo và reload lại trang để khóa lớp và cập nhật dữ liệu mới nhất từ DB
     setTimeout(() => {
-      alert('🎉 Đăng ký thành công! Bạn đã được thêm vào lớp học.');
+      alert('🎉 Đăng ký thành công! Khóa học đã được thanh toán và cập nhật.');
+      window.location.reload(); 
     }, 300);
   };
 
   const handlePaymentClose = async () => {
+    if (isSuccess) return; // Nếu đã thành công thì không hủy booking nữa
     setShowPaymentModal(false);
-    // Nếu thanh toán chưa thành công, hủy booking
     if (bookingData && !showPaymentModal) {
       try {
         await paymentService.cancelBooking(bookingData.booking_id);
@@ -72,15 +81,13 @@ export default function BookingModal({
   };
 
   const handleClose = () => {
-    if (isBookingLoading) return;
+    if (isBookingLoading || isSuccess) return;
     if (showPaymentModal) {
-      // Nếu đang ở Payment Modal, không cho đóng
       return;
     }
     onClose();
   };
 
-  // 🛠️ Lấy tổng số buổi đã được tính toán chuẩn xác từ component cha truyền sang
   const totalSessions = course?.totalSessions || (course?.total_weeks || 12) * (course?.sessionsPerWeek || 1);
   const hourlyRate = course?.price_per_session || course?.price_per_session || 0;
   const calculatedTotalPrice = hourlyRate * totalSessions;
@@ -89,19 +96,17 @@ export default function BookingModal({
     <>
       <div className="booking-modal-overlay" onClick={handleClose}>
         <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
-          {/* Header */}
           <div className="booking-modal-header">
             <h2 className="booking-modal-title">Xác nhận đăng ký học</h2>
             <button 
               className="booking-modal-close" 
               onClick={handleClose}
-              disabled={isBookingLoading || showPaymentModal}
+              disabled={isBookingLoading || showPaymentModal || isSuccess}
             >
               ✕
             </button>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="booking-error-message">
               <span>❌</span>
@@ -109,7 +114,6 @@ export default function BookingModal({
             </div>
           )}
 
-          {/* Course Info */}
           <div className="booking-course-info">
             <div className="booking-course-thumb">
               {course?.thumbnail ? (
@@ -144,7 +148,6 @@ export default function BookingModal({
             </div>
           </div>
 
-          {/* Payment - QR Only */}
           <div className="booking-payment-section">
             <h4 className="booking-section-title">💳 Phương thức thanh toán</h4>
             <div className="booking-payment-options">
@@ -165,7 +168,6 @@ export default function BookingModal({
             </div>
           </div>
 
-          {/* Price Summary */}
           <div className="booking-price-summary">
             <div className="booking-price-row">
               <span>Học phí / buổi</span>
@@ -183,7 +185,6 @@ export default function BookingModal({
             </div>
           </div>
 
-          {/* Notes */}
           <div className="booking-notes-section">
             <label className="booking-notes-label">Ghi chú cho gia sư (tùy chọn)</label>
             <textarea
@@ -192,23 +193,22 @@ export default function BookingModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Nhập ghi chú của bạn..."
               rows={3}
-              disabled={isBookingLoading}
+              disabled={isBookingLoading || isSuccess}
             />
           </div>
 
-          {/* Actions */}
           <div className="booking-actions">
             <button 
               className="booking-cancel-btn" 
               onClick={handleClose}
-              disabled={isBookingLoading}
+              disabled={isBookingLoading || isSuccess}
             >
               Hủy
             </button>
             <button 
               className="booking-confirm-btn" 
               onClick={handleConfirmBooking}
-              disabled={isBookingLoading || !course}
+              disabled={isBookingLoading || isSuccess || !course}
             >
               {isBookingLoading ? (
                 <>
@@ -221,14 +221,12 @@ export default function BookingModal({
             </button>
           </div>
 
-          {/* Note */}
           <div className="booking-note">
             <p>💡 <em>Sau khi xác nhận, bạn sẽ được chuyển đến trang thanh toán QR Code.</em></p>
           </div>
         </div>
       </div>
 
-      {/* Payment Modal */}
       {showPaymentModal && bookingData && (
         <PaymentModal
           course={{
@@ -236,7 +234,6 @@ export default function BookingModal({
             totalSessions,
             calculatedTotalPrice
           }}
-          // ✅ Truyền chính xác payment_id (chuỗi pay-xxxx) làm tham số định danh để Polling check status
           subscriptionId={bookingData.payment_id || bookingData.subscription_id} 
           studentId={bookingData.student_id || course?.student_id}
           amount={bookingData.amount || calculatedTotalPrice}

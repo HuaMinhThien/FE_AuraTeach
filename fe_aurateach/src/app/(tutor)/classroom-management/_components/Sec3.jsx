@@ -5,8 +5,12 @@ import styles from "../management.module.css";
 export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseClass, getStatusBadge }) {
   if (!selectedClass) return null;
 
+  // 💡 Xử lý logic lọc học sinh active ngay từ đầu để code JSX bên dưới sạch sẽ
+  const activeSubscriptions = selectedClass.subscriptions
+    ? selectedClass.subscriptions.filter((sub) => sub.status === "active")
+    : [];
+
   const handleJoinRoom = () => {
-    // 💡 Lấy link Google Meet từ phần tử đầu tiên của bảng course_schedules
     const url = selectedClass.schedules && selectedClass.schedules.length > 0 
       ? selectedClass.schedules[0].meeting_platform 
       : null;
@@ -70,7 +74,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
             </button>
           </div>
 
-          {/* Lịch học định kỳ & Link Google Meet (Lấy từ quan hệ course_schedules) */}
+          {/* Lịch học định kỳ & Link Google Meet */}
           <div className={styles.scheduleSection}>
             <h4>📆 Lịch học định kỳ & Link Google Meet:</h4>
             <div className={styles.dayBadges} style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
@@ -93,11 +97,12 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
             </div>
           </div>
 
-          {/* Bảng danh sách học sinh tham gia */}
+          {/* Bảng danh sách học sinh tham gia (Chỉ lấy học sinh active) */}
           <div className={styles.studentSection}>
-            <h4>👥 Thành viên lớp học ({selectedClass.students ? selectedClass.students.length : 0}):</h4>
-            {!selectedClass.students || selectedClass.students.length === 0 ? (
-              <p className={styles.noStudent}>Chưa có học sinh nào đăng ký lớp học này.</p>
+            <h4>👥 Thành viên lớp học ({activeSubscriptions.length}):</h4>
+            
+            {activeSubscriptions.length === 0 ? (
+              <p className={styles.noStudent}>Chưa có học sinh nào đang hoạt động trong lớp học này.</p>
             ) : (
               <table className={styles.studentTable}>
                 <thead>
@@ -108,13 +113,18 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedClass.students.map((st, index) => (
-                    <tr key={st.student_id || index}>
-                      <td>{index + 1}</td>
-                      <td><strong>{st.full_name}</strong></td>
-                      <td>{st.email}</td>
-                    </tr>
-                  ))}
+                  {activeSubscriptions.map((sub, index) => {
+                    const studentInfo = sub.student || sub.user || {};
+                    const userObj = studentInfo.user || studentInfo; 
+
+                    return (
+                      <tr key={sub.subscription_id || index}>
+                        <td>{index + 1}</td>
+                        <td><strong>{userObj?.full_name || userObj?.name || "Không rõ tên"}</strong></td>
+                        <td>{userObj?.email || "Chưa có email"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}

@@ -27,7 +27,7 @@ export default function PaymentModal({
 
   const pollIntervalRef = useRef(null);
   const countdownIntervalRef = useRef(null);
-  const hasInitializedRef = useRef(false); // 🛡️ Chống chạy hàm createQR 2 lần
+  const hasInitializedRef = useRef(false); 
 
   const formatPrice = (price) => {
     if (!price) return '0đ';
@@ -55,7 +55,6 @@ export default function PaymentModal({
     }
   };
 
-  // Khởi tạo QR độc lập, dùng useRef chống gọi lại lần 2
   useEffect(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
@@ -71,9 +70,7 @@ export default function PaymentModal({
       setError(null);
 
       try {
-        console.log("🚀 [Init] Đang gọi API tạo QR...");
         const result = await paymentService.createQR(subscriptionId, studentId, amount);
-        console.log("✅ [Init] Kết quả tạo QR:", result);
         
         if (result && result.success) {
           const data = result.data;
@@ -106,7 +103,6 @@ export default function PaymentModal({
     };
   }, [subscriptionId, studentId, amount, paymentService]);
 
-  // Vòng lặp đếm ngược thời gian hết hạn QR
   useEffect(() => {
     if (!expiryTime) return;
 
@@ -125,16 +121,13 @@ export default function PaymentModal({
     };
   }, [expiryTime]);
 
-  // Vòng lặp Polling kiểm tra trạng thái thanh toán chuẩn xác
   const startPolling = (currentPaymentId) => {
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
     }
 
-
     pollIntervalRef.current = setInterval(async () => {
       if (statusRef.current === 'paid' || statusRef.current === 'expired') {
-        console.log("⚠️ [Polling] Trạng thái đã là:", statusRef.current, "-> Hủy vòng lặp.");
         clearAllIntervals();
         return;
       }
@@ -148,13 +141,11 @@ export default function PaymentModal({
           setStatus(currentStatus);
           
           if (currentStatus === 'paid') {
-            console.log("🎉 [SUCCESS] Thanh toán thành công! Dừng polling và gọi onSuccess.");
             clearAllIntervals();
             if (typeof onSuccess === 'function') {
-              onSuccess();
+              onSuccess(); // 🚀 Tự động kích hoạt thành công, khóa lớp và reload ngay lập tức khi API báo paid
             }
           } else if (currentStatus === 'expired') {
-            console.log("⏰ [EXPIRED] Giao dịch hết hạn.");
             clearAllIntervals();
             setError('Mã QR đã hết hạn. Vui lòng thử lại.');
           }
@@ -191,7 +182,7 @@ export default function PaymentModal({
     setPaymentId(null);
     setExpiryTime(null);
     hasInitializedRef.current = false;
-    window.location.reload(); // Hoặc gọi lại hàm khởi tạo
+    window.location.reload(); 
   };
 
   const getStatusMessage = () => {

@@ -137,4 +137,19 @@ export const adminService = {
   deleteReport: async (report_id) => {
     return await apiClient.delete(`/admin-tutor-reports/${report_id}`);
   },
+
+  getInitialReportData: async (tutorId, studentId) => {
+    try {
+      console.log("🚀 Đang truyền tutorId lên:", tutorId);
+
+      // CÁCH AN TOÀN NHẤT: Nối thẳng chuỗi vào URL để chắc chắn request có chứa param
+      const url = `/admin-tutor-reports/initial-data?tutorId=${tutorId}&studentId=${studentId}`;
+
+      const response = await apiClient.get(url);
+
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

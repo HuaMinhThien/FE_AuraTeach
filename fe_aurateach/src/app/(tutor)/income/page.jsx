@@ -325,7 +325,7 @@ export default function TutorRevenuePage() {
                     return (
                       <tr key={req.payout_req_id || req.id}>
                         <td>
-                          <span className={styles.requestCode}>{req.request_code}</span>
+                          <span className={styles.requestCode}>{req.payout_req_id}</span>
                         </td>
                         <td>{new Date(req.created_at).toLocaleDateString('vi-VN')}</td>
                         <td>

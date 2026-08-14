@@ -7,6 +7,7 @@ import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import Avatar from "@/components/common/Avatar.jsx";
 import { authService } from "@/services/authService";
 import { studentService } from "@/services/studentService";
+import { uploadService } from "@/services/uploadService"; // <-- Thêm service upload
 import "./profile.css";
 
 export default function ProfilePage() {
@@ -74,10 +75,6 @@ export default function ProfilePage() {
         };
         const role = getCookie("role");
 
-        if (!currentUser || (role && role !== "student" && !currentUser.user)) {
-          // Cho phép qua nếu có cấu trúc user hợp lệ
-        }
-
         // Trích xuất chuẩn xác object user bên trong
         const userData = currentUser?.user || currentUser;
 
@@ -129,7 +126,7 @@ export default function ProfilePage() {
     if (success) setSuccess("");
   };
 
-  // Xử lý upload avatar qua FileReader (chuyển đổi sang Base64)
+  // Xử lý upload avatar qua uploadService (Gửi file trực tiếp lên server/Cloudinary)
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -148,25 +145,30 @@ export default function ProfilePage() {
     setError("");
 
     try {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
+      // Gọi uploadService để đẩy file vào thư mục 'avatars'
+      const response = await uploadService.uploadFile(file, "avatars");
+      
+      // Lấy đường dẫn URL trả về từ server (tùy cấu trúc trả về của API upload của bạn)
+      const avatarUrl = response.url || response.path || response.data?.url || response;
+
+      if (avatarUrl) {
         setFormData(prev => ({
           ...prev,
-          avatar: base64String,
+          avatar: avatarUrl,
         }));
-        setIsUploading(false);
         setSuccess("Đã tải ảnh lên thành công! Nhấn 'Lưu thay đổi' để cập nhật.");
-      };
-      reader.onerror = () => {
-        setError("Lỗi khi đọc file ảnh");
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      } else {
+        throw new Error("Không nhận được đường dẫn ảnh từ server");
+      }
     } catch (error) {
       console.error("Lỗi upload avatar:", error);
-      setError("Lỗi khi tải ảnh lên");
+      setError(error.message || "Lỗi khi tải ảnh lên server");
+    } finally {
       setIsUploading(false);
+      // Reset input file để có thể chọn lại chính file đó nếu cần
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -322,7 +324,7 @@ export default function ProfilePage() {
                         disabled={isUploading}
                         title="Đổi ảnh đại diện"
                       >
-                        📷
+                        {isUploading ? "⏳" : "📷"}
                       </button>
                       <input
                         ref={fileInputRef}
@@ -356,7 +358,9 @@ export default function ProfilePage() {
                   )}
                   <span className="profile-role-badge">Học viên</span>
                   {isEditing && (
-                    <p className="avatar-hint">Click vào icon camera để đổi ảnh đại diện</p>
+                    <p className="avatar-hint">
+                      {isUploading ? "Đang tải ảnh lên..." : "Click vào icon camera để đổi ảnh đại diện"}
+                    </p>
                   )}
                 </div>
               </div>
@@ -425,7 +429,7 @@ export default function ProfilePage() {
                   <button 
                     className="btn-cancel" 
                     onClick={handleCancel}
-                    disabled={isSaving}
+                    disabled={isSaving || isUploading}
                   >
                     Hủy
                   </button>

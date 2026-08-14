@@ -9,9 +9,7 @@ export const tutorService = {
   
   getByUserId: async (userId) => {
     try {
-      const response = await apiClient.get(`/tutors`, {
-        params: { user_id: userId }
-      });
+      const response = await apiClient.get(`/tutors/user/${userId}`);
       return response.data !== undefined ? response.data : response;
     } catch (error) {
       console.error("Lỗi khi lấy thông tin tutor:", error);

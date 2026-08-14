@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { adminService } from "@/services/adminService"; // Import service của bạn
+import { adminService } from "@/services/adminService";
 import styles from "./AdminReports.module.css";
 
 export default function AdminTutorReports() {
@@ -43,15 +43,17 @@ export default function AdminTutorReports() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      // Sử dụng service thay vì fetch trực tiếp
       const params = statusFilter !== "all" ? { status: statusFilter } : {};
       const data = await adminService.getReports(params);
       
-      if (data.success) {
-        setReports(data.data);
+      if (data && data.success) {
+        setReports(Array.isArray(data.data) ? data.data : []);
+      } else {
+        setReports([]);
       }
     } catch (error) {
       console.error("Lỗi tải báo cáo:", error);
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -59,13 +61,12 @@ export default function AdminTutorReports() {
 
   const handleUpdateStatus = async (reportId, newStatus) => {
     try {
-      // Sử dụng service thay vì fetch trực tiếp
       const data = await adminService.updateReport(reportId, { 
         status: newStatus, 
         admin_note: adminNote 
       });
 
-      if (data.success) {
+      if (data && data.success) {
         await fetchReports();
         setShowModal(false);
         setSelectedReport(null);
@@ -74,21 +75,21 @@ export default function AdminTutorReports() {
       }
     } catch (error) {
       console.error("Lỗi cập nhật:", error);
-      alert("❌ Có lỗi xảy ra");
+      alert("❌ Có lỗi xảy ra khi cập nhật");
     }
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleString("vi-VN");
   };
 
   const getPendingCount = () => {
-    return reports.filter((r) => r.status === "pending").length;
+    return (reports || []).filter((r) => r.status === "pending").length;
   };
 
   return (
     <div className={styles.container}>
-      {/* ... Giữ nguyên toàn bộ JSX của bạn ... */}
       <div className={styles.header}>
         <div>
           <h1>📋 Báo cáo gia sư</h1>
@@ -138,82 +139,210 @@ export default function AdminTutorReports() {
               </tr>
             </thead>
             <tbody>
-              {reports.map((report, index) => (
-                <tr key={report.id} className={styles.tableRow}>
-                  <td>{index + 1}</td>
-                  <td>{report.student?.full_name || "N/A"}</td>
-                  <td>{report.tutor?.full_name || "N/A"}</td>
-                  <td>{report.course?.title || "N/A"}</td>
-                  <td>
-                    <span className={styles.reasonBadge}>
-                      {report.reason?.length > 30
-                        ? report.reason.slice(0, 30) + "..."
-                        : report.reason}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={styles.statusBadge}
-                      style={{
-                        backgroundColor: statusColors[report.status] || "#6b7280",
-                      }}
-                    >
-                      {statusLabels[report.status] || report.status}
-                    </span>
-                  </td>
-                  <td>{formatDate(report.createdAt)}</td>
-                  <td>
-                    <button
-                      className={`${styles.btn} ${styles.btnInfo}`}
-                      onClick={() => {
-                        setSelectedReport(report);
-                        setShowModal(true);
-                        setAdminNote(report.adminNote || "");
-                      }}
-                    >
-                      Chi tiết
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {reports.map((report, index) => {
+                // Hỗ trợ quét linh hoạt các cấp dữ liệu trả về từ backend
+                const studentName = 
+                  report.student?.user?.full_name || 
+                  report.student?.full_name || 
+                  report.student?.name || 
+                  "N/A";
+
+                const tutorName = 
+                  report.tutor?.user?.full_name || 
+                  report.tutor?.full_name || 
+                  "N/A";
+
+                const courseTitle = 
+                  report.course?.title || 
+                  report.course?.course_name || 
+                  report.course?.name || 
+                  "N/A";
+
+                return (
+                  <tr key={report.report_id || report.id} className={styles.tableRow}>
+                    <td>{index + 1}</td>
+                    <td>{studentName}</td>
+                    <td>{tutorName}</td>
+                    <td>{courseTitle}</td>
+                    <td>
+                      <span className={styles.reasonBadge}>
+                        {report.reason?.length > 30
+                          ? report.reason.slice(0, 30) + "..."
+                          : report.reason}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={styles.statusBadge}
+                        style={{
+                          backgroundColor: statusColors[report.status] || "#6b7280",
+                        }}
+                      >
+                        {statusLabels[report.status] || report.status}
+                      </span>
+                    </td>
+                    <td>{formatDate(report.created_at)}</td>
+                    <td>
+                      <button
+                        className={`${styles.btn} ${styles.btnInfo}`}
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setShowModal(true);
+                          setAdminNote(report.admin_note || "");
+                        }}
+                      >
+                        Chi tiết
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* Modal chi tiết giữ nguyên */}
+      {/* Modal chi tiết */}
       {showModal && selectedReport && (
         <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setShowModal(false)}>×</button>
+            <button className={styles.closeBtn} onClick={() => setShowModal(false)}>
+              ×
+            </button>
+
             <h2>📄 Chi tiết báo cáo</h2>
-            {/* ... Phần bên trong modal giữ nguyên ... */}
+
             <div className={styles.modalBody}>
-               {/* Giữ nguyên các trường thông tin */}
-               <div className={styles.modalGrid}>
-                 <div className={styles.modalItem}><label>Học viên</label><p>{selectedReport.student?.full_name}</p></div>
-                 {/* ... */}
-               </div>
-               
-               <div className={styles.modalItem}>
+              <div className={styles.modalGrid}>
+                <div className={styles.modalItem}>
+                  <label>Học viên</label>
+                  <p>
+                    {selectedReport.student?.user?.full_name || 
+                     selectedReport.student?.full_name || 
+                     selectedReport.student?.name || 
+                     "N/A"}
+                  </p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Email học viên</label>
+                  <p>
+                    {selectedReport.student?.user?.email || 
+                     selectedReport.student?.email || 
+                     "N/A"}
+                  </p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Gia sư</label>
+                  <p>
+                    {selectedReport.tutor?.user?.full_name || 
+                     selectedReport.tutor?.full_name || 
+                     "N/A"}
+                  </p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Email gia sư</label>
+                  <p>
+                    {selectedReport.tutor?.user?.email || 
+                     selectedReport.tutor?.email || 
+                     "N/A"}
+                  </p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Lớp học</label>
+                  <p>
+                    {selectedReport.course?.title || 
+                     selectedReport.course?.course_name || 
+                     selectedReport.course?.name || 
+                     "N/A"}
+                  </p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Trạng thái</label>
+                  <p>
+                    <span
+                      className={styles.statusBadge}
+                      style={{
+                        backgroundColor: statusColors[selectedReport.status] || "#6b7280",
+                      }}
+                    >
+                      {statusLabels[selectedReport.status] || selectedReport.status}
+                    </span>
+                  </p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Lý do</label>
+                  <p className={styles.reasonFull}>{selectedReport.reason}</p>
+                </div>
+                <div className={styles.modalItem}>
+                  <label>Ngày tạo</label>
+                  <p>{formatDate(selectedReport.created_at)}</p>
+                </div>
+              </div>
+
+              {selectedReport.description && (
+                <div className={styles.modalItem}>
+                  <label>Mô tả chi tiết</label>
+                  <p className={styles.descriptionText}>{selectedReport.description}</p>
+                </div>
+              )}
+
+              {/* Xử lý hiển thị bằng chứng an toàn tuyệt đối chống lỗi map */}
+              {(() => {
+                let evidenceList = [];
+                if (Array.isArray(selectedReport.evidence)) {
+                  evidenceList = selectedReport.evidence;
+                } else if (typeof selectedReport.evidence === "string" && selectedReport.evidence.trim() !== "") {
+                  evidenceList = [selectedReport.evidence];
+                }
+
+                return evidenceList.length > 0 ? (
+                  <div className={styles.modalItem}>
+                    <label>Bằng chứng</label>
+                    <div className={styles.evidenceGrid}>
+                      {evidenceList.map((ev, idx) => (
+                        <div key={idx} className={styles.evidenceItem}>
+                          {ev.startsWith("data:image") || ev.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                            <img src={ev} alt={`Bằng chứng ${idx + 1}`} />
+                          ) : ev.startsWith("data:video") || ev.match(/\.(mp4|webm|ogg)$/i) ? (
+                            <video controls>
+                              <source src={ev} />
+                            </video>
+                          ) : (
+                            <a href={ev} target="_blank" rel="noopener noreferrer">
+                              📎 Xem bằng chứng {evidenceList.length > 1 ? idx + 1 : ""}
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              <div className={styles.modalItem}>
                 <label>Ghi chú Admin</label>
                 <textarea
                   className={styles.adminNoteInput}
                   value={adminNote}
                   onChange={(e) => setAdminNote(e.target.value)}
+                  placeholder="Nhập ghi chú xử lý..."
                   rows={3}
                 />
               </div>
 
               <div className={styles.modalActions}>
-                {selectedReport.status !== "resolved" && selectedReport.status !== "rejected" && (
-                  <button
-                    className={`${styles.btn} ${styles.btnSuccess}`}
-                    onClick={() => handleUpdateStatus(selectedReport.id, "resolved")}
-                  >
-                    Xác nhận
-                  </button>
-                )}
+                {selectedReport.status !== "resolved" &&
+                  selectedReport.status !== "rejected" && (
+                    <button
+                      className={`${styles.btn} ${styles.btnSuccess}`}
+                      onClick={() => handleUpdateStatus(
+                        selectedReport.report_id || selectedReport.id, 
+                        "resolved"
+                      )}
+                    >
+                      Xác nhận giải quyết
+                    </button>
+                  )}
               </div>
             </div>
           </div>

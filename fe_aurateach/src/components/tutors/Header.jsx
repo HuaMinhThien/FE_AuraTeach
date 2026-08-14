@@ -5,8 +5,11 @@ import { useEffect, useState } from "react";
 import "../../css/tutor-style/header.css"; 
 import { tutorService } from "@/services/tutorService";
 
+const DEFAULT_AVATAR = "https://res.cloudinary.com/ghbrskob/image/upload/v1786662834/avatar-mac-dinh-cua-fb-4.webp";
+
 export default function Header() {
     const [user, setUser] = useState(null);
+    const [avatarError, setAvatarError] = useState(false);
     const [balances, setBalances] = useState({
         pending: 0,
         available: 0
@@ -20,7 +23,6 @@ export default function Header() {
         return null;
     };
 
-    // 💡 Gộp chung việc kiểm tra user từ cookie VÀ fetch ví tiền vào 1 useEffect duy nhất
     useEffect(() => {
         const fetchUserDataAndWallet = async () => {
             const userCookie = getCookie("user_info");
@@ -31,19 +33,15 @@ export default function Header() {
 
             try {
                 const userData = JSON.parse(decodeURIComponent(userCookie));
-                console.log("📦 Dữ liệu user đọc từ cookie Header:", userData); // Xem nó in ra cấu trúc gì ở F12 -> Console
                 
                 setUser((prev) => JSON.stringify(prev) === JSON.stringify(userData) ? prev : userData);
 
-                // Mở rộng tìm kiếm tất cả các khả năng tên biến ID có thể xuất hiện trong cookie
                 const tutorId = userData?.user_id || userData?.tutor_id || userData?.id || userData?.userId || userData?.account_id;
                 
                 if (!tutorId) {
-                    console.warn("⚠️ Cookie user_info không tìm thấy trường ID nào phù hợp! Các trường hiện có:", Object.keys(userData));
                     return;
                 }
 
-                // Gọi API lấy thông tin gia sư qua tutorService
                 const data = await tutorService.getByUserId(tutorId);
                 const tutors = Array.isArray(data) ? data : (data?.data || []);
 
@@ -71,14 +69,11 @@ export default function Header() {
     }, []);
 
     const getValidAvatar = (avatar) => {
-        if (!avatar) return "/img/avt/avt.jpg";
-        if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+        if (avatarError || !avatar) return DEFAULT_AVATAR;
+        if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('/')) {
             return avatar;
         }
-        if (avatar.startsWith('/')) {
-            return avatar;
-        }
-        return "/img/avt/avt.jpg";
+        return DEFAULT_AVATAR;
     };
 
     return (
@@ -88,9 +83,7 @@ export default function Header() {
                     <Image src="/img/icons/notificationn.png" alt="Notification" width={20} height={20} />
                 </div>
 
-                {/* Khu vực hiển thị 2 ví tiền động của Gia Sư */}
                 <div className="tutor-wallets" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    {/* Ví chờ nhận */}
                     <div className="wallet-item" style={{ background: "#fffbeb", padding: "4px 10px", borderRadius: "8px", border: "1px solid #fde68a" }}>
                         <span style={{ fontSize: "11px", color: "#d97706", display: "block", fontWeight: "500" }}>Chờ nhận</span>
                         <strong style={{ color: "#b45309", fontSize: "14px" }}>
@@ -98,7 +91,6 @@ export default function Header() {
                         </strong>
                     </div>
 
-                    {/* Ví khả dụng để rút */}
                     <div className="wallet-item" style={{ background: "#f0fdf4", padding: "4px 10px", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
                         <span style={{ fontSize: "11px", color: "#16a34a", display: "block", fontWeight: "500" }}>Khả dụng (Rút)</span>
                         <strong style={{ color: "#15803d", fontSize: "14px" }}>
@@ -117,6 +109,7 @@ export default function Header() {
                             width={40}
                             height={40}
                             style={{borderRadius: `50%`, objectFit: "cover"}}
+                            onError={() => setAvatarError(true)}
                         />
                     </div>
                     <div className="user-details">

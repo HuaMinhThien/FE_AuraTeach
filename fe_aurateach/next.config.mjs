@@ -3,9 +3,13 @@ const nextConfig = {
   /* config options here */
   reactCompiler: true,
   
-  // THÊM CẤU HÌNH NÀY
   images: {
     remotePatterns: [
+      // THÊM ĐOẠN NÀY VÀO ĐẦU HOẶC CUỐI MẢNG
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
       {
         protocol: 'https',
         hostname: 'scontent.fsgn5-5.fna.fbcdn.net',
@@ -13,10 +17,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.fbcdn.net',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.fbcdn.net', // Cho phép tất cả các sub-domain của Facebook CDN
       },
       {
         protocol: 'https',

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import styles from "./Sidebar.module.css";
 import Image from "next/image";
+import { notificationService } from "@/services/notificationService";
 
-const API_BASE = "http://localhost:3007";
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80";
 
 export default function Sidebar() {
@@ -15,9 +15,8 @@ export default function Sidebar() {
   
   const [mounted, setMounted] = useState(false);
   const [adminData, setAdminData] = useState(null);
+  const [adminUserId, setAdminUserId] = useState(null);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
-  
-  // State quản lý src của Avatar để tránh lặp vô hạn khi lỗi link
   const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);
 
   useEffect(() => {
@@ -25,6 +24,13 @@ export default function Sidebar() {
     
     const cookies = document.cookie.split("; ");
     const userInfoCookie = cookies.find((row) => row.startsWith("user_info="));
+    const userIdCookie = cookies.find((row) => row.startsWith("user_id="));
+
+    if (userIdCookie) {
+      setAdminUserId(userIdCookie.split("=")[1]);
+    } else {
+      setAdminUserId("u-admin-1");
+    }
 
     if (userInfoCookie) {
       try {
@@ -51,37 +57,24 @@ export default function Sidebar() {
     }
   }, []);
 
-  // Fetch số lượng thông báo chưa đọc
+  // Sử dụng notificationService để lấy số lượng thông báo chưa đọc
   useEffect(() => {
-    const fetchUnread = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/notifications?receiver_id=u-admin-1&is_read=false`);
-        
-        if (!res.ok) {
-          setUnreadNotifCount(0);
-          return;
-        }
-        
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setUnreadNotifCount(data.length);
-        } else {
-          setUnreadNotifCount(0);
-        }
-      } catch (error) {
-        console.warn("⚠️ [Admin Sidebar] Không thể kết nối đến JSON Server:", error.message);
+    if (!mounted || !adminUserId) return;
+
+    const fetchUnreadCount = async () => {
+      const result = await notificationService.getUnreadCount(adminUserId);
+      if (result.success) {
+        setUnreadNotifCount(result.count);
+      } else {
         setUnreadNotifCount(0);
       }
     };
 
-    if (mounted) {
-      fetchUnread();
-      const interval = setInterval(fetchUnread, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [mounted]);
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 10000); // Poll mỗi 10s
+    return () => clearInterval(interval);
+  }, [mounted, adminUserId]);
 
-  // Reset unread count khi vào trang notifications
   useEffect(() => {
     if (pathname === "/admin-notifications") {
       setUnreadNotifCount(0);
@@ -96,7 +89,6 @@ export default function Sidebar() {
     router.push('/login');
   };
 
-  // Xử lý khi ảnh lỗi: Chỉ set lại 1 lần về DEFAULT_AVATAR
   const handleImageError = () => {
     if (avatarSrc !== DEFAULT_AVATAR) {
       setAvatarSrc(DEFAULT_AVATAR);
@@ -114,7 +106,7 @@ export default function Sidebar() {
   ];
 
   if (!mounted || !adminData) {
-    return null; // Hoặc render Skeleton UI đơn giản
+    return null; 
   }
 
   return (
@@ -158,7 +150,7 @@ export default function Sidebar() {
               height={36}
               className={styles.miniAvatar}
               onError={handleImageError}
-              unoptimized={avatarSrc.startsWith("http")} // Cho phép load ảnh URL ngoài không cần config domain trong next.config.js
+              unoptimized={avatarSrc.startsWith("http")}
             />
           </div>
           <div className={styles.adminInfo}>

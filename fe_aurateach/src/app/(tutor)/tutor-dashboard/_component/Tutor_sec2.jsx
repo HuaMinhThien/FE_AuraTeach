@@ -54,13 +54,46 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
   };
 
   /**
-   * Xử lý khi nhấn nút "Xác nhận buổi học" (dùng courseService thay fetch)
+   * Mở modal chi tiết và tự động gọi API lấy danh sách học sinh active của lớp
+   */
+  const handleOpenDetail = async (item) => {
+    // Mở popup trước với dữ liệu thô từ item để hiển thị tức thì
+    setSelectedClass(item);
+
+    try {
+      const courseId = item.id || item.course_id;
+      const res = await courseService.getCourseDetail(courseId);
+      const detailData = res?.data || res;
+
+      if (detailData) {
+        // Lọc lấy các học sinh có subscription đang active từ backend
+        const subscriptions = detailData.subscriptions || [];
+        const activeStudents = subscriptions
+          .filter((sub) => sub.status === "active")
+          .map((sub) => sub.student || sub.user || {});
+
+        const formattedTime = detailData.time_slot || item.time || "";
+
+        setSelectedClass((prev) => ({
+          ...prev,
+          ...detailData,
+          // Đảm bảo trường time luôn là chuỗi giờ học, không bị lẫn ngày tháng
+          time: formattedTime,
+          enrolledStudentsDetails: activeStudents.length > 0 ? activeStudents : (detailData.students || prev?.enrolledStudentsDetails || [])
+        }));
+      }
+    } catch (error) {
+      console.error("Không thể tải chi tiết danh sách học sinh:", error);
+    }
+  };
+
+  /**
+   * Xử lý khi nhấn nút "Xác nhận buổi học"
    */
   const handleOpenConfirmModal = async (pendingSession) => {
     try {
       let timeSlot = pendingSession.time_slot;
 
-      // Sử dụng courseService để lấy chi tiết khóa học thay vì fetch thô
       if (!timeSlot) {
         const courseRes = await courseService.getCourseDetail(pendingSession.course_id);
         const courseData = courseRes?.data || courseRes;
@@ -87,7 +120,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
     }
   };
 
-  // 1. Gia sư nhấn nút "Xác nhận hoàn thành buổi học" (dùng lessonComfirmationService thay fetch)
+  // Gia sư nhấn nút "Xác nhận hoàn thành buổi học"
   const handleConfirmCompletion = async (e) => {
     e.preventDefault();
     if (!driveLink.trim()) {
@@ -108,8 +141,6 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
       const submittedAtIso = now.toISOString();
       const payoutAvailableAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
 
-      // Sử dụng lessonComfirmationService để tạo bản ghi (thay vì fetch URL cứng)
-      // Lưu ý: Dùng phương thức tùy chỉnh hoặc cập nhật service nếu cần truyền đủ payload
       await lessonConfirmationService.updateLessonConfirmation(session.comfirmation_id, {
         comfirmation_id: session.comfirmation_id,
         course_id: session.course_id,
@@ -215,7 +246,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
                   ) : (
                     <button 
                       className={styles.btnSecondary}
-                      onClick={() => setSelectedClass(item)}
+                      onClick={() => handleOpenDetail(item)}
                     >
                       Chi tiết
                     </button>
@@ -254,24 +285,31 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
 
               <hr className={styles.divider} />
 
-              <h5>Danh sách học sinh đã đăng ký ({selectedClass.enrolledStudentsDetails?.length || 0})</h5>
+              <h5>Danh sách lớp ({selectedClass.enrolledStudentsDetails?.length || 0})</h5>
               {selectedClass.enrolledStudentsDetails && selectedClass.enrolledStudentsDetails.length > 0 ? (
                 <div className={styles.studentList}>
-                  {selectedClass.enrolledStudentsDetails.map((st, idx) => (
-                    <div key={idx} className={styles.studentItem}>
-                      <Image
-                        src={st.avatar || "/img/avt/avt.jpg"}
-                        width={36}
-                        height={36}
-                        alt="student avatar"
-                        style={{ borderRadius: "50%", objectFit: "cover" }}
-                      />
-                      <div>
-                        <div className={styles.studentName}>{st.full_name}</div>
-                        <div className={styles.studentContact}>{st.email || st.phone || "Chưa cập nhật thông tin"}</div>
+                  {selectedClass.enrolledStudentsDetails.map((st, idx) => {
+                    const studentObj = st.student || st.user || st;
+                    const fullName = studentObj.full_name || studentObj.name || "Không rõ tên";
+                    const contact = studentObj.email || studentObj.phone || "Chưa cập nhật thông tin";
+                    const avatar = studentObj.avatar || "/img/avt/avt.jpg";
+
+                    return (
+                      <div key={idx} className={styles.studentItem}>
+                        <Image
+                          src={avatar}
+                          width={36}
+                          height={36}
+                          alt="student avatar"
+                          style={{ borderRadius: "50%", objectFit: "cover" }}
+                        />
+                        <div>
+                          <div className={styles.studentName}>{fullName}</div>
+                          <div className={styles.studentContact}>{contact}</div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className={styles.emptyText}>Chưa có học sinh nào đăng ký lớp này.</p>

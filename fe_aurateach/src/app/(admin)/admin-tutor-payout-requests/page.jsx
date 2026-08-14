@@ -280,14 +280,14 @@ export default function AdminPayoutRequestsPage() {
                   <td>
                     <div className={styles.tutorCell}>
                       <img
-                        src={req.tutor_avatar || '/img/default-avatar.svg'}
+                        src={req.tutor_avatar || 'https://res.cloudinary.com/ghbrskob/image/upload/v1786662834/avatar-mac-dinh-cua-fb-4.webp'}
                         alt={req.tutor_name || 'Gia sư'}
                         className={styles.tutorAvatar}
-                        onError={(e) => { e.target.src = '/img/default-avatar.svg'; }}
+                        onError={(e) => { e.target.src = 'https://res.cloudinary.com/ghbrskob/image/upload/v1786662834/avatar-mac-dinh-cua-fb-4.webp'; }}
                       />
                       <div>
                         <p className={styles.tutorName}>{req.tutor_name || 'Chưa cập nhật'}</p>
-                        <p className={styles.requestCode}>{req.request_code || `#${req.id}`}</p>
+                        <p className={styles.requestCode}>{req.payout_req_id|| `#${req.id}`}</p>
                       </div>
                     </div>
                   </td>
@@ -356,7 +356,7 @@ export default function AdminPayoutRequestsPage() {
               <div className={styles.infoGrid}>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Mã yêu cầu:</span>
-                  <span className={styles.infoValue}>{selectedRequest.request_code || `#${selectedRequest.id}`}</span>
+                  <span className={styles.infoValue}>{selectedRequest.payout_req_id || `#${selectedRequest.id}`}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Gia sư:</span>
