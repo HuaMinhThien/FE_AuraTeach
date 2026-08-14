@@ -55,6 +55,8 @@ const DAY_MAP = {
   "Thứ 7": 6,
 };
 
+const roundToThousand = (amount) => Math.round(amount / 1000) * 1000;
+
 export default function CreateClassPage() {
   const router = useRouter();
   
@@ -123,9 +125,21 @@ export default function CreateClassPage() {
   const lessThan3Config = currentTutorConfig.lessThan3 || {};
   const greaterThan3Config = currentTutorConfig.greaterThan3 || {};
 
-  const currentPriceConfig = numStudents >= 3 
-    ? (greaterThan3Config[level] || lessThan3Config[level]) 
-    : lessThan3Config[level];
+  let currentPriceConfig = null;
+  if (numStudents >= 3) {
+    const base1On1Config = currentTutorConfig.lessThan3[level];
+    if (base1On1Config) {
+      const calculatedMin = roundToThousand(base1On1Config.min / numStudents);
+      const calculatedMax = roundToThousand(base1On1Config.max / numStudents);
+      currentPriceConfig = {
+        min: calculatedMin,
+        max: calculatedMax,
+        label: `${calculatedMin.toLocaleString("vi-VN")}đ - ${calculatedMax.toLocaleString("vi-VN")}đ / buổi`,
+      };
+    }
+  } else {
+    currentPriceConfig = currentTutorConfig.lessThan3[level];
+  }
 
   const currentRate = parseInt(pricePerSession || 0, 10);
   
@@ -134,7 +148,7 @@ export default function CreateClassPage() {
     : "Lớp < 3 HS";
 
   const priceError = (currentPriceConfig && (currentRate < currentPriceConfig.min || currentRate > currentPriceConfig.max))
-    ? `⚠️ Mức phí cho ${level} (${safeTutorLevel} - ${studentTypeText}) phải nằm trong khoảng: ${currentPriceConfig.label}`
+    ? `⚠️ Mức phí cho ${level} (${tutorLevel} - ${numStudents >= 3 ? `Lớp ${numStudents} HS: Giá 1 kèm 1 / ${numStudents}` : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`    
     : "";
 
   useEffect(() => {
@@ -223,17 +237,25 @@ export default function CreateClassPage() {
     };
   }, [router]);
 
+  const getMinStartDateString = () => {
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 5);
+    return minDate.toISOString().split("T")[0];
+  };
+
   const validateStartDate = (dateString) => {
     if (!dateString) return true;
     
     const selectedDate = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const minAllowedDate = new Date();
+    minAllowedDate.setDate(minAllowedDate.getDate() + 5);
+    
+    minAllowedDate.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
     
-    if (selectedDate < today) {
-      const todayStr = today.toLocaleDateString("vi-VN");
-      setDateErrorMessage(`⚠️ Ngày bắt đầu phải từ hôm nay (${todayStr}) trở đi. Không thể tạo lớp trong quá khứ.`);
+    if (selectedDate < minAllowedDate) {
+      const minDateStr = minAllowedDate.toLocaleDateString("vi-VN");
+      setDateErrorMessage(`⚠️ Ngày bắt đầu phải cách hôm nay tối thiểu 5 ngày (từ ngày ${minDateStr} trở đi).`);
       return false;
     }
     
@@ -379,6 +401,7 @@ export default function CreateClassPage() {
   const totalCourseNetEstimateBenefit = totalCourseGrossRevenue * 0.65;
   const totalMonthsCount = totalWeeksCount > 0 ? totalWeeksCount / 4 : 1;
   const monthlyNetEarnings = totalCourseNetEstimateBenefit / totalMonthsCount;
+  const minMonthlyNetPerStudent = (monthlyFeePerStudent * 0.65);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -409,7 +432,7 @@ export default function CreateClassPage() {
     }
     
     if (!validateStartDate(startDate)) {
-      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (từ hôm nay trở đi)!");
+      alert("⚠️ Vui lòng chọn ngày bắt đầu hợp lệ (cách hôm nay tối thiểu 5 ngày)!");
       return;
     }
 
@@ -471,11 +494,6 @@ export default function CreateClassPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const getTodayString = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
   };
 
   if (!isPermissionChecked) {
@@ -659,8 +677,8 @@ export default function CreateClassPage() {
                     let dividedLabel = "-";
                     if (cfgLess) {
                       const divNum = numStudents >= 3 ? numStudents : 3;
-                      const minDiv = Math.round(cfgLess.min / divNum);
-                      const maxDiv = Math.round(cfgLess.max / divNum);
+                      const minDiv = roundToThousand(cfgLess.min / divNum);
+                      const maxDiv = roundToThousand(cfgLess.max / divNum);
                       dividedLabel = `${minDiv.toLocaleString("vi-VN")}đ - ${maxDiv.toLocaleString("vi-VN")}đ / buổi / HS`;
                     }                    
                     const isCurrentLvl = level === lvl;
@@ -753,7 +771,7 @@ export default function CreateClassPage() {
                   type="date" 
                   value={startDate} 
                   onChange={handleStartDateChange}
-                  min={getTodayString()}
+                  min={getMinStartDateString()}
                   required 
                 />
                 {dateErrorMessage && (
@@ -892,8 +910,7 @@ export default function CreateClassPage() {
                     <div className={styles.calcRow}>
                       <span className={styles.calcLabel}>Tổng tiền 1 tháng nhận được:</span>
                       <span className={styles.calcValueHighlight}>
-                        {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}
-                      </span>
+                        {minMonthlyNetPerStudent > 0 ? `${Math.round(minMonthlyNetPerStudent).toLocaleString("vi-VN")}đ / tháng` : "0đ"} ~ {monthlyNetEarnings > 0 ? `${Math.round(monthlyNetEarnings).toLocaleString("vi-VN")}đ / tháng` : "0đ"}                      </span>
                     </div>
                   </>
                 )}

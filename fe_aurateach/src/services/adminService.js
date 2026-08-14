@@ -57,16 +57,19 @@ export const adminService = {
     return response.data !== undefined ? response.data : response;
   },
 
-  approveTutor: async (userId, tutorId) => {
+  approveTutor: async (userId, tutorId, teachingLevels, level) => {
     if (!userId || !tutorId) {
       throw new Error("Thiếu thông tin userId hoặc tutorId");
     }
-    // Gọi trực tiếp đến endpoint Laravel xử lý việc duyệt gia sư
-    // Hoặc bạn có thể dùng chung hàm updateTutorStatus nếu backend thiết kế gộp chung
+    
+    // Gửi kèm teaching_levels và level lên backend
     const response = await apiClient.post('/admin/tutors/approve', { 
       userId, 
-      tutorId 
+      tutorId,
+      teaching_levels: teachingLevels,
+      level: level
     });
+    
     return response;
   },
 
