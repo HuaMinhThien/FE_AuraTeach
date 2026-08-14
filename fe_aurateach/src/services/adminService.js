@@ -15,7 +15,24 @@ export const adminService = {
 
   // --- BỔ SUNG: Cập nhật trạng thái hoặc duyệt hồ sơ của gia sư ---
   updateTutorStatus: async (payload) => {
-    // payload có thể truyền lên { userId, status } hoặc { tutorId, verificationStatus } tùy ngữ cảnh
+    // Hỗ trợ lấy linh hoạt ID từ payload (userId, user_id, hoặc tutorId)
+    const userId = payload.userId || payload.user_id || payload.tutorId;
+    const status = payload.status;
+    const verificationStatus = payload.verificationStatus;
+
+    // Nếu là cập nhật trạng thái khóa/mở khóa (active/banned)
+    if (status) {
+      const response = await apiClient.patch(`/admin/tutors/${userId}/status`, { status });
+      return response.data !== undefined ? response.data : response;
+    }
+
+    // Nếu là duyệt hồ sơ
+    if (verificationStatus) {
+      const response = await apiClient.patch(`/admin/tutors/${userId}/status`, { verification_status: verificationStatus });
+      return response.data !== undefined ? response.data : response;
+    }
+
+    // Fallback mặc định nếu truyền payload thô
     const response = await apiClient.patch('/admin/tutors/status', payload);
     return response.data !== undefined ? response.data : response;
   },
