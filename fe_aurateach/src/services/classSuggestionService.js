@@ -21,6 +21,36 @@ export async function getEligibleTutors(course) {
       if (tutor.verification_status !== 'approved') return false;
       if (tutor.receive_suggestions !== true) return false;
 
+      // ✅ LOG ĐỂ DEBUG TẠI SAO KHÔNG RA TUTOR
+      console.log(`🔍 Checking tutor ${tutor.tutor_id}:`, {
+        status: tutor.verification_status,
+        receive: tutor.receive_suggestions,
+        subjects: tutor.subjects || tutor.expertise,
+        requested_subject: course.category_id,
+        level: tutor.tutor_level || tutor.level,
+        requested_level: course.tutor_level
+      });
+
+      // ✅ Kiểm tra môn học của lớp có trong profile của tutor không
+      // Cẩn thận: data.json có thể dùng 'expertise' (string) hoặc 'subjects' (array)
+      if (course.category_id && course.category_id !== 'cap1_homework') {
+        const tutorSubjects = tutor.subjects || [];
+        const tutorExpertise = tutor.expertise || "";
+        
+        // Nếu không có subjects array, thử check trong expertise string
+        const hasSubject = tutorSubjects.includes(course.category_id) || 
+                          tutorExpertise.toLowerCase().includes(course.category_id.toLowerCase());
+                          
+        if (!hasSubject) return false;
+      }
+
+      // ✅ Kiểm tra trình độ (level) của tutor (Sinh viên / Giáo viên)
+      // Cẩn thận: field trong data.json là 'level', biến truyền vào là 'tutor_level'
+      const tutorLvl = tutor.tutor_level || tutor.level;
+      if (course.tutor_level && tutorLvl !== course.tutor_level) {
+        return false;
+      }
+
       // Kiểm tra lịch trống (không trùng với lớp hiện có)
       const hasConflict = allCourses.some(existingCourse => {
         if (existingCourse.tutor_id !== tutor.tutor_id) return false;
@@ -188,6 +218,41 @@ export async function acceptClass(courseId, tutorId) {
         success: false,
         message: 'Lớp không ở trạng thái chờ tutor',
       };
+    }
+
+    // 2.1. Kiểm tra giới hạn 5 lớp/cùng khung giờ
+    const allCoursesRes = await fetch(`${API_BASE}/courses`);
+    const allCourses = await allCoursesRes.json();
+    
+    const tutorActiveClassesInSlot = allCourses.filter(c => 
+      c.tutor_id === actualTutorId && 
+      c.status !== 'cancelled' && 
+      c.status !== 'completed' &&
+      c.time_slot === course.time_slot &&
+      c.schedule_days?.some(day => course.schedule_days?.includes(day))
+    );
+
+    if (tutorActiveClassesInSlot.length >= 5) {
+      return {
+        success: false,
+        message: 'Bạn đã đạt giới hạn tối đa 5 lớp trong cùng khung giờ này!',
+      };
+    }
+
+    // 2.2. Kiểm tra đã nhận mã lớp nào của course này chưa (1 Tutor không được dạy 2 mã lớp cùng 1 course)
+    if (course.parent_course_id) {
+      const alreadyTeachingSameCourse = allCourses.some(c => 
+        c.tutor_id === actualTutorId && 
+        c.parent_course_id === course.parent_course_id &&
+        c.course_id !== course.course_id
+      );
+      
+      if (alreadyTeachingSameCourse) {
+        return {
+          success: false,
+          message: 'Bạn đã nhận dạy một mã lớp khác thuộc cùng khóa học này!',
+        };
+      }
     }
 
     // 3. Cập nhật course: gán tutor (dùng actualTutorId), chuyển status

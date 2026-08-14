@@ -3871,7 +3871,7 @@
       "message": "Học viên Liêm Tran đã đăng ký khóa học \"Hỗ trợ bài tập về nhà cho hs cấp 1\" với gia sư.",
       "related_id": "bk-1786170056088",
       "related_type": "booking",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-08-08T06:20:56.344Z"
     },
     {
@@ -3991,7 +3991,7 @@
       "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"hâha\" với gia sư.",
       "related_id": "bk-1786172731277",
       "related_type": "booking",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-08-08T07:05:31.362Z"
     },
     {
@@ -4003,7 +4003,7 @@
       "message": "Bạn đã nhận lớp \"ôn nè ní\". Học sinh sẽ đăng ký trong thời gian tới.",
       "related_id": "course_1786146756151",
       "related_type": "class_suggestion",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-08-08T07:31:58.726Z"
     },
     {
@@ -4147,7 +4147,7 @@
       "message": "Bạn đã nhận lớp \"ôn nữa nè ní\". Học sinh sẽ đăng ký trong thời gian tới.",
       "related_id": "course_1786147093264",
       "related_type": "class_suggestion",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-08-08T07:32:50.434Z"
     },
     {
@@ -4303,7 +4303,7 @@
       "message": "Học viên MAI THÁI TUẤN đã đăng ký khóa học \"ôn nè ní\" với gia sư.",
       "related_id": "bk-1786174415643",
       "related_type": "booking",
-      "is_read": false,
+      "is_read": true,
       "created_at": "2026-08-08T07:33:35.798Z"
     }
   ],
