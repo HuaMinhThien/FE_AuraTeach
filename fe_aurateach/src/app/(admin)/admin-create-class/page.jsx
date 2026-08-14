@@ -82,6 +82,7 @@ export default function AdminCreateClass() {
     thumbnail: DEFAULT_IMAGES[0],
     min_students: 2,
     course_type: '1_term',
+    num_sections: 1, // Mặc định tạo 1 mã lớp
   });
 
   const [errors, setErrors] = useState({});
@@ -182,6 +183,8 @@ export default function AdminCreateClass() {
     setIsCheckingEligible(true);
     try {
       const courseData = {
+        category_id: formData.category_id,
+        tutor_level: tutorLevel, // "Sinh viên" hoặc "Giáo viên"
         schedule_days: formData.schedule_days,
         time_slot: `${formData.start_time}-${formData.end_time}`,
       };
@@ -311,55 +314,73 @@ export default function AdminCreateClass() {
 
     setLoading(true);
     try {
-      const coursePayload = {
-        course_id: `course_${Date.now()}`,
-        class_name: formData.title,
-        title: formData.title,
-        category_id: formData.category_id,
-        level: formData.level,
-        description: formData.description,
-        max_students: numStudents,
-        min_students: 2,
-        price_per_session: currentRate,
-        start_date: formData.start_date,
-        total_weeks: totalWeeksCount,
-        schedule_days: formData.schedule_days,
-        time_slot: `${formData.start_time}-${formData.end_time}`,
-        thumbnail: formData.thumbnail,
-        status: 'pending_tutor',
-        created_by: 'admin_01',
-        tutor_id: null,
-        tutor_assigned_at: null,
-        students: [],
-        permanent_room_url: `https://meet.google.com/room_${Date.now()}`,
-        created_at: new Date().toISOString()
-      };
+      const numSections = parseInt(formData.num_sections) || 1;
+      const parentCourseId = `course_${Date.now()}`;
+      
+      let successCount = 0;
+      let totalSentTo = 0;
 
-      const createRes = await fetch(`${API_BASE}/courses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(coursePayload)
-      });
+      // Tạo N class sections
+      for (let i = 0; i < numSections; i++) {
+        const sectionSuffix = numSections > 1 ? ` - Nhóm ${i + 1}` : '';
+        const coursePayload = {
+          course_id: `${parentCourseId}_sec${i + 1}`,
+          parent_course_id: parentCourseId, // Để group các section
+          class_name: `${formData.title}${sectionSuffix}`,
+          title: `${formData.title}${sectionSuffix}`,
+          category_id: formData.category_id,
+          level: formData.level,
+          description: formData.description,
+          max_students: numStudents,
+          min_students: 2,
+          price_per_session: currentRate,
+          start_date: formData.start_date,
+          total_weeks: totalWeeksCount,
+          schedule_days: formData.schedule_days,
+          time_slot: `${formData.start_time}-${formData.end_time}`,
+          thumbnail: formData.thumbnail,
+          status: 'pending_tutor',
+          created_by: 'admin_01',
+          tutor_id: null,
+          tutor_assigned_at: null,
+          students: [],
+          permanent_room_url: `https://meet.google.com/room_${parentCourseId}_sec${i + 1}`,
+          created_at: new Date().toISOString()
+        };
 
-      if (!createRes.ok) throw new Error('Không thể tạo lớp học');
-      const createdCourse = await createRes.json();
+        const createRes = await fetch(`${API_BASE}/courses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(coursePayload)
+        });
 
-      const suggestRes = await fetch('/api/admin/classes/suggest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          courseId: createdCourse.course_id,
-          tutorIds: selectedTutors
-        })
-      });
+        if (createRes.ok) {
+          const createdCourse = await createRes.json();
+          // Gửi đề xuất cho các tutor đã chọn cho section này
+          const suggestRes = await fetch('/api/admin/classes/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              courseId: createdCourse.course_id,
+              tutorIds: selectedTutors
+            })
+          });
+          const suggestResult = await suggestRes.json();
+          if (suggestResult.success) {
+            totalSentTo += suggestResult.sentTo;
+          }
+          successCount++;
+        }
+      }
 
-      const suggestResult = await suggestRes.json();
-
-      if (suggestResult.success) {
-        alert(`✅ Tạo lớp thành công! Đã gửi đề xuất cho ${suggestResult.sentTo} tutor.`);
+      if (successCount === numSections) {
+        alert(`✅ Đã tạo thành công ${numSections} mã lớp! Đã gửi tổng cộng ${totalSentTo} đề xuất.`);
+        router.push('/admin-classes-management');
+      } else if (successCount > 0) {
+        alert(`⚠️ Chỉ tạo được ${successCount}/${numSections} mã lớp.`);
         router.push('/admin-classes-management');
       } else {
-        alert(`⚠️ Tạo lớp thành công nhưng gửi đề xuất thất bại: ${suggestResult.message}`);
+        throw new Error('Không thể tạo mã lớp nào.');
       }
     } catch (error) {
       console.error('Lỗi tạo lớp:', error);
@@ -550,6 +571,18 @@ export default function AdminCreateClass() {
                       setFormData(prev => ({ ...prev, max_students: 1 }));
                     }
                   }}
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Số lượng mã lớp cần tạo (1 - 10) <span className={styles.required}>*</span></label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formData.num_sections}
+                  onChange={(e) => setFormData(prev => ({ ...prev, num_sections: parseInt(e.target.value) || 1 }))}
                   required
                 />
               </div>

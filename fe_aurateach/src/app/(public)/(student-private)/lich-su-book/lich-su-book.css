@@ -71,66 +71,7 @@
   color: #4f46e5;
 }
 
-/* Status Badges */
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.status-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-confirmed {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-completed {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.status-cancelled {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-/* Payment Badges */
-.payment-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.payment-unpaid {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.payment-paid {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.payment-refunded {
-  background: #fce4ec;
-  color: #c62828;
-}
-
-.payment-na {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
+/* View Detail Button */
 .view-detail-btn {
   display: inline-flex;
   align-items: center;
@@ -239,10 +180,9 @@
     background: transparent;
   }
   
-  .status-badge,
-  .payment-badge {
-    font-size: 11px;
-    padding: 3px 10px;
+  .view-detail-btn {
+    width: 100%;
+    min-height: 40px;
   }
 }
 

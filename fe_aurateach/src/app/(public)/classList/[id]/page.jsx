@@ -18,6 +18,7 @@ export default function ClassDetailPage({ params }) {
   const courseId = id;
 
   const [course, setCourse] = useState(null);
+  const [sections, setSections] = useState([]); // Các mã lớp (section) của course này
   const [tutorInfo, setTutorInfo] = useState(null);
   const [userTutor, setUserTutor] = useState(null);
   const [courseReviews, setCourseReviews] = useState([]);
@@ -75,6 +76,34 @@ const currentCourse = coursesData[0];
         }
 
         setCourse(currentCourse);
+
+        // ✅ Tìm các mã lớp (section) cùng khóa học (parent_course_id)
+        if (currentCourse.parent_course_id) {
+          const sectionsRes = await fetch(`${API_BASE}/courses?parent_course_id=${currentCourse.parent_course_id}`);
+          const sectionsData = await sectionsRes.json();
+          // Lấy thông tin tutor cho từng section
+          const tutorsRes = await fetch(`${API_BASE}/tutors`);
+          const tutorsAll = await tutorsRes.json();
+          const usersRes = await fetch(`${API_BASE}/users`);
+          const usersAll = await usersRes.json();
+
+          const sectionsWithTutor = sectionsData.map(sec => {
+            const t = tutorsAll.find(tu => tu.tutor_id === sec.tutor_id);
+            const u = t ? usersAll.find(us => us.user_id === t.user_id) : null;
+            return {
+              ...sec,
+              tutor_name: u ? u.full_name : (sec.tutor_id ? 'Đang tải...' : 'Chưa có gia sư'),
+              tutor_avatar: u ? u.avatar : null
+            };
+          });
+          setSections(sectionsWithTutor);
+        } else {
+          setSections([{
+            ...currentCourse,
+            tutor_name: 'Đang tải...',
+            tutor_avatar: null
+          }]);
+        }
 
         const categoriesRes = await fetch(`${API_BASE}/categories`);
         const categoriesData = await categoriesRes.json();
@@ -143,6 +172,12 @@ const currentCourse = coursesData[0];
 
     if (currentUser.role !== 'student') {
       alert("Chỉ tài khoản Học viên mới có quyền đăng ký tham gia lớp học này.");
+      return;
+    }
+
+    // ✅ Yêu cầu lớp phải đã có tutor nhận mới được đăng ký/thanh toán.
+    if (!course.tutor_id) {
+      alert("⏳ Lớp này đang chờ gia sư nhận dạy. Bạn chưa thể đăng ký lúc này.");
       return;
     }
 
@@ -289,10 +324,11 @@ const currentStudents = course.students || [];
   // Chỉ các trạng thái cancelled / completed / closed mới thực sự là "Đã đóng".
   const isClassOpen = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
 
-// ✅ Lớp "có thể đăng ký" (canBook) bao gồm cả lớp do Admin tạo đang chờ tutor
-  // (pending_tutor). Học viên vẫn có thể đăng ký và thanh toán để vào lớp ngay,
-  // không cần chờ gia sư nhận.
-  const canBook = ['active', 'pending_student', 'pending_tutor'].includes(course.status);
+// ✅ Lớp "có thể đăng ký" (canBook) phải ĐÃ CÓ TUTOR NHẬN DẠY.
+  // Luồng: Admin tạo lớp (pending_tutor, chưa có tutor) → Tutor nhận lớp
+  // (pending_student có tutor_id) → Học sinh mới có thể đăng ký.
+  // Lớp chưa có tutor nhận (pending_tutor) sẽ không đăng ký được.
+  const canBook = course.tutor_id && ['active', 'pending_student'].includes(course.status);
 
   return (
     <div className={styles.container} style={{marginTop: "80px"}}>
@@ -348,6 +384,50 @@ const currentStudents = course.students || [];
               <p>{course.description}</p>
             </div>
           </section>
+
+          {/* ✅ LIST CÁC MÃ LỚP (SECTIONS) */}
+          {sections.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>📋 Danh sách các mã lớp đang mở</h2>
+              <div className={styles.sectionsList}>
+                {sections.map((sec) => {
+                  const secStudentsCount = sec.students ? sec.students.length : 0;
+                  const isSecFull = secStudentsCount >= sec.max_students;
+                  const isCurrentSec = sec.course_id === course.course_id;
+
+                  return (
+                    <div 
+                      key={sec.course_id} 
+                      className={`${styles.sectionItem} ${isCurrentSec ? styles.activeSection : ''}`}
+                    >
+                      <div className={styles.sectionInfo}>
+                        <div className={styles.sectionMain}>
+                          <span className={styles.sectionCode}>MÃ LỚP: {sec.course_id.split('_').pop().toUpperCase()}</span>
+                          <span className={styles.sectionTutor}>👨‍🏫 GV: {sec.tutor_name}</span>
+                        </div>
+                        <div className={styles.sectionStats}>
+                          <span className={`${styles.sectionSlots} ${isSecFull ? styles.slotsFull : ''}`}>
+                            👥 Còn {sec.max_students - secStudentsCount}/{sec.max_students} chỗ
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {!isCurrentSec ? (
+                        <button 
+                          className={styles.viewSecBtn}
+                          onClick={() => router.push(`/classList/${sec.course_id}`)}
+                        >
+                          Xem lớp này
+                        </button>
+                      ) : (
+                        <span className={styles.currentLabel}>Đang xem</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Course Details Section */}
           <section className={styles.section}>
@@ -530,7 +610,8 @@ const currentStudents = course.students || [];
 {bookingLoading ? "Đang xử lý..." : 
                isBooked ? "✅ Bạn đã đăng ký" : 
                isFull ? "🔴 Lớp đã đủ học viên" :
-               !isClassOpen ? "🔴 Lớp đã đóng" : 
+               !isClassOpen ? "🔴 Lớp đã đóng" :
+               !canBook ? "⏳ Đang chờ gia sư nhận lớp" : 
                "📝 Đăng ký học ngay"}
             </button>
             <button className={styles.consultButton}>💬 Đặt lịch tư vấn</button>
