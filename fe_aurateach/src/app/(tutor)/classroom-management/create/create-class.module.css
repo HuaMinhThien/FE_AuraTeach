@@ -471,8 +471,10 @@
 
 .feeValue {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 600;
   color: #ffffff;
+  font-family: 'Inter', sans-serif;
+
 }
 
 /* Vùng tính toán chi tiết */
