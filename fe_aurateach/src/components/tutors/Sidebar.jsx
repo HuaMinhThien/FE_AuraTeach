@@ -101,6 +101,10 @@ export default function Sidebar() {
             text: "Bảng điều khiển"
         },
         {
+            path: "/tutor-confirm-session",
+            text: "Xác nhận buổi học"
+        },
+        {
             path: "/classroom-management",
             text: "Lớp học của tôi"
         },

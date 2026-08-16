@@ -1847,6 +1847,61 @@
         "tutor_1786117127200",
         "tutor_1786120063307"
       ]
+    },
+    {
+      "id": "test-c1",
+      "course_id": "c-test-today-01",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_01",
+      "title": "Lớp Toán Nâng Cao - Đã Đến Giờ Xác Nhận",
+      "level": "Cấp 3",
+      "description": "Lớp học đã kết thúc khung giờ dạy trong ngày hôm nay, nút xác nhận sẽ sáng.",
+      "max_students": 5,
+      "min_students": 0,
+      "price_per_session": 150000,
+      "start_date": "2026-08-01",
+      "end_date": "2026-09-30",
+      "total_weeks": 8,
+      "schedule_days": [
+        "Chủ Nhật"
+      ],
+      "time_slot": "14:00-16:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-defg-hij",
+      "students": [
+        "u-student-1",
+        "u-student-2"
+      ],
+      "created_at": "2026-08-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-c2",
+      "course_id": "c-test-today-02",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_01",
+      "title": "Lớp Lập Trình Web - Đang Trong Giờ Học",
+      "level": "Cấp 3",
+      "description": "Lớp học chưa kết thúc khung giờ, nút xác nhận sẽ bị ẩn/disabled.",
+      "max_students": 5,
+      "min_students": 0,
+      "price_per_session": 200000,
+      "start_date": "2026-08-01",
+      "end_date": "2026-09-30",
+      "total_weeks": 8,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Chủ Nhật"
+      ],
+      "time_slot": "16:00-19:00",
+      "thumbnail": "/img/class/default-class-2.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/xyz-uvwx-rst",
+      "students": [
+        "u-student-1"
+      ],
+      "created_at": "2026-08-01T00:00:00.000Z"
     }
   ],
   "reviews": [
@@ -4385,72 +4440,6 @@
       "updated_at": "2026-08-07T16:18:01.212Z"
     }
   ],
-  "lesson_confirmations": [
-    {
-      "comfirmation_id": "c-01_2026-08-01",
-      "course_id": "c-01",
-      "tutor_id": "tutor_01",
-      "lesson_number": 3,
-      "lesson_date": "2026-08-01",
-      "record_url": "https://drive.google.com/file/d/1xABCxyz...",
-      "note": "Đã dạy xong bài...",
-      "submitted_at": "2026-08-01T20:00:00.000Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-08-02T20:00:00.000Z",
-      "status": "approved",
-      "lesson_amount": 300000,
-      "payout_status": "transferred",
-      "id": "f225"
-    },
-    {
-      "id": "937b",
-      "comfirmation_id": "c-02_2026-07-27",
-      "course_id": "c-02",
-      "tutor_id": "tutor_01",
-      "lesson_number": 1,
-      "lesson_date": "2026-07-27",
-      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
-      "note": "ôn tập",
-      "submitted_at": "2026-07-30T13:16:37.233Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-07-31T13:16:37.233Z",
-      "status": "approved",
-      "lesson_amount": 0,
-      "payout_status": "transferred"
-    },
-    {
-      "id": "55ed",
-      "comfirmation_id": "c-01_2026-07-29",
-      "course_id": "c-01",
-      "tutor_id": "tutor_01",
-      "lesson_number": 1,
-      "lesson_date": "2026-07-29",
-      "record_url": "localhost:3000/tutor-dashboard",
-      "note": "",
-      "submitted_at": "2026-07-30T14:49:19.781Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-07-31T14:49:19.781Z",
-      "status": "approved",
-      "lesson_amount": 300000,
-      "payout_status": "transferred"
-    },
-    {
-      "id": "e4f3",
-      "comfirmation_id": "c-02_2026-07-30",
-      "course_id": "c-02",
-      "tutor_id": "tutor_01",
-      "lesson_number": 1,
-      "lesson_date": "2026-07-30",
-      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
-      "note": "test",
-      "submitted_at": "2026-08-04T11:54:49.757Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-08-05T11:54:49.757Z",
-      "status": "approved",
-      "lesson_amount": 240000,
-      "payout_status": "transferred"
-    }
-  ],
   "payout_requests": [
     {
       "id": "ab34",
@@ -5279,5 +5268,86 @@
     }
   ],
   "refunds": [],
+  "session_attendance": [
+    {
+      "id": "04e7",
+      "attendance_id": "att_1786879614534_u-student-1",
+      "session_id": "ss_1786879614534",
+      "student_id": "u-student-1",
+      "attendance_status": true,
+      "tutor_comment": "non",
+      "created_at": "2026-08-16T11:26:54.534Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "2bb0",
+      "attendance_id": "att_1786879614534_u-student-2",
+      "session_id": "ss_1786879614534",
+      "student_id": "u-student-2",
+      "attendance_status": true,
+      "tutor_comment": "gà ",
+      "created_at": "2026-08-16T11:26:54.534Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "02be",
+      "session_id": "ss_1786882877691",
+      "student_id": "u-student-1",
+      "attendance_status": true,
+      "tutor_comment": "",
+      "created_at": "2026-08-16T12:21:17.701Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "5129",
+      "attendance_id": "att_1786884089862_u-student-1",
+      "session_id": "ss_1786884089854",
+      "student_id": "u-student-1",
+      "attendance_status": true,
+      "tutor_comment": "",
+      "created_at": "2026-08-16T12:41:29.862Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "2b7f",
+      "attendance_id": "att_1786884089862_u-student-2",
+      "session_id": "ss_1786884089854",
+      "student_id": "u-student-2",
+      "attendance_status": false,
+      "tutor_comment": "",
+      "created_at": "2026-08-16T12:41:29.862Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    }
+  ],
+  "class_sessions": [
+    {
+      "id": "052a",
+      "session_id": "ss_1786882877691",
+      "course_id": "c-test-today-02",
+      "actual_date": "2026-08-16T12:21:17.691Z",
+      "start_time": "16:00",
+      "end_time": "19:00",
+      "lesson_title": "Lớp Lập Trình Web - Đang Trong Giờ Học",
+      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "tutor_note": "",
+      "session_status": "completed",
+      "created_at": "2026-08-16T12:21:17.691Z",
+      "updated_at": "2026-08-16T12:21:17.691Z"
+    },
+    {
+      "id": "66c6",
+      "session_id": "ss_1786884089854",
+      "course_id": "c-test-today-01",
+      "actual_date": "2026-08-16T12:41:29.854Z",
+      "start_time": "14:00",
+      "end_time": "16:00",
+      "lesson_title": "Lớp Toán Nâng Cao - Đã Đến Giờ Xác Nhận",
+      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "tutor_note": "",
+      "session_status": "completed",
+      "created_at": "2026-08-16T12:41:29.854Z",
+      "updated_at": "2026-08-16T12:41:29.854Z"
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }
