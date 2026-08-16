@@ -650,7 +650,7 @@ export default function CreateClassPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Học phí mong muốn (đ / buổi ) <span className={styles.required}>*</span></label>
+                <label>Học phí mong muốn (đ / buổi / hs) <span className={styles.required}>*</span></label>
                 <input 
                   type="number" 
                   step="10000"
