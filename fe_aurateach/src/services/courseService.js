@@ -45,15 +45,9 @@ export const courseService = {
 
   getSubscribedCourses: async (studentId) => {
     try {
-      console.log("🚀 [API REQUEST] Đang gọi getSubscribedCourses với studentId:", studentId);
-      console.log("🌐 [API URL]:", `/students/${studentId}/subscribed-courses`);
-
       const response = await apiClient.get(`/students/${studentId}/subscribed-courses`);
-      
-      console.log("📦 [API RESPONSE DATA]:", response.data);
       return response.data;
     } catch (error) {
-      console.error("❌ [API ERROR tại getSubscribedCourses]:", error.response || error);
       throw error;
     }
   },

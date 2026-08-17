@@ -177,6 +177,9 @@ export default function Header() {
                         <Link href="/classList" className={`nav-item ${pathname === "/classList" ? "active-nav" : ""}`}>
                             <span>Tìm lớp học</span>
                         </Link>
+                        <Link href="/createSchedule" className={`nav-item ${pathname === "/createSchedule" ? "active-nav" : ""}`}>
+                            <span>Tạo lịch học cho riêng bạn</span>
+                        </Link>
                     </div>
                 </div>
 

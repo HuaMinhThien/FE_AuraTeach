@@ -72,17 +72,14 @@ export default function MessageInput({ onSend, sending, inputRef: externalInputR
     if (!files || files.length === 0) return;
 
     Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        onSend({
-          id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: event.target.result,
-        });
-      };
-      reader.readAsDataURL(file);
+      // 🚀 Truyền trực tiếp đối tượng file gốc thay vì qua FileReader / DataURL
+      onSend({
+        id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        rawFile: file, // Giữ file gốc tại đây
+      });
     });
 
     e.target.value = "";

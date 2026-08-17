@@ -293,7 +293,7 @@ export default function TutorDetailPage({ params }) {
           
           <div className={styles.headerCard}>
             <img 
-              src={accountUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"} 
+              src={accountUser.avatar || "https://res.cloudinary.com/ghbrskob/image/upload/v1786685723/aurateach_reports/v09h1kwwsnzbczsggiuy.webp"} 
               alt={accountUser.full_name} 
               className={styles.avatar} 
             />

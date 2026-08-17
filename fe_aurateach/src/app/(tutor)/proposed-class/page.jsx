@@ -3,74 +3,82 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './proposed-class.module.css';
-
-// Hàm hỗ trợ đọc cookie user_info
-function getUserInfoFromCookie() {
-  if (typeof document === 'undefined') return null;
-  const cookieArr = document.cookie.split(';');
-  for (let i = 0; i < cookieArr.length; i++) {
-    const cookiePair = cookieArr[i].split('=');
-    if (cookiePair[0].trim() === 'user_info') {
-      try {
-        const decodedValue = decodeURIComponent(cookiePair[1]);
-        return JSON.parse(decodedValue);
-      } catch (e) {
-        console.error("Lỗi khi giải mã cookie user_info:", e);
-        return null;
-      }
-    }
-  }
-  return null;
-}
+import { classRequestService } from '@/services/classRequestService';
+import { authService } from '@/services/authService';
+import { categoryService } from '@/services/categoryService'; // <-- Import service danh mục của bạn
 
 export default function ProposedClassPage() {
   const router = useRouter();
   const [currentTutorId, setCurrentTutorId] = useState(null);
-
-  // Tab: 'student' | 'admin'
   const [activeTab, setActiveTab] = useState('student');
 
-  // Lớp từ học sinh
   const [proposedClasses, setProposedClasses] = useState([]);
-  const [pendingClasses, setPendingClasses] = useState([]);
-  
-  // Lớp từ admin
   const [adminSuggestions, setAdminSuggestions] = useState([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [categories, setCategories] = useState([]); // <-- State lưu danh sách môn học
   
   const [loading, setLoading] = useState(true);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // 1. Lấy thông tin user bằng authService
   useEffect(() => {
-    const userInfo = getUserInfoFromCookie();
-    if (userInfo && userInfo.user_id) {
-      setCurrentTutorId(userInfo.user_id);
-    }
+    const fetchUser = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        if (user && (user.user_id || user.id)) {
+          setCurrentTutorId(user.user_id || user.id);
+        } else {
+          alert("Vui lòng đăng nhập để xem danh sách lớp!");
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error("Lỗi lấy thông tin người dùng:", error);
+        router.push('/login');
+      }
+    };
+    fetchUser();
+  }, [router]);
+
+  // 2. Fetch danh sách danh mục (môn học) khi trang được load
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryService.getCategories();
+        const listData = response.data || response;
+        setCategories(Array.isArray(listData) ? listData : []);
+      } catch (error) {
+        console.error("Lỗi khi tải danh mục môn học:", error);
+      }
+    };
+    fetchCategories();
   }, []);
 
-  // Fetch dữ liệu khi currentTutorId hoặc activeTab thay đổi
+  // Hàm chuyển đổi category_id thành category_name
+  const getCategoryName = (categoryId) => {
+    if (!categoryId) return 'Chưa phân loại';
+    const found = categories.find(cat => String(cat.category_id || cat.id) === String(categoryId));
+    return found ? (found.category_name || found.name) : categoryId; // Nếu không tìm thấy thì tạm hiện ID để debug
+  };
+
+  // 3. Fetch dữ liệu lớp học dựa trên tab
   useEffect(() => {
-    if (currentTutorId) {
-      if (activeTab === 'student') {
-        fetchStudentClasses(currentTutorId);
-      } else {
-        fetchAdminSuggestions(currentTutorId);
-      }
+    if (!currentTutorId) return;
+
+    if (activeTab === 'student') {
+      fetchStudentClasses();
+    } else {
+      fetchAdminSuggestions();
     }
   }, [currentTutorId, activeTab]);
 
-  // Fetch lớp từ học sinh
-  const fetchStudentClasses = async (tutorId) => {
+  const fetchStudentClasses = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/student-class-requests?tutor_id=${tutorId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setProposedClasses(data.proposed_classes || data.data || []);
-        setPendingClasses(data.pending_classes || []);
-      }
+      const response = await classRequestService.getClassRequests({ tutor_id: currentTutorId });
+      const listData = response.data || response;
+      setProposedClasses(Array.isArray(listData) ? listData : []);
     } catch (error) {
       console.error("Lỗi khi tải danh sách lớp từ học sinh:", error);
     } finally {
@@ -78,15 +86,12 @@ export default function ProposedClassPage() {
     }
   };
 
-  // Fetch đề xuất từ admin
-  const fetchAdminSuggestions = async (tutorId) => {
+  const fetchAdminSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
-      const res = await fetch(`/api/tutor/suggestions?tutorId=${tutorId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setAdminSuggestions(data.data || []);
-      }
+      const response = await classRequestService.getAdminSuggestions(currentTutorId);
+      const listData = response.data || response;
+      setAdminSuggestions(Array.isArray(listData) ? listData : []);
     } catch (error) {
       console.error("Lỗi khi tải đề xuất từ admin:", error);
     } finally {
@@ -94,93 +99,78 @@ export default function ProposedClassPage() {
     }
   };
 
-  // Đăng ký nhận dạy (lớp từ học sinh)
   const handleApplyClass = async (requestId) => {
-    if (!currentTutorId) {
-      alert("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại!");
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const res = await fetch('/api/student-class-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'apply',
-          requests_id: requestId,
-          tutor_id: currentTutorId
-        })
+      await classRequestService.applyClassRequest({
+        requests_id: requestId,
+        tutor_id: currentTutorId
       });
-
-      const result = await res.json();
-      if (result.success) {
-        alert("Đã gửi yêu cầu nhận dạy thành công!");
-        setSelectedClass(null);
-        fetchStudentClasses(currentTutorId);
-      } else {
-        alert(result.message || "Có lỗi xảy ra, vui lòng thử lại.");
-      }
+      alert("Đã gửi yêu cầu nhận dạy thành công!");
+      setSelectedClass(null);
+      fetchStudentClasses();
     } catch (error) {
-      console.error("Lỗi khi nhận dạy:", error);
-      alert("Không thể kết nối đến máy chủ.");
+      alert(error.message || "Có lỗi xảy ra khi ứng tuyển.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Nhận lớp đề xuất từ admin (First come first serve)
   const handleAcceptSuggestion = async (course) => {
-    if (!currentTutorId) {
-      alert("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại!");
-      return;
-    }
-
     if (!confirm(`Bạn có chắc muốn nhận lớp "${course.title}"?`)) return;
 
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/classes/accept', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          courseId: course.course_id,
-          tutorId: currentTutorId
-        })
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        alert("🎉 Nhận lớp thành công! Lớp sẽ được hiển thị trên 'Tìm lớp'.");
+      const result = await classRequestService.acceptAdminSuggestion(course.course_id || course.id, currentTutorId);
+      if (result && result.success !== false) {
+        alert("🎉 Nhận lớp thành công!");
         setSelectedClass(null);
-        fetchAdminSuggestions(currentTutorId);
+        fetchAdminSuggestions();
       } else {
-        if (result.alreadyAssigned) {
-          alert("⚠️ Lớp đã có tutor khác nhận rồi!");
-        } else {
-          alert(result.message || "Có lỗi xảy ra, vui lòng thử lại.");
-        }
-        // Refresh để cập nhật trạng thái
-        fetchAdminSuggestions(currentTutorId);
+        alert(result?.message || "Nhận lớp thất bại.");
       }
     } catch (error) {
-      console.error("Lỗi khi nhận lớp:", error);
-      alert("Không thể kết nối đến máy chủ.");
+      alert(error.message || "Có lỗi xảy ra.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Lọc danh sách theo từ khóa
+  const formatScheduleDays = (scheduleDays) => {
+    if (!scheduleDays) return 'Chưa cập nhật';
+    try {
+      let days = scheduleDays;
+      if (typeof scheduleDays === 'string') {
+        days = JSON.parse(scheduleDays);
+      }
+      if (Array.isArray(days)) {
+        return days.join(', ');
+      }
+    } catch (e) {
+      return scheduleDays;
+    }
+    return 'Chưa cập nhật';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Chưa cập nhật';
+    try {
+      return new Date(dateString).toLocaleDateString('vi-VN');
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Lọc danh sách theo từ khóa tìm kiếm (tìm theo tên lớp hoặc tên môn học)
   const currentList = activeTab === 'student' ? proposedClasses : adminSuggestions;
   const filteredList = currentList.filter(item => {
     const titleMatch = item.title?.toLowerCase().includes(searchTerm.toLowerCase());
-    const catMatch = item.category_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const catName = getCategoryName(item.category_id).toLowerCase();
+    const catMatch = catName.includes(searchTerm.toLowerCase());
     return titleMatch || catMatch;
   });
 
-  // Đếm tổng số lớp chờ
-  const totalPending = (activeTab === 'student' ? proposedClasses : adminSuggestions).length;
+  const totalPending = currentList.length;
 
   return (
     <div className={styles.container}>
@@ -190,7 +180,7 @@ export default function ProposedClassPage() {
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Tìm kiếm theo tên lớp hoặc môn học..."
+            placeholder="Tìm kiếm theo tên lớp hoặc tên môn học..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -223,7 +213,7 @@ export default function ProposedClassPage() {
         }
       </h2>
 
-      {/* Loading */}
+      {/* Loading & Content */}
       {(loading || loadingSuggestions) ? (
         <p className={styles.emptyText}>Đang tải danh sách lớp học...</p>
       ) : filteredList.length === 0 ? (
@@ -245,7 +235,7 @@ export default function ProposedClassPage() {
             const isAssigned = isAdminSuggestion && item.tutor_id;
             
             return (
-              <div key={item.requests_id || item.course_id || item.id || index} className={styles.classCard}>
+              <div key={item.request_id || item.course_id || item.id || index} className={styles.classCard}>
                 <div>
                   <div className={styles.cardHeader}>
                     <span className={styles.badge}>
@@ -259,16 +249,22 @@ export default function ProposedClassPage() {
                   </div>
                   <h3 className={styles.cardTitle}>{item.title}</h3>
                   <p className={styles.cardMeta}>
-                    <strong>Cấp học:</strong> {item.level}
+                    <strong>Cấp học:</strong> {item.grade_level || item.level || 'Chưa cập nhật'}
                   </p>
                   <p className={styles.cardMeta}>
-                    <strong>Môn học:</strong> {item.category_name || 'Chưa phân loại'}
+                    <strong>Môn học:</strong> {getCategoryName(item.category_id)}
                   </p>
                   <p className={styles.cardMeta}>
-                    <strong>Lịch học:</strong> {Array.isArray(item.schedule_days) ? item.schedule_days.join(', ') : item.schedule_days} ({item.time_slot})
+                    <strong>Lịch học:</strong> {formatScheduleDays(item.schedule_days)}
                   </p>
                   <p className={styles.cardMeta}>
-                    <strong>Ngày bắt đầu:</strong> {item.start_date}
+                    <strong>Giờ học:</strong> {item.start_time && item.end_time ? `${item.start_time} - ${item.end_time}` : (item.time_slot || 'Chưa cập nhật')}
+                  </p>
+                  <p className={styles.cardMeta}>
+                    <strong>Số học sinh tối đa:</strong> {item.max_student || item.max_students || 1} học sinh
+                  </p>
+                  <p className={styles.cardMeta}>
+                    <strong>Ngày bắt đầu:</strong> {formatDate(item.start_date)}
                   </p>
                   <p className={styles.cardMeta}>
                     <strong>Số tuần:</strong> {item.total_weeks} tuần
@@ -313,16 +309,22 @@ export default function ProposedClassPage() {
 
             <div style={{ marginTop: '15px' }}>
               <div className={styles.modalGroup}>
-                <strong>Cấp học:</strong> {selectedClass.level}
+                <strong>Cấp học:</strong> {selectedClass.grade_level || selectedClass.level || 'Chưa cập nhật'}
               </div>
               <div className={styles.modalGroup}>
-                <strong>Môn học:</strong> {selectedClass.category_name || 'Chưa phân loại'}
+                <strong>Môn học:</strong> {getCategoryName(selectedClass.category_id)}
               </div>
               <div className={styles.modalGroup}>
-                <strong>Lịch học:</strong> {Array.isArray(selectedClass.schedule_days) ? selectedClass.schedule_days.join(', ') : selectedClass.schedule_days} ({selectedClass.time_slot})
+                <strong>Lịch học:</strong> {formatScheduleDays(selectedClass.schedule_days)}
               </div>
               <div className={styles.modalGroup}>
-                <strong>Ngày bắt đầu:</strong> {selectedClass.start_date}
+                <strong>Giờ học:</strong> {selectedClass.start_time && selectedClass.end_time ? `${selectedClass.start_time} - ${selectedClass.end_time}` : (selectedClass.time_slot || 'Chưa cập nhật')}
+              </div>
+              <div className={styles.modalGroup}>
+                <strong>Số học sinh tối đa:</strong> {selectedClass.max_student || selectedClass.max_students || 1} học sinh
+              </div>
+              <div className={styles.modalGroup}>
+                <strong>Ngày bắt đầu:</strong> {formatDate(selectedClass.start_date)}
               </div>
               <div className={styles.modalGroup}>
                 <strong>Số tuần:</strong> {selectedClass.total_weeks} tuần
@@ -345,7 +347,7 @@ export default function ProposedClassPage() {
               <button
                 className={styles.applyBtn}
                 disabled={submitting}
-                onClick={() => handleApplyClass(selectedClass.requests_id || selectedClass.id)}
+                onClick={() => handleApplyClass(selectedClass.request_id || selectedClass.requests_id || selectedClass.id)}
               >
                 {submitting ? 'Đang xử lý...' : 'Nhận dạy'}
               </button>

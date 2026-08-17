@@ -37,7 +37,7 @@ function FeaturedTutors() {
           return {
             id: tutor.tutor_id,
             name: matchedUser.full_name || "Gia sư AuraTeach",
-            avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
+            avatar: matchedUser.avatar || "https://res.cloudinary.com/ghbrskob/image/upload/v1786685723/aurateach_reports/v09h1kwwsnzbczsggiuy.webp",
             subject: tutor.expertise || "Gia sư tự do",
             rating: isNaN(ratingNum) ? 5.0 : ratingNum,
             experience: tutor.Experience || "Chưa cập nhật",

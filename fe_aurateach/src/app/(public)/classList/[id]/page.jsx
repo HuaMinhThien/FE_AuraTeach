@@ -75,7 +75,8 @@ export default function ClassDetailPage({ params }) {
 
       if (studentId) {
         const stringStudentId = String(studentId);
-        const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'pending_payment', 'pending', 'confirmed'];
+        // Đã loại bỏ 'pending' và 'pending_payment' khỏi danh sách hợp lệ để tránh hiển thị nhầm là đã thanh toán
+        const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed'];
         
         const courseStudents = Array.isArray(courseObj.students) ? courseObj.students.map(String) : [];
         const isInCourseStudents = courseStudents.includes(stringStudentId);
@@ -85,7 +86,7 @@ export default function ClassDetailPage({ params }) {
           const subStatus = String(sub.status || sub.pivot?.status || 'active').toLowerCase();
           
           const isMatched = (subStudentId === stringStudentId) || (subStudentId === 'st-1k6I5I' && isInCourseStudents);
-          const isValidStatus = validStatuses.includes(subStatus) || !sub.status;
+          const isValidStatus = validStatuses.includes(subStatus); // Không dùng điều kiện thuần !sub.status nữa để kiểm soát chặt hơn
 
           return isMatched && isValidStatus && subStatus !== 'cancelled';
         });
@@ -149,11 +150,22 @@ export default function ClassDetailPage({ params }) {
         paymentMethod: paymentMethod
       });
 
-      setIsBooked(true);
+      const responseData = result.data || result;
+      const subStatus = String(responseData?.status || responseData?.pivot?.status || '').toLowerCase();
+
+      // Chỉ chuyển trạng thái thành đã đặt/đã khóa nút khi thanh toán hoàn tất hoặc là hình thức miễn phí/tiền mặt xác nhận luôn
+      const isCompletedNow = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed'].includes(subStatus);
+      
+      if (isCompletedNow) {
+        setIsBooked(true);
+      } else {
+        // Nếu là trạng thái chờ thanh toán (pending / pending_payment), tạm thời chưa cho là đã book xong
+        setIsBooked(false);
+      }
 
       return {
         success: true,
-        data: result.data || result
+        data: responseData
       };
 
     } catch (error) {

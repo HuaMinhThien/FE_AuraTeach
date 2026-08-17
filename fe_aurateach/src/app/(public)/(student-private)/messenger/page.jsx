@@ -185,7 +185,7 @@ function MessengerContent() {
   const sendMessage = async (content) => {
     const isFile = content !== null && typeof content === 'object';
     if (!isFile && (!content || !content.trim())) return;
-    if (isFile && !content.name) return;
+    if (isFile && !content.name && !content.rawFile) return;
     if (!selectedConversation || !user || isSendingRef.current) return;
 
     const convId = selectedConversation.conversation_id || selectedConversation.id;
@@ -202,15 +202,14 @@ function MessengerContent() {
       let finalFileUrl = null;
 
       if (isFile) {
-        const res = await fetch(content.data);
-        const blob = await res.blob();
-        const rawFile = new File([blob], content.name, { type: content.type });
+        // 🚀 Sử dụng trực tiếp rawFile hoặc tạo lại từ dữ liệu an toàn
+        const fileToUpload = content.rawFile || new File([content.rawFile], content.name, { type: content.type });
 
-        const uploadRes = await uploadService.uploadFile(rawFile, "chat");
+        const uploadRes = await uploadService.uploadFile(fileToUpload, "chat");
         if (!uploadRes?.url) throw new Error("Không nhận được URL từ server upload");
 
         finalFileUrl = uploadRes.url;
-        messageContentText = finalFileUrl; // Lưu thẳng URL Cloudinary vào content
+        messageContentText = finalFileUrl; 
       } else {
         messageContentText = content.trim();
       }
@@ -229,22 +228,16 @@ function MessengerContent() {
         content: messageContentText,
         created_at: nowTime,
         is_read: true,
-        ...(isFile ? {
-          file_name: content.name,
-          file_type: content.type,
-          file_size: content.size,
-          file_data: finalFileUrl,
-        } : {}),
       };
 
-      // 1. Cập nhật UI ngay lập tức (Optimistic Update)
+      // 1. Cập nhật UI ngay lập tức
       setMessages(prev => {
         const updated = [...prev, newMessage];
         saveMessagesToLocal(convId, updated);
         return updated;
       });
 
-      // 2. Gửi API ngầm
+      // 2. Gửi API ngầm lên Database
       const savedMsgRes = await messageService.sendMessage(newMessage);
       const savedMsg = savedMsgRes?.data || savedMsgRes;
 
@@ -256,7 +249,7 @@ function MessengerContent() {
         });
       }
 
-      // 3. Cập nhật thông tin hội thoại mới nhất
+      // 3. Cập nhật thông tin đoạn hội thoại
       const previewText = isFile ? "[Hình ảnh]" : messageContentText;
       await messageService.updateConversation(convId, {
         last_message: previewText,
@@ -272,8 +265,8 @@ function MessengerContent() {
       }));
 
     } catch (error) {
-      console.error("❌ Lỗi gửi tin nhắn/file:", error);
-      alert("Gửi tin nhắn hoặc file thất bại, vui lòng thử lại!");
+      console.error("❌ Lỗi gửi tin nhắn/file trên production:", error);
+      alert("Gửi tin nhắn hoặc file thất bại, vui lòng kiểm tra lại kết nối!");
     } finally {
       setSending(false);
       isSendingRef.current = false;

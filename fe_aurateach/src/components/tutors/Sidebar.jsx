@@ -87,6 +87,10 @@ export default function Sidebar() {
     const menuItems = [
         { path: "/tutor-dashboard", text: "Bảng điều khiển" },
         { path: "/classroom-management", text: "Lớp học của tôi" },
+        {
+            path: "/proposed-class",
+            text: "Lớp học đề xuất"
+        },
         { path: "/schedule", text: "Lịch trình" },
         { path: "/income", text: "Thu nhập" },
         { path: "/profile-tutor", text: "Hồ sơ" },
