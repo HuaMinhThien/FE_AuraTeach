@@ -43,6 +43,14 @@ const getCurrentStudentId = () => {
   );
 };
 
+// Sinh link Google Meet giả lập phía client (không gọi API tạo request)
+const generateMeetLink = () => {
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  const segment = (len) =>
+    Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return `https://meet.google.com/${segment(3)}-${segment(4)}-${segment(3)}`;
+};
+
 const PRICE_LIMITS = {
   "Giáo viên": {
     lessThan3: {
@@ -101,7 +109,7 @@ export default function CreateClassRequest() {
     category_id: defaultCatId,
     grade_level: "Cấp 3",
     tutor_level: "Sinh viên",
-    max_students: 1,
+    max_students: 1, // Cố định 1 học sinh (1-1)
     price_per_session: "",
     description: "",
     schedule_type: "1_term",
@@ -288,20 +296,8 @@ export default function CreateClassRequest() {
 
   const priceLimitInfo = useMemo(() => {
     const tutorCfg = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
-    const base1On1 = tutorCfg.lessThan3[formData.grade_level];
-    const numStudents = Number(formData.max_students) || 1;
-
-    if (numStudents >= 3 && base1On1) {
-      const minCalculated = roundToThousand(base1On1.min / numStudents);
-      const maxCalculated = roundToThousand(base1On1.max / numStudents);
-      return {
-        min: minCalculated,
-        max: maxCalculated,
-        label: `${minCalculated.toLocaleString("vi-VN")}đ - ${maxCalculated.toLocaleString("vi-VN")}đ / buổi / HS`,
-      };
-    }
-    return base1On1;
-  }, [formData.tutor_level, formData.grade_level, formData.max_students]);
+    return tutorCfg.lessThan3[formData.grade_level];
+  }, [formData.tutor_level, formData.grade_level]);
 
   const isPriceValid = useMemo(() => {
     if (!formData.price_per_session || !priceLimitInfo) return true;
@@ -383,21 +379,11 @@ export default function CreateClassRequest() {
     }));
   };
 
-  const handleGenerateMeetLink = async () => {
+  // Chỉ sinh link phía client – KHÔNG gọi API tạo request
+  const handleGenerateMeetLink = () => {
     if (!checkAuthAndRole()) return;
-    try {
-      const res = await fetch("/api/student-class-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, end_time: endTime }),
-      });
-      const result = await res.json();
-      if (result.success && result.data?.meet_link) {
-        setFormData((prev) => ({ ...prev, meet_link: result.data.meet_link }));
-      }
-    } catch (err) {
-      console.error("Lỗi tự động sinh Meet Link:", err);
-    }
+    const link = generateMeetLink();
+    setFormData((prev) => ({ ...prev, meet_link: link }));
   };
 
   const handleSubmit = async (e) => {
@@ -446,19 +432,42 @@ export default function CreateClassRequest() {
     try {
       const currentStudentId = getCurrentStudentId();
 
+      // Chuẩn hóa payload giống hệt logic trong route.js để tránh lệch kiểu dữ liệu
+      const normalizedPayload = {
+        student_id: currentStudentId,
+        category_id: formData.category_id,
+        title: formData.title,
+        description: formData.description || "",
+        level: formData.grade_level || formData.level,
+        price_per_session: Number(formData.price_per_session),
+        status: "pending",
+        schedule_days: formData.schedule_days || [],
+        time_slot: `${formData.start_time}-${endTime}`,
+        max_students: 1,
+        total_weeks: Number(
+          formData.total_weeks ||
+            (formData.schedule_type === "2_terms" ? 36 : formData.schedule_type === "custom" ? 4 : 18)
+        ),
+        start_date: formData.start_date,
+        schedule_type: formData.schedule_type || "1_term",
+        tutor_level: formData.tutor_level || "Giáo viên",
+        start_time: formData.start_time,
+        end_time: endTime,
+        meet_link: formData.meet_link || generateMeetLink(),
+      };
+
       // 1. Nếu đang chọn lộ trình / chỉnh sửa lớp đã có requests_id
       if (editingRequestId || formData.requests_id) {
         const targetId = editingRequestId || formData.requests_id || formData.id;
         await fetch(`http://localhost:3007/class_requests/${targetId}`, {
-          method: "PUT", // Dùng PUT/PATCH để cập nhật
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...formData,
+            ...normalizedPayload,
             id: targetId,
             requests_id: targetId,
-            student_id: currentStudentId,
-            updated_at: new Date().toISOString()
-          })
+            updated_at: new Date().toISOString(),
+          }),
         });
         alert("Cập nhật lớp thành công!");
       } else {
@@ -467,18 +476,16 @@ export default function CreateClassRequest() {
         await fetch(`http://localhost:3007/class_requests`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            ...formData, 
-            id: newId, 
-            requests_id: newId, 
-            student_id: currentStudentId,
-            created_at: new Date().toISOString() 
-          })
+          body: JSON.stringify({
+            ...normalizedPayload,
+            id: newId,
+            requests_id: newId,
+            created_at: new Date().toISOString(),
+          }),
         });
         alert("Tạo yêu cầu lớp học thành công!");
       }
 
-      // Đóng modal và tải lại danh sách
       setIsModalOpen(false);
       setEditingRequestId(null);
       fetchRequestsAndCourses();
@@ -517,7 +524,7 @@ export default function CreateClassRequest() {
       category_id: req.category_id,
       grade_level: req.level || req.grade_level,
       tutor_level: req.tutor_level || "Sinh viên",
-      max_students: req.max_students,
+      max_students: 1,
       price_per_session: req.price_per_session,
       description: req.description,
       schedule_type: req.schedule_type || "1_term",
@@ -537,6 +544,7 @@ export default function CreateClassRequest() {
     const currentStudentId = req.student_id || getCurrentStudentId();
     const newCourseId = `course-${Date.now()}`;
 
+    // Tạo khóa học với students rỗng → để booking API tự thêm học sinh
     const newCoursePayload = {
       course_id: newCourseId,
       tutor_id: tutor.tutor_id,
@@ -544,7 +552,7 @@ export default function CreateClassRequest() {
       category_id: req.category_id,
       level: req.level || req.grade_level,
       description: req.description,
-      max_students: req.max_students,
+      max_students: 1,
       price_per_session: req.price_per_session,
       start_date: req.start_date,
       total_weeks: req.total_weeks,
@@ -553,8 +561,8 @@ export default function CreateClassRequest() {
       thumbnail: "/img/class/default-class-1.jpg",
       status: "active",
       permanent_room_url: req.meet_link,
-      students: [],
-      created_by: `student_${currentStudentId}`,
+      students: []
+      
     };
 
     try {
@@ -587,13 +595,15 @@ export default function CreateClassRequest() {
       const bookingResult = await bookingRes.json();
 
       if (!bookingResult.success) {
-        await fetch(`http://localhost:3007/courses/${courseWithId.id}`, {
+        // Nếu booking thất bại thì xóa khóa học vừa tạo
+        await fetch(`http://localhost:3007/courses/${courseWithId.id || newCourseId}`, {
           method: "DELETE",
         });
         alert("Không thể tạo booking: " + (bookingResult.message || "Vui lòng thử lại."));
         return;
       }
 
+      // Xóa yêu cầu tạo lớp sau khi đã tạo khóa học + booking thành công
       const reqId = req.requests_id || req.id;
       await fetch(`http://localhost:3007/class_requests/${reqId}`, {
         method: "DELETE",
@@ -644,24 +654,9 @@ export default function CreateClassRequest() {
   const renderPriceTable = () => {
     const activeLevelConfig = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
     const levels = ["Cấp 1", "Cấp 2", "Cấp 3"];
-    const numStudents = Number(formData.max_students) || 1;
 
     return (
       <div style={{ marginTop: "15px", marginBottom: "15px" }}>
-        {priceLimitInfo && numStudents >= 3 && (
-          <div style={{
-            padding: "10px 14px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fca5a5",
-            borderRadius: "6px",
-            color: "#b91c1c",
-            fontSize: "13px",
-            marginBottom: "12px"
-          }}>
-            ⚠️ Mức phí cho {formData.grade_level} ({formData.tutor_level} - Lớp {numStudents} HS: Giá 1 kèm 1 / {numStudents}): phải nằm trong khoảng: <strong>{priceLimitInfo.label}</strong>
-          </div>
-        )}
-
         <div style={{
           border: "1px solid #e2e8f0",
           borderRadius: "8px",
@@ -676,17 +671,13 @@ export default function CreateClassRequest() {
             <thead>
               <tr style={{ backgroundColor: "#edf2f7", borderBottom: "1px solid #cbd5e1" }}>
                 <th style={{ padding: "8px" }}>Cấp học</th>
-                <th style={{ padding: "8px" }}>Lớp 1 - 2 học sinh (1-1)</th>
-                <th style={{ padding: "8px" }}>Lớp 3 - 5 học sinh (Chia đều cho {numStudents >= 3 ? numStudents : 3} HS)</th>
+                <th style={{ padding: "8px" }}>Mức học phí lớp 1 kèm 1</th>
               </tr>
             </thead>
             <tbody>
               {levels.map((lvl) => {
                 const isSelected = formData.grade_level === lvl;
                 const base = activeLevelConfig.lessThan3[lvl];
-                const divisor = numStudents >= 3 ? numStudents : 3;
-                const minDiv = roundToThousand(base.min / divisor);
-                const maxDiv = roundToThousand(base.max / divisor);
 
                 return (
                   <tr
@@ -700,7 +691,6 @@ export default function CreateClassRequest() {
                   >
                     <td style={{ padding: "8px" }}>{lvl}</td>
                     <td style={{ padding: "8px" }}>{base.min.toLocaleString("vi-VN")}đ - {base.max.toLocaleString("vi-VN")}đ / buổi</td>
-                    <td style={{ padding: "8px" }}>{minDiv.toLocaleString("vi-VN")}đ - {maxDiv.toLocaleString("vi-VN")}đ / buổi / HS</td>
                   </tr>
                 );
               })}
@@ -793,26 +783,12 @@ export default function CreateClassRequest() {
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label>Số lượng học sinh (1 - 5 HS) <span>*</span></label>
+                    <label>Số lượng học sinh</label>
                     <input
-                      type="number"
-                      min="1"
-                      max="5"
+                      type="text"
                       className={styles.input}
-                      value={formData.max_students}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === "") {
-                          setFormData({ ...formData, max_students: "" });
-                        } else {
-                          const parsed = parseInt(val, 10);
-                          setFormData({
-                            ...formData,
-                            max_students: isNaN(parsed) ? "" : Math.min(5, Math.max(1, parsed)),
-                          });
-                        }
-                      }}
-                      required
+                      value="1 học sinh (1 kèm 1)"
+                      disabled
                     />
                   </div>
                 </div>
@@ -939,7 +915,7 @@ export default function CreateClassRequest() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Giờ bắt đầu dạy (Tự động +2 tiếng) <span>*</span></label>
+                  <label>Giờ bắt đầu dạy<span>*</span></label>
                   <div className={styles.rowTwo}>
                     <select
                       className={styles.select}
