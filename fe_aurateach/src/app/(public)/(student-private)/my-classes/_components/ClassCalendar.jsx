@@ -2,18 +2,17 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 import styles from "./ClassCalendar.module.css";
 
 export default function ClassCalendar({ courses, onDateClick }) {
   const router = useRouter();
   const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [hoveredCourse, setHoveredCourse] = useState(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const [showTooltip, setShowTooltip] = useState(false);
   const [selectedCourseIds, setSelectedCourseIds] = useState([]);
   
   const wrapperRef = useRef(null);
   const rowRefs = useRef({});
+  const classBlockRefs = useRef({});
   const hasScrolledRef = useRef(false);
 
   // Tạo map các ngày có lớp học
@@ -152,54 +151,35 @@ export default function ClassCalendar({ courses, onDateClick }) {
     );
   };
 
-  // Kiểm tra có lớp tại slot này không
-  const getClassesAtSlot = (date, timeSlot) => {
+  const getClassesForDate = (date) => {
     const dateKey = date.toISOString().split("T")[0];
     const dayClasses = classDates[dateKey] || [];
-    const result = [];
-    
-    dayClasses.forEach(cls => {
-      const slots = getCourseSlots(cls.time);
-      if (slots.includes(timeSlot)) {
-        if (selectedCourseIds.length > 0 && !selectedCourseIds.includes(cls.course.course_id)) {
-          return;
-        }
-        result.push(cls);
+    const totalMinutes = 24 * 60;
+    return dayClasses.map(cls => {
+      const [start, end] = (cls.time || "00:00-00:00").split('-').map(t => t.trim());
+      const startMin = timeToMinutes(start);
+      const endMin = timeToMinutes(end);
+      return {
+        course: cls.course,
+        time: cls.time,
+        startMin,
+        endMin,
+        durationMin: endMin - startMin,
+        topPercent: (startMin / totalMinutes) * 100,
+        heightPercent: ((endMin - startMin) / totalMinutes) * 100,
+      };
+    }).filter(cls => selectedCourseIds.length === 0 || selectedCourseIds.includes(cls.course.course_id));
+  };
+
+  const handleJoinFromBlock = (course) => {
+    if (course) {
+      const roomPath = getClassroomRoomPath(course, "student");
+      if (roomPath) {
+        window.open(roomPath, "_blank");
+      } else {
+        alert("Lớp học này chưa có link tham gia!");
       }
-    });
-    
-    return result;
-  };
-
-  const hasClassAtSlot = (date, timeSlot) => {
-    return getClassesAtSlot(date, timeSlot).length > 0;
-  };
-
-  const handleMouseEnter = (e, course) => {
-    if (!course) return;
-    setHoveredCourse(course);
-    setShowTooltip(true);
-    
-    let x = e.clientX + 15;
-    let y = e.clientY - 10;
-    
-    const tooltipWidth = 260;
-    const tooltipHeight = 150;
-    
-    if (x + tooltipWidth > window.innerWidth) {
-      x = e.clientX - tooltipWidth - 15;
     }
-    if (y + tooltipHeight > window.innerHeight) {
-      y = window.innerHeight - tooltipHeight - 10;
-    }
-    if (y < 10) y = 10;
-    
-    setTooltipPosition({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
-    setHoveredCourse(null);
   };
 
   const handleClassClick = (course) => {
@@ -230,11 +210,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
     hasScrolledRef.current = false;
   };
 
-  const getFirstCourseAtSlot = (date, timeSlot) => {
-    const classes = getClassesAtSlot(date, timeSlot);
-    return classes.length > 0 ? classes[0].course : null;
-  };
-
   // ===== TÍNH NĂNG TỰ ĐỘNG CUỘN =====
   useEffect(() => {
     if (courses.length === 0 || hasScrolledRef.current) return;
@@ -243,64 +218,56 @@ export default function ClassCalendar({ courses, onDateClick }) {
       const wrapper = wrapperRef.current;
       if (!wrapper) return;
 
-      let targetRowIndex = -1;
-      let maxClassCount = 0;
+      let targetBlockRef = null;
 
-      // Duyệt qua tất cả các hàng (slot giờ)
-      allTimeSlots.forEach((slot, index) => {
-        let classCount = 0;
+      if (selectedCourseIds.length === 1) {
+        const targetCourseId = selectedCourseIds[0];
+        for (const date of weekDays) {
+          const classesForDate = getClassesForDate(date);
+          const targetClass = classesForDate.find(cls => cls.course.course_id === targetCourseId);
+          if (targetClass) {
+            const dateKey = date.toISOString().split("T")[0];
+            targetBlockRef = classBlockRefs.current[`${dateKey}-${targetCourseId}`];
+            break;
+          }
+        }
+      } else {
+        let targetDate = null;
+        let maxClassCount = 0;
+
         weekDays.forEach(date => {
-          if (hasClassAtSlot(date, slot)) {
-            classCount++;
+          const classesForDate = getClassesForDate(date);
+          if (classesForDate.length > maxClassCount) {
+            maxClassCount = classesForDate.length;
+            targetDate = date;
           }
         });
 
-        // Nếu đang lọc 1 lớp cụ thể
-        if (selectedCourseIds.length === 1) {
-          const targetCourseId = selectedCourseIds[0];
-          let hasTargetClass = false;
-          weekDays.forEach(date => {
-            const classes = getClassesAtSlot(date, slot);
-            if (classes.some(cls => cls.course.course_id === targetCourseId)) {
-              hasTargetClass = true;
-            }
-          });
-          if (hasTargetClass) {
-            targetRowIndex = index;
-            return;
-          }
-        } 
-        // Nếu không lọc hoặc lọc nhiều lớp
-        else {
-          if (classCount > maxClassCount) {
-            maxClassCount = classCount;
-            targetRowIndex = index;
-          }
+        if (targetDate && maxClassCount > 0) {
+          const classesForTargetDate = getClassesForDate(targetDate);
+          const targetClass = classesForTargetDate[0];
+          const dateKey = targetDate.toISOString().split("T")[0];
+          targetBlockRef = classBlockRefs.current[`${dateKey}-${targetClass.course.course_id}`];
         }
-      });
-
-      // Nếu không tìm thấy, cuộn lên đầu
-      if (targetRowIndex === -1) {
-        targetRowIndex = 0;
       }
 
-      // Tìm phần tử DOM của hàng cần cuộn đến
-      const targetRow = rowRefs.current[targetRowIndex];
-      if (targetRow) {
+      if (targetBlockRef) {
         const wrapperRect = wrapper.getBoundingClientRect();
-        const rowRect = targetRow.getBoundingClientRect();
-        const offset = rowRect.top - wrapperRect.top - 60; // Cách top 60px
-        
+        const blockRect = targetBlockRef.getBoundingClientRect();
+        const offset = blockRect.top - wrapperRect.top - 60;
+
         wrapper.scrollTo({
           top: wrapper.scrollTop + offset,
           behavior: 'smooth'
         });
         hasScrolledRef.current = true;
+      } else {
+        hasScrolledRef.current = true;
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [selectedCourseIds, currentWeek, courses, allTimeSlots, weekDays]);
+  }, [selectedCourseIds, currentWeek, courses, weekDays]);
 
   if (courses.length === 0) {
     return (
@@ -313,28 +280,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
 
   return (
     <div className={styles.wrapper}>
-      {/* Tooltip */}
-      {showTooltip && hoveredCourse && (
-        <div
-          className={styles.tooltip}
-          style={{
-            position: "fixed",
-            left: tooltipPosition.x,
-            top: tooltipPosition.y,
-            zIndex: 1000,
-            pointerEvents: "none",
-          }}
-        >
-          <div className={styles.tooltipContent}>
-            <h4>{hoveredCourse.title}</h4>
-            <p>{hoveredCourse.time_slot || "Chưa có giờ"}</p>
-            <p>{hoveredCourse.tutor_name || "Chưa có thông tin"}</p>
-            <p>{formatDate(hoveredCourse.start_date)}</p>
-            <small>Nhấn để xem chi tiết</small>
-          </div>
-        </div>
-      )}
-
       {/* Calendar Header */}
       <div className={styles.calendarHeader}>
         <div className={styles.calendarNav}>
@@ -420,39 +365,80 @@ export default function ClassCalendar({ courses, onDateClick }) {
             })}
           </div>
 
-          {/* Body */}
-          <div className={styles.timetableBody}>
-            {allTimeSlots.map((slot, slotIndex) => {
-              return (
-                <div 
-                  key={slotIndex} 
-                  className={styles.timetableRow}
-                  ref={(el) => {
-                    if (el) rowRefs.current[slotIndex] = el;
-                  }}
-                >
-                  <div className={styles.timeCell}>
-                    <span className={styles.timeText}>{slot}</span>
+          {/* Body + Overlay */}
+          <div className={styles.timetableBodyWrapper}>
+            <div className={styles.timetableBody}>
+              {allTimeSlots.map((slot, slotIndex) => {
+                return (
+                  <div 
+                    key={slotIndex} 
+                    className={styles.timetableRow}
+                    ref={(el) => {
+                      if (el) rowRefs.current[slotIndex] = el;
+                    }}
+                  >
+                    <div className={styles.timeCell}>
+                      <span className={styles.timeText}>{slot}</span>
+                    </div>
+
+                    {weekDays.map((date, dayIndex) => {
+                      const isTodayDay = isToday(date);
+
+                      return (
+                        <div
+                          key={dayIndex}
+                          className={`${styles.dayCell} ${isTodayDay ? styles.todayCell : ""}`}
+                        />
+                      );
+                    })}
                   </div>
+                );
+              })}
+            </div>
 
-                  {weekDays.map((date, dayIndex) => {
-                    const hasClass = hasClassAtSlot(date, slot);
-                    const isTodayDay = isToday(date);
-                    const firstCourse = hasClass ? getFirstCourseAtSlot(date, slot) : null;
+            <div className={styles.classOverlay}>
+              {weekDays.map((date, dayIndex) => {
+                const isTodayDay = isToday(date);
+                const classesForDate = getClassesForDate(date);
+                const dateKey = date.toISOString().split("T")[0];
 
-                    return (
+                return (
+                  <div
+                    key={dayIndex}
+                    className={`${styles.classColumn} ${isTodayDay ? styles.todayColumn : ""}`}
+                  >
+                    {classesForDate.map((cls, idx) => (
                       <div
-                        key={dayIndex}
-                        className={`${styles.dayCell} ${hasClass ? styles.hasClass : ""} ${isTodayDay ? styles.todayCell : ""}`}
-                        onMouseEnter={(e) => hasClass && handleMouseEnter(e, firstCourse)}
-                        onMouseLeave={handleMouseLeave}
-                        onClick={() => hasClass && handleClassClick(firstCourse)}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
+                        key={`${dateKey}-${cls.course.course_id}`}
+                        className={styles.classBlock}
+                        ref={(el) => {
+                          if (el) classBlockRefs.current[`${dateKey}-${cls.course.course_id}`] = el;
+                        }}
+                        style={{
+                          top: `${cls.topPercent}%`,
+                          height: `${cls.heightPercent}%`,
+                        }}
+                        onClick={() => handleClassClick(cls.course)}
+                      >
+                        <div className={styles.classBlockContent}>
+                          <strong>{cls.course.title}</strong>
+                          <span>{cls.time}</span>
+                          <button
+                            className={styles.classJoinBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinFromBlock(cls.course);
+                            }}
+                          >
+                            Vào lớp
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
