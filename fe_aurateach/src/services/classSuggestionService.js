@@ -3,6 +3,41 @@
 const API_BASE = 'http://localhost:3007';
 
 /**
+ * Map category_id → các từ khóa môn học xuất hiện trong expertise string của tutor.
+ * Tutor lưu expertise dạng chuỗi tự do ("Toán, Ngữ văn"), không dùng slug.
+ */
+const CATEGORY_KEYWORDS = {
+  'cat-02': ['toán', 'toan'],
+  'cat-03': ['ngữ văn', 'ngu van', 'văn', 'van'],
+  'cat-04': ['lý', 'ly', 'vật lý', 'vat ly'],
+  'cat-05': ['hóa', 'hoa', 'hóa học', 'hoa hoc'],
+  'cat-06': ['sinh', 'sinh học', 'sinh hoc'],
+  'cat-07': ['sử', 'su', 'lịch sử', 'lich su'],
+  'cat-08': ['địa', 'dia', 'địa lý', 'dia ly'],
+  'cat-09': ['anh', 'tiếng anh', 'tieng anh', 'ngoại ngữ', 'ngoai ngu'],
+  'cat-10': ['tin học', 'tin hoc', 'lập trình', 'lap trinh', 'cntt'],
+  'cat-11': ['năng khiếu', 'nang khieu', 'âm nhạc', 'am nhac', 'mỹ thuật', 'my thuat'],
+};
+
+/**
+ * Kiểm tra tutor có dạy được môn học của lớp không.
+ * So sánh dựa trên keywords thay vì slug để xử lý expertise dạng chuỗi tự do.
+ */
+function tutorMatchesSubject(tutor, categoryId) {
+  if (!categoryId || categoryId === 'cap1_homework') return true;
+
+  const tutorSubjects = tutor.subjects || [];
+  const tutorExpertise = (tutor.expertise || '').toLowerCase();
+
+  // Nếu tutor có mảng subjects dùng slug giống category_id
+  if (tutorSubjects.includes(categoryId)) return true;
+
+  // Nếu tutor dùng expertise dạng chuỗi, so với keyword map
+  const keywords = CATEGORY_KEYWORDS[categoryId] || [];
+  return keywords.some(kw => tutorExpertise.includes(kw));
+}
+
+/**
  * Lấy danh sách Tutor phù hợp cho lớp
  */
 export async function getEligibleTutors(course) {
@@ -21,39 +56,25 @@ export async function getEligibleTutors(course) {
       if (tutor.verification_status !== 'approved') return false;
       if (tutor.receive_suggestions !== true) return false;
 
-      // ✅ LOG ĐỂ DEBUG TẠI SAO KHÔNG RA TUTOR
-      console.log(`🔍 Checking tutor ${tutor.tutor_id}:`, {
-        status: tutor.verification_status,
-        receive: tutor.receive_suggestions,
-        subjects: tutor.subjects || tutor.expertise,
-        requested_subject: course.category_id,
-        level: tutor.tutor_level || tutor.level,
-        requested_level: course.tutor_level
-      });
+      // Kiểm tra môn học: dùng keyword map để match expertise dạng chuỗi tự do
+      if (!tutorMatchesSubject(tutor, course.category_id)) return false;
 
-      // ✅ Kiểm tra môn học của lớp có trong profile của tutor không
-      // Cẩn thận: data.json có thể dùng 'expertise' (string) hoặc 'subjects' (array)
-      if (course.category_id && course.category_id !== 'cap1_homework') {
-        const tutorSubjects = tutor.subjects || [];
-        const tutorExpertise = tutor.expertise || "";
-        
-        // Nếu không có subjects array, thử check trong expertise string
-        const hasSubject = tutorSubjects.includes(course.category_id) || 
-                          tutorExpertise.toLowerCase().includes(course.category_id.toLowerCase());
-                          
-        if (!hasSubject) return false;
-      }
-
-      // ✅ Kiểm tra trình độ (level) của tutor (Sinh viên / Giáo viên)
-      // Cẩn thận: field trong data.json là 'level', biến truyền vào là 'tutor_level'
+      // Kiểm tra trình độ (level) của tutor (Sinh viên / Giáo viên)
+      // Data dùng field 'level', không phải 'tutor_level'
       const tutorLvl = tutor.tutor_level || tutor.level;
       if (course.tutor_level && tutorLvl !== course.tutor_level) {
         return false;
       }
 
-      // Kiểm tra lịch trống (không trùng với lớp hiện có)
+      // Kiểm tra lịch trùng: tutor không được dạy 2 lớp cùng giờ cùng ngày.
+      // Chỉ xét các lớp đã có tutor_id (đã được nhận), bỏ qua lớp pending_tutor
+      // vì lớp chưa có tutor chưa chiếm lịch của ai.
       const hasConflict = allCourses.some(existingCourse => {
+        // Chỉ kiểm tra lớp đã được gán cho tutor này
         if (existingCourse.tutor_id !== tutor.tutor_id) return false;
+        if (!existingCourse.tutor_id) return false; // chưa có tutor → không conflict
+
+        // Bỏ qua các lớp đã kết thúc / huỷ
         if (existingCourse.status === 'cancelled') return false;
         if (existingCourse.status === 'closed') return false;
         if (existingCourse.status === 'completed') return false;
@@ -64,12 +85,11 @@ export async function getEligibleTutors(course) {
         );
         if (!hasCommonDay) return false;
 
-        // Kiểm tra trùng giờ
+        // Kiểm tra trùng giờ (overlap)
         const [newStart, newEnd] = course.time_slot?.split('-').map(s => s.trim()) || [];
         const [existStart, existEnd] = existingCourse.time_slot?.split('-').map(s => s.trim()) || [];
         if (!newStart || !newEnd || !existStart || !existEnd) return false;
 
-        // So sánh thời gian
         const newStartMin = timeToMinutes(newStart);
         const newEndMin = timeToMinutes(newEnd);
         const existStartMin = timeToMinutes(existStart);

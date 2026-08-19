@@ -43,13 +43,8 @@ const getCurrentStudentId = () => {
   );
 };
 
-// Sinh link Google Meet giả lập phía client (không gọi API tạo request)
-const generateMeetLink = () => {
-  const chars = "abcdefghijklmnopqrstuvwxyz";
-  const segment = (len) =>
-    Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  return `https://meet.google.com/${segment(3)}-${segment(4)}-${segment(3)}`;
-};
+// Sinh link phòng học nội bộ dựa trên courseId
+const generateRoomLink = (courseId) => `/room/${courseId}`;
 
 const PRICE_LIMITS = {
   "Giáo viên": {
@@ -379,10 +374,11 @@ export default function CreateClassRequest() {
     }));
   };
 
-  // Chỉ sinh link phía client – KHÔNG gọi API tạo request
+  // Sinh link phòng học nội bộ — dùng timestamp tạm, sẽ được thay bằng course_id thực khi submit
   const handleGenerateMeetLink = () => {
     if (!checkAuthAndRole()) return;
-    const link = generateMeetLink();
+    const tempId = `room_${Date.now()}`;
+    const link = generateRoomLink(tempId);
     setFormData((prev) => ({ ...prev, meet_link: link }));
   };
 
@@ -453,7 +449,7 @@ export default function CreateClassRequest() {
         tutor_level: formData.tutor_level || "Giáo viên",
         start_time: formData.start_time,
         end_time: endTime,
-        meet_link: formData.meet_link || generateMeetLink(),
+        meet_link: formData.meet_link || generateRoomLink(`room_${Date.now()}`),
       };
 
       // 1. Nếu đang chọn lộ trình / chỉnh sửa lớp đã có requests_id
@@ -560,7 +556,7 @@ export default function CreateClassRequest() {
       time_slot: req.time_slot || `${req.start_time}-${req.end_time}`,
       thumbnail: "/img/class/default-class-1.jpg",
       status: "active",
-      permanent_room_url: req.meet_link,
+      permanent_room_url: generateRoomLink(newCourseId),
       students: []
       
     };

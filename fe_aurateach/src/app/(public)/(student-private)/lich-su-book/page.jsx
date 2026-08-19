@@ -5,7 +5,9 @@ import Link from "next/link";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import BookingDetailModal from "@/components/users/BookingDetailModal.jsx";
+import RatingModal from "@/components/users/RatingModal.jsx";
 import authService from "@/services/authService";
+
 import { getClassroomRoomPath } from "@/utils/roomUtils";
 import "../profile/profile.css";
 import "./lich-su-book.css";
@@ -20,10 +22,13 @@ export default function StudentBookingHistoryPage() {
   const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedTutor, setSelectedTutor] = useState(null);
+    const [selectedTutor, setSelectedTutor] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [courseToRate, setCourseToRate] = useState(null);
 
   const API_BASE = "http://localhost:3007";
+
 
   useEffect(() => {
     const initPage = async () => {
@@ -121,13 +126,48 @@ export default function StudentBookingHistoryPage() {
     }
   };
 
-  const handleCloseModal = () => {
+    const handleCloseModal = () => {
     setShowDetailModal(false);
     setSelectedCourse(null);
     setSelectedTutor(null);
   };
 
+  const handleOpenRating = (course) => {
+    setCourseToRate(course);
+    setShowRatingModal(true);
+  };
+
+  const handleRatingSubmit = async (ratingData) => {
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: currentUser.user_id || currentUser.id,
+          tutorId: courseToRate.tutor_id,
+          courseId: courseToRate.course_id || courseToRate.id,
+          rating: ratingData.rating,
+          comment: ratingData.comment,
+          isAnonymous: ratingData.isAnonymous === true,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert("Cảm ơn bạn đã đánh giá!");
+        setShowRatingModal(false);
+        setCourseToRate(null);
+      } else {
+        alert(result.message || "Có lỗi xảy ra");
+      }
+    } catch (error) {
+      console.error("Lỗi gửi đánh giá:", error);
+      alert("Không thể gửi đánh giá lúc này");
+    }
+  };
+
   if (loading) {
+
     return (
       <>
         <Header />
@@ -156,7 +196,7 @@ export default function StudentBookingHistoryPage() {
             <div className="booking-history-container">
               {bookedClasses.length === 0 ? (
                 <div className="empty-booking">
-                  <span className="empty-icon">📂</span>
+                  <span className="empty-icon"></span>
                   <p>Bạn chưa đăng ký tham gia lớp học nào.</p>
                   <Link href="/classList" className="find-class-btn">
                     Tìm kiếm lớp học ngay
@@ -205,7 +245,7 @@ export default function StudentBookingHistoryPage() {
         </div>
       </div>
 
-      {/* Booking Detail Modal */}
+            {/* Booking Detail Modal */}
       {showDetailModal && selectedCourse && (
         <BookingDetailModal
           course={selectedCourse}
@@ -214,8 +254,22 @@ export default function StudentBookingHistoryPage() {
           studentId={currentUser?.user_id || currentUser?.id}
           onClose={handleCloseModal}
           onJoinClass={handleJoinClass}
+          onRating={handleOpenRating}
+        />
+      )}
+
+      {/* Rating Modal */}
+      {showRatingModal && courseToRate && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          onSubmit={handleRatingSubmit}
+          courseTitle={courseToRate.title}
+          tutorName={getTutorName(courseToRate.tutor_id)}
+          studentName={currentUser?.full_name || currentUser?.name || ""}
         />
       )}
     </>
+
   );
 }

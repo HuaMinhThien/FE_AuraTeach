@@ -82,7 +82,6 @@ export default function AdminCreateClass() {
     thumbnail: DEFAULT_IMAGES[0],
     min_students: 2,
     course_type: '1_term',
-    num_sections: 1, // Mặc định tạo 1 mã lớp
   });
 
   const [errors, setErrors] = useState({});
@@ -288,10 +287,10 @@ export default function AdminCreateClass() {
   const minMonthlyNetPerStudent = (monthlyFeePerStudent * 0.65);
   const hoursPerSession = 2;
 
-  // Create class
+  // Create class: mỗi tutor được chọn → 1 mã lớp riêng (1-1 assignment)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       alert('⚠️ Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
@@ -314,18 +313,19 @@ export default function AdminCreateClass() {
 
     setLoading(true);
     try {
-      const numSections = parseInt(formData.num_sections) || 1;
+      const numSections = selectedTutors.length; // Số mã lớp = số tutor đã chọn
       const parentCourseId = `course_${Date.now()}`;
-      
-      let successCount = 0;
-      let totalSentTo = 0;
 
-      // Tạo N class sections
+      let successCount = 0;
+
+      // Mỗi tutor được chỉ định 1 mã lớp riêng theo thứ tự
       for (let i = 0; i < numSections; i++) {
+        const assignedTutorId = selectedTutors[i];
         const sectionSuffix = numSections > 1 ? ` - Nhóm ${i + 1}` : '';
+
         const coursePayload = {
           course_id: `${parentCourseId}_sec${i + 1}`,
-          parent_course_id: parentCourseId, // Để group các section
+          parent_course_id: parentCourseId,
           class_name: `${formData.title}${sectionSuffix}`,
           title: `${formData.title}${sectionSuffix}`,
           category_id: formData.category_id,
@@ -344,37 +344,35 @@ export default function AdminCreateClass() {
           tutor_id: null,
           tutor_assigned_at: null,
           students: [],
-          permanent_room_url: `https://meet.google.com/room_${parentCourseId}_sec${i + 1}`,
-          created_at: new Date().toISOString()
+          permanent_room_url: `/room/${parentCourseId}_sec${i + 1}`,
+          created_at: new Date().toISOString(),
         };
 
         const createRes = await fetch(`${API_BASE}/courses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(coursePayload)
+          body: JSON.stringify(coursePayload),
         });
 
         if (createRes.ok) {
           const createdCourse = await createRes.json();
-          // Gửi đề xuất cho các tutor đã chọn cho section này
-          const suggestRes = await fetch('/api/admin/classes/suggest', {
+
+          // Gửi đề xuất chỉ đến đúng 1 tutor được chỉ định cho mã lớp này
+          await fetch('/api/admin/classes/suggest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               courseId: createdCourse.course_id,
-              tutorIds: selectedTutors
-            })
+              tutorIds: [assignedTutorId],
+            }),
           });
-          const suggestResult = await suggestRes.json();
-          if (suggestResult.success) {
-            totalSentTo += suggestResult.sentTo;
-          }
+
           successCount++;
         }
       }
 
       if (successCount === numSections) {
-        alert(`✅ Đã tạo thành công ${numSections} mã lớp! Đã gửi tổng cộng ${totalSentTo} đề xuất.`);
+        alert(`✅ Đã tạo thành công ${numSections} mã lớp!\nMỗi mã lớp đã được gửi đề xuất đến 1 Tutor riêng.`);
         router.push('/admin-classes-management');
       } else if (successCount > 0) {
         alert(`⚠️ Chỉ tạo được ${successCount}/${numSections} mã lớp.`);
@@ -435,32 +433,20 @@ export default function AdminCreateClass() {
     );
   };
 
-  // ✅ KIỂM TRA FORM CÓ ĐỦ ĐIỀU KIỆN ĐỂ SUBMIT
+  // Kiểm tra form có đủ điều kiện để submit
   const isFormValid = () => {
-    const checks = {
-      title: formData.title?.trim() !== '',
-      category: formData.category_id !== '',
-      price: formData.price_per_session !== '' && Number(formData.price_per_session) > 0,
-      startDate: formData.start_date !== '',
-      scheduleDays: formData.schedule_days.length > 0,
-      description: formData.description?.trim() !== '',
-      totalWeeks: Number(formData.total_weeks) > 0,
-      noPriceError: !priceError,
-      tutorList: showTutorList,
-      selectedTutors: selectedTutors.length > 0,
-    };
-
-    // 🔥 LOG ĐỂ DEBUG
-    console.log('🔍 Form validation checks:', checks);
-    console.log('🔍 Total weeks:', formData.total_weeks);
-    console.log('🔍 Price error:', priceError);
-    console.log('🔍 Show tutor list:', showTutorList);
-    console.log('🔍 Selected tutors:', selectedTutors.length);
-
-    const allValid = Object.values(checks).every(v => v === true);
-    console.log('🔍 All valid:', allValid);
-    
-    return allValid;
+    return (
+      formData.title?.trim() !== '' &&
+      formData.category_id !== '' &&
+      formData.price_per_session !== '' && Number(formData.price_per_session) > 0 &&
+      formData.start_date !== '' &&
+      formData.schedule_days.length > 0 &&
+      formData.description?.trim() !== '' &&
+      Number(formData.total_weeks) > 0 &&
+      !priceError &&
+      showTutorList &&
+      selectedTutors.length > 0
+    );
   };
 
   return (
@@ -571,18 +557,6 @@ export default function AdminCreateClass() {
                       setFormData(prev => ({ ...prev, max_students: 1 }));
                     }
                   }}
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Số lượng mã lớp cần tạo (1 - 10) <span className={styles.required}>*</span></label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.num_sections}
-                  onChange={(e) => setFormData(prev => ({ ...prev, num_sections: parseInt(e.target.value) || 1 }))}
                   required
                 />
               </div>
@@ -813,11 +787,14 @@ export default function AdminCreateClass() {
 
                   <div className={styles.summaryBox}>
                     <p>
-                      <strong>Đã chọn:</strong> {selectedTutors.length} / {eligibleTutors.length} Tutor
+                      <strong>Đã chọn:</strong> {selectedTutors.length} Tutor
+                      {selectedTutors.length > 0 && (
+                        <span className={styles.summaryHighlight}> → Sẽ tạo {selectedTutors.length} mã lớp</span>
+                      )}
                     </p>
                     <p className={styles.summaryNote}>
-                      💡 Lớp sẽ được gửi đề xuất đến tất cả Tutor đã chọn.
-                      Tutor nào bấm "Nhận lớp" đầu tiên sẽ được nhận.
+                      💡 Mỗi Tutor được chỉ định <strong>1 mã lớp riêng</strong>.
+                      Tutor nhận đề xuất và xác nhận để lớp được kích hoạt.
                     </p>
                   </div>
                 </>
@@ -901,9 +878,9 @@ export default function AdminCreateClass() {
             <div className={styles.tipsCard}>
               <h4>💡 Mẹo dành cho bạn</h4>
               <ul>
+                <li><strong>Mỗi Tutor được chọn</strong> sẽ nhận đề xuất và dạy 1 mã lớp riêng biệt.</li>
                 <li><strong>Tên lớp rõ ràng</strong> sẽ thu hút học sinh đăng ký tham gia cao gấp 2 lần.</li>
-                <li><strong>Mô tả chi tiết</strong> phương pháp dạy học cụ thể giúp phụ huynh an tâm, tin tưởng gửi gắm hơn.</li>
-                <li><strong>Chọn Tutor phù hợp</strong> giúp tăng tỷ lệ nhận lớp và chất lượng giảng dạy.</li>
+                <li><strong>Mô tả chi tiết</strong> phương pháp dạy học cụ thể giúp phụ huynh an tâm hơn.</li>
               </ul>
             </div>
 
@@ -913,13 +890,13 @@ export default function AdminCreateClass() {
               className={styles.submitBtn}
               disabled={loading || !isFormValid()}
             >
-              {loading 
-                ? '⏳ Đang tạo lớp...' 
-                : !showTutorList 
-                  ? '🔍 Vui lòng tìm Tutor trước' 
-                  : selectedTutors.length === 0 
-                    ? '⚠️ Vui lòng chọn Tutor' 
-                    : '✅ Xác nhận tạo lớp và gửi đề xuất'
+              {loading
+                ? '⏳ Đang tạo lớp...'
+                : !showTutorList
+                  ? '🔍 Vui lòng tìm Tutor trước'
+                  : selectedTutors.length === 0
+                    ? '⚠️ Vui lòng chọn Tutor'
+                    : `✅ Tạo ${selectedTutors.length} mã lớp & gửi đề xuất`
               }
             </button>
 

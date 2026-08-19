@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './TutorDetail.module.css';
-import data from '../../../api/data.json';
 import BookingModal from '@/components/users/BookingModal';
 
 const API_BASE = "http://localhost:3007";
@@ -19,6 +18,9 @@ export default function TutorDetailPage({ params }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [showBooking, setShowBooking] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showAllCourses, setShowAllCourses] = useState(false);
+
+  const COURSES_PREVIEW = 4;
 
   // Lấy thông tin user hiện tại từ cookie
   useEffect(() => {
@@ -54,11 +56,18 @@ export default function TutorDetailPage({ params }) {
           return;
         }
 
-        const totalTutorsArray = data.tutors || [];
-        const totalUsersArray = data.users || [];
-        const totalCoursesArray = data.courses || [];
-        const totalReviewsArray = data.reviews || [];
-        const totalStudentsArray = data.students || [];
+        // Fetch tất cả dữ liệu từ API (json-server) thay vì data.json tĩnh
+        const [tutorsRes, usersRes, coursesRes, studentsRes] = await Promise.all([
+          fetch(`${API_BASE}/tutors`),
+          fetch(`${API_BASE}/users`),
+          fetch(`${API_BASE}/courses`),
+          fetch(`${API_BASE}/students`),
+        ]);
+
+        const totalTutorsArray = await tutorsRes.json();
+        const totalUsersArray = await usersRes.json();
+        const totalCoursesArray = await coursesRes.json();
+        const totalStudentsArray = await studentsRes.json();
 
         const matchedTutor = totalTutorsArray.find(
           (singleTutor) => String(singleTutor.tutor_id) === String(currentTutorId)
@@ -79,20 +88,25 @@ export default function TutorDetailPage({ params }) {
         );
 
         const tutorCourseIdsArray = filteredTutorCourses.map((course) => course.course_id);
-        const rawMatchedReviews = totalReviewsArray.filter((review) => 
-          tutorCourseIdsArray.includes(review.course_id)
-        );
+
+        // Fetch reviews từ API để lấy dữ liệu mới nhất (bao gồm is_anonymous)
+        const reviewsRes = await fetch(`${API_BASE}/reviews?tutor_id=${currentTutorId}`);
+        const rawMatchedReviews = await reviewsRes.json();
 
         const formattedReviews = rawMatchedReviews.map((singleReview) => {
+          // Nếu đánh giá ẩn danh → không tra cứu tên, hiển thị "Học viên ẩn danh"
+          if (singleReview.is_anonymous) {
+            return { ...singleReview, studentName: "Học viên ẩn danh" };
+          }
           const matchedStudent = totalStudentsArray.find(
             (student) => student.student_id === singleReview.student_id
           ) || {};
           const studentUserInfo = totalUsersArray.find(
             (user) => user.user_id === matchedStudent.user_id
           ) || {};
-          return { 
-            ...singleReview, 
-            studentName: studentUserInfo.full_name || "Học viên ẩn danh" 
+          return {
+            ...singleReview,
+            studentName: studentUserInfo.full_name || "Học viên ẩn danh",
           };
         });
 
@@ -394,24 +408,42 @@ export default function TutorDetailPage({ params }) {
 
           {/* 4. Khối danh sách các lớp học hiện có */}
           <div className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Lớp học hiện có</h2>
+            <div className={styles.sectionTitleRow}>
+              <h2 className={styles.sectionTitle}>Lớp học hiện có</h2>
+              {tutorCourses.length > 0 && (
+                <span className={styles.courseCountBadge}>{tutorCourses.length} lớp</span>
+              )}
+            </div>
             {tutorCourses.length > 0 ? (
-              <div className={styles.coursesGrid}>
-                {tutorCourses.map((course) => (
-                  <div key={course.course_id} className={styles.courseCard}>
-                    <div>
-                      <h3 className={styles.courseCardTitle}>{course.title}</h3>
-                      <p className={styles.courseCardDesc}>{course.description}</p>
+              <>
+                <div className={styles.coursesGrid}>
+                  {(showAllCourses ? tutorCourses : tutorCourses.slice(0, COURSES_PREVIEW)).map((course) => (
+                    <div key={course.course_id} className={styles.courseCard}>
+                      <div>
+                        <h3 className={styles.courseCardTitle}>{course.title}</h3>
+                        <p className={styles.courseCardDesc}>{course.description}</p>
+                      </div>
+                      <div className={styles.courseCardFooter}>
+                        <span className={styles.coursePrice}>
+                          {course.price_per_session || 'Liên hệ'}
+                        </span>
+                        <button className={styles.registerBtn} onClick={() => handleOpenBooking(course)}>Đăng ký học</button>
+                      </div>
                     </div>
-                    <div className={styles.courseCardFooter}>
-                      <span className={styles.coursePrice}>
-                        {course.price_per_session || 'Liên hệ'}
-                      </span>
-                      <button className={styles.registerBtn} onClick={() => handleOpenBooking(course)}>Đăng ký học</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                {tutorCourses.length > COURSES_PREVIEW && (
+                  <button
+                    className={styles.toggleCoursesBtn}
+                    onClick={() => setShowAllCourses((prev) => !prev)}
+                  >
+                    {showAllCourses
+                      ? "▲ Ẩn bớt"
+                      : `▼ Xem thêm ${tutorCourses.length - COURSES_PREVIEW} lớp`}
+                  </button>
+                )}
+              </>
             ) : (
               <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>
                 Gia sư này chưa có khóa học nào.

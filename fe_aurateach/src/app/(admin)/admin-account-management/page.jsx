@@ -251,8 +251,8 @@ export default function AccountManager() {
                   <p><strong>Tình trạng kiểm duyệt hồ sơ:</strong> {selectedUser.verification_status}</p>
 
                   <div className={styles.financialBox}>
-                    <p>💰 <strong>Số dư khả dụng:</strong> {selectedUser.available_balance?.toLocaleString()} đ</p>
-                    <p>⏳ <strong>Đang đóng băng thanh toán:</strong> {selectedUser.pending_balance?.toLocaleString()} đ</p>
+                    <p><strong>Số dư khả dụng:</strong> {selectedUser.available_balance?.toLocaleString()} đ</p>
+                    <p><strong>Đang đóng băng thanh toán:</strong> {selectedUser.pending_balance?.toLocaleString()} đ</p>
                   </div>
 
                   {selectedUser.verification_status !== 'Đã xác minh' && (
