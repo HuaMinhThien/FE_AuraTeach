@@ -12,6 +12,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
   
   const wrapperRef = useRef(null);
   const rowRefs = useRef({});
+  const classBlockRefs = useRef({});
   const hasScrolledRef = useRef(false);
 
   // Tạo map các ngày có lớp học
@@ -217,64 +218,56 @@ export default function ClassCalendar({ courses, onDateClick }) {
       const wrapper = wrapperRef.current;
       if (!wrapper) return;
 
-      let targetRowIndex = -1;
-      let maxClassCount = 0;
+      let targetBlockRef = null;
 
-      // Duyệt qua tất cả các hàng (slot giờ)
-      allTimeSlots.forEach((slot, index) => {
-        let classCount = 0;
+      if (selectedCourseIds.length === 1) {
+        const targetCourseId = selectedCourseIds[0];
+        for (const date of weekDays) {
+          const classesForDate = getClassesForDate(date);
+          const targetClass = classesForDate.find(cls => cls.course.course_id === targetCourseId);
+          if (targetClass) {
+            const dateKey = date.toISOString().split("T")[0];
+            targetBlockRef = classBlockRefs.current[`${dateKey}-${targetCourseId}`];
+            break;
+          }
+        }
+      } else {
+        let targetDate = null;
+        let maxClassCount = 0;
+
         weekDays.forEach(date => {
-          if (hasClassAtSlot(date, slot)) {
-            classCount++;
+          const classesForDate = getClassesForDate(date);
+          if (classesForDate.length > maxClassCount) {
+            maxClassCount = classesForDate.length;
+            targetDate = date;
           }
         });
 
-        // Nếu đang lọc 1 lớp cụ thể
-        if (selectedCourseIds.length === 1) {
-          const targetCourseId = selectedCourseIds[0];
-          let hasTargetClass = false;
-          weekDays.forEach(date => {
-            const classes = getClassesAtSlot(date, slot);
-            if (classes.some(cls => cls.course.course_id === targetCourseId)) {
-              hasTargetClass = true;
-            }
-          });
-          if (hasTargetClass) {
-            targetRowIndex = index;
-            return;
-          }
-        } 
-        // Nếu không lọc hoặc lọc nhiều lớp
-        else {
-          if (classCount > maxClassCount) {
-            maxClassCount = classCount;
-            targetRowIndex = index;
-          }
+        if (targetDate && maxClassCount > 0) {
+          const classesForTargetDate = getClassesForDate(targetDate);
+          const targetClass = classesForTargetDate[0];
+          const dateKey = targetDate.toISOString().split("T")[0];
+          targetBlockRef = classBlockRefs.current[`${dateKey}-${targetClass.course.course_id}`];
         }
-      });
-
-      // Nếu không tìm thấy, cuộn lên đầu
-      if (targetRowIndex === -1) {
-        targetRowIndex = 0;
       }
 
-      // Tìm phần tử DOM của hàng cần cuộn đến
-      const targetRow = rowRefs.current[targetRowIndex];
-      if (targetRow) {
+      if (targetBlockRef) {
         const wrapperRect = wrapper.getBoundingClientRect();
-        const rowRect = targetRow.getBoundingClientRect();
-        const offset = rowRect.top - wrapperRect.top - 60; // Cách top 60px
-        
+        const blockRect = targetBlockRef.getBoundingClientRect();
+        const offset = blockRect.top - wrapperRect.top - 60;
+
         wrapper.scrollTo({
           top: wrapper.scrollTop + offset,
           behavior: 'smooth'
         });
         hasScrolledRef.current = true;
+      } else {
+        hasScrolledRef.current = true;
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [selectedCourseIds, currentWeek, courses, allTimeSlots, weekDays]);
+  }, [selectedCourseIds, currentWeek, courses, weekDays]);
 
   if (courses.length === 0) {
     return (
@@ -407,6 +400,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
               {weekDays.map((date, dayIndex) => {
                 const isTodayDay = isToday(date);
                 const classesForDate = getClassesForDate(date);
+                const dateKey = date.toISOString().split("T")[0];
 
                 return (
                   <div
@@ -415,8 +409,11 @@ export default function ClassCalendar({ courses, onDateClick }) {
                   >
                     {classesForDate.map((cls, idx) => (
                       <div
-                        key={idx}
+                        key={`${dateKey}-${cls.course.course_id}`}
                         className={styles.classBlock}
+                        ref={(el) => {
+                          if (el) classBlockRefs.current[`${dateKey}-${cls.course.course_id}`] = el;
+                        }}
                         style={{
                           top: `${cls.topPercent}%`,
                           height: `${cls.heightPercent}%`,
