@@ -150,8 +150,8 @@ export async function POST(request) {
       defaultStatus = body.status;
     }
 
-    // Tạo permanent_room_url nếu chưa có
-    const roomUrl = body.permanent_room_url || `https://meet.google.com/${generateRoomId()}`;
+    // Tạo permanent_room_url nếu chưa có — dùng route nội bộ /room/[roomId]
+    const roomUrl = body.permanent_room_url || `/room/${courseId}`;
 
     const newCourse = {
       course_id: courseId,

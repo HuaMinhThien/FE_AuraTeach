@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 
-function generateMeetLink() {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  const segment = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `https://meet.google.com/${segment(3)}-${segment(4)}-${segment(3)}`;
+function generateMeetLink(courseId) {
+  return `/room/${courseId}`;
 }
 
 function timeToMinutes(timeStr) {
@@ -210,7 +208,7 @@ export async function POST(request) {
 
     if (body.action !== 'apply') {
       const reqId = `req-${Date.now()}`;
-      const meet_link = body.meet_link || generateMeetLink();
+      const meet_link = body.meet_link || generateMeetLink(reqId);
 
       const newClassRequest = {
         id: reqId,

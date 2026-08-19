@@ -11,8 +11,10 @@ export default function BookingDetailModal({
   tutorInfo,
   onClose,
   onJoinClass,
+  onRating,
   studentId
 }) {
+
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
@@ -184,10 +186,16 @@ export default function BookingDetailModal({
             <button className="detail-report-btn" onClick={handleReportTutor}>
               ⚠️ Tố cáo gia sư
             </button>
-            <div className="detail-action-right">
+                        <div className="detail-action-right">
+              {onRating && (
+                <button className="detail-rating-btn" onClick={() => onRating(course)}>
+                  ⭐ Đánh giá
+                </button>
+              )}
               <button className="detail-close-btn" onClick={onClose}>
                 Đóng
               </button>
+
               {course?.permanent_room_url && course?.status === 'active' && (
                 <button 
                   className="detail-join-btn"

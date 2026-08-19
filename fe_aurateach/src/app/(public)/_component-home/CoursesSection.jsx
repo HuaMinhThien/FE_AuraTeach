@@ -6,6 +6,7 @@ import Link from 'next/link';
 function CoursesSection() {
   const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [featuredCourseIds, setFeaturedCourseIds] = useState(null); // null = chưa load config
   
   const [activeTabId, setActiveTabId] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -16,9 +17,10 @@ function CoursesSection() {
   useEffect(() => {
       const fetchSectionData = async () => {
           try {
-              const [resCategories, resCourses] = await Promise.all([
+              const [resCategories, resCourses, resConfig] = await Promise.all([
                   fetch('http://localhost:3007/categories'),
-                  fetch('http://localhost:3007/courses')
+                  fetch('http://localhost:3007/courses'),
+                  fetch('http://localhost:3007/featured_content'),
               ]);
 
               if (!resCategories.ok || !resCourses.ok) {
@@ -26,15 +28,26 @@ function CoursesSection() {
               }
 
               const dataCategories = await resCategories.json();
-              const dataCourses = await resCourses.json();
+              const dataCourses    = await resCourses.json();
+              const configArr      = resConfig.ok ? await resConfig.json() : [];
+              const config         = Array.isArray(configArr) ? configArr[0] : configArr;
+              const featuredCfg    = config?.featured_courses;
 
               setCategories(Array.isArray(dataCategories) ? dataCategories : []);
               setCourses(Array.isArray(dataCourses) ? dataCourses : []);
               setActiveTabId('All');
+
+              // Lưu lại config featured courses để dùng trong sort/filter
+              if (featuredCfg?.enabled && Array.isArray(featuredCfg.course_ids) && featuredCfg.course_ids.length > 0) {
+                  setFeaturedCourseIds({ ids: featuredCfg.course_ids, count: featuredCfg.display_count || 8 });
+              } else {
+                  setFeaturedCourseIds(null);
+              }
           } catch (error) {
               console.error('Lỗi gọi API trong CoursesSection:', error);
               setCategories([{ category_id: 'All', category_name: 'Tất cả' }]);
               setCourses([]);
+              setFeaturedCourseIds(null);
           } finally {
               setLoading(false);
           }
@@ -47,12 +60,30 @@ function CoursesSection() {
       ? courses
       : courses.filter(course => course.category_id === activeTabId);
 
-  // --- SẮP XẾP: Từ ít học viên nhất đến nhiều học viên nhất ---
-  const sortedCourses = [...filteredCourses].sort((a, b) => {
+  // --- SẮP XẾP: Nếu admin đã pin featured courses → ưu tiên lên đầu, còn lại sort bình thường ---
+  const sortedCourses = (() => {
+    if (featuredCourseIds && activeTabId === 'All') {
+      const { ids, count } = featuredCourseIds;
+      const pinned  = ids
+        .map(id => filteredCourses.find(c => c.course_id === id))
+        .filter(Boolean)
+        .slice(0, count);
+      const pinnedSet = new Set(ids);
+      const rest = filteredCourses
+        .filter(c => !pinnedSet.has(c.course_id))
+        .sort((a, b) => {
+          const studentsA = a.current_students || a.students_count || 0;
+          const studentsB = b.current_students || b.students_count || 0;
+          return studentsA - studentsB;
+        });
+      return [...pinned, ...rest];
+    }
+    return [...filteredCourses].sort((a, b) => {
       const studentsA = a.current_students || a.students_count || 0;
       const studentsB = b.current_students || b.students_count || 0;
       return studentsA - studentsB;
-  });
+    });
+  })();
 
   // Tính toán phân trang
   const totalPages = Math.ceil(sortedCourses.length / itemsPerPage) || 1;

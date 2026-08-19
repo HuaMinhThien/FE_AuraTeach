@@ -10,22 +10,26 @@ function FeaturedTutors() {
   useEffect(() => {
     const fetchTutors = async () => {
       try {
-        const [resUsers, resTutors, resCourses] = await Promise.all([
+        const [resUsers, resTutors, resCourses, resConfig] = await Promise.all([
           fetch('http://localhost:3007/users'),
           fetch('http://localhost:3007/tutors'),
-          fetch('http://localhost:3007/courses')
+          fetch('http://localhost:3007/courses'),
+          fetch('http://localhost:3007/featured_content'),
         ]);
 
         if (!resUsers.ok || !resTutors.ok || !resCourses.ok) {
           throw new Error('Không thể tải đầy đủ dữ liệu gia sư');
         }
 
-        const usersData = await resUsers.json();
-        const tutorsData = await resTutors.json();
+        const usersData   = await resUsers.json();
+        const tutorsData  = await resTutors.json();
         const coursesData = await resCourses.json();
+        const configArr   = resConfig.ok ? await resConfig.json() : [];
+        const config      = Array.isArray(configArr) ? configArr[0] : configArr;
+        const featuredCfg = config?.featured_tutors;
 
         const mergedTutors = tutorsData.map((tutor) => {
-          const matchedUser = usersData.find(u => u.user_id === tutor.user_id) || {};
+          const matchedUser   = usersData.find(u => u.user_id === tutor.user_id) || {};
           const matchedCourse = coursesData.find(c => c.tutor_id === tutor.tutor_id) || {};
 
           return {
@@ -34,15 +38,27 @@ function FeaturedTutors() {
             avatar: matchedUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
             subject: matchedCourse.title || "Gia sư tự do",
             rating: tutor.rating || 5.0,
-            experience: tutor.Experience || "Chưa cập nhật",
+            experience: tutor.Experience || tutor.experience || "Chưa cập nhật",
             bio: tutor.bio || "",
-            price: matchedCourse.price_per_session ? `${parseInt(matchedCourse.price_per_session).toLocaleString('vi-VN')}đ/Buổi` : "Đang cập nhật",
-            reviews: tutor.tutor_id === "tutor_01" ? 120 : 45 
+            price: matchedCourse.price_per_session
+              ? `${parseInt(matchedCourse.price_per_session).toLocaleString('vi-VN')}đ/Buổi`
+              : "Đang cập nhật",
+            reviews: tutor.tutor_id === "tutor_01" ? 120 : 45,
           };
         });
 
-        // Chỉ lấy 4 gia sư đầu tiên
-        setTutorsList(mergedTutors.slice(0, 4));
+        // Nếu admin đã cấu hình và bật featured_tutors → ưu tiên dùng danh sách đó
+        if (featuredCfg?.enabled && Array.isArray(featuredCfg.tutor_ids) && featuredCfg.tutor_ids.length > 0) {
+          const displayCount = featuredCfg.display_count || 4;
+          const ordered = featuredCfg.tutor_ids
+            .map(id => mergedTutors.find(t => t.id === id))
+            .filter(Boolean)
+            .slice(0, displayCount);
+          setTutorsList(ordered);
+        } else {
+          // Fallback: lấy 4 gia sư đầu tiên như cũ
+          setTutorsList(mergedTutors.slice(0, 4));
+        }
       } catch (error) {
         console.error('Lỗi gọi hoặc map API Section 5:', error);
       } finally {

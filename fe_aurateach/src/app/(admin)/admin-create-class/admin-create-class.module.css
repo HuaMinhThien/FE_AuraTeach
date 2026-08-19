@@ -533,6 +533,11 @@
   margin-top: 8px !important;
 }
 
+.summaryHighlight {
+  color: #2563eb;
+  font-weight: 700;
+}
+
 /* Fee Estimate Card - GIỐNG BÊN TUTOR */
 .feeEstimateCard {
   background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);

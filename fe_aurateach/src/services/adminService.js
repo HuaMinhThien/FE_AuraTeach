@@ -238,6 +238,159 @@ class AdminService {
       return { success: true, data: { pending: 0, paid: 0, refunded: 0 } };
     }
   }
+
+  // ===== CONTENT MANAGEMENT =====
+
+  async getFeaturedContent() {
+    if (this.useApi) {
+      return this.getFeaturedContentWithApi();
+    } else {
+      return this.getFeaturedContentWithJson();
+    }
+  }
+
+  async getFeaturedContentWithJson() {
+    try {
+      const response = await fetch(`${this.jsonServerUrl}/featured_content`);
+      const data = await response.json();
+      const config = Array.isArray(data) ? data[0] : data;
+      return { success: true, data: config || null };
+    } catch (error) {
+      console.error('❌ Error fetching featured content:', error);
+      return { success: false, data: null };
+    }
+  }
+
+  async getFeaturedContentWithApi() {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/admin/content/featured`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching featured content from API:', error);
+      return { success: false, data: null };
+    }
+  }
+
+  async updateFeaturedContent(section, payload) {
+    if (this.useApi) {
+      return this.updateFeaturedContentWithApi(section, payload);
+    } else {
+      return this.updateFeaturedContentWithJson(section, payload);
+    }
+  }
+
+  async updateFeaturedContentWithJson(section, payload) {
+    try {
+      // Lấy record hiện tại
+      const getRes = await fetch(`${this.jsonServerUrl}/featured_content`);
+      const data = await getRes.json();
+      const current = Array.isArray(data) ? data[0] : data;
+
+      if (!current || !current.id) {
+        throw new Error('Không tìm thấy featured_content record');
+      }
+
+      const updated = {
+        ...current,
+        [section]: {
+          ...current[section],
+          ...payload,
+          updated_at: new Date().toISOString(),
+        },
+      };
+
+      const putRes = await fetch(`${this.jsonServerUrl}/featured_content/${current.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+
+      if (!putRes.ok) throw new Error('Cập nhật thất bại');
+      const result = await putRes.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('❌ Error updating featured content:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  async updateFeaturedContentWithApi(section, payload) {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/admin/content/featured/${section}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('❌ Error updating featured content from API:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Lấy toàn bộ dữ liệu cần thiết cho trang Content Management
+  async getContentManagementData() {
+    try {
+      const [tutorsRes, usersRes, reviewsRes, studentsRes, coursesRes, configRes] = await Promise.all([
+        fetch(`${this.jsonServerUrl}/tutors`),
+        fetch(`${this.jsonServerUrl}/users`),
+        fetch(`${this.jsonServerUrl}/reviews`),
+        fetch(`${this.jsonServerUrl}/students`),
+        fetch(`${this.jsonServerUrl}/courses`),
+        fetch(`${this.jsonServerUrl}/featured_content`),
+      ]);
+
+      const [tutors, users, reviews, students, courses, configArr] = await Promise.all([
+        tutorsRes.json(),
+        usersRes.json(),
+        reviewsRes.json(),
+        studentsRes.json(),
+        coursesRes.json(),
+        configRes.json(),
+      ]);
+
+      const config = Array.isArray(configArr) ? configArr[0] : configArr;
+
+      // Merge tutor + user info
+      const mergedTutors = tutors
+        .filter(t => t.verification_status === 'approved')
+        .map(tutor => {
+          const user = users.find(u => u.user_id === tutor.user_id) || {};
+          return {
+            tutor_id: tutor.tutor_id,
+            name: user.full_name || 'Gia sư AuraTeach',
+            avatar: user.avatar || '',
+            expertise: tutor.expertise || '',
+            rating: tutor.rating || 0,
+            experience: tutor.experience || '',
+          };
+        });
+
+      // Merge review + student/user info
+      const mergedReviews = reviews.map(review => {
+        const student = students.find(s => s.student_id === review.student_id) || {};
+        const user = users.find(u => u.user_id === student.user_id) || {};
+        const course = courses.find(c => c.course_id === review.course_id) || {};
+        return {
+          review_id: review.review_id,
+          author: user.full_name || 'Học viên ẩn danh',
+          course_title: course.title || 'Không rõ lớp',
+          rating: review.rating,
+          comment: review.comment,
+        };
+      });
+
+      return {
+        success: true,
+        data: { tutors: mergedTutors, reviews: mergedReviews, courses, config },
+      };
+    } catch (error) {
+      console.error('❌ Error fetching content management data:', error);
+      return { success: false, data: null };
+    }
+  }
 }
 
 export const adminService = new AdminService();

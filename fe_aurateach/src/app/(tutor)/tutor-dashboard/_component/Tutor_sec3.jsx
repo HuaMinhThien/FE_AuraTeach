@@ -118,12 +118,12 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
     <div className={styles.container}>
       <h3 className={styles.title}>Hoạt động mới nhất</h3>
       <div className={styles.timeline}>
-        {items.length === 0 ? (
+                {items.length === 0 ? (
           <div style={{ padding: "20px 0", color: "#94a3b8", textAlign: "center", fontSize: "13px" }}>
             Chưa có hoạt động nào
           </div>
         ) : (
-          items.map((act) => (
+          items.slice(0, 5).map((act) => (
             <div key={act.id} className={styles.activityItem}>
               <div className={`${styles.iconBox} ${act.iconClass}`}>
                 {act.icon}
