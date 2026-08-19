@@ -4,79 +4,76 @@ import Image from "next/image";
 import "../../css/tutor-style/sidebar.css"; 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { tutorService } from "@/services/tutorService"; 
-import { conversationService } from "@/services/conversationService"; // 👈 Sử dụng service mới
+import { useState, useEffect, useCallback } from "react";
+import { conversationService } from "@/services/conversationService"; 
 
 export default function Sidebar() {
     const router = useRouter();
     const pathname = usePathname();
     const [unreadCount, setUnreadCount] = useState(0);
+    const [user, setUser] = useState(null);
 
+    const getCookie = (name) => {
+        if (typeof window === "undefined") return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    };
+
+    // 1. Load user từ cookie khi component mount
     useEffect(() => {
-        const fetchSidebarData = async () => {
+        const userCookie = getCookie("user_info");
+        if (userCookie) {
             try {
-                // Lấy user_id từ cookie
-                const getCookie = (name) => {
-                    const value = `; ${document.cookie}`;
-                    const parts = value.split(`; ${name}=`);
-                    if (parts.length === 2) return parts.pop().split(';').shift();
-                    return null;
-                };
-
-                const userCookie = getCookie("user_info");
-                if (!userCookie) return;
-
-                const user = JSON.parse(decodeURIComponent(userCookie));
-                const userId = user.user_id || user.id;
-                if (!userId) return;
-
-                // Gọi song song thông qua conversationService và tutorService chuẩn
-                const [convRes, tutorsRes] = await Promise.all([
-                    // conversationService.getConversations(),
-                    tutorService.getTutors()
-                ]);
-                
-                const allConversations = Array.isArray(convRes) ? convRes : (convRes?.data || []);
-                const allTutors = Array.isArray(tutorsRes) ? tutorsRes : (tutorsRes?.data || []);
-                
-                // ✅ Tạo map tutor_id ↔ user_id
-                const userToTutorMap = {};
-                if (Array.isArray(allTutors)) {
-                    allTutors.forEach(t => {
-                        if (t.tutor_id && t.user_id) {
-                            userToTutorMap[t.user_id] = t.tutor_id;
-                        }
-                    });
-                }
-                
-                // ✅ Mở rộng ID để filter
-                const myIds = [userId];
-                if (userToTutorMap[userId]) {
-                    myIds.push(userToTutorMap[userId]);
-                }
-                
-                const userConversations = allConversations.filter(conv => 
-                    conv.participants && conv.participants.some(p => myIds.includes(p))
-                );
-                
-                const totalUnread = userConversations.reduce(
-                    (sum, conv) => sum + (conv.unread_count || 0), 
-                    0
-                );
-                
-                setUnreadCount(totalUnread);
+                const decoded = decodeURIComponent(userCookie);
+                const userData = JSON.parse(decoded);
+                setUser(userData);
             } catch (error) {
-                console.error("❌ Lỗi đồng bộ Sidebar:", error);
+                console.error("❌ Error parsing user cookie:", error);
             }
-        };
-
-        fetchSidebarData();
-
-        // Polling mỗi 10 giây để cập nhật số tin chưa đọc
-        const interval = setInterval(fetchSidebarData, 10000);
-        return () => clearInterval(interval);
+        }
     }, []);
+
+    // 2. Lấy số lượng tin nhắn chưa đọc chuẩn xác bằng conversationService.getUnreadCount (giống Header)
+    const fetchUnreadCount = useCallback(async (userId) => {
+        if (!userId) return; 
+
+        try {
+            const data = await conversationService.getUnreadCount(userId);
+            const count = typeof data === 'object' ? (data.unread_count || data.data?.unread_count || 0) : data;
+            setUnreadCount(Number(count));
+        } catch (error) {
+            console.error("❌ Lỗi lấy số tin nhắn chưa đọc Sidebar:", error);
+        }
+    }, []);
+
+    // 3. Polling định kỳ lấy unread count giống hệt Header để cập nhật badge đồng bộ
+    useEffect(() => {
+        const userCookie = getCookie("user_info");
+        let currentUserId = user?.user_id || user?.id;
+
+        if (!currentUserId && userCookie) {
+            try {
+                const userData = JSON.parse(decodeURIComponent(userCookie));
+                currentUserId = userData.user_id || userData.id;
+            } catch (e) {
+                // Ignore parse error
+            }
+        }
+
+        if (!currentUserId) return; 
+        
+        // Gọi ngay lần đầu
+        fetchUnreadCount(currentUserId);
+        
+        // Polling mỗi 10 giây
+        const interval = setInterval(() => {
+            fetchUnreadCount(currentUserId);
+        }, 10000); 
+        
+        return () => clearInterval(interval);
+    }, [user, fetchUnreadCount]);
 
     const handleLogout = () => {
         document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -97,12 +94,9 @@ export default function Sidebar() {
         { 
             path: "/tutor-messenger", 
             text: "Tin nhắn",
-            badge: unreadCount > 0 ? unreadCount : null
+            // Thêm logic hiển thị 99+ cho đồng bộ với Header
+            badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : null
         },
-        // {
-        //     path: 
-        // }
-
     ];
 
     return (

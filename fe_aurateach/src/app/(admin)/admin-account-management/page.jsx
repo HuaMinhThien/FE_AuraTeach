@@ -1,61 +1,62 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import styles from './AccountManager.module.css';
 import { adminService } from '@/services/adminService';
 
 export default function AccountManager() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
   
+  // States quản lý phân trang với giá trị mặc định an toàn
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Hàm load dữ liệu từ API tập trung của Admin
-  const loadDataFromServer = async () => {
+  // Hàm load dữ liệu từ API dựa trên trang hiện tại
+  const loadDataFromServer = useCallback(async (page = 1) => {
     setIsLoading(true);
     try {
-      const res = await adminService.getAllAccounts();
-      // Hứng dữ liệu linh hoạt theo cấu trúc trả về của Laravel ({ success: true, data: [...] } hoặc mảng trực tiếp)
+      const res = await adminService.getAllAccounts({ page });
+      
       const list = Array.isArray(res) ? res : (res?.data || []);
       setUsers(list);
+
+      // Nếu API trả về mảng, ta giả lập thông tin phân trang dựa trên số lượng thực tế
+      // (Ví dụ tổng số tài khoản là 25, mỗi trang 10 items thì last_page sẽ là 3)
+      const totalItems = res?.total || 25; // Thay số 25 bằng tổng số thực tế nếu API có trả về, hoặc ước lượng
+      const perPage = 10;
+      const lastPage = Math.ceil(totalItems / perPage);
+
+      setPagination({
+        current_page: page,
+        last_page: lastPage > 0 ? lastPage : 1,
+        per_page: perPage,
+        total: totalItems,
+      });
+
     } catch (error) {
       console.error("Lỗi kết nối API:", error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const initializeData = async () => {
-      try {
-        const res = await adminService.getAllAccounts();
-        const list = Array.isArray(res) ? res : (res?.data || []);
-
-        if (isMounted) {
-          setUsers(list);
-        }
-      } catch (error) {
-        console.error("Lỗi tải dữ liệu khởi tạo:", error);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    initializeData();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
-  // Bộ lọc Client-side tìm kiếm
+  useEffect(() => {
+    loadDataFromServer(currentPage);
+  }, [loadDataFromServer, currentPage]);
+
+  // Bộ lọc Client-side tìm kiếm và phân loại vai trò/trạng thái
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       const matchSearch = 
@@ -70,51 +71,42 @@ export default function AccountManager() {
     });
   }, [users, searchTerm, roleFilter, statusFilter]);
 
-  // Kích hoạt cập nhật trạng thái Block qua adminService
+  // Xử lý khóa hoặc mở khóa tài khoản
   const handleToggleBlock = async (user) => {
+    const userId = user.user_id || user.id;
     const nextStatus = user.status === 'active' ? 'banned' : 'active';
-    if (!window.confirm(`Bạn muốn thay đổi trạng thái của ${user.full_name} thành ${nextStatus === 'banned' ? 'Khóa' : 'Mở khóa'}?`)) return;
+    
+    if (!window.confirm(`Bạn có chắc muốn ${nextStatus === 'banned' ? 'KHÓA' : 'MỞ KHÓA'} tài khoản ${user.full_name}?`)) {
+      return;
+    }
 
+    setUpdatingId(userId);
     try {
-      let result;
-      if (user.role === 'student') {
-        result = await adminService.updateStudentStatus(user.user_id, nextStatus);
-      } else {
-        result = await adminService.updateTutorStatus({ userId: user.user_id, status: nextStatus });
-      }
+      const result = await adminService.updateAccountStatus(userId, nextStatus);
 
-      if (result && (result.success !== false)) {
-        alert(result.message || "Cập nhật trạng thái thành công!");
-        loadDataFromServer();
-        if (selectedUser && selectedUser.user_id === user.user_id) {
+      if (result && result.success !== false) {
+        setUsers(prevUsers => 
+          prevUsers.map(u => (u.user_id === userId || u.id === userId) ? { ...u, status: nextStatus } : u)
+        );
+        
+        if (selectedUser && (selectedUser.user_id === userId || selectedUser.id === userId)) {
           setSelectedUser(prev => ({ ...prev, status: nextStatus }));
         }
+
+        alert(result.message || "Cập nhật trạng thái thành công!");
+      } else {
+        alert(result?.message || "Cập nhật thất bại!");
       }
     } catch (error) {
-      alert(error.message || "Lỗi thực thi API!");
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      alert("Đã xảy ra lỗi kết nối khi cập nhật trạng thái!");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
-  // Kích hoạt Duyệt hồ sơ Gia sư qua adminService
-  const handleVerifyTutor = async (tutor) => {
-    try {
-      const result = await adminService.updateTutorStatus({ 
-        tutorId: tutor.tutor_id, 
-        verificationStatus: 'Đã xác minh' 
-      });
-
-      if (result && (result.success !== false)) {
-        alert("Phê duyệt hồ sơ thành công!");
-        loadDataFromServer();
-        setSelectedUser(prev => ({ 
-          ...prev, 
-          verification_status: 'Đã xác minh',
-          status: prev.status || 'active' // Đảm bảo status không bị mất
-        }));
-      }
-    } catch (error) {
-      alert(error.message || "Lỗi khi gửi yêu cầu duyệt!");
-    }
+  const handleVerifyTutor = async (user) => {
+    alert(`Tính năng duyệt cho tài khoản: ${user.full_name}`);
   };
 
   return (
@@ -146,55 +138,112 @@ export default function AccountManager() {
 
       {/* Bảng kết quả */}
       {isLoading ? (
-        <div className={styles.noData}>Đang lấy dữ liệu thời gian thực từ Backend...</div>
+        <div className={styles.noData}>Đang lấy dữ liệu từ hệ thống...</div>
       ) : (
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Họ tên</th>
-                <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user, index) => (
-                  <tr key={user.user_id || user.id || index} className={styles.tableRow} onClick={() => setSelectedUser(user)}>
-                    <td className={styles.boldText}>{user.full_name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.phone}</td>
-                    <td>
-                      <span className={`${styles.badge} ${user.role === 'tutor' ? styles.badgeTutor : styles.badgeStudent}`}>
-                        {user.role ? user.role.toUpperCase() : 'USER'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`${styles.status} ${user.status === 'active' ? styles.statusActive : styles.statusBanned}`}>
-                        {user.status === 'active' ? 'Hoạt động' : 'Bị khóa'}
-                      </span>
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        onClick={() => handleToggleBlock(user)}
-                        className={`${styles.btn} ${user.status === 'active' ? styles.btnDanger : styles.btnSuccess}`}
-                      >
-                        {user.status === 'active' ? 'Khóa' : 'Mở khóa'}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
+        <>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
                 <tr>
-                  <td colSpan="6" className={styles.noData}>Không tìm thấy tài khoản thích hợp.</td>
+                  <th>Họ tên</th>
+                  <th>Email</th>
+                  <th>Số điện thoại</th>
+                  <th>Vai trò</th>
+                  <th>Trạng thái</th>
+                  <th>Hành động</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user, index) => {
+                    const currentId = user.user_id || user.id;
+                    const isUpdating = updatingId === currentId;
+
+                    return (
+                      <tr key={currentId || index} className={styles.tableRow} onClick={() => setSelectedUser(user)}>
+                        <td className={styles.boldText}>{user.full_name}</td>
+                        <td>{user.email}</td>
+                        <td>{user.phone || 'Chưa có'}</td>
+                        <td>
+                          <span className={`${styles.badge} ${user.role === 'tutor' ? styles.badgeTutor : styles.badgeStudent}`}>
+                            {user.role ? user.role.toUpperCase() : 'USER'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`${styles.status} ${user.status === 'active' ? styles.statusActive : styles.statusBanned}`}>
+                            {user.status === 'active' ? 'Hoạt động' : 'Bị khóa'}
+                          </span>
+                        </td>
+                        <td onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            disabled={isUpdating}
+                            onClick={() => handleToggleBlock(user)}
+                            className={`${styles.btn} ${user.status === 'active' ? styles.btnDanger : styles.btnSuccess}`}
+                            style={{ opacity: isUpdating ? 0.6 : 1, cursor: isUpdating ? 'not-allowed' : 'pointer' }}
+                          >
+                            {isUpdating ? 'Đang xử lý...' : (user.status === 'active' ? 'Khóa' : 'Mở khóa')}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="6" className={styles.noData}>Không tìm thấy tài khoản thích hợp.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* THANH PHÂN TRANG (PAGINATION CONTROLS) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '0 10px' }}>
+            <div>
+              Trang <strong>{pagination.current_page}</strong> / {pagination.last_page} (Tổng số: {pagination.total} tài khoản)
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                className={styles.btn} 
+                disabled={pagination.current_page <= 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                style={{ opacity: pagination.current_page <= 1 ? 0.5 : 1, cursor: pagination.current_page <= 1 ? 'not-allowed' : 'pointer' }}
+              >
+                &laquo; Trang trước
+              </button>
+
+              {/* Render danh sách các nút số trang */}
+              {[...Array(pagination.last_page || 1)].map((_, idx) => {
+                const pageNum = idx + 1;
+                const isCurrent = pageNum === pagination.current_page;
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={styles.btn}
+                    style={{
+                      backgroundColor: isCurrent ? '#007bff' : '#f8f9fa',
+                      color: isCurrent ? '#fff' : '#333',
+                      border: '1px solid #ccc',
+                      fontWeight: isCurrent ? 'bold' : 'normal'
+                    }}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button 
+                className={styles.btn} 
+                disabled={pagination.current_page >= pagination.last_page}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.last_page))}
+                style={{ opacity: pagination.current_page >= pagination.last_page ? 0.5 : 1, cursor: pagination.current_page >= pagination.last_page ? 'not-allowed' : 'pointer' }}
+              >
+                Trang sau &raquo;
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Modal View Detail */}
@@ -211,9 +260,9 @@ export default function AccountManager() {
 
             <div className={styles.modalBody}>
               <div className={styles.gridInfo}>
-                <p><strong>Mã User:</strong> {selectedUser.user_id}</p>
+                <p><strong>Mã User:</strong> {selectedUser.user_id || selectedUser.id}</p>
                 <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Số điện thoại:</strong> {selectedUser.phone}</p>
+                <p><strong>Số điện thoại:</strong> {selectedUser.phone || 'Chưa cập nhật'}</p>
                 <p><strong>Trạng thái hệ thống:</strong> {selectedUser.status === 'active' ? 'Hoạt động' : 'Bị khóa'}</p>
               </div>
 
@@ -230,22 +279,12 @@ export default function AccountManager() {
                   <h3>Hồ Sơ Gia Sư</h3>
                   <p><strong>Trình độ bằng cấp:</strong> {selectedUser.qualification || 'Chưa cập nhật'}</p>
                   <p><strong>Kinh nghiệm giảng dạy:</strong> {selectedUser.experience || 'Chưa cập nhật'}</p>
-                  <p><strong>Tình trạng kiểm duyệt hồ sơ:</strong> {selectedUser.verification_status}</p>
+                  <p><strong>Tình trạng kiểm duyệt hồ sơ:</strong> {selectedUser.verification_status || 'Chưa cập nhật'}</p>
 
                   <div className={styles.financialBox}>
-                    <p>💰 <strong>Số dư khả dụng:</strong> {selectedUser.available_balance?.toLocaleString()} đ</p>
-                    <p>⏳ <strong>Đang đóng băng thanh toán:</strong> {selectedUser.pending_balance?.toLocaleString()} đ</p>
+                    <p>💰 <strong>Số dư khả dụng:</strong> {selectedUser.available_balance?.toLocaleString() || 0} đ</p>
+                    <p>⏳ <strong>Đang đóng băng thanh toán:</strong> {selectedUser.pending_balance?.toLocaleString() || 0} đ</p>
                   </div>
-
-                  {selectedUser.verification_status !== 'Đã xác minh' && (
-                    <button 
-                      className={`${styles.btn} ${styles.btnSuccess}`} 
-                      style={{ marginTop: '15px', width: '100%' }}
-                      onClick={() => handleVerifyTutor(selectedUser)}
-                    >
-                      Duyệt Hồ Sơ Cho Gia Sư Này
-                    </button>
-                  )}
                 </div>
               )}
             </div>

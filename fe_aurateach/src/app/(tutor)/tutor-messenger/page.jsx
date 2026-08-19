@@ -10,6 +10,7 @@ import { conversationService } from "@/services/conversationService";
 import { messageService } from "@/services/messageService";
 import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
+import { uploadService } from "@/services/uploadService";
 import styles from "./page.module.css";
 
 export default function TutorMessengerPage() {
@@ -207,79 +208,96 @@ export default function TutorMessengerPage() {
   };
 
   // 🚀 TỐI ƯU HÓA: Gửi tin nhắn và file trực tiếp dưới dạng URL Cloudinary vào content
-  const sendMessage = async (content) => {
-    if (!selectedConversation || !user || isSendingRef.current) return;
-    
-    const isFile = typeof content === 'object' && content.file_data;
-    if (!isFile && (!content || !content.trim())) return;
-
-    isSendingRef.current = true;
-    setSending(true);
-    
-    try {
+    const sendMessage = async (content) => {
+      const isFile = content !== null && typeof content === 'object';
+      if (!isFile && (!content || !content.trim())) return;
+      if (isFile && !content.name && !content.rawFile) return;
+      if (!selectedConversation || !user || isSendingRef.current) return;
+  
+      const convId = selectedConversation.conversation_id || selectedConversation.id;
+      if (!convId || convId === 'undefined') return;
+  
+      isSendingRef.current = true;
+      setSending(true);
+  
       const senderId = user.user_id || user.id;
       const receiverId = selectedConversation.other_user_id;
-      const convId = selectedConversation.id || selectedConversation.conversation_id;
-      const nowTime = new Date().toISOString();
-      
-      // 🛠️ QUAN TRỌNG: Nếu là file (ảnh/video), lưu trực tiếp URL vào content để FE tự động nhận diện hiển thị
-      const messageContentText = isFile ? content.file_data : content.trim();
-      const tempMessageId = isFile ? content.id : `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-
-      const newMessage = {
-        message_id: tempMessageId,
-        id: tempMessageId,
-        conversation_id: convId,
-        sender_id: senderId,
-        sender_role: user.role || "tutor",
-        receiver_id: receiverId,
-        receiver_role: selectedConversation.other_user?.role || "student",
-        content: messageContentText,
-        created_at: nowTime,
-        is_read: true,
-      };
-
-      // 1. Cập nhật UI ngay lập tức
-      setMessages(prev => {
-        const updated = [...prev, newMessage];
-        saveMessagesToLocal(convId, updated);
-        return updated;
-      });
-
-      // 2. Gửi API ngầm lên Server
-      const savedMsgRes = await messageService.sendMessage(newMessage);
-      const savedMsg = savedMsgRes?.data || savedMsgRes;
-
-      if (savedMsg) {
+  
+      try {
+        let messageContentText = "";
+        let finalFileUrl = null;
+  
+        if (isFile) {
+          // 🚀 Sử dụng trực tiếp rawFile hoặc tạo lại từ dữ liệu an toàn
+          const fileToUpload = content.rawFile || new File([content.rawFile], content.name, { type: content.type });
+  
+          const uploadRes = await uploadService.uploadFile(fileToUpload, "chat");
+          if (!uploadRes?.url) throw new Error("Không nhận được URL từ server upload");
+  
+          finalFileUrl = uploadRes.url;
+          messageContentText = finalFileUrl; 
+        } else {
+          messageContentText = content.trim();
+        }
+  
+        const tempMessageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        const nowTime = new Date().toISOString();
+  
+        const newMessage = {
+          message_id: tempMessageId,
+          id: tempMessageId,
+          conversation_id: convId,
+          sender_id: senderId,
+          sender_role: user.role || "tutor",
+          receiver_id: receiverId,
+          receiver_role: selectedConversation.other_user?.role || "student",
+          content: messageContentText,
+          created_at: nowTime,
+          is_read: true,
+        };
+  
+        // 1. Cập nhật UI ngay lập tức
         setMessages(prev => {
-          const updated = prev.map(m => (m.message_id === tempMessageId || m.id === tempMessageId) ? (savedMsg.data || savedMsg) : m);
+          const updated = [...prev, newMessage];
           saveMessagesToLocal(convId, updated);
           return updated;
         });
-      }
-
-      // 3. Cập nhật trạng thái hội thoại
-      const previewText = isFile ? "[Hình ảnh]" : messageContentText;
-      await messageService.updateConversation(convId, {
-        last_message: previewText,
-        last_message_time: nowTime,
-        unread_count: 0,
-      });
-
-      setConversations(prev => prev.map(c => {
-        if ((c.id || c.conversation_id) === convId) {
-          return { ...c, last_message: previewText, last_message_time: nowTime, unread_count: 0 };
+  
+        // 2. Gửi API ngầm lên Database
+        const savedMsgRes = await messageService.sendMessage(newMessage);
+        const savedMsg = savedMsgRes?.data || savedMsgRes;
+  
+        if (savedMsg) {
+          setMessages(prev => {
+            const updated = prev.map(m => (m.message_id === tempMessageId || m.id === tempMessageId) ? savedMsg : m);
+            saveMessagesToLocal(convId, updated);
+            return updated;
+          });
         }
-        return c;
-      }));
+  
+        // 3. Cập nhật thông tin đoạn hội thoại
+        const previewText = isFile ? "[Hình ảnh]" : messageContentText;
+          await messageService.updateConversation(convId, {
+            last_message: previewText,
+            last_message_time: nowTime,
+            increment_unread_for: receiverId, // 👈 Báo backend tăng unread cho người nhận
+          });
 
-    } catch (error) {
-      console.error("❌ [DB ERROR] Lỗi gửi tin nhắn vào DB:", error);
-    } finally {
-      setSending(false);
-      isSendingRef.current = false;
-    }
-  };
+          setConversations(prev => prev.map(c => {
+            if ((c.conversation_id || c.id) === convId) {
+              return { ...c, last_message: previewText, last_message_time: nowTime };
+            }
+            return c;
+          }));
+  
+      } catch (error) {
+        console.error("❌ Lỗi gửi tin nhắn/file trên production:", error);
+        alert("Gửi tin nhắn hoặc file thất bại, vui lòng kiểm tra lại kết nối!");
+      } finally {
+        setSending(false);
+        isSendingRef.current = false;
+      }
+    };
 
   const markAsRead = async (conversationId) => {
     try {

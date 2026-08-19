@@ -2,39 +2,12 @@ import apiClient from './apiClient';
 
 export const adminService = {
   // --- BỔ SUNG: Lấy danh sách tất cả tài khoản ---
-  getAllAccounts: async () => {
-    const response = await apiClient.get('/admin/accounts');
-    return response.data !== undefined ? response.data : response;
-  },
-
-  // --- BỔ SUNG: Cập nhật trạng thái của học viên ---
-  updateStudentStatus: async (userId, status) => {
-    const response = await apiClient.patch(`/admin/students/${userId}/status`, { status });
-    return response.data !== undefined ? response.data : response;
-  },
-
-  // --- BỔ SUNG: Cập nhật trạng thái hoặc duyệt hồ sơ của gia sư ---
-
-  updateTutorStatus: async (payload) => {
-    // Hỗ trợ lấy linh hoạt ID từ payload (userId, user_id, hoặc tutorId)
-    const userId = payload.userId || payload.user_id || payload.tutorId;
-    const status = payload.status;
-    const verificationStatus = payload.verificationStatus;
-
-    // Nếu là cập nhật trạng thái khóa/mở khóa (active/banned)
-    if (status) {
-      const response = await apiClient.patch(`/admin/tutors/${userId}/status`, { status });
-      return response.data !== undefined ? response.data : response;
-    }
-
-    // Nếu là duyệt hồ sơ
-    if (verificationStatus) {
-      const response = await apiClient.patch(`/admin/tutors/${userId}/status`, { verification_status: verificationStatus });
-      return response.data !== undefined ? response.data : response;
-    }
-
-    // Fallback mặc định nếu truyền payload thô
-    const response = await apiClient.patch('/admin/tutors/status', payload);
+  getAllAccounts: async (params = {}) => {
+    // Hứng tham số trang, mặc định là trang 1 nếu không truyền vào
+    const page = params.page || 1;
+    
+    // Gắn thêm query string ?page=... vào endpoint API
+    const response = await apiClient.get(`/admin/accounts?page=${page}`);
     return response.data !== undefined ? response.data : response;
   },
 
@@ -173,4 +146,6 @@ export const adminService = {
       throw error;
     }
   },
+
+  
 };

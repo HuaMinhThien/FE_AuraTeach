@@ -251,18 +251,18 @@ function MessengerContent() {
 
       // 3. Cập nhật thông tin đoạn hội thoại
       const previewText = isFile ? "[Hình ảnh]" : messageContentText;
-      await messageService.updateConversation(convId, {
-        last_message: previewText,
-        last_message_time: nowTime,
-        unread_count: 0,
-      });
+        await messageService.updateConversation(convId, {
+          last_message: previewText,
+          last_message_time: nowTime,
+          increment_unread_for: receiverId, // 👈 Báo backend tăng unread cho người nhận
+        });
 
-      setConversations(prev => prev.map(c => {
-        if ((c.conversation_id || c.id) === convId) {
-          return { ...c, last_message: previewText, last_message_time: nowTime, unread_count: 0 };
-        }
-        return c;
-      }));
+        setConversations(prev => prev.map(c => {
+          if ((c.conversation_id || c.id) === convId) {
+            return { ...c, last_message: previewText, last_message_time: nowTime };
+          }
+          return c;
+        }));
 
     } catch (error) {
       console.error("❌ Lỗi gửi tin nhắn/file trên production:", error);

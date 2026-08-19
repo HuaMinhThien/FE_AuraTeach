@@ -9,6 +9,13 @@ export const courseService = {
     return await apiClient.get(endpoint);
   },
 
+  getCourseDashboard: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = `/tutor/courses-dashboard${queryString ? `?${queryString}` : ''}`;
+    
+    return await apiClient.get(endpoint);
+  },
+
   // 🚀 Lấy danh sách lớp học dành riêng cho trang quản lý của gia sư (Hiển thị tất cả trạng thái)
   getTutorManagedCourses: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
