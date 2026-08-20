@@ -45,6 +45,12 @@ export default function AdminDashboard() {
     fetchDashboardData();
   };
 
+  // ✅ Hàm xử lý nút "Xuất báo cáo"
+  const handleExportReport = () => {
+    alert('📊 Đang xuất báo cáo...');
+    // TODO: Thêm logic xuất báo cáo PDF/Excel
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -74,6 +80,7 @@ export default function AdminDashboard() {
             Cập nhật: {new Date().toLocaleString('vi-VN')}
           </span>
         </div>
+        
         <div className={styles.headerRight}>
           <select 
             value={period} 
@@ -84,6 +91,12 @@ export default function AdminDashboard() {
             <option value="month">📅 30 ngày qua</option>
             <option value="year">📅 12 tháng qua</option>
           </select>
+          <button 
+            onClick={handleExportReport} 
+            className={styles.exportButton}
+          >
+            📊 Xuất báo cáo
+          </button>
           <button onClick={handleRefresh} className={styles.refreshButton}>
             🔄 Làm mới
           </button>
