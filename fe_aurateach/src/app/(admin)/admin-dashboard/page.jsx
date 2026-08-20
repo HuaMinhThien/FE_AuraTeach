@@ -30,9 +30,15 @@ export default function AdminDashboard() {
         adminService.getRevenueStats(period),
       ]);
       
-      setStats(statsData.data);
-      setRegistrations(regData.data || []);
-      setRevenue(revData.data || []);
+      // 👇 Thêm dòng log này để nhìn rõ cấu trúc thực tế trên F12 -> Console
+      console.log('Stats Data nhận được:', statsData);
+
+      // Xử lý linh hoạt nếu API trả về dạng statsData.data hoặc thẳng vào object
+      const actualStats = statsData?.data || statsData || {};
+      setStats(actualStats);
+
+      setRegistrations(regData?.data || regData || []);
+      setRevenue(revData?.data || revData || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');

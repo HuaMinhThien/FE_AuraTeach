@@ -92,4 +92,15 @@ export const classRequestService = {
     const response = await apiClient.post('/admin/classes/accept', { courseId, tutorId });
     return response.data !== undefined ? response.data : response;
   },
+
+  getAvailableForTutor: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = `/class-requests/available-for-tutor${queryString ? `?${queryString}` : ''}`;
+    try {
+      const response = await apiClient.get(endpoint);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

@@ -9,15 +9,17 @@ export const authService = {
   async register(userData) {
     try {
       const response = await apiClient.post("/auth/register", {
+        // Gom nhóm và xử lý tên trường linh hoạt bằng cách dùng dấu ngoặc nhọn spread
         full_name: userData.full_name || userData.fullName,
-        email: userData.email,
-        password: userData.password,
         phone: userData.phone || "",
-        role: userData.role, // "student" hoặc "tutor"
         grade: userData.grade || "",
         schoolName: userData.schoolName || "",
         expertise: userData.expertise || "",
         cvLink: userData.cvLink || "",
+        available_days: userData.availableDays || "",
+        available_time_slots: userData.availableTimeSlots || "",
+        // Lấy tất cả các trường còn lại (email, password, role,...) từ userData
+        ...userData, 
       });
 
       return response;

@@ -110,8 +110,9 @@ export default function CreateClassRequest() {
   // State lưu tạm toàn bộ payload cần thiết để tạo course và duyệt sau khi thanh toán thành công
   const [pendingAcceptance, setPendingAcceptance] = useState(null);
 
-  const getInitialFormData = (defaultCatId = "", currentStudentId = "") => ({
-    student_id: currentStudentId,
+  const getInitialFormData = (defaultCatId = "", ) => ({
+    user_id: "", 
+    tutor_id: null,
     title: "",
     category_id: defaultCatId,
     grade_level: "Cấp 3",
@@ -204,8 +205,8 @@ export default function CreateClassRequest() {
 
   useEffect(() => {
     const initData = async () => {
-      const currentStudentId = await getCurrentStudentId();
-      setFormData((prev) => ({ ...prev, student_id: currentStudentId }));
+      const currentUserId = await getCurrentStudentId();
+      setFormData((prev) => ({ ...prev, user_id: currentUserId || "" }));
       await fetchRequestsAndCourses();
     };
     initData();
@@ -234,8 +235,12 @@ export default function CreateClassRequest() {
     if (!(await checkAuthAndRole())) return;
     setEditingRequestId(null);
     const defaultCat = categories.length > 0 ? (categories[0].category_id || categories[0].id) : "";
-    const currentStudentId = await getCurrentStudentId();
-    setFormData(getInitialFormData(defaultCat, currentStudentId));
+    const currentUserId = await getCurrentStudentId(); // Lấy trực tiếp ID ở đây
+    
+    setFormData({
+      ...getInitialFormData(defaultCat),
+      user_id: currentUserId || "" // Gán user_id khi mở modal tạo mới
+    });
     setIsModalOpen(true);
   };
 
@@ -422,12 +427,19 @@ export default function CreateClassRequest() {
     if (loading) return;
     if (!(await checkAuthAndRole())) return;
 
+    // 🛠️ Lấy user_id hiện tại và kiểm tra xem có tồn tại không
+    const currentUserId = await getCurrentStudentId();
+    if (!currentUserId) {
+      alert("⚠️ Không tìm thấy thông tin tài khoản đăng nhập. Vui lòng đăng nhập lại!");
+      router.push("/login");
+      return;
+    }
+
     if (checkConflictSchedule()) {
       alert("⚠️ Lịch học bị trùng với khóa học hiện có. Vui lòng chọn thời gian khác!");
       return;
     }
 
-    const currentStudentId = await getCurrentStudentId();
     const priceEntered = Number(formData.price_per_session);
 
     if (priceLimitInfo && (priceEntered < priceLimitInfo.min || priceEntered > priceLimitInfo.max)) {
@@ -446,7 +458,7 @@ export default function CreateClassRequest() {
           max_student: validMaxStudents,
           schedule_style: formData.schedule_style || '1_term',
         };
-        delete updatePayload.student_id; 
+        delete updatePayload.user_id; 
         updatePayload.updated_at = new Date().toISOString();
         
         await classRequestService.updateClassRequestStatus(editingRequestId, updatePayload);
@@ -455,7 +467,8 @@ export default function CreateClassRequest() {
         const createPayload = {
           ...formData,
           max_student: validMaxStudents,
-          student_id: currentStudentId,
+          user_id: currentUserId, // 🛠️ Đảm bảo truyền chính xác string/ID user không bị rỗng
+          tutor_id: null,         // Ban đầu để null theo yêu cầu
           schedule_style: formData.schedule_style || '1_term',
           created_at: new Date().toISOString()
         };
@@ -472,6 +485,50 @@ export default function CreateClassRequest() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (pendingAcceptance) {
+      try {
+        const { reqId, appId, coursePayload, subscriptionId, tutorId } = pendingAcceptance;
+
+        // 1. Tạo course sau khi thanh toán thành công
+        const createdCourseRes = await courseService.createCourse(coursePayload);
+        const createdCourse = createdCourseRes.data !== undefined ? createdCourseRes.data : createdCourseRes;
+        const newCourseId = createdCourse?.course_id || createdCourse?.id;
+
+        // 2. Cập nhật course_id vào bảng course_subscriptions
+        if (subscriptionId && newCourseId) {
+          await courseSubscriptionService.updateSubscriptionCourse(subscriptionId, { course_id: newCourseId });
+        }
+
+        // 3. Cập nhật trạng thái class request: chuyển sang approved và gán tutor_id[cite: 1]
+        await classRequestService.updateClassRequestStatus(reqId, { 
+          status: "approved",
+          tutor_id: tutorId // Cập nhật tutor_id của gia sư được chấp nhận vào lại request_class[cite: 1]
+        });
+
+        // 4. Cập nhật trạng thái application của gia sư thành accepted
+        if (appId) {
+          await classRequestService.updateApplicationStatus(appId, { status: "accepted" });
+        }
+
+        setRequestsList((prev) => prev.filter((r) => (r.requests_id || r.id) !== reqId));
+        alert("🎉 Thanh toán thành công! Lớp học đã được khởi tạo và gán gia sư thành công.");
+      } catch (error) {
+        console.error("⚠️ Lỗi khi khởi tạo lớp học sau thanh toán thành công:", error);
+        alert("Thanh toán thành công nhưng có lỗi khi cập nhật thông tin lớp. Vui lòng liên hệ hỗ trợ!");
+      }
+    }
+
+    // Reset các state thanh toán
+    setShowPaymentModal(false);
+    setSelectedNewCourse(null);
+    setPaymentBooking(null);
+    setPaymentStudentId(null);
+    setPaymentSubscriptionId(null);
+    setPendingAcceptance(null);
+    fetchRequestsAndCourses();
   };
 
   const handleDeleteRequest = async (req) => {
@@ -638,46 +695,6 @@ export default function CreateClassRequest() {
       console.error("❌ Lỗi khi khởi tạo thanh toán chọn gia sư:", err);
       alert("Không thể khởi tạo thanh toán. Vui lòng thử lại!");
     }
-  };
-
-  const handlePaymentSuccess = async () => {
-    if (pendingAcceptance) {
-      try {
-        const { reqId, appId, coursePayload, subscriptionId } = pendingAcceptance; // 🛠️ Đảm bảo lấy thêm subscriptionId nếu có
-
-        // 1. Tạo course trước sau khi thanh toán thành công
-        const createdCourseRes = await courseService.createCourse(coursePayload);
-        const createdCourse = createdCourseRes.data !== undefined ? createdCourseRes.data : createdCourseRes;
-        const newCourseId = createdCourse?.course_id || createdCourse?.id;
-
-        // 2. 🛠️ Cập nhật ngược lại course_id vào bảng course_subscriptions tương ứng
-        if (subscriptionId && newCourseId) {
-          await courseSubscriptionService.updateSubscriptionCourse(subscriptionId, { course_id: newCourseId });
-          // Hoặc dùng chung một endpoint cập nhật thanh toán/subscription ở backend
-        }
-
-        // 3. Cập nhật trạng thái class request và application
-        await classRequestService.updateClassRequestStatus(reqId, { status: "approved" });
-
-        if (appId) {
-          await classRequestService.updateApplicationStatus(appId, { status: "accepted" });
-        }
-
-        setRequestsList((prev) => prev.filter((r) => (r.requests_id || r.id) !== reqId));
-        alert("🎉 Thanh toán thành công! Lớp học đã được khởi tạo và bạn đã được thêm vào lớp.");
-      } catch (error) {
-        console.error("⚠️ Lỗi khi khởi tạo lớp học sau thanh toán thành công:", error);
-        alert("Thanh toán thành công nhưng có lỗi khi tạo lớp. Vui lòng liên hệ hỗ trợ!");
-      }
-    }
-
-    setShowPaymentModal(false);
-    setSelectedNewCourse(null);
-    setPaymentBooking(null);
-    setPaymentStudentId(null);
-    setPaymentSubscriptionId(null);
-    setPendingAcceptance(null);
-    fetchRequestsAndCourses();
   };
 
   const handlePaymentClose = async () => {

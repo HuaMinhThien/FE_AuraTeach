@@ -194,7 +194,30 @@ export default function BookingDetailModal({
               <div className="detail-info-item">
                 <span className="detail-info-label">Lịch học</span>
                 <span className="detail-info-value">
-                  {course?.day_of_week || course?.schedules?.[0]?.day_of_week || "Chưa cập nhật"}
+                  {(() => {
+                    const schedules = course?.schedules;
+                    if (Array.isArray(schedules) && schedules.length > 0) {
+                      // Định nghĩa trọng số để sắp xếp thứ tự các ngày trong tuần
+                      const dayOrder = {
+                        "Thứ 2": 2, "Thứ Hai": 2,
+                        "Thứ 3": 3, "Thứ Ba": 3,
+                        "Thứ 4": 4, "Thứ Tư": 4,
+                        "Thứ 5": 5, "Thứ Năm": 5,
+                        "Thứ 6": 6, "Thứ Sáu": 6,
+                        "Thứ 7": 7, "Thứ Bảy": 7,
+                        "Chủ Nhật": 8, "CN": 8
+                      };
+
+                      // Lấy danh sách các ngày, lọc bỏ giá trị rỗng và sắp xếp theo thứ tự tuần
+                      const sortedDays = schedules
+                        .map(s => s.day_of_week)
+                        .filter(Boolean)
+                        .sort((a, b) => (dayOrder[a] || 99) - (dayOrder[b] || 99));
+
+                      return sortedDays.length > 0 ? sortedDays.join(", ") : "Chưa cập nhật";
+                    }
+                    return course?.day_of_week || "Chưa cập nhật";
+                  })()}
                 </span>
               </div>
               <div className="detail-info-item">

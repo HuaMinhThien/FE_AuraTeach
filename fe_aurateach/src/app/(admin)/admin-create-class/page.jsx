@@ -7,7 +7,12 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import styles from './admin-create-class.module.css';
 
-const API_BASE = 'http://localhost:3007';
+// Import các service đã định nghĩa
+import { categoryService } from '@/services/categoryService';
+import { classRequestService } from '@/services/classRequestService';
+import { adminService } from '@/services/adminService';
+import { authService } from '@/services/authService';
+
 const DEFAULT_IMAGES = [
   '/img/class/default-class-1.jpg',
   '/img/class/default-class-2.png',
@@ -73,28 +78,29 @@ export default function AdminCreateClass() {
     level: 'Cấp 1',
     description: '',
     max_students: 5,
+    quantity: 1,
     price_per_session: '',
     start_date: '',
-    total_weeks: 12,
+    total_weeks: 18,
     schedule_days: [],
     start_time: '07:00',
     end_time: '09:00',
     thumbnail: DEFAULT_IMAGES[0],
-    min_students: 2,
     course_type: '1_term',
-    num_sections: 1, // Mặc định tạo 1 mã lớp
   });
 
   const [errors, setErrors] = useState({});
 
-  // Fetch categories
+  // 🚀 Fetch categories sử dụng categoryService
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${API_BASE}/categories`);
-        const data = await res.json();
-        setCategories(data);
-        if (data.length > 0) {
+        const response = await categoryService.getCategories();
+        const data = response.data !== undefined ? response.data : response;
+
+        console.log("Danh sách categories từ API:", data);
+        setCategories(data || []);
+        if (data && data.length > 0) {
           const isCap1 = formData.level === 'Cấp 1';
           setFormData(prev => ({ 
             ...prev, 
@@ -156,7 +162,6 @@ export default function AdminCreateClass() {
     }
   };
 
-  // Validate form
   const validateForm = () => {
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = 'Vui lòng nhập tên lớp';
@@ -178,38 +183,6 @@ export default function AdminCreateClass() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Get eligible tutors
-  const fetchEligibleTutors = async () => {
-    setIsCheckingEligible(true);
-    try {
-      const courseData = {
-        category_id: formData.category_id,
-        tutor_level: tutorLevel, // "Sinh viên" hoặc "Giáo viên"
-        schedule_days: formData.schedule_days,
-        time_slot: `${formData.start_time}-${formData.end_time}`,
-      };
-      
-      const res = await fetch('/api/admin/classes/eligible-tutors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ course: courseData })
-      });
-      const result = await res.json();
-      if (result.success) {
-        setEligibleTutors(result.data);
-        setSelectedTutors(result.data.map(t => t.tutor_id));
-        setShowTutorList(true);
-      } else {
-        alert('Không thể tìm tutor phù hợp: ' + result.message);
-      }
-    } catch (error) {
-      console.error('Lỗi tìm tutor:', error);
-      alert('Có lỗi xảy ra khi tìm tutor phù hợp');
-    } finally {
-      setIsCheckingEligible(false);
-    }
-  };
-
   const toggleTutor = (tutorId) => {
     setSelectedTutors(prev =>
       prev.includes(tutorId)
@@ -218,39 +191,26 @@ export default function AdminCreateClass() {
     );
   };
 
-  const selectAllTutors = () => {
-    setSelectedTutors(eligibleTutors.map(t => t.tutor_id));
-  };
-
-  const deselectAllTutors = () => {
-    setSelectedTutors([]);
-  };
+  const selectAllTutors = () => setSelectedTutors(eligibleTutors.map(t => t.tutor_id));
+  const deselectAllTutors = () => setSelectedTutors([]);
 
   // ===== TÍNH TOÁN HỌC PHÍ =====
   const parsedMaxStudents = parseInt(formData.max_students, 10);
   const numStudents = Math.min(Math.max(isNaN(parsedMaxStudents) ? 5 : parsedMaxStudents, 1), 5);
-  
   const currentTutorConfig = PRICE_LIMITS[tutorLevel] || PRICE_LIMITS["Giáo viên"];
   
-  // ✅ QUAN TRỌNG: Xác định đúng config dựa trên số học sinh
   let priceConfigKey = 'lessThan3';
   let divNum = 1;
   
   if (numStudents >= 3 && numStudents <= 5) {
     priceConfigKey = 'group3to5';
     divNum = numStudents;
-  } else {
-    priceConfigKey = 'lessThan3';
-    divNum = 1;
   }
   
-  // Lấy config gốc
   const baseConfig = currentTutorConfig[priceConfigKey]?.[formData.level];
-  
   let currentPriceConfig = null;
   if (baseConfig) {
     if (numStudents >= 3) {
-      // Chia đều cho số học sinh
       const calculatedMin = roundToThousand(baseConfig.min / numStudents);
       const calculatedMax = roundToThousand(baseConfig.max / numStudents);
       currentPriceConfig = {
@@ -259,36 +219,27 @@ export default function AdminCreateClass() {
         label: `${calculatedMin.toLocaleString("vi-VN")}đ - ${calculatedMax.toLocaleString("vi-VN")}đ / buổi / HS`,
       };
     } else {
-      currentPriceConfig = {
-        min: baseConfig.min,
-        max: baseConfig.max,
-        label: baseConfig.label,
-      };
+      currentPriceConfig = { min: baseConfig.min, max: baseConfig.max, label: baseConfig.label };
     }
   }
 
   const currentRate = parseInt(formData.price_per_session || 0, 10);
   const priceError = (currentPriceConfig && (currentRate < currentPriceConfig.min || currentRate > currentPriceConfig.max))
-    ? `⚠️ Mức phí cho ${formData.level} (${tutorLevel} - ${numStudents >= 3 ? `Lớp ${numStudents} HS: Giá 1 kèm 1 / ${numStudents}` : "Lớp < 3 HS"}) phải nằm trong khoảng: ${currentPriceConfig.label}`
+    ? `⚠️ Mức phí cho ${formData.level} (${tutorLevel}) phải nằm trong khoảng: ${currentPriceConfig.label}`
     : "";
 
-  // Tính toán chi phí
   const daysPerWeekCount = formData.schedule_days.length;
   const totalWeeksCount = parseInt(formData.total_weeks || 0, 10);
   const totalCourseSessions = daysPerWeekCount * totalWeeksCount;
   const monthlySessionsCount = daysPerWeekCount * 4;
   
   const monthlyFeePerStudent = currentRate * monthlySessionsCount;
-  const totalFeePerStudent = currentRate * totalCourseSessions;
   const totalCourseGrossRevenue = currentRate * totalCourseSessions * numStudents;
   const platformFeeAmount = totalCourseGrossRevenue * 0.35;
   const totalCourseNetEstimateBenefit = totalCourseGrossRevenue * 0.65;
   const totalMonthsCount = totalWeeksCount > 0 ? totalWeeksCount / 4 : 1;
   const monthlyNetEarnings = totalCourseNetEstimateBenefit / totalMonthsCount;
-  const minMonthlyNetPerStudent = (monthlyFeePerStudent * 0.65);
-  const hoursPerSession = 2;
 
-  // Create class
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -296,101 +247,64 @@ export default function AdminCreateClass() {
       alert('⚠️ Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
     }
-
     if (priceError) {
       alert(`⚠️ ${priceError}`);
       return;
     }
 
-    if (!showTutorList) {
-      alert('🔍 Vui lòng bấm "Tìm Tutor phù hợp" trước khi tạo lớp');
-      return;
-    }
-
-    if (selectedTutors.length === 0) {
-      alert('👨‍🏫 Vui lòng chọn ít nhất 1 tutor để gửi đề xuất');
-      return;
-    }
-
     setLoading(true);
     try {
-      const numSections = parseInt(formData.num_sections) || 1;
-      const parentCourseId = `course_${Date.now()}`;
-      
-      let successCount = 0;
-      let totalSentTo = 0;
-
-      // Tạo N class sections
-      for (let i = 0; i < numSections; i++) {
-        const sectionSuffix = numSections > 1 ? ` - Nhóm ${i + 1}` : '';
-        const coursePayload = {
-          course_id: `${parentCourseId}_sec${i + 1}`,
-          parent_course_id: parentCourseId, // Để group các section
-          class_name: `${formData.title}${sectionSuffix}`,
-          title: `${formData.title}${sectionSuffix}`,
-          category_id: formData.category_id,
-          level: formData.level,
-          description: formData.description,
-          max_students: numStudents,
-          min_students: 2,
-          price_per_session: currentRate,
-          start_date: formData.start_date,
-          total_weeks: totalWeeksCount,
-          schedule_days: formData.schedule_days,
-          time_slot: `${formData.start_time}-${formData.end_time}`,
-          thumbnail: formData.thumbnail,
-          status: 'pending_tutor',
-          created_by: 'admin_01',
-          tutor_id: null,
-          tutor_assigned_at: null,
-          students: [],
-          permanent_room_url: `https://meet.google.com/room_${parentCourseId}_sec${i + 1}`,
-          created_at: new Date().toISOString()
-        };
-
-        const createRes = await fetch(`${API_BASE}/courses`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(coursePayload)
-        });
-
-        if (createRes.ok) {
-          const createdCourse = await createRes.json();
-          // Gửi đề xuất cho các tutor đã chọn cho section này
-          const suggestRes = await fetch('/api/admin/classes/suggest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              courseId: createdCourse.course_id,
-              tutorIds: selectedTutors
-            })
-          });
-          const suggestResult = await suggestRes.json();
-          if (suggestResult.success) {
-            totalSentTo += suggestResult.sentTo;
-          }
-          successCount++;
+      let currentUserId = 'admin_system';
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          currentUserId = currentUser.id || currentUser.user_id || currentUser.uid || 'admin_system';
         }
+      } catch (authErr) {
+        console.warn('Không lấy được user hiện tại qua authService, dùng mặc định.', authErr);
       }
 
-      if (successCount === numSections) {
-        alert(`✅ Đã tạo thành công ${numSections} mã lớp! Đã gửi tổng cộng ${totalSentTo} đề xuất.`);
+      // Tạo một requestId chung duy nhất cho lớp này
+      const requestId = `req_${Date.now()}`;
+
+      // Payload bản ghi chung (tutor_id = null để mọi gia sư phù hợp cùng thấy và nhận)
+      const classRequestPayload = {
+        request_id: requestId,
+        user_id: currentUserId,
+        category_id: formData.category_id,
+        title: formData.title,
+        description: formData.description,
+        grade_level: formData.level,
+        tutor_level: tutorLevel,
+        price_per_session: currentRate,
+        max_student: numStudents,       // Số lượng học sinh tối đa trong lớp
+        quantity: parseInt(formData.quantity) || 1, // 👈 Số lượng gia sư/suất cần tuyển
+        schedule_style: formData.course_type,
+        total_weeks: totalWeeksCount,
+        start_date: formData.start_date,
+        schedule_days: formData.schedule_days.join(', '), 
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        meet_link: `https://meet.google.com/room_${requestId}`,
+        status: 'pending',
+        tutor_id: null,                  // 👈 Quan trọng: Để trống để cơ chế nhận lớp hoạt động
+        target_tutors: selectedTutors    // Gửi kèm danh sách ID gia sư được chọn để hệ thống gửi thông báo (nếu backend hỗ trợ)
+      };
+
+      const createdRequest = await classRequestService.createClassRequest(classRequestPayload);
+      
+      if (createdRequest) {
+        alert(`Đã tạo thành công yêu cầu lớp học chung`);
         router.push('/admin-classes-management');
-      } else if (successCount > 0) {
-        alert(`⚠️ Chỉ tạo được ${successCount}/${numSections} mã lớp.`);
-        router.push('/admin-classes-management');
-      } else {
-        throw new Error('Không thể tạo mã lớp nào.');
       }
     } catch (error) {
-      console.error('Lỗi tạo lớp:', error);
-      alert('❌ Có lỗi xảy ra: ' + error.message);
+      console.error('Lỗi tạo class_request:', error);
+      alert('❌ Có lỗi xảy ra: ' + (error.message || error));
     } finally {
       setLoading(false);
     }
   };
 
-  // Render bảng giá
   const renderPriceTable = () => {
     const levels = ["Cấp 1", "Cấp 2", "Cấp 3"];
     const divNum = numStudents >= 3 ? numStudents : 2;
@@ -435,7 +349,6 @@ export default function AdminCreateClass() {
     );
   };
 
-  // ✅ KIỂM TRA FORM CÓ ĐỦ ĐIỀU KIỆN ĐỂ SUBMIT
   const isFormValid = () => {
     const checks = {
       title: formData.title?.trim() !== '',
@@ -446,21 +359,8 @@ export default function AdminCreateClass() {
       description: formData.description?.trim() !== '',
       totalWeeks: Number(formData.total_weeks) > 0,
       noPriceError: !priceError,
-      tutorList: showTutorList,
-      selectedTutors: selectedTutors.length > 0,
     };
-
-    // 🔥 LOG ĐỂ DEBUG
-    console.log('🔍 Form validation checks:', checks);
-    console.log('🔍 Total weeks:', formData.total_weeks);
-    console.log('🔍 Price error:', priceError);
-    console.log('🔍 Show tutor list:', showTutorList);
-    console.log('🔍 Selected tutors:', selectedTutors.length);
-
-    const allValid = Object.values(checks).every(v => v === true);
-    console.log('🔍 All valid:', allValid);
-    
-    return allValid;
+    return Object.values(checks).every(v => v === true);
   };
 
   return (
@@ -473,7 +373,6 @@ export default function AdminCreateClass() {
       <form onSubmit={handleSubmit} className={styles.formLayout}>
         {/* LEFT COLUMN */}
         <div className={styles.leftColumn}>
-          {/* Thông tin chung */}
           <section className={styles.card}>
             <h2>Thông tin lớp học</h2>
 
@@ -576,13 +475,17 @@ export default function AdminCreateClass() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Số lượng mã lớp cần tạo (1 - 10) <span className={styles.required}>*</span></label>
+                <label>Số lượng suất Gia sư cần tuyển <span className={styles.required}>*</span></label>
                 <input
                   type="number"
                   min="1"
-                  max="10"
-                  value={formData.num_sections}
-                  onChange={(e) => setFormData(prev => ({ ...prev, num_sections: parseInt(e.target.value) || 1 }))}
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData(prev => ({ ...prev, quantity: val === "" ? "" : Math.max(1, parseInt(val, 10) || 1) }));
+                  }}
+                  placeholder="VD: 1 hoặc 2 gia sư"
                   required
                 />
               </div>
@@ -751,79 +654,6 @@ export default function AdminCreateClass() {
         {/* RIGHT COLUMN */}
         <div className={styles.rightColumn}>
           <div className={styles.stickyWrapper}>
-            {/* Card Tutor Selection */}
-            <div className={styles.card}>
-              <h2>👨‍🏫 Tutor phù hợp</h2>
-              <p className={styles.hint}>
-                Hệ thống sẽ tìm các Tutor đã được duyệt, có lịch trống và nhận đề xuất.
-              </p>
-
-              <button
-                type="button"
-                className={styles.checkBtn}
-                onClick={fetchEligibleTutors}
-                disabled={isCheckingEligible || formData.schedule_days.length === 0}
-              >
-                {isCheckingEligible ? '⏳ Đang tìm...' : '🔍 Tìm Tutor phù hợp'}
-              </button>
-
-              {isCheckingEligible && (
-                <div className={styles.loadingState}>Đang kiểm tra lịch trống của Tutor...</div>
-              )}
-
-              {showTutorList && (
-                <>
-                  <div className={styles.tutorStats}>
-                    <span>Tìm thấy <strong>{eligibleTutors.length}</strong> Tutor phù hợp</span>
-                    <div className={styles.tutorActions}>
-                      <button type="button" onClick={selectAllTutors} className={styles.selectAllBtn}>
-                        Chọn tất cả
-                      </button>
-                      <button type="button" onClick={deselectAllTutors} className={styles.deselectAllBtn}>
-                        Bỏ chọn
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className={styles.tutorList}>
-                    {eligibleTutors.length === 0 ? (
-                      <p className={styles.noTutor}>Không tìm thấy Tutor phù hợp với lịch học này.</p>
-                    ) : (
-                      eligibleTutors.map(tutor => (
-                        <label key={tutor.tutor_id} className={styles.tutorItem}>
-                          <input
-                            type="checkbox"
-                            checked={selectedTutors.includes(tutor.tutor_id)}
-                            onChange={() => toggleTutor(tutor.tutor_id)}
-                          />
-                          <img
-                            src={tutor.avatar || '/img/avt/avt.jpg'}
-                            alt={tutor.full_name}
-                            className={styles.tutorAvatar}
-                          />
-                          <div className={styles.tutorInfo}>
-                            <span className={styles.tutorName}>{tutor.full_name}</span>
-                            <span className={styles.tutorExpertise}>{tutor.expertise || 'Chưa cập nhật'}</span>
-                            <span className={styles.tutorRating}>⭐ {tutor.rating || 0}</span>
-                          </div>
-                        </label>
-                      ))
-                    )}
-                  </div>
-
-                  <div className={styles.summaryBox}>
-                    <p>
-                      <strong>Đã chọn:</strong> {selectedTutors.length} / {eligibleTutors.length} Tutor
-                    </p>
-                    <p className={styles.summaryNote}>
-                      💡 Lớp sẽ được gửi đề xuất đến tất cả Tutor đã chọn.
-                      Tutor nào bấm "Nhận lớp" đầu tiên sẽ được nhận.
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-
             {/* Bảng tính số tiền */}
             {formData.schedule_days.length > 0 && formData.total_weeks > 0 && formData.price_per_session > 0 && (
               <div className={styles.feeEstimateCard}>
@@ -903,7 +733,6 @@ export default function AdminCreateClass() {
               <ul>
                 <li><strong>Tên lớp rõ ràng</strong> sẽ thu hút học sinh đăng ký tham gia cao gấp 2 lần.</li>
                 <li><strong>Mô tả chi tiết</strong> phương pháp dạy học cụ thể giúp phụ huynh an tâm, tin tưởng gửi gắm hơn.</li>
-                <li><strong>Chọn Tutor phù hợp</strong> giúp tăng tỷ lệ nhận lớp và chất lượng giảng dạy.</li>
               </ul>
             </div>
 
@@ -915,11 +744,7 @@ export default function AdminCreateClass() {
             >
               {loading 
                 ? '⏳ Đang tạo lớp...' 
-                : !showTutorList 
-                  ? '🔍 Vui lòng tìm Tutor trước' 
-                  : selectedTutors.length === 0 
-                    ? '⚠️ Vui lòng chọn Tutor' 
-                    : '✅ Xác nhận tạo lớp và gửi đề xuất'
+                : '✅ Xác nhận tạo lớp và gửi đề xuất'
               }
             </button>
 
@@ -935,7 +760,6 @@ export default function AdminCreateClass() {
                   {formData.schedule_days.length === 0 && <li>🔸 Ngày trong tuần</li>}
                   {!formData.description?.trim() && <li>🔸 Mô tả lớp học</li>}
                   {(!formData.total_weeks || Number(formData.total_weeks) <= 0) && <li>🔸 Số tuần học</li>}
-                  {!showTutorList && <li>🔸 Tìm Tutor phù hợp</li>}
                   {showTutorList && selectedTutors.length === 0 && <li>🔸 Chọn ít nhất 1 Tutor</li>}
                   {priceError && <li>🔸 {priceError.substring(0, 50)}...</li>}
                 </ul>

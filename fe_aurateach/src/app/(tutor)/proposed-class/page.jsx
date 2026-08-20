@@ -89,7 +89,8 @@ export default function ProposedClassPage() {
   const fetchAdminSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
-      const response = await classRequestService.getAdminSuggestions(currentTutorId);
+      // Sửa lại truyền vào một object { tutor_id: currentTutorId }
+      const response = await classRequestService.getAvailableForTutor({ tutor_id: currentTutorId });
       const listData = response.data || response;
       setAdminSuggestions(Array.isArray(listData) ? listData : []);
     } catch (error) {
@@ -243,7 +244,7 @@ export default function ProposedClassPage() {
                     </span>
                     {isAdminSuggestion && (
                       <span className={`${styles.statusBadge} ${isAssigned ? styles.statusAssigned : styles.statusAvailable}`}>
-                        {isAssigned ? '✅ Đã có tutor' : '🟢 Chờ nhận'}
+                        {isAssigned ? '✅ Đã có gia sư nhận' : '🟢 Chờ nhận'}
                       </span>
                     )}
                   </div>
@@ -279,14 +280,14 @@ export default function ProposedClassPage() {
                   className={`${styles.detailBtn} ${isAdminSuggestion && isAssigned ? styles.btnDisabled : ''}`}
                   onClick={() => {
                     if (isAdminSuggestion && isAssigned) {
-                      alert('Lớp này đã có tutor nhận rồi!');
+                      alert('Lớp này đã có gia sư nhận rồi!');
                       return;
                     }
                     setSelectedClass(item);
                   }}
                   disabled={isAdminSuggestion && isAssigned}
                 >
-                  {isAdminSuggestion && isAssigned ? 'Đã có tutor' : 'Xem chi tiết'}
+                  {isAdminSuggestion && isAssigned ? 'Đã có gia sư nhận' : 'Xem chi tiết'}
                 </button>
               </div>
             );
@@ -358,7 +359,7 @@ export default function ProposedClassPage() {
                 onClick={() => handleAcceptSuggestion(selectedClass)}
               >
                 {selectedClass.tutor_id 
-                  ? '❌ Lớp đã có tutor' 
+                  ? '❌ Lớp đã có gia sư' 
                   : submitting ? 'Đang xử lý...' : 'Nhận lớp'
                 }
               </button>

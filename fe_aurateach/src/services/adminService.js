@@ -13,17 +13,27 @@ export const adminService = {
 
   // --- Các hàm thống kê cũ ---
   getStats: async () => {
-    const response = await apiClient.get('/admin/stats');
+    const response = await apiClient.get('/admin/dashboard/stats');
     return response.data !== undefined ? response.data : response;
   },
 
   getRegistrationStats: async (period = 'week') => {
-    const response = await apiClient.get('/admin/stats/registrations', { params: { period } });
+    const response = await apiClient.get('/admin/dashboard/registrations', { params: { period } });
     return response.data !== undefined ? response.data : response;
   },
 
   getRevenueStats: async (period = 'week') => {
-    const response = await apiClient.get('/admin/stats/revenue', { params: { period } });
+    const response = await apiClient.get('/admin/dashboard/revenue', { params: { period } });
+    return response.data !== undefined ? response.data : response;
+  },
+
+  getTopCourses: async () => {
+    const response = await apiClient.get('/admin/dashboard/top-courses');
+    return response.data !== undefined ? response.data : response;
+  },
+
+  getPaymentStats: async () => {
+    const response = await apiClient.get('/admin/dashboard/payment-stats');
     return response.data !== undefined ? response.data : response;
   },
 
@@ -146,6 +156,41 @@ export const adminService = {
       throw error;
     }
   },
-
   
+  getEligibleTutors: async (courseData) => {
+    const response = await apiClient.post('/admin/eligible-tutors', { course: courseData });
+    return response.data !== undefined ? response.data : response;
+  },
+
+  sendClassSuggestions: async (courseId, tutorIds) => {
+    const response = await apiClient.post('/admin/courses/send-suggestions', { course_id: courseId, tutor_ids: tutorIds });
+    return response.data !== undefined ? response.data : response;
+  },
+
+  acceptClassSuggestion: async (courseId, tutorId) => {
+    const response = await apiClient.post('/admin/courses/accept-class', { course_id: courseId, tutor_id: tutorId });
+    return response.data !== undefined ? response.data : response;
+  },
+
+  tutorCancelClass: async (courseId, tutorId) => {
+    const response = await apiClient.post('/admin/courses/tutor-cancel', { course_id: courseId, tutor_id: tutorId });
+    return response.data !== undefined ? response.data : response;
+  },
+
+  // Gửi đề xuất lớp học cho các tutor được chọn
+  suggestClassToTutors: async (payload) => {
+    // payload gồm: { courseId, tutorIds }
+    const response = await apiClient.post('/admin/suggest', payload);
+    return response.data !== undefined ? response.data : response;
+  },
+
+  getTutorSuggestions: async (tutorId) => {
+    const response = await apiClient.get(`/tutors/${tutorId}/suggestions`);
+    return response.data !== undefined ? response.data : response;
+  },
+
+  refundStudentsForCourse: async (courseId) => {
+    const response = await apiClient.post(`/admin/courses/${courseId}/refund`);
+    return response.data !== undefined ? response.data : response;
+  }
 };

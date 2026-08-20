@@ -100,6 +100,7 @@ export default function Sidebar() {
     { name: "Bảng điều khiển", path: "/admin-dashboard" },
     { name: "Xét duyệt giảng viên", path: "/admin-tutor-approval" },
     { name: "Quản lý lớp học", path: "/admin-classes-management" },
+    { name: "Tạo lớp học mới", path: "/admin-create-class" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Duyệt yêu cầu rút tiền", path: "/admin-tutor-payout-requests" },
     { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },

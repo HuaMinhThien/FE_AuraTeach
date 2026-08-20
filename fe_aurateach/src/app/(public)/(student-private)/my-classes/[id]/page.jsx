@@ -7,6 +7,7 @@ import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import { authService } from "@/services/authService";
 import { courseService } from "@/services/courseService";
 import { courseScheduleService } from "@/services/courseScheduleService";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 import styles from "./ClassDetail.module.css";
 
 export default function ClassDetailPage() {
@@ -133,13 +134,15 @@ export default function ClassDetailPage() {
     }).format(price);
   };
 
-  const handleJoinClass = (meetUrl) => {
-    if (meetUrl) {
-      window.open(meetUrl, "_blank");
+  const handleJoinClass = () => {
+    if (course) {
+      window.open(getClassroomRoomPath(course, "student"), "_blank");
     } else {
       alert("Lớp học này chưa có link tham gia!");
     }
   };
+
+  const roomPath = course ? getClassroomRoomPath(course, "student") : "";
 
   if (loading) {
     return (
@@ -222,14 +225,14 @@ export default function ClassDetailPage() {
                 <div className={`${styles.infoItem} ${styles.fullWidth}`}>
                   <label>🔗 Link phòng học cố định</label>
                   <p>
-                    {course.permanent_room_url ? (
+                    {roomPath  ? (
                       <a 
-                        href={course.permanent_room_url} 
+                        href={roomPath } 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className={styles.roomLink}
                       >
-                        {course.permanent_room_url}
+                        {roomPath }
                       </a>
                     ) : (
                       "Chưa có link"
@@ -287,10 +290,10 @@ export default function ClassDetailPage() {
               </div>
 
               <div className={styles.actions} style={{ marginTop: "24px" }}>
-                {course.permanent_room_url && (
+                {roomPath  && (
                   <button 
                     className={styles.joinBtn}
-                    onClick={() => handleJoinClass(course.permanent_room_url)}
+                    onClick={handleJoinClass}
                   >
                     🚀 Tham gia lớp học
                   </button>
