@@ -832,7 +832,7 @@
       "level": "Cấp 2",
       "description": "Luyện thi chuyên và nâng cao nền tảng kiến thức Toán bền vững cấp 1, 2, 3.",
       "max_students": 1,
-      "min_students": 2,
+      "min_students": 0,
       "price_per_session": 150000,
       "start_date": "2026-07-01",
       "end_date": "2026-09-23",
@@ -4425,6 +4425,42 @@
       "related_type": "booking",
       "is_read": false,
       "created_at": "2026-08-18T08:55:03.047Z"
+    },
+    {
+      "id": "notif_1787249366067_8au1qrx0g",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "payout",
+      "title": "💰 Yêu cầu rút tiền đã được phê duyệt",
+      "message": "Yêu cầu rút tiền N/A đã được phê duyệt.",
+      "related_id": "tutor_payout_01",
+      "related_type": "payout",
+      "is_read": false,
+      "created_at": "2026-08-20T18:09:26.067Z"
+    },
+    {
+      "id": "notif_1787249641432_27rxue4st",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "payout",
+      "title": "💰 Yêu cầu rút tiền đã được phê duyệt",
+      "message": "Yêu cầu rút tiền N/A đã được phê duyệt.",
+      "related_id": "tutor_payout_01",
+      "related_type": "payout",
+      "is_read": false,
+      "created_at": "2026-08-20T18:14:01.432Z"
+    },
+    {
+      "id": "notif_1787250388798_ztcyjsxsz",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "payout",
+      "title": "💰 Yêu cầu rút tiền đã được phê duyệt",
+      "message": "Yêu cầu rút tiền N/A đã được phê duyệt.",
+      "related_id": "tutor_payout_01",
+      "related_type": "payout",
+      "is_read": false,
+      "created_at": "2026-08-20T18:26:28.798Z"
     }
   ],
   "tutor_update_requests": [
@@ -4620,7 +4656,7 @@
       "bank_code": "PVCB",
       "account_number": "105002712102",
       "account_holder_name": "HUA MINH THIEN",
-      "is_default": true,
+      "is_default": false,
       "created_at": "2026-08-04T17:16:01.157Z"
     },
     {
@@ -4631,7 +4667,7 @@
       "bank_code": "VCB",
       "account_number": "1231234512323",
       "account_holder_name": "HUA MINH THIEN",
-      "is_default": false,
+      "is_default": true,
       "created_at": "2026-08-04T17:16:21.558Z"
     }
   ],
@@ -5292,6 +5328,16 @@
       "tutor_comment": "",
       "created_at": "2026-08-16T12:41:29.862Z",
       "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "5c04",
+      "attendance_id": "att_1787239357951_user_1782855725159_tqroz6",
+      "session_id": "ss_1787239357935",
+      "student_id": "user_1782855725159_tqroz6",
+      "attendance_status": false,
+      "tutor_comment": "vắng",
+      "created_at": "2026-08-20T15:22:37.951Z",
+      "update": "2026-08-20T15:22:37.951Z"
     }
   ],
   "class_sessions": [
@@ -5354,6 +5400,19 @@
         "course_ids": [],
         "updated_at": "2026-08-19T22:48:08.710Z"
       }
+    }
+  ],
+  "tutor_payouts": [
+    {
+      "id": "tutor_payout_01",
+      "tutor_payout_id": "tutor_payout_01",
+      "tutor_id": "tutor_01",
+      "admin_id": "u-admin-1",
+      "bank_account_id": "bank_1785863761157",
+      "total_amount": 1000000,
+      "total_sessions": 10,
+      "status": "approved",
+      "created_at": "2026-08-20T18:26:28.739Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
