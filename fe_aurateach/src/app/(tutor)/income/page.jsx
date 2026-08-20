@@ -7,14 +7,15 @@ export default function TutorRevenuePage() {
   const [loading, setLoading] = useState(true);
   const [tutorData, setTutorData] = useState(null);
   const [bankAccounts, setBankAccounts] = useState([]);
-  const [payoutRequests, setPayoutRequests] = useState([]);
+  const [payoutHistory, setPayoutHistory] = useState([]);
+  const [monthlySalary, setMonthlySalary] = useState(0);
 
-  // Form rút tiền State
-  const [selectedBankId, setSelectedBankId] = useState('');
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+  // Modal chi tiết
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedPayout, setSelectedPayout] = useState(null);
+  const [detailBankInfo, setDetailBankInfo] = useState(null);
 
-  // Form tạo ngân hàng State
+  // Form thêm ngân hàng
   const [showAddBankModal, setShowAddBankModal] = useState(false);
   const [vietQrBanks, setVietQrBanks] = useState([]);
   const [bankSearchKeyword, setBankSearchKeyword] = useState('');
@@ -24,7 +25,6 @@ export default function TutorRevenuePage() {
   const [newIsDefault, setNewIsDefault] = useState(false);
   const [isSubmittingBank, setIsSubmittingBank] = useState(false);
 
-  // Helper lấy cookie
   const getCookie = (name) => {
     if (typeof window === 'undefined') return null;
     const value = `; ${document.cookie}`;
@@ -38,7 +38,7 @@ export default function TutorRevenuePage() {
     fetchVietQrBanks();
   }, []);
 
-  // 1. Tải dữ liệu trang qua API Route trung gian
+  // ===== Tải dữ liệu trang (tất cả từ API) =====
   const fetchPageData = async () => {
     try {
       setLoading(true);
@@ -48,19 +48,14 @@ export default function TutorRevenuePage() {
         return;
       }
 
-      // Giải mã URI nếu cookie bị mã hóa URL (URL-encoded)
       let rawCookie = userCookie;
       try {
         rawCookie = decodeURIComponent(userCookie);
-      } catch (e) {
-        console.warn('Lỗi decodeURIComponent cookie:', e);
-      }
+      } catch (e) {}
 
       const userData = JSON.parse(rawCookie);
       const userId = userData.user_id || userData.id;
-
       if (!userId) {
-        console.error('Không tìm thấy userId trong cookie');
         setLoading(false);
         return;
       }
@@ -70,18 +65,9 @@ export default function TutorRevenuePage() {
 
       if (result.success && result.data?.tutor) {
         setTutorData(result.data.tutor);
-        const banks = result.data.bankAccounts || [];
-        setBankAccounts(banks);
-        setPayoutRequests(result.data.payoutRequests || []);
-
-        // Tự động chọn ngân hàng mặc định
-        const defaultBank = banks.find((b) => b.is_default) || banks[0];
-        if (defaultBank) {
-          setSelectedBankId(defaultBank.bank_account_id);
-        }
-      } else {
-        console.error('API Error:', result.message);
-        setTutorData(null);
+        setBankAccounts(result.data.bankAccounts || []);
+        setPayoutHistory(result.data.payoutHistory || []);
+        setMonthlySalary(result.data.monthlySalary || 0);
       }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu thu nhập:', error);
@@ -90,7 +76,7 @@ export default function TutorRevenuePage() {
     }
   };
 
-  // 2. Lấy danh sách Ngân hàng Việt Nam từ API VietQR công khai
+  // ===== Lấy danh sách ngân hàng VietQR =====
   const fetchVietQrBanks = async () => {
     try {
       const res = await fetch('https://api.vietqr.io/v2/banks');
@@ -103,7 +89,7 @@ export default function TutorRevenuePage() {
     }
   };
 
-  // 3. Xử lý Thêm Ngân Hàng Mới
+  // ===== Thêm ngân hàng =====
   const handleAddBankSubmit = async (e) => {
     e.preventDefault();
     if (!newBankCode || !newAccountNumber || !newAccountHolder) {
@@ -140,8 +126,6 @@ export default function TutorRevenuePage() {
         setNewAccountHolder('');
         setNewIsDefault(false);
         setBankSearchKeyword('');
-
-        // Tải lại dữ liệu
         await fetchPageData();
       } else {
         alert(result.message || 'Lỗi thêm ngân hàng');
@@ -154,63 +138,82 @@ export default function TutorRevenuePage() {
     }
   };
 
-  // 4. Xử lý Gửi Yêu Cầu Rút Tiền
-  const handleWithdrawSubmit = async () => {
-    const amount = Number(withdrawAmount);
-    const available = tutorData?.available_balance || 0;
+  // ===== Đặt ngân hàng làm mặc định (MỚI) =====
+  const handleSetDefaultBank = async (bank) => {
+    // Nếu đã là mặc định thì không làm gì
+    if (bank.is_default) return;
 
-    if (!selectedBankId) {
-      alert('Vui lòng chọn hoặc thêm một tài khoản ngân hàng nhận tiền!');
-      return;
-    }
-
-    if (!amount || amount <= 0) {
-      alert('Vui lòng nhập số tiền hợp lệ muốn rút!');
-      return;
-    }
-
-    if (amount > available) {
-      alert(`Số tiền muốn rút vượt quá số dư khả dụng (${available.toLocaleString('vi-VN')} VND)!`);
-      return;
-    }
+    const confirmMsg = `Bạn có chắc muốn đặt tài khoản\n${bank.bank_name} - ${bank.account_number}\nlàm tài khoản nhận lương mặc định không?`;
+    
+    if (!confirm(confirmMsg)) return;
 
     try {
-      setIsSubmittingWithdraw(true);
       const res = await fetch('/api/tutor-payout-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'create_payout_request',
+          action: 'set_default_bank',
           tutor_id: tutorData.tutor_id,
-          bank_account_id: selectedBankId,
-          amount: amount,
+          bank_account_id: bank.bank_account_id || bank.id,
         }),
       });
 
       const result = await res.json();
 
       if (result.success) {
-        alert(`Gửi yêu cầu rút ${amount.toLocaleString('vi-VN')} VNĐ thành công! Vui lòng chờ Admin duyệt.`);
-        setWithdrawAmount('');
-        await fetchPageData();
+        alert('Đã đặt tài khoản làm mặc định thành công!');
+        await fetchPageData(); // tải lại danh sách để cập nhật badge "Mặc định"
       } else {
-        alert(result.message || 'Lỗi khi gửi yêu cầu rút tiền');
+        alert(result.message || 'Không thể đặt làm mặc định');
       }
     } catch (error) {
-      console.error('Lỗi khi gửi yêu cầu rút tiền:', error);
-      alert('Có lỗi xảy ra khi gửi yêu cầu');
-    } finally {
-      setIsSubmittingWithdraw(false);
+      console.error('Lỗi đặt mặc định:', error);
+      alert('Có lỗi xảy ra khi đặt mặc định');
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+  // ===== Xem chi tiết =====
+  const handleViewDetail = async (payout) => {
+    setSelectedPayout(payout);
+    setDetailBankInfo(null);
+
+    if (payout.bank_account_id) {
+      try {
+        // Ưu tiên tìm trong danh sách đã có
+        const found = bankAccounts.find(
+          (b) =>
+            b.bank_account_id === payout.bank_account_id ||
+            b.id === payout.bank_account_id
+        );
+        if (found) {
+          setDetailBankInfo(found);
+        } else {
+          // Fallback call API
+          const res = await fetch(
+            `http://localhost:3007/tutor_bank_accounts?bank_account_id=${payout.bank_account_id}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setDetailBankInfo(data[0]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Lỗi lấy thông tin ngân hàng:', err);
+      }
+    }
+
+    setShowDetailModal(true);
   };
 
-  const selectedBankInfo = bankAccounts.find((b) => b.bank_account_id === selectedBankId);
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(amount || 0);
+  };
 
-  // Lọc danh sách ngân hàng VietQR theo từ khóa tìm kiếm
   const filteredVietQrBanks = vietQrBanks.filter((b) => {
     const kw = bankSearchKeyword.toLowerCase();
     return (
@@ -232,112 +235,106 @@ export default function TutorRevenuePage() {
   if (!tutorData) {
     return (
       <div className={styles.container}>
-        <p style={{ padding: '40px', textAlign: 'center' }}>Không tìm thấy thông tin Gia Sư</p>
+        <p style={{ padding: '40px', textAlign: 'center' }}>
+          Không tìm thấy thông tin Gia Sư
+        </p>
       </div>
     );
   }
 
-  const availableBalance = tutorData.available_balance || 0;
-  const pendingBalance = tutorData.pending_balance || 0;
-  const totalIncome = availableBalance + pendingBalance;
-
   return (
     <div className={styles.container}>
-      {/* SECTION BÊN TRÊN: TỔNG QUAN SỐ DƯ */}
-      <div className={styles.statsGrid}>
+      {/* ===== TIỀN LƯƠNG THÁNG NÀY ===== */}
+      <div className={styles.statsGrid} style={{ gridTemplateColumns: '1fr' }}>
         <div className={styles.mainBalanceCard}>
-          <span className={styles.cardLabel} style={{color: "#86efac"}}>TỔNG THU NHẬP HIỆN TẠI</span>
-          <div className={styles.mainBalance}>{formatCurrency(totalIncome)}</div>
-          <span className={styles.cardTrend}>
-            {pendingBalance > 0
-              ? `⏳ ${formatCurrency(pendingBalance)} đang nằm ở ví chờ`
-              : '✅ Số dư đã sẵn sàng'}
+          <span className={styles.cardLabel} style={{ color: '#86efac' }}>
+            TIỀN LƯƠNG THÁNG NÀY
           </span>
-        </div>
-
-        <div className={styles.subStatCard}>
-          <div>
-            <div className={styles.cardIconWrapper} style={{ backgroundColor: '#fef3c7', color: '#d97706' }}>
-              ⏳
-            </div>
-            <span className={styles.cardLabel}>Tiền trong ví chờ</span>
-            <div className={styles.subAmount}>{formatCurrency(pendingBalance)}</div>
-          </div>
-          <p className={styles.subFootnote}>Tiền sẽ chuyển sang Ví khả dụng sau 24 tiếng kể từ khi xác nhận buổi học</p>
-        </div>
-
-        <div className={styles.subStatCard}>
-          <div>
-            <div className={styles.cardIconWrapper} style={{ backgroundColor: '#dcfce7', color: '#15803d' }}>
-              💳
-            </div>
-            <span className={styles.cardLabel}>Tiền trong ví khả dụng</span>
-            <div className={styles.subAmount}>{formatCurrency(availableBalance)}</div>
-          </div>
-          <div className={styles.subTrendUp}>
-            <span>💸 Số tiền tối đa có thể rút ngay</span>
-          </div>
+          <div className={styles.mainBalance}>{formatCurrency(monthlySalary)}</div>
+          <span className={styles.cardTrend}>
+            Đã trừ 35% phí sàn • Chỉ tính buổi đã hoàn thành trong tháng
+          </span>
         </div>
       </div>
 
-      {/* SECTION BÊN DƯỚI: LAYOUT 2 CỘT */}
+      {/* ===== LAYOUT 2 CỘT ===== */}
       <div className={styles.mainLayout}>
-        {/* BÊN TRÁI: LỊCH SỬ CÁC YÊU CẦU RÚT TIỀN */}
+        {/* Lịch sử nhận lương */}
         <div className={`${styles.sectionCard} ${styles.historyCard}`}>
           <div className={styles.sectionHeader}>
-            <h2>Lịch sử yêu cầu rút tiền</h2>
+            <h2>Lịch sử nhận lương</h2>
           </div>
 
           <div className={styles.tableWrapper}>
-            {payoutRequests.length === 0 ? (
+            {payoutHistory.length === 0 ? (
               <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
-                Chưa có yêu cầu rút tiền nào
+                Chưa có lịch sử nhận lương nào
               </div>
             ) : (
               <table className={styles.txTable}>
                 <thead>
                   <tr>
-                    <th>Mã đơn</th>
-                    <th>Ngày yêu cầu</th>
-                    <th>Số tiền rút</th>
+                    <th>Tiền lương</th>
                     <th>Trạng thái</th>
+                    <th>Ngày chuyển tiền</th>
+                    <th>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {payoutRequests.map((req) => {
+                  {payoutHistory.map((item) => {
+                    const amount = item.total_amount || item.amount || 0;
+                    const status = item.status || 'pending';
                     let statusLabel = 'Chờ duyệt';
                     let statusClass = styles.statusPending;
                     let dotColor = '#d97706';
 
-                    if (req.status === 'approved') {
-                      statusLabel = 'Đã duyệt';
+                    if (status === 'approved') {
+                      statusLabel = 'Đã chuyển';
                       statusClass = styles.statusApproved;
                       dotColor = '#16a34a';
-                    } else if (req.status === 'rejected') {
-                      statusLabel = 'Từ chối';
+                    } else if (status === 'rejected') {
+                      statusLabel = 'Từ chối duyệt';
                       statusClass = styles.statusRejected;
                       dotColor = '#dc2626';
                     }
 
                     return (
-                      <tr key={req.payout_req_id || req.id}>
+                      <tr key={item.tutor_payout_id || item.id}>
                         <td>
-                          <span className={styles.requestCode}>{req.request_code}</span>
-                        </td>
-                        <td>{new Date(req.created_at).toLocaleDateString('vi-VN')}</td>
-                        <td>
-                          <span className={styles.amountMinus}>
-                            -{req.amount?.toLocaleString('vi-VN')} VND
+                          <span style={{ fontWeight: 700, color: '#0f172a' }}>
+                            {formatCurrency(amount)}
                           </span>
                         </td>
                         <td>
                           <div className={`${styles.statusWrapper} ${statusClass}`}>
-                            <span className={styles.statusDot} style={{ backgroundColor: dotColor }}></span>
+                            <span
+                              className={styles.statusDot}
+                              style={{ backgroundColor: dotColor }}
+                            ></span>
                             {statusLabel}
                           </div>
-                          {req.status === 'rejected' && req.rejection_reason && (
-                            <div className={styles.rejectionNote}>Lý do: {req.rejection_reason}</div>
-                          )}
+                        </td>
+                        <td>
+                          {item.created_at
+                            ? new Date(item.created_at).toLocaleDateString('vi-VN')
+                            : '—'}
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => handleViewDetail(item)}
+                            style={{
+                              background: '#1e3a8a',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Xem chi tiết
+                          </button>
                         </td>
                       </tr>
                     );
@@ -348,120 +345,265 @@ export default function TutorRevenuePage() {
           </div>
         </div>
 
-        {/* BÊN PHẢI: FORM ĐIỀN THÔNG TIN RÚT TIỀN & ĐÃ CÓ NGÂN HÀNG */}
+        {/* Tài khoản ngân hàng */}
         <div className={styles.rightSidebar}>
           <div className={`${styles.sectionCard} ${styles.withdrawCard}`}>
-            <h2>Rút tiền về ngân hàng</h2>
+            <h2>Tài khoản ngân hàng nhận lương</h2>
 
-            {/* Ô điền số tiền muốn rút */}
-            <div className={styles.formGroup}>
-              <label className={styles.cardLabel}>Số tiền muốn rút (VND)</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  type="number"
-                  placeholder="Nhập số tiền..."
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className={styles.withdrawInput}
-                />
-                <span className={styles.inputUnit}>VND</span>
-              </div>
-              <div className={styles.feeNotice}>
-                Số dư khả dụng: <strong>{formatCurrency(availableBalance)}</strong>
-              </div>
-            </div>
-
-            {/* Danh sách ngân hàng đã tạo & Nút (+) thêm mới */}
-            <div className={styles.formGroup} style={{ marginTop: '16px' }}>
-              <label className={styles.cardLabel}>Chọn ngân hàng nhận tiền</label>
-
-              <div className={styles.methodList}>
-                {bankAccounts.map((bank) => {
-                  const isSelected = selectedBankId === bank.bank_account_id;
-                  return (
-                    <div
-                      key={bank.bank_account_id || bank.id}
-                      className={`${styles.methodItem} ${isSelected ? styles.methodActive : ''}`}
-                      onClick={() => setSelectedBankId(bank.bank_account_id)}
-                    >
-                      <div className={styles.methodLeft}>
-                        <span className={styles.bankBadge}>{bank.bank_code}</span>
-                        <div className={styles.methodInfo}>
-                          <div>{bank.bank_name}</div>
-                          <div>
-                            {bank.account_number} • {bank.account_holder_name}
-                          </div>
-                        </div>
+            <div className={styles.methodList}>
+              {bankAccounts.map((bank) => (
+                <div
+                  key={bank.bank_account_id || bank.id}
+                  className={styles.methodItem}
+                  onClick={() => handleSetDefaultBank(bank)}
+                  style={{
+                    cursor: bank.is_default ? 'default' : 'pointer',
+                    opacity: bank.is_default ? 1 : 0.95,
+                  }}
+                  title={bank.is_default ? 'Đang là tài khoản mặc định' : 'Nhấn để đặt làm mặc định'}
+                >
+                  <div className={styles.methodLeft}>
+                    <span className={styles.bankBadge}>{bank.bank_code}</span>
+                    <div className={styles.methodInfo}>
+                      <div>{bank.bank_name}</div>
+                      <div>
+                        {bank.account_number} • {bank.account_holder_name}
                       </div>
-                      <div className={`${styles.radioCircle} ${isSelected ? styles.radioActive : ''}`}></div>
                     </div>
-                  );
-                })}
-
-                {/* Ô CÓ DẤU (+) ĐỂ TẠO BANK ACCOUNT MỚI */}
-                <div className={styles.addBankBtnItem} onClick={() => setShowAddBankModal(true)}>
-                  <span className={styles.plusIcon}>+</span>
-                  <span>Thêm tài khoản ngân hàng mới</span>
+                  </div>
+                  {bank.is_default && (
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        background: '#dcfce7',
+                        color: '#15803d',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Mặc định
+                    </span>
+                  )}
                 </div>
+              ))}
+
+              <div
+                className={styles.addBankBtnItem}
+                onClick={() => setShowAddBankModal(true)}
+              >
+                <span className={styles.plusIcon}>+</span>
+                <span>Thêm tài khoản ngân hàng mới</span>
               </div>
             </div>
-
-            {/* Hiển thị thông tin chi tiết ngân hàng đang chọn */}
-            {selectedBankInfo && (
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', marginTop: '12px', border: '1px solid #e2e8f0' }}>
-                <p style={{ margin: '0 0 4px 0' }}><strong>Tên ngân hàng:</strong> {selectedBankInfo.bank_name}</p>
-                <p style={{ margin: '0 0 4px 0' }}><strong>Số tài khoản:</strong> {selectedBankInfo.account_number}</p>
-                <p style={{ margin: 0 }}><strong>Chủ tài khoản:</strong> {selectedBankInfo.account_holder_name}</p>
-              </div>
-            )}
-
-            <button
-              className={styles.submitWithdrawBtn}
-              onClick={handleWithdrawSubmit}
-              disabled={isSubmittingWithdraw || availableBalance <= 0}
-              style={{
-                opacity: availableBalance <= 0 || isSubmittingWithdraw ? 0.6 : 1,
-                cursor: availableBalance <= 0 || isSubmittingWithdraw ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {isSubmittingWithdraw ? 'Đang xử lý...' : ' Gửi yêu cầu rút tiền'}
-            </button>
-
-            <p className={styles.termText}>
-              Bằng cách nhấn gửi yêu cầu, bạn đồng ý với <a href="#">Điều khoản rút tiền</a> của AuraTeach.
-            </p>
           </div>
 
-          {/* Tip Card */}
           <div className={styles.tipCard}>
             <div className={styles.tipIcon}>💡</div>
             <div className={styles.tipContent}>
-              <h4>Mẹo rút tiền nhanh</h4>
-              <p>Hãy đảm bảo Tên chủ tài khoản ngân hàng trùng khớp hoàn toàn với thông tin cá nhân để đơn rút được duyệt tự động nhanh chóng.</p>
+              <h4>Mẹo nhận lương nhanh</h4>
+              <p>
+                Hãy đảm bảo Tên chủ tài khoản ngân hàng trùng khớp hoàn toàn với
+                thông tin cá nhân để đơn được duyệt nhanh chóng.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* POPUP MODAL TẠO BANK ACCOUNT MỚI */}
+      {/* ===== MODAL CHI TIẾT ===== */}
+      {showDetailModal && selectedPayout && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowDetailModal(false)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '520px' }}
+          >
+            <div className={styles.modalHeader}>
+              <h3>Chi tiết nhận lương</h3>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowDetailModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Trạng thái */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: '#f8fafc',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                }}
+              >
+                <span style={{ fontWeight: 600, color: '#64748b' }}>Trạng thái</span>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color:
+                      selectedPayout.status === 'approved'
+                        ? '#16a34a'
+                        : selectedPayout.status === 'rejected'
+                        ? '#dc2626'
+                        : '#d97706',
+                  }}
+                >
+                  {selectedPayout.status === 'approved'
+                    ? 'Đã chuyển'
+                    : selectedPayout.status === 'rejected'
+                    ? 'Từ chối duyệt'
+                    : 'Chờ duyệt'}
+                </span>
+              </div>
+
+              {/* Mã */}
+              <div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 4 }}>
+                  Mã nhận lương
+                </div>
+                <div style={{ fontWeight: 700, color: '#1e3a8a' }}>
+                  {selectedPayout.tutor_payout_id || selectedPayout.id}
+                </div>
+              </div>
+
+              {/* Ngân hàng */}
+              <div
+                style={{
+                  background: '#f0f9ff',
+                  border: '1px solid #bae6fd',
+                  borderRadius: '10px',
+                  padding: '14px',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: '#0369a1',
+                    marginBottom: 8,
+                  }}
+                >
+                  Tài khoản nhận tiền
+                </div>
+                {detailBankInfo ? (
+                  <>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}>
+                      <strong>Ngân hàng:</strong> {detailBankInfo.bank_name}
+                    </p>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}>
+                      <strong>Số tài khoản:</strong> {detailBankInfo.account_number}
+                    </p>
+                    <p style={{ margin: 0, fontSize: '14px' }}>
+                      <strong>Chủ tài khoản:</strong>{' '}
+                      {detailBankInfo.account_holder_name}
+                    </p>
+                  </>
+                ) : (
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
+                    Không tìm thấy thông tin tài khoản ngân hàng
+                  </p>
+                )}
+              </div>
+
+              {/* Tổng buổi + Tổng tiền */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div
+                  style={{
+                    background: '#f8fafc',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Tổng số buổi</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+                    {selectedPayout.total_sessions || 0}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: '#f0fdf4',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '12px', color: '#16a34a' }}>Tổng tiền nhận</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#15803d' }}>
+                    {formatCurrency(
+                      selectedPayout.total_amount || selectedPayout.amount || 0
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Note */}
+              {selectedPayout.note && (
+                <div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 4 }}>
+                    Ghi chú
+                  </div>
+                  <div
+                    style={{
+                      background: '#fff7ed',
+                      border: '1px solid #fed7aa',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      fontSize: '13px',
+                      color: '#9a3412',
+                    }}
+                  >
+                    {selectedPayout.note}
+                  </div>
+                </div>
+              )}
+
+              {/* Ngày */}
+              <div style={{ fontSize: '13px', color: '#64748b', textAlign: 'right' }}>
+                Ngày tạo:{' '}
+                {selectedPayout.created_at
+                  ? new Date(selectedPayout.created_at).toLocaleString('vi-VN')
+                  : '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MODAL THÊM NGÂN HÀNG ===== */}
       {showAddBankModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowAddBankModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowAddBankModal(false)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={styles.modalHeader}>
               <h3>Thêm tài khoản ngân hàng</h3>
-              <button className={styles.closeBtn} onClick={() => setShowAddBankModal(false)}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowAddBankModal(false)}
+              >
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleAddBankSubmit} className={styles.bankForm}>
-              {/* CHỌN NGÂN HÀNG CÓ LOGO VÀ TÌM KIẾM */}
               <div className={styles.formGroup}>
                 <label className={styles.cardLabel}>Chọn ngân hàng *</label>
-
                 <input
                   type="text"
-                  placeholder=" Tìm theo tên hoặc mã ngân hàng (MB, VCB, VPBank)..."
+                  placeholder="Tìm theo tên hoặc mã ngân hàng..."
                   value={bankSearchKeyword}
                   onChange={(e) => setBankSearchKeyword(e.target.value)}
                   className={styles.inputControl}
@@ -474,18 +616,26 @@ export default function TutorRevenuePage() {
                     return (
                       <div
                         key={b.code}
-                        className={`${styles.bankOptionCard} ${isSelected ? styles.bankOptionSelected : ''}`}
+                        className={`${styles.bankOptionCard} ${
+                          isSelected ? styles.bankOptionSelected : ''
+                        }`}
                         onClick={() => setNewBankCode(b.code)}
                       >
                         <div className={styles.bankLogoWrapper}>
                           {b.logo ? (
-                            <img src={b.logo} alt={b.shortName || b.code} className={styles.bankLogoImg} />
+                            <img
+                              src={b.logo}
+                              alt={b.shortName || b.code}
+                              className={styles.bankLogoImg}
+                            />
                           ) : (
                             <span className={styles.bankBadge}>{b.code}</span>
                           )}
                         </div>
                         <div className={styles.bankOptionInfo}>
-                          <div className={styles.bankShortName}>{b.shortName || b.code}</div>
+                          <div className={styles.bankShortName}>
+                            {b.shortName || b.code}
+                          </div>
                           <div className={styles.bankFullName}>{b.name}</div>
                         </div>
                         {isSelected && <span className={styles.checkIcon}>✓</span>}
@@ -493,7 +643,14 @@ export default function TutorRevenuePage() {
                     );
                   })}
                   {filteredVietQrBanks.length === 0 && (
-                    <div style={{ padding: '16px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    <div
+                      style={{
+                        padding: '16px',
+                        textAlign: 'center',
+                        color: '#94a3b8',
+                        fontSize: '13px',
+                      }}
+                    >
                       Không tìm thấy ngân hàng phù hợp
                     </div>
                   )}
@@ -513,12 +670,16 @@ export default function TutorRevenuePage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.cardLabel}>Tên chủ tài khoản (Viết hoa không dấu) *</label>
+                <label className={styles.cardLabel}>
+                  Tên chủ tài khoản (Viết hoa không dấu) *
+                </label>
                 <input
                   type="text"
                   placeholder="Ví dụ: HUA MINH THIEN"
                   value={newAccountHolder}
-                  onChange={(e) => setNewAccountHolder(e.target.value.toUpperCase())}
+                  onChange={(e) =>
+                    setNewAccountHolder(e.target.value.toUpperCase())
+                  }
                   className={styles.inputControl}
                   required
                 />
@@ -534,10 +695,18 @@ export default function TutorRevenuePage() {
               </label>
 
               <div className={styles.modalFooter}>
-                <button type="button" className={styles.cancelBtn} onClick={() => setShowAddBankModal(false)}>
+                <button
+                  type="button"
+                  className={styles.cancelBtn}
+                  onClick={() => setShowAddBankModal(false)}
+                >
                   Hủy
                 </button>
-                <button type="submit" className={styles.saveBankBtn} disabled={isSubmittingBank || !newBankCode}>
+                <button
+                  type="submit"
+                  className={styles.saveBankBtn}
+                  disabled={isSubmittingBank || !newBankCode}
+                >
                   {isSubmittingBank ? 'Đang lưu...' : 'Lưu ngân hàng'}
                 </button>
               </div>

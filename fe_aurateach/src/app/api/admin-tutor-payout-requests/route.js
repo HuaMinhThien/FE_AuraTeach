@@ -3,54 +3,199 @@ import notificationService from '@/services/notificationService';
 
 const API_BASE = 'http://localhost:3007';
 
-// 1. GET: Lấy danh sách yêu cầu rút tiền
+// ======================================================
+// ĐỔI NGÀY NÀY ĐỂ TEST CHỨC NĂNG TỰ ĐỘNG TẠO LƯƠNG
+// Ví dụ: đổi thành 21 để test ngay hôm nay
+const AUTO_CREATE_PAYOUT_DAY = 10;
+// ======================================================
+
+// Hàm tính lương tháng hiện tại cho 1 gia sư
+async function calculateTutorMonthlySalary(tutorId, allSessions, allCourses) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  let totalAmount = 0;
+  let totalSessions = 0;
+
+  const tutorCourses = allCourses.filter((c) => c.tutor_id === tutorId);
+
+  allSessions.forEach((session) => {
+    if (session.session_status !== 'completed') return;
+
+    const course = tutorCourses.find(
+      (c) => (c.course_id || c.id) === session.course_id
+    );
+    if (!course) return;
+
+    const sessionDate = new Date(session.actual_date);
+    if (
+      sessionDate.getFullYear() !== currentYear ||
+      sessionDate.getMonth() !== currentMonth
+    ) {
+      return;
+    }
+
+    const price = Number(course.price_per_session) || 0;
+    let numStudents = 0;
+    if (Array.isArray(course.students) && course.students.length > 0) {
+      numStudents = course.students.length;
+    }
+
+    if (numStudents > 0) {
+      totalAmount += price * numStudents * 0.65;
+      totalSessions += 1;
+    }
+  });
+
+  return {
+    total_amount: Math.round(totalAmount),
+    total_sessions: totalSessions,
+  };
+}
+
+// Hàm tự động tạo tutor_payouts vào ngày quy định
+async function autoCreateMonthlyPayouts() {
+  const now = new Date();
+  const today = now.getDate();
+
+  // Chỉ chạy vào đúng ngày đã cấu hình
+  if (today !== AUTO_CREATE_PAYOUT_DAY) {
+    return { created: 0, message: `Hôm nay không phải ngày ${AUTO_CREATE_PAYOUT_DAY}` };
+  }
+
+  try {
+    const [tutorsRes, sessionsRes, coursesRes, banksRes, payoutsRes] = await Promise.all([
+      fetch(`${API_BASE}/tutors`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/class_sessions`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/courses`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/tutor_bank_accounts`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/tutor_payouts`, { cache: 'no-store' }),
+    ]);
+
+    const tutors = await tutorsRes.json();
+    const allSessions = await sessionsRes.json();
+    const allCourses = await coursesRes.json();
+    const allBanks = await banksRes.json();
+    const existingPayouts = await payoutsRes.json();
+
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    let createdCount = 0;
+
+    for (const tutor of tutors) {
+      // Tính lương tháng này
+      const { total_amount, total_sessions } = await calculateTutorMonthlySalary(
+        tutor.tutor_id,
+        allSessions,
+        allCourses
+      );
+
+      // Chỉ tạo nếu có buổi dạy hoàn thành
+      if (total_sessions === 0 || total_amount === 0) continue;
+
+      // Kiểm tra đã có payout của tháng này chưa (tránh tạo trùng)
+      const alreadyExists = existingPayouts.some((p) => {
+        if (p.tutor_id !== tutor.tutor_id) return false;
+        const created = new Date(p.created_at);
+        return (
+          created.getFullYear() === currentYear &&
+          created.getMonth() === currentMonth
+        );
+      });
+
+      if (alreadyExists) continue;
+
+      // Lấy tài khoản ngân hàng mặc định
+      const tutorBanks = allBanks.filter((b) => b.tutor_id === tutor.tutor_id);
+      const defaultBank =
+        tutorBanks.find((b) => b.is_default) || tutorBanks[0] || null;
+
+      if (!defaultBank) continue; // Không có ngân hàng thì bỏ qua
+
+      const newPayout = {
+        tutor_payout_id: `tutor_payout_${Date.now()}_${tutor.tutor_id}`,
+        tutor_id: tutor.tutor_id,
+        admin_id: '',
+        bank_account_id: defaultBank.bank_account_id || defaultBank.id,
+        total_amount,
+        total_sessions,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      };
+
+      const createRes = await fetch(`${API_BASE}/tutor_payouts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPayout),
+      });
+
+      if (createRes.ok) {
+        createdCount++;
+      }
+    }
+
+    return { created: createdCount, message: `Đã tạo ${createdCount} phiếu lương` };
+  } catch (err) {
+    console.error('Lỗi autoCreateMonthlyPayouts:', err);
+    return { created: 0, message: 'Lỗi khi tạo phiếu lương tự động' };
+  }
+}
+
+// ====================== GET ======================
 export async function GET() {
   try {
-    const [reqRes, bankRes, tutorRes, userRes] = await Promise.all([
-      fetch(`${API_BASE}/payout_requests`, { cache: 'no-store' }),
+    // 1. Chạy logic tự động tạo phiếu lương (nếu đúng ngày)
+    const autoResult = await autoCreateMonthlyPayouts();
+    console.log('[Auto Payout]', autoResult.message);
+
+    // 2. Lấy danh sách tutor_payouts đang pending
+    const [payoutRes, bankRes, tutorRes, userRes] = await Promise.all([
+      fetch(`${API_BASE}/tutor_payouts?status=pending`, { cache: 'no-store' }),
       fetch(`${API_BASE}/tutor_bank_accounts`, { cache: 'no-store' }),
       fetch(`${API_BASE}/tutors`, { cache: 'no-store' }),
       fetch(`${API_BASE}/users`, { cache: 'no-store' }),
     ]);
 
-    if (!reqRes.ok || !bankRes.ok || !tutorRes.ok || !userRes.ok) {
+    if (!payoutRes.ok || !bankRes.ok || !tutorRes.ok || !userRes.ok) {
       return NextResponse.json(
         { message: 'Không thể kết nối đến cơ sở dữ liệu' },
         { status: 500 }
       );
     }
 
-    const payoutRequests = await reqRes.json();
+    const payouts = await payoutRes.json();
     const bankAccounts = await bankRes.json();
     const tutors = await tutorRes.json();
     const users = await userRes.json();
 
-    const enrichedRequests = payoutRequests.map((req) => {
-      const tutor = tutors.find((t) => t.tutor_id === req.tutor_id);
+    const enriched = (Array.isArray(payouts) ? payouts : []).map((p) => {
+      const tutor = tutors.find((t) => t.tutor_id === p.tutor_id);
       const user = users.find((u) => u.user_id === tutor?.user_id);
-      const bank = bankAccounts.find((b) => b.bank_account_id === req.bank_account_id);
+      const bank = bankAccounts.find(
+        (b) =>
+          b.bank_account_id === p.bank_account_id ||
+          b.id === p.bank_account_id
+      );
 
       return {
-        ...req,
+        ...p,
         tutor_name: user?.full_name || 'Gia sư',
         tutor_email: user?.email || '',
         tutor_avatar: user?.avatar || '/img/default-avatar.svg',
-        available_balance: tutor?.available_balance || 0,
         bank_name: bank?.bank_name || 'Chưa cập nhật',
         bank_code: bank?.bank_code || '',
         account_number: bank?.account_number || 'Chưa cập nhật',
         account_holder_name: bank?.account_holder_name || 'Chưa cập nhật',
-        // Lưu thêm thông tin tutor và user để dùng cho notification
-        _tutor: tutor,
-        _user: user,
       };
     });
 
-    enrichedRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    // Sắp xếp mới nhất lên đầu
+    enriched.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    return NextResponse.json(enrichedRequests, { status: 200 });
+    return NextResponse.json(enriched, { status: 200 });
   } catch (error) {
-    console.error('Lỗi khi tải yêu cầu rút tiền:', error);
+    console.error('Lỗi GET admin-tutor-payout-requests:', error);
     return NextResponse.json(
       { message: 'Lỗi máy chủ nội bộ', error: error.message },
       { status: 500 }
@@ -58,11 +203,12 @@ export async function GET() {
   }
 }
 
-// 2. PATCH: Xử lý Phê duyệt (approved) hoặc Từ chối (rejected)
+// ====================== PATCH ======================
+// Xác nhận thanh toán lương (pending → approved)
 export async function PATCH(request) {
   try {
     const body = await request.json();
-    const { id, status, rejection_reason, processed_by } = body;
+    const { id, status, processed_by } = body;
 
     if (!id || !status) {
       return NextResponse.json(
@@ -71,100 +217,74 @@ export async function PATCH(request) {
       );
     }
 
-    // Lấy thông tin yêu cầu rút tiền hiện tại
-    const payoutReqRes = await fetch(`${API_BASE}/payout_requests/${id}`, { cache: 'no-store' });
-    if (!payoutReqRes.ok) {
+    // Chỉ cho phép chuyển sang approved
+    if (status !== 'approved') {
       return NextResponse.json(
-        { message: 'Không tìm thấy yêu cầu rút tiền' },
+        { message: 'Chỉ hỗ trợ trạng thái approved' },
+        { status: 400 }
+      );
+    }
+
+    // Lấy thông tin hiện tại
+    const payoutRes = await fetch(`${API_BASE}/tutor_payouts/${id}`, {
+      cache: 'no-store',
+    });
+    if (!payoutRes.ok) {
+      return NextResponse.json(
+        { message: 'Không tìm thấy phiếu lương' },
         { status: 404 }
       );
     }
-    const currentPayoutReq = await payoutReqRes.json();
+    const currentPayout = await payoutRes.json();
 
-    // Lấy thông tin tutor và user
-    const tutorsRes = await fetch(`${API_BASE}/tutors`, { cache: 'no-store' });
-    const tutors = await tutorsRes.json();
-    const currentTutor = tutors.find((t) => t.tutor_id === currentPayoutReq.tutor_id);
-
-    const usersRes = await fetch(`${API_BASE}/users`, { cache: 'no-store' });
-    const users = await usersRes.json();
-    const currentUser = users.find((u) => u.user_id === currentTutor?.user_id);
-
-    // Cập nhật trạng thái của payout_request
-    const updateReqRes = await fetch(`${API_BASE}/payout_requests/${id}`, {
+    // Cập nhật status
+    const updateRes = await fetch(`${API_BASE}/tutor_payouts/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        status,
-        rejection_reason: status === 'rejected' ? rejection_reason : null,
-        processed_by: processed_by || 'admin_system',
-        processed_at: new Date().toISOString(),
+        status: 'approved',
+        admin_id: processed_by || 'admin_system',
+        created_at: new Date().toISOString(),
       }),
     });
 
-    if (!updateReqRes.ok) {
+    if (!updateRes.ok) {
       return NextResponse.json(
-        { message: 'Cập nhật trạng thái yêu cầu thất bại' },
+        { message: 'Cập nhật trạng thái thất bại' },
         { status: 500 }
       );
     }
 
-    const updatedPayoutReq = await updateReqRes.json();
+    const updated = await updateRes.json();
 
-    // NẾU TỪ CHỐI (rejected): Hoàn trả lại số tiền
-    if (status === 'rejected') {
-      if (currentTutor) {
-        const restoredBalance = (currentTutor.available_balance || 0) + (currentPayoutReq.amount || 0);
-        await fetch(`${API_BASE}/tutors/${currentTutor.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            available_balance: restoredBalance,
-            updated_at: new Date().toISOString(),
-          }),
+    // Gửi thông báo cho gia sư (nếu có service)
+    try {
+      const tutorsRes = await fetch(`${API_BASE}/tutors`, { cache: 'no-store' });
+      const tutors = await tutorsRes.json();
+      const currentTutor = tutors.find((t) => t.tutor_id === currentPayout.tutor_id);
+
+      const usersRes = await fetch(`${API_BASE}/users`, { cache: 'no-store' });
+      const users = await usersRes.json();
+      const currentUser = users.find((u) => u.user_id === currentTutor?.user_id);
+
+      if (currentUser && currentTutor) {
+        await notificationService.notifyPayoutStatus({
+          tutor: currentUser,
+          payoutRequest: currentPayout,
+          status: 'approved',
+          reason: null,
         });
       }
-
-      // === GỬI THÔNG BÁO TỪ CHỐI CHO TUTOR ===
-      try {
-        if (currentUser && currentTutor) {
-          await notificationService.notifyPayoutStatus({
-            tutor: currentUser,
-            payoutRequest: currentPayoutReq,
-            status: 'rejected',
-            reason: rejection_reason || 'Không có lý do cụ thể',
-          });
-          console.log(`📬 Đã gửi thông báo từ chối rút tiền cho ${currentUser.email}`);
-        }
-      } catch (notifError) {
-        console.error("❌ Lỗi gửi thông báo từ chối rút tiền:", notifError);
-      }
-    }
-
-    // NẾU PHÊ DUYỆT (approved)
-    if (status === 'approved') {
-      // === GỬI THÔNG BÁO PHÊ DUYỆT CHO TUTOR ===
-      try {
-        if (currentUser && currentTutor) {
-          await notificationService.notifyPayoutStatus({
-            tutor: currentUser,
-            payoutRequest: currentPayoutReq,
-            status: 'approved',
-            reason: null,
-          });
-          console.log(`📬 Đã gửi thông báo phê duyệt rút tiền cho ${currentUser.email}`);
-        }
-      } catch (notifError) {
-        console.error("❌ Lỗi gửi thông báo phê duyệt rút tiền:", notifError);
-      }
+    } catch (notifError) {
+      console.error('Lỗi gửi thông báo:', notifError);
     }
 
     return NextResponse.json(
-      { message: 'Cập nhật thành công', data: updatedPayoutReq },
+      { message: 'Đã xác nhận thanh toán lương thành công', data: updated },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Lỗi khi xử lý yêu cầu rút tiền:', error);
+    console.error('Lỗi PATCH admin-tutor-payout-requests:', error);
     return NextResponse.json(
       { message: 'Lỗi máy chủ nội bộ', error: error.message },
       { status: 500 }
