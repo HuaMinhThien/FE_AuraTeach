@@ -318,6 +318,18 @@
   font-weight: 600;
 }
 
+.salaryCol {
+  background-color: #fefce8 !important;
+  color: #854d0e !important;
+  border-left: 2px solid #fcd34d !important;
+}
+
+.priceTable tr.activeTableRow .salaryCol {
+  background-color: #fef9c3 !important;
+  color: #713f12 !important;
+  font-weight: 700;
+}
+
 /* Description Suggestion */
 .descriptionSuggestionBox {
   margin-top: 10px;
@@ -623,6 +635,19 @@
   color: #fca5a5;
 }
 
+/* Màu vàng cho lương tutor trong card */
+.salarySubValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fde68a;
+}
+
+.salaryMonthlyValue {
+  font-weight: 700;
+  color: #fde68a;
+  font-size: 14px;
+}
+
 .totalRow {
   display: flex;
   justify-content: space-between;
@@ -802,6 +827,36 @@
   font-size: 12px;
   color: #64748b;
   margin-top: 4px;
+  font-style: italic;
+}
+
+/* Ô hiển thị tổng lương tutor (readonly) */
+.salaryReadonlyBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: #fefce8;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  min-height: 42px;
+  justify-content: center;
+}
+
+.salaryReadonlyValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: #854d0e;
+}
+
+.salaryReadonlyNote {
+  font-size: 12px;
+  color: #a16207;
+}
+
+.salaryReadonlyPlaceholder {
+  font-size: 13px;
+  color: #94a3b8;
   font-style: italic;
 }
 
