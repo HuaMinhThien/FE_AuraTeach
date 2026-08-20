@@ -65,7 +65,9 @@ export default function Header() {
                 if (!coursesRes.ok) return;
                 const allCourses = await coursesRes.json();
 
-                // 4. Lọc các buổi học của gia sư này trong tháng hiện tại
+                // 4. Tính tiền lương tháng này
+                // Công thức giống trang thu nhập:
+                // (price_per_session * số học sinh thực tế) * 0.65
                 const now = new Date();
                 const currentYear = now.getFullYear();
                 const currentMonth = now.getMonth(); // 0-11
@@ -74,36 +76,41 @@ export default function Header() {
 
                 if (Array.isArray(allSessions) && Array.isArray(allCourses)) {
                     // Lọc các khóa học thuộc gia sư này
-                    const tutorCourseIds = allCourses
-                        .filter(c => c.tutor_id === actualTutorId)
-                        .map(c => c.course_id || c.id);
+                    const tutorCourses = allCourses.filter(c => c.tutor_id === actualTutorId);
 
                     allSessions.forEach(session => {
                         // Chỉ lấy buổi đã hoàn thành
                         if (session.session_status !== "completed") return;
 
-                        // Kiểm tra buổi học thuộc lớp của gia sư này
-                        const courseId = session.course_id;
-                        if (!tutorCourseIds.includes(courseId)) return;
+                        // Tìm lớp tương ứng
+                        const course = tutorCourses.find(
+                            c => (c.course_id || c.id) === session.course_id
+                        );
+                        if (!course) return;
 
                         // Kiểm tra thuộc tháng hiện tại
                         const sessionDate = new Date(session.actual_date);
                         if (
-                            sessionDate.getFullYear() === currentYear &&
-                            sessionDate.getMonth() === currentMonth
+                            sessionDate.getFullYear() !== currentYear ||
+                            sessionDate.getMonth() !== currentMonth
                         ) {
-                            // Tìm giá tiền 1 buổi của lớp này
-                            const course = allCourses.find(
-                                c => (c.course_id || c.id) === courseId
-                            );
-                            if (course && course.price_per_session) {
-                                totalSalary += Number(course.price_per_session) || 0;
-                            }
+                            return;
                         }
+
+                        const price = Number(course.price_per_session) || 0;
+
+                        // Chỉ tính khi lớp thực sự có học sinh
+                        let numStudents = 0;
+                        if (Array.isArray(course.students) && course.students.length > 0) {
+                            numStudents = course.students.length;
+                        }
+
+                        // Cộng tiền: giá * số học sinh * 0.65 (đã trừ 35% phí sàn)
+                        totalSalary += price * numStudents * 0.65;
                     });
                 }
 
-                setMonthlySalary(totalSalary);
+                setMonthlySalary(Math.round(totalSalary));
             } catch (error) {
                 console.error("Lỗi khi tính tiền lương tháng này:", error);
                 setMonthlySalary(0);
@@ -111,7 +118,7 @@ export default function Header() {
         };
 
         fetchMonthlySalary();
-        // Cập nhật mỗi 30 giây (có thể tăng nếu muốn)
+        // Cập nhật mỗi 30 giây
         const intervalSalary = setInterval(fetchMonthlySalary, 30000);
         return () => clearInterval(intervalSalary);
     }, [user]);

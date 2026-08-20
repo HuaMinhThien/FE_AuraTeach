@@ -418,7 +418,7 @@
       "certificates": [],
       "available_days": "Thứ 2, Thứ 4, Thứ 6",
       "available_time_slots": "17:00 - 19:00, 19:00 - 21:00",
-      "receive_suggestions": true,
+      "receive_suggestions": false,
       "suggestion_block_until": null,
       "accept_suggested_classes": false
     },
@@ -4672,6 +4672,18 @@
       "related_type": "payout",
       "is_read": false,
       "created_at": "2026-08-20T18:26:28.798Z"
+    },
+    {
+      "id": "notif_1787250851206_1ree2yxfl",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "🔕 Đã tắt nhận lớp đề xuất",
+      "message": "Bạn đã tắt chức năng nhận lớp đề xuất từ Admin. Admin sẽ không gợi ý lớp học mới cho bạn cho đến khi bạn bật lại.",
+      "related_id": null,
+      "related_type": null,
+      "is_read": false,
+      "created_at": "2026-08-20T18:34:11.206Z"
     }
   ],
   "tutor_update_requests": [
@@ -5902,7 +5914,7 @@
       "bank_account_id": "bank_1785863761157",
       "total_amount": 1000000,
       "total_sessions": 10,
-      "status": "approved",
+      "status": "pending",
       "created_at": "2026-08-20T18:26:28.739Z"
     }
   ],
