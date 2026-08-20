@@ -248,16 +248,22 @@ export default function AdminCreateClass() {
     }
   };
 
+  const MAX_SLOTS = 5; // Mỗi lớp tối đa 5 mã lớp (slot 1-5)
+
   const toggleTutor = (tutorId) => {
-    setSelectedTutors(prev =>
-      prev.includes(tutorId)
-        ? prev.filter(id => id !== tutorId)
-        : [...prev, tutorId]
-    );
+    setSelectedTutors(prev => {
+      if (prev.includes(tutorId)) {
+        return prev.filter(id => id !== tutorId);
+      }
+      // Không cho chọn quá MAX_SLOTS tutor
+      if (prev.length >= MAX_SLOTS) return prev;
+      return [...prev, tutorId];
+    });
   };
 
   const selectAllTutors = () => {
-    setSelectedTutors(eligibleTutors.map(t => t.tutor_id));
+    // Chỉ chọn tối đa MAX_SLOTS tutor
+    setSelectedTutors(eligibleTutors.slice(0, MAX_SLOTS).map(t => t.tutor_id));
   };
 
   const deselectAllTutors = () => {
@@ -332,7 +338,9 @@ export default function AdminCreateClass() {
   const platformNetProfit = totalCourseGrossRevenue - totalTutorSalary;
   const monthlyPlatformNetProfit = (totalCourseGrossRevenue / (totalMonthsCount || 1)) - monthlyTutorSalary;
 
-  // Create class: mỗi tutor được chọn → 1 mã lớp riêng (1-1 assignment)
+  // Create class: luôn tạo đúng 5 mã lớp (slot 1-5), gửi đề xuất đến tất cả tutor được chọn
+  // Gia sư xác nhận sớm nhất → slot 1, thứ 2 → slot 2, ..., thứ 5 → slot 5
+  // Gia sư thứ 6 trở lên xác nhận → hiện "lớp đã có đủ gia sư" (xử lý ở trang accept)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -358,21 +366,18 @@ export default function AdminCreateClass() {
 
     setLoading(true);
     try {
-      const numSections = selectedTutors.length; // Số mã lớp = số tutor đã chọn
       const parentCourseId = `course_${Date.now()}`;
+      const createdCourseIds = [];
 
-      let successCount = 0;
-
-      // Mỗi tutor được chỉ định 1 mã lớp riêng theo thứ tự
-      for (let i = 0; i < numSections; i++) {
-        const assignedTutorId = selectedTutors[i];
-        const sectionSuffix = numSections > 1 ? ` - Nhóm ${i + 1}` : '';
+      // Luôn tạo đúng 5 mã lớp (slot 1-5), bất kể số tutor chọn
+      for (let slot = 1; slot <= MAX_SLOTS; slot++) {
+        const courseId = `${parentCourseId}_sec${slot}`;
 
         const coursePayload = {
-          course_id: `${parentCourseId}_sec${i + 1}`,
+          course_id: courseId,
           parent_course_id: parentCourseId,
-          class_name: `${formData.title}${sectionSuffix}`,
-          title: `${formData.title}${sectionSuffix}`,
+          class_name: `${formData.title} - Nhóm ${slot}`,
+          title: `${formData.title} - Nhóm ${slot}`,
           category_id: formData.category_id,
           level: formData.level,
           description: formData.description,
@@ -389,8 +394,10 @@ export default function AdminCreateClass() {
           created_by: 'admin_01',
           tutor_id: null,
           tutor_assigned_at: null,
+          slot_number: slot,           // Số thứ tự slot (1-5)
+          accepted_count: 0,           // Đếm số gia sư đã xác nhận
           students: [],
-          permanent_room_url: `/room/${parentCourseId}_sec${i + 1}`,
+          permanent_room_url: `/room/${courseId}`,
           created_at: new Date().toISOString(),
         };
 
@@ -402,29 +409,40 @@ export default function AdminCreateClass() {
 
         if (createRes.ok) {
           const createdCourse = await createRes.json();
-
-          // Gửi đề xuất chỉ đến đúng 1 tutor được chỉ định cho mã lớp này
-          await fetch('/api/admin/classes/suggest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              courseId: createdCourse.course_id,
-              tutorIds: [assignedTutorId],
-            }),
-          });
-
-          successCount++;
+          createdCourseIds.push(createdCourse.course_id);
         }
       }
 
-      if (successCount === numSections) {
-        alert(`✅ Đã tạo thành công ${numSections} mã lớp!\nMỗi mã lớp đã được gửi đề xuất đến 1 Tutor riêng.`);
-        router.push('/admin-classes-management');
-      } else if (successCount > 0) {
-        alert(`⚠️ Chỉ tạo được ${successCount}/${numSections} mã lớp.`);
+      if (createdCourseIds.length === 0) {
+        throw new Error('Không thể tạo mã lớp nào.');
+      }
+
+      // Gửi đề xuất tất cả tutor được chọn cho TẤT CẢ 5 mã lớp
+      // Khi gia sư bấm xác nhận → BE tự phân vào slot còn trống theo thứ tự
+      let suggestErrors = 0;
+      for (const courseId of createdCourseIds) {
+        const suggestRes = await fetch('/api/admin/classes/suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courseId,
+            tutorIds: selectedTutors,
+          }),
+        });
+        if (!suggestRes.ok) suggestErrors++;
+      }
+
+      if (createdCourseIds.length === MAX_SLOTS) {
+        alert(
+          `✅ Đã tạo thành công ${MAX_SLOTS} mã lớp!\n` +
+          `📩 Đã gửi đề xuất đến ${selectedTutors.length} Tutor.\n\n` +
+          `Gia sư xác nhận sớm nhất → Nhóm 1, thứ 2 → Nhóm 2, ...\n` +
+          `Từ gia sư thứ 6 trở lên → hệ thống báo lớp đã đủ gia sư.`
+        );
         router.push('/admin-classes-management');
       } else {
-        throw new Error('Không thể tạo mã lớp nào.');
+        alert(`⚠️ Chỉ tạo được ${createdCourseIds.length}/${MAX_SLOTS} mã lớp.`);
+        router.push('/admin-classes-management');
       }
     } catch (error) {
       console.error('Lỗi tạo lớp:', error);
@@ -619,7 +637,7 @@ export default function AdminCreateClass() {
                 <label>Học phí mong muốn (đ / buổi) <span className={styles.required}>*</span></label>
                 <input
                   type="number"
-                  step="10000"
+                  step="1000"
                   min={currentPriceConfig?.min || 0}
                   max={currentPriceConfig?.max || 999999999}
                   value={formData.price_per_session}
@@ -848,7 +866,7 @@ export default function AdminCreateClass() {
                     <span>Tìm thấy <strong>{eligibleTutors.length}</strong> Tutor phù hợp</span>
                     <div className={styles.tutorActions}>
                       <button type="button" onClick={selectAllTutors} className={styles.selectAllBtn}>
-                        Chọn tất cả
+                        Chọn tối đa {MAX_SLOTS}
                       </button>
                       <button type="button" onClick={deselectAllTutors} className={styles.deselectAllBtn}>
                         Bỏ chọn
@@ -856,42 +874,72 @@ export default function AdminCreateClass() {
                     </div>
                   </div>
 
+                  {/* Banner giải thích luồng 5 slot */}
+                  <div className={styles.slotInfoBanner}>
+                    <span className={styles.slotInfoIcon}>ℹ️</span>
+                    <span>
+                      Hệ thống luôn tạo <strong>5 mã lớp</strong> (Nhóm 1 → 5).
+                      Gia sư xác nhận sớm nhất nhận <strong>Nhóm 1</strong>, tiếp theo nhận Nhóm 2… đến Nhóm 5.
+                      Từ gia sư thứ 6 trở lên sẽ thấy thông báo <em>"Lớp đã có đủ gia sư"</em>.
+                    </span>
+                  </div>
+
+                  {selectedTutors.length >= MAX_SLOTS && (
+                    <div className={styles.maxTutorWarning}>
+                      ⚠️ Đã đạt giới hạn {MAX_SLOTS} Tutor. Bỏ chọn để thay thế.
+                    </div>
+                  )}
+
                   <div className={styles.tutorList}>
                     {eligibleTutors.length === 0 ? (
                       <p className={styles.noTutor}>Không tìm thấy Tutor phù hợp với lịch học này.</p>
                     ) : (
-                      eligibleTutors.map(tutor => (
-                        <label key={tutor.tutor_id} className={styles.tutorItem}>
-                          <input
-                            type="checkbox"
-                            checked={selectedTutors.includes(tutor.tutor_id)}
-                            onChange={() => toggleTutor(tutor.tutor_id)}
-                          />
-                          <img
-                            src={tutor.avatar || '/img/avt/avt.jpg'}
-                            alt={tutor.full_name}
-                            className={styles.tutorAvatar}
-                          />
-                          <div className={styles.tutorInfo}>
-                            <span className={styles.tutorName}>{tutor.full_name}</span>
-                            <span className={styles.tutorExpertise}>{tutor.expertise || 'Chưa cập nhật'}</span>
-                            <span className={styles.tutorRating}>⭐ {tutor.rating || 0}</span>
-                          </div>
-                        </label>
-                      ))
+                      eligibleTutors.map((tutor, idx) => {
+                        const isChecked = selectedTutors.includes(tutor.tutor_id);
+                        const slotIndex = selectedTutors.indexOf(tutor.tutor_id);
+                        const isDisabled = !isChecked && selectedTutors.length >= MAX_SLOTS;
+                        return (
+                          <label
+                            key={tutor.tutor_id}
+                            className={`${styles.tutorItem} ${isDisabled ? styles.tutorItemDisabled : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleTutor(tutor.tutor_id)}
+                              disabled={isDisabled}
+                            />
+                            <img
+                              src={tutor.avatar || '/img/avt/avt.jpg'}
+                              alt={tutor.full_name}
+                              className={styles.tutorAvatar}
+                            />
+                            <div className={styles.tutorInfo}>
+                              <span className={styles.tutorName}>{tutor.full_name}</span>
+                              <span className={styles.tutorExpertise}>{tutor.expertise || 'Chưa cập nhật'}</span>
+                              <span className={styles.tutorRating}>⭐ {tutor.rating || 0}</span>
+                            </div>
+                            {isChecked && (
+                              <span className={styles.slotBadge}>
+                                Nhóm {slotIndex + 1}
+                              </span>
+                            )}
+                          </label>
+                        );
+                      })
                     )}
                   </div>
 
                   <div className={styles.summaryBox}>
                     <p>
-                      <strong>Đã chọn:</strong> {selectedTutors.length} Tutor
+                      <strong>Đã chọn:</strong> {selectedTutors.length}/{MAX_SLOTS} Tutor
                       {selectedTutors.length > 0 && (
-                        <span className={styles.summaryHighlight}> → Sẽ tạo {selectedTutors.length} mã lớp</span>
+                        <span className={styles.summaryHighlight}> → Luôn tạo {MAX_SLOTS} mã lớp</span>
                       )}
                     </p>
                     <p className={styles.summaryNote}>
-                      Mỗi Tutor được chỉ định <strong>1 mã lớp riêng</strong>.
-                      Tutor nhận đề xuất và xác nhận để lớp được kích hoạt.
+                      Tất cả Tutor được chọn đều nhận đề xuất cho <strong>cả 5 mã lớp</strong>.
+                      Ai xác nhận trước sẽ được gán vào Nhóm có số thứ tự thấp nhất còn trống.
                     </p>
                   </div>
                 </>
@@ -999,11 +1047,12 @@ export default function AdminCreateClass() {
 
             {/* Tips Card */}
             <div className={styles.tipsCard}>
-              <h4>Mẹo dành cho bạn</h4>
+              <h4>Cơ chế phân slot gia sư</h4>
               <ul>
-                <li><strong>Mỗi Tutor được chọn</strong> sẽ nhận đề xuất và dạy 1 mã lớp riêng biệt.</li>
-                <li><strong>Tên lớp rõ ràng</strong> sẽ thu hút học sinh đăng ký tham gia cao gấp 2 lần.</li>
-                <li><strong>Mô tả chi tiết</strong> phương pháp dạy học cụ thể giúp phụ huynh an tâm hơn.</li>
+                <li><strong>5 mã lớp cố định</strong> (Nhóm 1 → 5) được tạo ngay khi admin xác nhận.</li>
+                <li><strong>Tất cả gia sư được chọn</strong> đều nhận đề xuất cho cả 5 mã lớp.</li>
+                <li>Gia sư <strong>xác nhận sớm nhất</strong> → Nhóm 1, tiếp theo → Nhóm 2…</li>
+                <li>Từ gia sư thứ 6 trở lên: hệ thống hiện <em>"Lớp đã có đủ gia sư"</em>.</li>
               </ul>
             </div>
 
@@ -1019,7 +1068,7 @@ export default function AdminCreateClass() {
                   ? 'Vui lòng tìm Tutor trước'
                   : selectedTutors.length === 0
                     ? 'Vui lòng chọn Tutor'
-                    : `Tạo ${selectedTutors.length} mã lớp & gửi đề xuất`
+                    : `Tạo ${MAX_SLOTS} mã lớp & gửi đề xuất (${selectedTutors.length} Tutor)`
               }
             </button>
 

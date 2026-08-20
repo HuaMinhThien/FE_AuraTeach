@@ -50,11 +50,20 @@ export async function getEligibleTutors(course) {
     const coursesRes = await fetch(`${API_BASE}/courses`);
     const allCourses = await coursesRes.json();
 
-    // Lọc tutor: approved, receive_suggestions = true
+    // Lọc tutor: approved, chấp nhận đề xuất lớp từ admin
     const eligible = tutors.filter(tutor => {
       // Kiểm tra điều kiện cơ bản
       if (tutor.verification_status !== 'approved') return false;
-      if (tutor.receive_suggestions !== true) return false;
+
+      // Hỗ trợ cả field cũ (receive_suggestions) và field mới (accept_suggested_classes).
+      // Mặc định bật nếu cả hai field đều chưa tồn tại (backward-compatible).
+      const acceptNew = tutor.accept_suggested_classes;
+      const acceptOld = tutor.receive_suggestions;
+      const acceptsSuggestions =
+        acceptNew !== undefined ? acceptNew !== false
+        : acceptOld !== undefined ? acceptOld === true
+        : true; // chưa có field nào → mặc định bật
+      if (!acceptsSuggestions) return false;
 
       // Kiểm tra môn học: dùng keyword map để match expertise dạng chuỗi tự do
       if (!tutorMatchesSubject(tutor, course.category_id)) return false;
@@ -203,11 +212,17 @@ export async function sendSuggestions(courseId, tutorIds) {
 }
 
 /**
- * Tutor nhận lớp (First come first serve)
+ * Tutor nhận lớp — phân slot theo thứ tự xác nhận (Nhóm 1 → 5).
+ *
+ * Luồng:
+ *  1. Gia sư gửi xác nhận với bất kỳ courseId nào trong cùng parent_course_id.
+ *  2. Hệ thống tìm slot (Nhóm) có slot_number thấp nhất còn trống (pending_tutor, chưa có tutor_id).
+ *  3. Gán gia sư vào đúng slot đó.
+ *  4. Nếu tất cả 5 slot đã có gia sư → trả về "Lớp đã có đủ gia sư".
  */
 export async function acceptClass(courseId, tutorId) {
   try {
-    // ✅ Map user_id → tutor_id (vì client gửi user_id từ cookie, nhưng class_suggestions/course lưu tutor_id)
+    // ✅ Map user_id → tutor_id
     let actualTutorId = tutorId;
     try {
       const tutorsRes = await fetch(`${API_BASE}/tutors`);
@@ -218,38 +233,54 @@ export async function acceptClass(courseId, tutorId) {
       console.error('⚠️ [acceptClass] Lỗi map user_id → tutor_id:', e.message);
     }
 
-    // 1. Lấy course hiện tại
+    // 1. Lấy course được gửi lên để biết parent_course_id
     const courseRes = await fetch(`${API_BASE}/courses?course_id=${courseId}`);
     const courses = await courseRes.json();
-    const course = courses[0];
-    if (!course) throw new Error('Không tìm thấy lớp học');
+    const requestedCourse = courses[0];
+    if (!requestedCourse) throw new Error('Không tìm thấy lớp học');
 
-    // 2. Kiểm tra race condition
-    if (course.tutor_id) {
+    const parentId = requestedCourse.parent_course_id || requestedCourse.course_id;
+
+    // 2. Lấy tất cả courses trong cùng nhóm (cùng parent_course_id), sắp theo slot_number
+    const allCoursesRes = await fetch(`${API_BASE}/courses`);
+    const allCourses = await allCoursesRes.json();
+
+    const siblingSlots = allCourses
+      .filter(c => (c.parent_course_id === parentId || c.course_id === parentId))
+      .sort((a, b) => (a.slot_number || 1) - (b.slot_number || 1));
+
+    // 3. Kiểm tra gia sư đã nhận 1 slot trong nhóm này chưa
+    const alreadyInGroup = siblingSlots.some(c => c.tutor_id === actualTutorId);
+    if (alreadyInGroup) {
       return {
         success: false,
-        message: 'Lớp đã có tutor khác nhận!',
+        message: 'Bạn đã nhận dạy một mã lớp trong cùng khóa học này rồi!',
         alreadyAssigned: true
       };
     }
 
-    if (course.status !== 'pending_tutor') {
+    // 4. Tìm slot có số thứ tự thấp nhất còn trống (pending_tutor, chưa có tutor_id)
+    const freeSlot = siblingSlots.find(
+      c => c.status === 'pending_tutor' && !c.tutor_id
+    );
+
+    if (!freeSlot) {
+      // Tất cả 5 slot đã có gia sư
       return {
         success: false,
-        message: 'Lớp không ở trạng thái chờ tutor',
+        message: 'Lớp đã có đủ gia sư nhận! Hẹn bạn ở lớp khác.',
+        alreadyAssigned: true,
+        classFull: true
       };
     }
 
-    // 2.1. Kiểm tra giới hạn 5 lớp/cùng khung giờ
-    const allCoursesRes = await fetch(`${API_BASE}/courses`);
-    const allCourses = await allCoursesRes.json();
-    
-    const tutorActiveClassesInSlot = allCourses.filter(c => 
-      c.tutor_id === actualTutorId && 
-      c.status !== 'cancelled' && 
+    // 5. Kiểm tra giới hạn 5 lớp/cùng khung giờ của tutor
+    const tutorActiveClassesInSlot = allCourses.filter(c =>
+      c.tutor_id === actualTutorId &&
+      c.status !== 'cancelled' &&
       c.status !== 'completed' &&
-      c.time_slot === course.time_slot &&
-      c.schedule_days?.some(day => course.schedule_days?.includes(day))
+      c.time_slot === freeSlot.time_slot &&
+      c.schedule_days?.some(day => freeSlot.schedule_days?.includes(day))
     );
 
     if (tutorActiveClassesInSlot.length >= 5) {
@@ -259,24 +290,8 @@ export async function acceptClass(courseId, tutorId) {
       };
     }
 
-    // 2.2. Kiểm tra đã nhận mã lớp nào của course này chưa (1 Tutor không được dạy 2 mã lớp cùng 1 course)
-    if (course.parent_course_id) {
-      const alreadyTeachingSameCourse = allCourses.some(c => 
-        c.tutor_id === actualTutorId && 
-        c.parent_course_id === course.parent_course_id &&
-        c.course_id !== course.course_id
-      );
-      
-      if (alreadyTeachingSameCourse) {
-        return {
-          success: false,
-          message: 'Bạn đã nhận dạy một mã lớp khác thuộc cùng khóa học này!',
-        };
-      }
-    }
-
-    // 3. Cập nhật course: gán tutor (dùng actualTutorId), chuyển status
-    const updated = await fetch(`${API_BASE}/courses/${course.id}`, {
+    // 6. Gán tutor vào slot trống đó
+    const updated = await fetch(`${API_BASE}/courses/${freeSlot.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -288,8 +303,10 @@ export async function acceptClass(courseId, tutorId) {
 
     const updatedCourse = await updated.json();
 
-    // 4. Cập nhật class_suggestions của tutor này thành accepted
-    const sugRes = await fetch(`${API_BASE}/class_suggestions?course_id=${courseId}&tutor_id=${actualTutorId}`);
+    // 7. Cập nhật class_suggestions của tutor → accepted (cho mã lớp được gán)
+    const sugRes = await fetch(
+      `${API_BASE}/class_suggestions?course_id=${freeSlot.course_id}&tutor_id=${actualTutorId}`
+    );
     const suggestions = await sugRes.json();
     if (suggestions.length > 0) {
       await fetch(`${API_BASE}/class_suggestions/${suggestions[0].id}`, {
@@ -299,7 +316,7 @@ export async function acceptClass(courseId, tutorId) {
       });
     }
 
-// 5. Gửi thông báo cho tutor được nhận (dùng actualTutorId)
+    // 8. Thông báo cho tutor được gán
     const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${actualTutorId}`);
     const tutors = await tutorRes.json();
     const tutor = tutors[0];
@@ -314,45 +331,58 @@ export async function acceptClass(courseId, tutorId) {
         receiver_role: 'tutor',
         type: 'system',
         title: '🎉 Bạn đã nhận lớp thành công!',
-        message: `Bạn đã nhận lớp "${course.title}". Học sinh sẽ đăng ký trong thời gian tới.`,
-        related_id: courseId,
+        message: `Bạn đã nhận "${freeSlot.title}" (Nhóm ${freeSlot.slot_number || '?'}). Học sinh sẽ đăng ký trong thời gian tới.`,
+        related_id: freeSlot.course_id,
         related_type: 'class_suggestion'
       });
     }
 
-    // 6. Gửi thông báo cho các tutor khác (đã gửi đề xuất nhưng chưa nhận)
-    const allSuggestionsRes = await fetch(`${API_BASE}/class_suggestions?course_id=${courseId}&status=pending`);
-    const pendingSuggestions = await allSuggestionsRes.json();
+    // 9. Kiểm tra xem nhóm này đã kín hết chưa → nếu kín, thông báo cho các tutor pending còn lại
+    const remainingFreeSlots = siblingSlots.filter(
+      c => c.status === 'pending_tutor' && !c.tutor_id && c.course_id !== freeSlot.course_id
+    );
 
-for (const sug of pendingSuggestions) {
-      if (sug.tutor_id !== actualTutorId) {
-        const otherTutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${sug.tutor_id}`);
-        const otherTutors = await otherTutorRes.json();
-        const otherTutor = otherTutors[0];
-        const otherUser = users.find(u => u.user_id === otherTutor?.user_id);
+    if (remainingFreeSlots.length === 0) {
+      // Tất cả slot đã đầy — thông báo cho các tutor pending khác
+      const pendingSuggestionsRes = await fetch(
+        `${API_BASE}/class_suggestions?course_id=${freeSlot.course_id}&status=pending`
+      );
+      const pendingSuggestions = await pendingSuggestionsRes.json();
 
-        if (otherUser) {
-          await createNotification({
-            receiver_id: otherUser.user_id,
-            receiver_role: 'tutor',
-            type: 'system',
-            title: '❌ Lớp đã có tutor',
-            message: `Lớp "${course.title}" đã có tutor nhận. Hẹn bạn lần sau!`,
-            related_id: courseId,
-            related_type: 'class_suggestion'
+      for (const sug of pendingSuggestions) {
+        if (sug.tutor_id !== actualTutorId) {
+          const otherTutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${sug.tutor_id}`);
+          const otherTutors = await otherTutorRes.json();
+          const otherTutor = otherTutors[0];
+          const otherUser = users.find(u => u.user_id === otherTutor?.user_id);
+
+          if (otherUser) {
+            await createNotification({
+              receiver_id: otherUser.user_id,
+              receiver_role: 'tutor',
+              type: 'system',
+              title: '❌ Lớp đã có đủ gia sư',
+              message: `Lớp "${requestedCourse.title}" đã có đủ 5 gia sư nhận dạy. Hẹn bạn lần sau!`,
+              related_id: freeSlot.course_id,
+              related_type: 'class_suggestion'
+            });
+          }
+
+          await fetch(`${API_BASE}/class_suggestions/${sug.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'expired' })
           });
         }
-
-        // Cập nhật status suggestion của các tutor khác thành expired
-        await fetch(`${API_BASE}/class_suggestions/${sug.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'expired' })
-        });
       }
     }
 
-    return { success: true, data: updatedCourse };
+    return {
+      success: true,
+      data: updatedCourse,
+      assignedSlot: freeSlot.slot_number,
+      remainingSlots: remainingFreeSlots.length
+    };
   } catch (error) {
     console.error('❌ Lỗi tutor nhận lớp:', error);
     return { success: false, error: error.message };
@@ -582,7 +612,8 @@ export async function tutorCancelClass(courseId, tutorId) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        receive_suggestions: false,
+        accept_suggested_classes: false,
+        receive_suggestions: false, // giữ field cũ để tương thích
         suggestion_block_until: blockUntil
       })
     });
@@ -627,10 +658,11 @@ export async function tutorCancelClass(courseId, tutorId) {
 
 /**
  * Lấy danh sách đề xuất cho Tutor
+ * Hiển thị mỗi nhóm lớp (parent_course_id) 1 lần — kèm thông tin số slot còn trống.
  */
 export async function getTutorSuggestions(tutorId) {
   try {
-    // ✅ Map user_id → tutor_id (vì cookie lưu user_id, nhưng class_suggestions lưu tutor_id)
+    // ✅ Map user_id → tutor_id
     const tutorsRes = await fetch(`${API_BASE}/tutors`);
     const tutors = await tutorsRes.json();
     const matchedTutor = tutors.find(t => t.tutor_id === tutorId || t.user_id === tutorId);
@@ -639,33 +671,56 @@ export async function getTutorSuggestions(tutorId) {
     console.log('📡 [getTutorSuggestions] Received ID:', tutorId);
     console.log('📡 [getTutorSuggestions] Mapped to tutor_id:', actualTutorId);
 
-    // Lấy tất cả suggestions của tutor này
+    // Lấy tất cả suggestions pending của tutor này
     const sugRes = await fetch(`${API_BASE}/class_suggestions?tutor_id=${actualTutorId}&status=pending`);
     const suggestions = await sugRes.json();
 
     console.log('📋 [getTutorSuggestions] Found suggestions:', suggestions.length);
 
-    // Lấy thông tin course cho từng suggestion
-    const result = [];
-    for (const sug of suggestions) {
-      const courseRes = await fetch(`${API_BASE}/courses?course_id=${sug.course_id}`);
-      const courses = await courseRes.json();
-      const course = courses[0];
-      
-      // ✅ Chỉ lấy các lớp đang ở trạng thái pending_tutor và chưa có tutor
-      if (course && course.status === 'pending_tutor' && !course.tutor_id) {
-        // Lấy category name
-        const catRes = await fetch(`${API_BASE}/categories?category_id=${course.category_id}`);
-        const categories = await catRes.json();
-        const category = categories[0];
+    // Lấy tất cả courses 1 lần để tính slot
+    const allCoursesRes = await fetch(`${API_BASE}/courses`);
+    const allCourses = await allCoursesRes.json();
 
-        result.push({
-          ...course,
-          suggestion_id: sug.id,
-          suggested_at: sug.suggested_at,
-          category_name: category?.category_name || 'Chưa phân loại'
-        });
-      }
+    // Gom theo parent_course_id để tránh hiển thị trùng
+    const seenParents = new Set();
+    const result = [];
+
+    for (const sug of suggestions) {
+      const course = allCourses.find(c => c.course_id === sug.course_id);
+      if (!course) continue;
+
+      const parentId = course.parent_course_id || course.course_id;
+
+      // Bỏ qua nếu đã xử lý nhóm này
+      if (seenParents.has(parentId)) continue;
+      seenParents.add(parentId);
+
+      // Đếm slot còn trống trong nhóm
+      const siblingsInGroup = allCourses.filter(
+        c => (c.parent_course_id === parentId || c.course_id === parentId)
+      );
+      const freeSlots = siblingsInGroup.filter(
+        c => c.status === 'pending_tutor' && !c.tutor_id
+      ).length;
+      const totalSlots = siblingsInGroup.length;
+
+      // Nếu không còn slot nào → gia sư thấy "Lớp đã có đủ gia sư"
+      if (freeSlots === 0) continue;
+
+      // Lấy category name
+      const catRes = await fetch(`${API_BASE}/categories?category_id=${course.category_id}`);
+      const categories = await catRes.json();
+      const category = categories[0];
+
+      result.push({
+        ...course,
+        suggestion_id: sug.id,
+        suggested_at: sug.suggested_at,
+        category_name: category?.category_name || 'Chưa phân loại',
+        free_slots: freeSlots,
+        total_slots: totalSlots,
+        slots_full: freeSlots === 0,
+      });
     }
 
     console.log('✅ [getTutorSuggestions] Returning:', result.length, 'classes');

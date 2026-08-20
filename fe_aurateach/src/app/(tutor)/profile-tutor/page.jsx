@@ -49,6 +49,10 @@ export default function TutorProfile() {
 
   const [newCertUrl, setNewCertUrl] = useState("");
 
+  // ✅ STATE TOGGLE NHẬN LỚP ĐỀ XUẤT
+  const [acceptSuggested, setAcceptSuggested] = useState(true);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   // ✅ HÀM KIỂM TRA CATEGORY ĐÃ CHỌN
   const isCategorySelected = (catName) => {
     if (!catName) return false;
@@ -140,6 +144,10 @@ export default function TutorProfile() {
           const mergedData = { ...userObj, ...tutorObj };
           setTutorData(mergedData);
 
+          // ✅ LẤY TRẠNG THÁI TOGGLE NHẬN LỚP ĐỀ XUẤT
+          // Mặc định true nếu field chưa tồn tại (backward-compatible)
+          setAcceptSuggested(mergedData.accept_suggested_classes !== false);
+
           const expArray = mergedData.expertise 
             ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
             : [];
@@ -174,6 +182,32 @@ export default function TutorProfile() {
 
     fetchData();
   }, []);
+
+  // ✅ HÀM TOGGLE NHẬN LỚP ĐỀ XUẤT TỪ ADMIN
+  const handleToggleSuggestions = async () => {
+    if (toggleLoading) return;
+    const newValue = !acceptSuggested;
+    setToggleLoading(true);
+    try {
+      const currentUserId = getUserIdFromCookie();
+      const res = await fetch("/api/tutor/toggle-suggestions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUserId, accept_suggested_classes: newValue }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setAcceptSuggested(newValue);
+      } else {
+        alert("❌ Không thể cập nhật. Vui lòng thử lại.");
+      }
+    } catch (err) {
+      console.error("Lỗi toggle suggestions:", err);
+      alert("Không thể kết nối đến máy chủ.");
+    } finally {
+      setToggleLoading(false);
+    }
+  };
 
   // ✅ HÀM LƯU YÊU CẦU CHỈNH SỬA
   const handleSave = async () => {
@@ -255,6 +289,30 @@ export default function TutorProfile() {
             <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); }}>Hủy</button>
           </div>
         )}
+      </div>
+
+      {/* TOGGLE NHẬN LỚP ĐỀ XUẤT */}
+      <div className={styles.suggestionToggleCard}>
+        <div className={styles.suggestionToggleLeft}>
+          <span className={styles.suggestionToggleIcon}></span>
+          <div>
+            <p className={styles.suggestionToggleTitle}>Nhận lớp đề xuất từ Admin</p>
+            <p className={styles.suggestionToggleDesc}>
+              {acceptSuggested
+                ? "Đang bật — Admin có thể đề xuất lớp học phù hợp cho bạn."
+                : "Đã tắt — Bạn sẽ không nhận đề xuất lớp học từ Admin."}
+            </p>
+          </div>
+        </div>
+        <button
+          className={`${styles.toggleSwitch} ${acceptSuggested ? styles.toggleOn : styles.toggleOff}`}
+          onClick={handleToggleSuggestions}
+          disabled={toggleLoading}
+          aria-label={acceptSuggested ? "Tắt nhận lớp đề xuất" : "Bật nhận lớp đề xuất"}
+          title={acceptSuggested ? "Nhấn để tắt" : "Nhấn để bật"}
+        >
+          <span className={styles.toggleThumb}></span>
+        </button>
       </div>
 
       {/* Header Card */}
