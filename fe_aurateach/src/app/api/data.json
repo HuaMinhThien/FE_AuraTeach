@@ -419,7 +419,8 @@
       "available_days": "Thứ 2, Thứ 4, Thứ 6",
       "available_time_slots": "17:00 - 19:00, 19:00 - 21:00",
       "receive_suggestions": true,
-      "suggestion_block_until": null
+      "suggestion_block_until": null,
+      "accept_suggested_classes": false
     },
     {
       "id": "c95a",
@@ -1923,6 +1924,216 @@
       "status": "closed",
       "permanent_room_url": "https://meet.google.com/vbx-kqdm-luf",
       "students": []
+    },
+    {
+      "course_id": "course_1787249430852_sec1",
+      "parent_course_id": "course_1787249430852",
+      "class_name": "sdfasde - Nhóm 1",
+      "title": "sdfasde - Nhóm 1",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "ắedfaerfggbar",
+      "max_students": 3,
+      "min_students": 3,
+      "price_per_session": 80000,
+      "tutor_salary_per_session": 140000,
+      "start_date": "2026-12-22",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "11:00-13:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "slot_number": 1,
+      "accepted_count": 0,
+      "students": [],
+      "permanent_room_url": "/room/course_1787249430852_sec1",
+      "created_at": "2026-08-20T18:10:30.852Z",
+      "id": "uXccT6qm84U",
+      "suggested_tutors": [
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273"
+      ]
+    },
+    {
+      "course_id": "course_1787249430852_sec2",
+      "parent_course_id": "course_1787249430852",
+      "class_name": "sdfasde - Nhóm 2",
+      "title": "sdfasde - Nhóm 2",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "ắedfaerfggbar",
+      "max_students": 3,
+      "min_students": 3,
+      "price_per_session": 80000,
+      "tutor_salary_per_session": 140000,
+      "start_date": "2026-12-22",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "11:00-13:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "slot_number": 2,
+      "accepted_count": 0,
+      "students": [],
+      "permanent_room_url": "/room/course_1787249430852_sec2",
+      "created_at": "2026-08-20T18:10:30.869Z",
+      "id": "x-ERBMRAn0M",
+      "suggested_tutors": [
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273"
+      ]
+    },
+    {
+      "course_id": "course_1787249430852_sec3",
+      "parent_course_id": "course_1787249430852",
+      "class_name": "sdfasde - Nhóm 3",
+      "title": "sdfasde - Nhóm 3",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "ắedfaerfggbar",
+      "max_students": 3,
+      "min_students": 3,
+      "price_per_session": 80000,
+      "tutor_salary_per_session": 140000,
+      "start_date": "2026-12-22",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "11:00-13:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "slot_number": 3,
+      "accepted_count": 0,
+      "students": [],
+      "permanent_room_url": "/room/course_1787249430852_sec3",
+      "created_at": "2026-08-20T18:10:30.877Z",
+      "id": "g_Bso2OPIm0",
+      "suggested_tutors": [
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273"
+      ]
+    },
+    {
+      "course_id": "course_1787249430852_sec4",
+      "parent_course_id": "course_1787249430852",
+      "class_name": "sdfasde - Nhóm 4",
+      "title": "sdfasde - Nhóm 4",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "ắedfaerfggbar",
+      "max_students": 3,
+      "min_students": 3,
+      "price_per_session": 80000,
+      "tutor_salary_per_session": 140000,
+      "start_date": "2026-12-22",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "11:00-13:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "slot_number": 4,
+      "accepted_count": 0,
+      "students": [],
+      "permanent_room_url": "/room/course_1787249430852_sec4",
+      "created_at": "2026-08-20T18:10:30.892Z",
+      "id": "c8Ok0f0oqVI",
+      "suggested_tutors": [
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273"
+      ]
+    },
+    {
+      "course_id": "course_1787249430852_sec5",
+      "parent_course_id": "course_1787249430852",
+      "class_name": "sdfasde - Nhóm 5",
+      "title": "sdfasde - Nhóm 5",
+      "category_id": "cap1_homework",
+      "level": "Cấp 1",
+      "description": "ắedfaerfggbar",
+      "max_students": 3,
+      "min_students": 3,
+      "price_per_session": 80000,
+      "tutor_salary_per_session": 140000,
+      "start_date": "2026-12-22",
+      "total_weeks": 1,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Thứ 7"
+      ],
+      "time_slot": "11:00-13:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "pending_tutor",
+      "created_by": "admin_01",
+      "tutor_id": null,
+      "tutor_assigned_at": null,
+      "slot_number": 5,
+      "accepted_count": 0,
+      "students": [],
+      "permanent_room_url": "/room/course_1787249430852_sec5",
+      "created_at": "2026-08-20T18:10:30.904Z",
+      "id": "TqtvjtXnePU",
+      "suggested_tutors": [
+        "tutor_03",
+        "tutor_04",
+        "tutor_1782855815613",
+        "tutor_1784195991707",
+        "tutor_1784198598774",
+        "tutor_1784278196031",
+        "tutor_1785245366805",
+        "tutor_1785489685273"
+      ]
     }
   ],
   "reviews": [
@@ -4425,6 +4636,522 @@
       "related_type": "booking",
       "is_read": false,
       "created_at": "2026-08-18T08:55:03.047Z"
+    },
+    {
+      "id": "l2qKtKkjkeQ",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "🔕 Đã tắt nhận lớp đề xuất",
+      "message": "Bạn đã tắt chức năng nhận lớp đề xuất từ Admin. Admin sẽ không gợi ý lớp học mới cho bạn cho đến khi bạn bật lại.",
+      "related_id": null,
+      "related_type": null,
+      "is_read": true,
+      "created_at": "2026-08-20T17:50:43.750Z"
+    },
+    {
+      "id": "r9fceXWBUHo",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "🔕 Đã tắt nhận lớp đề xuất",
+      "message": "Bạn đã tắt chức năng nhận lớp đề xuất từ Admin. Admin sẽ không gợi ý lớp học mới cho bạn cho đến khi bạn bật lại.",
+      "related_id": null,
+      "related_type": null,
+      "is_read": true,
+      "created_at": "2026-08-20T17:54:50.151Z"
+    },
+    {
+      "id": "D-1w7FmvUh8",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "🔕 Đã tắt nhận lớp đề xuất",
+      "message": "Bạn đã tắt chức năng nhận lớp đề xuất từ Admin. Admin sẽ không gợi ý lớp học mới cho bạn cho đến khi bạn bật lại.",
+      "related_id": null,
+      "related_type": null,
+      "is_read": true,
+      "created_at": "2026-08-20T17:57:46.803Z"
+    },
+    {
+      "id": "wDQn5N9I8Dk",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.121Z"
+    },
+    {
+      "id": "FQIPa0p6HyM",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.237Z"
+    },
+    {
+      "id": "d3Rt0DEI8yY",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.294Z"
+    },
+    {
+      "id": "i_rGWfRxyAw",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.342Z"
+    },
+    {
+      "id": "gtHVm3wMuAc",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.389Z"
+    },
+    {
+      "id": "eYmYAB0A3nM",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.432Z"
+    },
+    {
+      "id": "qUmm3rUR2EI",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.479Z"
+    },
+    {
+      "id": "XWj24XP4mmY",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 1\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec1",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.544Z"
+    },
+    {
+      "id": "e8EzSgflbpI",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.665Z"
+    },
+    {
+      "id": "9GM8s7HQW2o",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.712Z"
+    },
+    {
+      "id": "4i3weUPD8u4",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.760Z"
+    },
+    {
+      "id": "XrJ97oU6Kq0",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.804Z"
+    },
+    {
+      "id": "AU_uplSKkSg",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.843Z"
+    },
+    {
+      "id": "wcuPM3BX6bk",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.881Z"
+    },
+    {
+      "id": "P6bWa9GNg6s",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.924Z"
+    },
+    {
+      "id": "o3tqWVNuhds",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 2\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec2",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:31.985Z"
+    },
+    {
+      "id": "FOajyT7G8bQ",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.121Z"
+    },
+    {
+      "id": "rOvoU_ItnrA",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.165Z"
+    },
+    {
+      "id": "f8U3uwr5vN4",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.206Z"
+    },
+    {
+      "id": "5S-F7PKSdIY",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.258Z"
+    },
+    {
+      "id": "HJXd48Vz26Y",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.313Z"
+    },
+    {
+      "id": "hMjCo3sTdi8",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.361Z"
+    },
+    {
+      "id": "8vUTUUXv9MU",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.406Z"
+    },
+    {
+      "id": "nPFJVelGV7g",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 3\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec3",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.457Z"
+    },
+    {
+      "id": "VRbfThfh8Cs",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.561Z"
+    },
+    {
+      "id": "Jvd07AetLx8",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.591Z"
+    },
+    {
+      "id": "vix4CJp5xCY",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.642Z"
+    },
+    {
+      "id": "MBa0lX1DA1A",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.685Z"
+    },
+    {
+      "id": "ulkmec95hj4",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.724Z"
+    },
+    {
+      "id": "CVpfM8MEUOg",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.759Z"
+    },
+    {
+      "id": "vpHOSJiOE40",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.800Z"
+    },
+    {
+      "id": "lLA5usKCCFc",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 4\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec4",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.836Z"
+    },
+    {
+      "id": "ZWajBbPFWks",
+      "receiver_id": "u-03",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.920Z"
+    },
+    {
+      "id": "9t0NHQIbmL0",
+      "receiver_id": "u-04",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:32.962Z"
+    },
+    {
+      "id": "aXZoiqAkCoI",
+      "receiver_id": "user_1782855815606_98bynm",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:33.001Z"
+    },
+    {
+      "id": "zn_51leziBE",
+      "receiver_id": "user_1784195991700_sjra5e",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:33.034Z"
+    },
+    {
+      "id": "8hrcEi4dmoQ",
+      "receiver_id": "user_1784198598761_gvy8le",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:33.069Z"
+    },
+    {
+      "id": "i8UuBnbsiDc",
+      "receiver_id": "user_1784278196023_24jwn9",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:33.116Z"
+    },
+    {
+      "id": "Y-652r65Xco",
+      "receiver_id": "user_1785245366797_7df24g",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:33.155Z"
+    },
+    {
+      "id": "PPyNxKEAM4s",
+      "receiver_id": "user_1785489685235_kl7eih",
+      "receiver_role": "tutor",
+      "type": "system",
+      "title": "📩 Đề xuất lớp học mới",
+      "message": "Admin đã tạo lớp \"sdfasde - Nhóm 5\" và đề xuất bạn nhận dạy. Hãy vào trang \"Đề xuất lớp học\" để xem chi tiết.",
+      "related_id": "course_1787249430852_sec5",
+      "related_type": "class_suggestion",
+      "is_read": false,
+      "created_at": "2026-08-20T18:10:33.194Z"
     }
   ],
   "tutor_update_requests": [
@@ -5239,6 +5966,286 @@
       "course_id": "course_1786172663741",
       "tutor_id": "tutor_1786120063307",
       "suggested_at": "2026-08-08T07:04:25.248Z",
+      "status": "pending"
+    },
+    {
+      "id": "tZ448wScpNw",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-20T18:10:31.077Z",
+      "status": "pending"
+    },
+    {
+      "id": "-4tWKcy7wQc",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-20T18:10:31.168Z",
+      "status": "pending"
+    },
+    {
+      "id": "pgHo24EjtiY",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-20T18:10:31.270Z",
+      "status": "pending"
+    },
+    {
+      "id": "q2la18K5neQ",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-20T18:10:31.316Z",
+      "status": "pending"
+    },
+    {
+      "id": "UBIfgBxSikM",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-20T18:10:31.365Z",
+      "status": "pending"
+    },
+    {
+      "id": "2R-Iosm7KOo",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-20T18:10:31.406Z",
+      "status": "pending"
+    },
+    {
+      "id": "EbbJx6M3AEc",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-20T18:10:31.452Z",
+      "status": "pending"
+    },
+    {
+      "id": "MA52LLcs6JI",
+      "course_id": "course_1787249430852_sec1",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-20T18:10:31.512Z",
+      "status": "pending"
+    },
+    {
+      "id": "a828JlDZTFc",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-20T18:10:31.640Z",
+      "status": "pending"
+    },
+    {
+      "id": "9UC_ZcG1wIM",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-20T18:10:31.685Z",
+      "status": "pending"
+    },
+    {
+      "id": "jdPdO0xxyws",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-20T18:10:31.737Z",
+      "status": "pending"
+    },
+    {
+      "id": "ox8W2jAFiB8",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-20T18:10:31.786Z",
+      "status": "pending"
+    },
+    {
+      "id": "ysTxqw2pcpg",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-20T18:10:31.825Z",
+      "status": "pending"
+    },
+    {
+      "id": "FdpdZHToCSA",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-20T18:10:31.865Z",
+      "status": "pending"
+    },
+    {
+      "id": "fEJbj9LlFkU",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-20T18:10:31.900Z",
+      "status": "pending"
+    },
+    {
+      "id": "uF_JV6U6JC0",
+      "course_id": "course_1787249430852_sec2",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-20T18:10:31.952Z",
+      "status": "pending"
+    },
+    {
+      "id": "g6VjL_BkvbA",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-20T18:10:32.097Z",
+      "status": "pending"
+    },
+    {
+      "id": "d0myTue1-x8",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-20T18:10:32.142Z",
+      "status": "pending"
+    },
+    {
+      "id": "ap3m-74h5cQ",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-20T18:10:32.190Z",
+      "status": "pending"
+    },
+    {
+      "id": "3s2D9ZbtRrw",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-20T18:10:32.230Z",
+      "status": "pending"
+    },
+    {
+      "id": "diKXm4-n15k",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-20T18:10:32.287Z",
+      "status": "pending"
+    },
+    {
+      "id": "n-fMgXVvTTw",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-20T18:10:32.337Z",
+      "status": "pending"
+    },
+    {
+      "id": "y2wdWQtUUZQ",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-20T18:10:32.389Z",
+      "status": "pending"
+    },
+    {
+      "id": "cCpnCqh2rg8",
+      "course_id": "course_1787249430852_sec3",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-20T18:10:32.432Z",
+      "status": "pending"
+    },
+    {
+      "id": "xweX0Fa0qlY",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-20T18:10:32.540Z",
+      "status": "pending"
+    },
+    {
+      "id": "zfu1lXRMyy8",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-20T18:10:32.571Z",
+      "status": "pending"
+    },
+    {
+      "id": "iB_eSTtucJc",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-20T18:10:32.622Z",
+      "status": "pending"
+    },
+    {
+      "id": "1iKiuItf0CQ",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-20T18:10:32.666Z",
+      "status": "pending"
+    },
+    {
+      "id": "Tu5WVOGihXU",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-20T18:10:32.703Z",
+      "status": "pending"
+    },
+    {
+      "id": "reFlLKG4guU",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-20T18:10:32.737Z",
+      "status": "pending"
+    },
+    {
+      "id": "HH6pEeD_P9s",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-20T18:10:32.776Z",
+      "status": "pending"
+    },
+    {
+      "id": "BgnNORFio3M",
+      "course_id": "course_1787249430852_sec4",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-20T18:10:32.816Z",
+      "status": "pending"
+    },
+    {
+      "id": "c5H3KBfLfgo",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_03",
+      "suggested_at": "2026-08-20T18:10:32.906Z",
+      "status": "pending"
+    },
+    {
+      "id": "5lAplvDHXhM",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_04",
+      "suggested_at": "2026-08-20T18:10:32.943Z",
+      "status": "pending"
+    },
+    {
+      "id": "Yyw6Cg86DHE",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_1782855815613",
+      "suggested_at": "2026-08-20T18:10:32.981Z",
+      "status": "pending"
+    },
+    {
+      "id": "s06vE4dKcTU",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_1784195991707",
+      "suggested_at": "2026-08-20T18:10:33.017Z",
+      "status": "pending"
+    },
+    {
+      "id": "C5A7_R0vMLo",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_1784198598774",
+      "suggested_at": "2026-08-20T18:10:33.052Z",
+      "status": "pending"
+    },
+    {
+      "id": "WRCugOjAJN8",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_1784278196031",
+      "suggested_at": "2026-08-20T18:10:33.092Z",
+      "status": "pending"
+    },
+    {
+      "id": "eVmPvqBB0tw",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_1785245366805",
+      "suggested_at": "2026-08-20T18:10:33.132Z",
+      "status": "pending"
+    },
+    {
+      "id": "BIxa-mXYuQg",
+      "course_id": "course_1787249430852_sec5",
+      "tutor_id": "tutor_1785489685273",
+      "suggested_at": "2026-08-20T18:10:33.171Z",
       "status": "pending"
     }
   ],
