@@ -398,7 +398,7 @@
       "user_id": "u-01",
       "bio": "Xin chào, mình là Thiện – Founder của dự án Cổng Gia Sư. Hiện tại, dự án đang trong giai đoạn phát triển và mở rộng cập sớm. Tuy nhiên, mình rất mong nhận được sự ủng hộ và góp ý từ mọi người để Cổng Gia Sư ngày càng hoàn thiện, trở thành một nền tảng kết nối gia sư và học viên minh bạch, an toàn và hiệu quả.",
       "expertise": "Toán, Tin học & Lập trình",
-      "rating": 0,
+      "rating": 5,
       "verification_status": "approved",
       "experience": "2 năm kinh nghiệm",
       "teaching_levels": [
@@ -1847,6 +1847,82 @@
         "tutor_1786117127200",
         "tutor_1786120063307"
       ]
+    },
+    {
+      "id": "test-c1",
+      "course_id": "c-test-today-01",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_01",
+      "title": "Lớp Toán Nâng Cao - Đã Đến Giờ Xác Nhận",
+      "level": "Cấp 3",
+      "description": "Lớp học đã kết thúc khung giờ dạy trong ngày hôm nay, nút xác nhận sẽ sáng.",
+      "max_students": 5,
+      "min_students": 0,
+      "price_per_session": 150000,
+      "start_date": "2026-08-01",
+      "end_date": "2026-09-30",
+      "total_weeks": 8,
+      "schedule_days": [
+        "Chủ Nhật"
+      ],
+      "time_slot": "14:00-16:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/abc-defg-hij",
+      "students": [
+        "u-student-1",
+        "u-student-2"
+      ],
+      "created_at": "2026-08-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-c2",
+      "course_id": "c-test-today-02",
+      "category_id": "cat-02",
+      "tutor_id": "tutor_01",
+      "title": "Lớp Lập Trình Web - Đang Trong Giờ Học",
+      "level": "Cấp 3",
+      "description": "Lớp học chưa kết thúc khung giờ, nút xác nhận sẽ bị ẩn/disabled.",
+      "max_students": 5,
+      "min_students": 0,
+      "price_per_session": 200000,
+      "start_date": "2026-08-01",
+      "end_date": "2026-09-30",
+      "total_weeks": 8,
+      "schedule_days": [
+        "Thứ 3",
+        "Thứ 5",
+        "Chủ Nhật"
+      ],
+      "time_slot": "16:00-19:00",
+      "thumbnail": "/img/class/default-class-2.jpg",
+      "status": "active",
+      "permanent_room_url": "https://meet.google.com/xyz-uvwx-rst",
+      "students": [
+        "u-student-1"
+      ],
+      "created_at": "2026-08-01T00:00:00.000Z"
+    },
+    {
+      "id": "0cb1",
+      "course_id": "course-1787043302796",
+      "tutor_id": "tutor_01",
+      "title": "eeeee",
+      "category_id": "cat-10",
+      "level": "Cấp 3",
+      "description": "ấdaasd",
+      "max_students": 1,
+      "price_per_session": 250000,
+      "start_date": "2026-08-23",
+      "total_weeks": 4,
+      "schedule_days": [
+        "Thứ 2"
+      ],
+      "time_slot": "10:00-12:00",
+      "thumbnail": "/img/class/default-class-1.jpg",
+      "status": "closed",
+      "permanent_room_url": "https://meet.google.com/vbx-kqdm-luf",
+      "students": []
     }
   ],
   "reviews": [
@@ -1876,6 +1952,38 @@
       "comment": "Thầy giảng bài rất cuốn hút, tài liệu học tập chi tiết giúp em cải thiện điểm Văn nghị luận.",
       "created_at": "2026-05-15T09:15:00Z",
       "id": "2d76"
+    },
+    {
+      "review_id": "rev-1787175586052",
+      "student_id": "u-student-1",
+      "tutor_id": "tutor_01",
+      "course_id": "c-test-today-02",
+      "rating": 5,
+      "comment": "hay",
+      "created_at": "2026-08-19T21:39:46.052Z",
+      "id": "ZeICtkvR_M0"
+    },
+    {
+      "review_id": "rev-1787180054387",
+      "student_id": "u-student-1",
+      "tutor_id": "tutor_01",
+      "course_id": "c-test-today-01",
+      "rating": 5,
+      "comment": "hayyyyyyyyyy",
+      "is_anonymous": false,
+      "created_at": "2026-08-19T22:54:14.387Z",
+      "id": "nb8t6AhG_lg"
+    },
+    {
+      "review_id": "rev-1787180134071",
+      "student_id": "user_1782855725159_tqroz6",
+      "tutor_id": "tutor_01",
+      "course_id": "c-02",
+      "rating": 5,
+      "comment": "hayyyyyyyyyyyyy",
+      "is_anonymous": false,
+      "created_at": "2026-08-19T22:55:34.071Z",
+      "id": "ENl6YZyl6do"
     }
   ],
   "honored_members": {
@@ -4305,6 +4413,18 @@
       "related_type": "booking",
       "is_read": true,
       "created_at": "2026-08-08T07:33:35.798Z"
+    },
+    {
+      "id": "notif_1787043303048_mr2mrsc00",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "type": "booking",
+      "title": "📩 Đăng ký khóa học mới",
+      "message": "Học viên Liêm Tran đã đăng ký khóa học \"eeeee\".",
+      "related_id": "bk-1787043302989",
+      "related_type": "booking",
+      "is_read": false,
+      "created_at": "2026-08-18T08:55:03.047Z"
     }
   ],
   "tutor_update_requests": [
@@ -4383,72 +4503,6 @@
       "reject_reason": null,
       "created_at": "2026-08-07T15:53:20.374Z",
       "updated_at": "2026-08-07T16:18:01.212Z"
-    }
-  ],
-  "lesson_confirmations": [
-    {
-      "comfirmation_id": "c-01_2026-08-01",
-      "course_id": "c-01",
-      "tutor_id": "tutor_01",
-      "lesson_number": 3,
-      "lesson_date": "2026-08-01",
-      "record_url": "https://drive.google.com/file/d/1xABCxyz...",
-      "note": "Đã dạy xong bài...",
-      "submitted_at": "2026-08-01T20:00:00.000Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-08-02T20:00:00.000Z",
-      "status": "approved",
-      "lesson_amount": 300000,
-      "payout_status": "transferred",
-      "id": "f225"
-    },
-    {
-      "id": "937b",
-      "comfirmation_id": "c-02_2026-07-27",
-      "course_id": "c-02",
-      "tutor_id": "tutor_01",
-      "lesson_number": 1,
-      "lesson_date": "2026-07-27",
-      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
-      "note": "ôn tập",
-      "submitted_at": "2026-07-30T13:16:37.233Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-07-31T13:16:37.233Z",
-      "status": "approved",
-      "lesson_amount": 0,
-      "payout_status": "transferred"
-    },
-    {
-      "id": "55ed",
-      "comfirmation_id": "c-01_2026-07-29",
-      "course_id": "c-01",
-      "tutor_id": "tutor_01",
-      "lesson_number": 1,
-      "lesson_date": "2026-07-29",
-      "record_url": "localhost:3000/tutor-dashboard",
-      "note": "",
-      "submitted_at": "2026-07-30T14:49:19.781Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-07-31T14:49:19.781Z",
-      "status": "approved",
-      "lesson_amount": 300000,
-      "payout_status": "transferred"
-    },
-    {
-      "id": "e4f3",
-      "comfirmation_id": "c-02_2026-07-30",
-      "course_id": "c-02",
-      "tutor_id": "tutor_01",
-      "lesson_number": 1,
-      "lesson_date": "2026-07-30",
-      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
-      "note": "test",
-      "submitted_at": "2026-08-04T11:54:49.757Z",
-      "holding_hours": 24,
-      "payout_available_at": "2026-08-05T11:54:49.757Z",
-      "status": "approved",
-      "lesson_amount": 240000,
-      "payout_status": "transferred"
     }
   ],
   "payout_requests": [
@@ -4583,32 +4637,6 @@
   ],
   "class_requests": [
     {
-      "id": "req-1786127748610",
-      "requests_id": "req-1786127748610",
-      "student_id": "user_1785316486801_kvbbi7",
-      "category_id": "cat-02",
-      "title": "Ôn cấp tốc",
-      "description": "Cần tìm gia sư là giáo viên có kinh nghiệm cao và có bằng cấp ABCD ",
-      "level": "Cấp 2",
-      "price_per_session": 130000,
-      "status": "pending",
-      "schedule_days": [
-        "Thứ 3",
-        "Thứ 7",
-        "Thứ 5"
-      ],
-      "time_slot": "14:00-16:00",
-      "max_students": 1,
-      "total_weeks": 18,
-      "start_date": "2026-08-16",
-      "schedule_type": "1_term",
-      "tutor_level": "Sinh viên",
-      "start_time": "14:00",
-      "end_time": "16:00",
-      "meet_link": "https://meet.google.com/nec-wney-sfs",
-      "updated_at": "2026-08-08T02:16:43.352Z"
-    },
-    {
       "id": "req-1786132742475",
       "requests_id": "req-1786132742475",
       "student_id": "u-student-1",
@@ -4633,127 +4661,56 @@
       "created_at": "2026-08-07T19:59:02.475Z"
     },
     {
-      "id": "req-1786154613679",
-      "requests_id": "req-1786154613679",
-      "student_id": "user_1785316486801_kvbbi7",
+      "student_id": "u-student-1",
       "category_id": "cat-02",
-      "title": "ôn thi đê",
+      "title": "sssssss",
       "description": "",
       "level": "Cấp 3",
-      "price_per_session": 250000,
-      "status": "pending",
-      "schedule_days": [
-        "Thứ 3",
-        "Thứ 5",
-        "Thứ 7"
-      ],
-      "time_slot": "10:00-12:00",
-      "max_students": 1,
-      "total_weeks": 36,
-      "start_date": "2026-08-13",
-      "schedule_type": "2_terms",
-      "tutor_level": "Giáo viên",
-      "start_time": "10:00",
-      "end_time": "12:00",
-      "meet_link": "https://meet.google.com/ekh-mfrl-vdy",
-      "created_at": "2026-08-08T02:03:33.679Z"
-    },
-    {
-      "id": "req-1786156047400",
-      "requests_id": "req-1786156047400",
-      "student_id": "user_1785316486801_kvbbi7",
-      "category_id": "cat-10",
-      "title": "Ôn lập trình ",
-      "description": "Cần kiếm gia sư kèm gấp, yêu cầu giáo viên đứng lớp có trình độ",
-      "level": "Cấp 3",
-      "price_per_session": 250000,
+      "price_per_session": 266665,
       "status": "pending",
       "schedule_days": [
         "Thứ 2",
         "Thứ 4",
         "Thứ 6"
       ],
-      "time_slot": "13:00-15:00",
-      "max_students": 1,
-      "total_weeks": 4,
-      "start_date": "2026-08-13",
-      "schedule_type": "custom",
-      "tutor_level": "Giáo viên",
-      "start_time": "13:00",
-      "end_time": "15:00",
-      "meet_link": "https://meet.google.com/nue-mehg-khw",
-      "created_at": "2026-08-08T02:27:27.400Z"
-    },
-    {
-      "id": "req-1786156436535",
-      "requests_id": "req-1786156436535",
-      "student_id": "user_1785316486801_kvbbi7",
-      "category_id": "cat-09",
-      "title": "Lớp Tiếng Anh Nâng Cao",
-      "description": "Cần tìm gia sư gấp",
-      "level": "Cấp 3",
-      "price_per_session": 175000,
-      "status": "pending",
-      "schedule_days": [],
-      "time_slot": "07:00-09:00",
-      "max_students": 1,
-      "total_weeks": 18,
-      "start_date": "2026-08-13",
-      "schedule_type": "1_term",
-      "tutor_level": "Sinh viên",
-      "start_time": "07:00",
-      "end_time": "09:00",
-      "meet_link": "https://meet.google.com/fmt-xgdr-opf",
-      "created_at": "2026-08-08T02:33:56.535Z"
-    },
-    {
-      "id": "req-1786157016427",
-      "requests_id": "req-1786157016427",
-      "student_id": "user_1785316486801_kvbbi7",
-      "category_id": "cat-02",
-      "title": "Ôn toán đại số cơ bản",
-      "description": "âsdsfASFasf",
-      "level": "Cấp 3",
-      "price_per_session": 250000,
-      "status": "pending",
-      "schedule_days": [
-        "Thứ 4",
-        "Thứ 5",
-        "Thứ 7",
-        "Thứ 6"
-      ],
-      "time_slot": "12:00-14:00",
+      "time_slot": "16:00-18:00",
       "max_students": 1,
       "total_weeks": 36,
-      "start_date": "2026-08-16",
+      "start_date": "2026-08-23",
       "schedule_type": "2_terms",
       "tutor_level": "Giáo viên",
-      "start_time": "12:00",
-      "end_time": "14:00",
-      "meet_link": "https://meet.google.com/fvi-invk-irf",
-      "created_at": "2026-08-08T02:43:36.427Z"
+      "start_time": "16:00",
+      "end_time": "18:00",
+      "meet_link": "https://meet.google.com/hry-dxpf-lnz",
+      "id": "req-1787042965368",
+      "requests_id": "req-1787042965368",
+      "updated_at": "2026-08-18T09:09:41.683Z"
     },
     {
-      "id": "req-1786157986276",
-      "requests_id": "req-1786157986276",
+      "id": "req-1787044535102",
       "student_id": "user_1785316486801_kvbbi7",
       "category_id": "cat-02",
-      "title": "ÔN bài",
-      "description": "ăfbdsdgG",
+      "title": "huhuhuhuhuh",
+      "description": "ưdsfasfsfad",
       "level": "Cấp 3",
-      "price_per_session": 160000,
+      "price_per_session": 270000,
       "status": "pending",
-      "schedule_days": [],
-      "time_slot": "07:00-09:00",
+      "schedule_days": [
+        "Thứ 2",
+        "Thứ 4",
+        "Thứ 6"
+      ],
+      "time_slot": "18:00-20:00",
       "max_students": 1,
-      "total_weeks": 18,
-      "start_date": "2026-08-13",
-      "schedule_type": "1_term",
-      "tutor_level": "Sinh viên",
-      "start_time": "07:00",
-      "end_time": "09:00",
-      "meet_link": "https://meet.google.com/sjt-jvgw-wwg",
-      "created_at": "2026-08-08T02:59:46.276Z"
+      "total_weeks": 4,
+      "start_date": "2026-08-23",
+      "schedule_type": "custom",
+      "tutor_level": "Giáo viên",
+      "start_time": "18:00",
+      "end_time": "20:00",
+      "meet_link": "https://meet.google.com/fsx-ucng-kud",
+      "requests_id": "req-1787044535102",
+      "created_at": "2026-08-18T09:15:35.102Z"
     }
   ],
   "request_applications": [
@@ -4777,6 +4734,13 @@
       "tutor_id": "tutor_01",
       "status": "pending",
       "created_at": "2026-08-08T02:45:50.866Z"
+    },
+    {
+      "id": "app-1787043273298",
+      "requests_id": "req-1787042927051",
+      "tutor_id": "tutor_01",
+      "status": "pending",
+      "created_at": "2026-08-18T08:54:33.298Z"
     }
   ],
   "class_suggestions": [
@@ -5279,5 +5243,118 @@
     }
   ],
   "refunds": [],
+  "session_attendance": [
+    {
+      "id": "04e7",
+      "attendance_id": "att_1786879614534_u-student-1",
+      "session_id": "ss_1786879614534",
+      "student_id": "u-student-1",
+      "attendance_status": true,
+      "tutor_comment": "non",
+      "created_at": "2026-08-16T11:26:54.534Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "2bb0",
+      "attendance_id": "att_1786879614534_u-student-2",
+      "session_id": "ss_1786879614534",
+      "student_id": "u-student-2",
+      "attendance_status": true,
+      "tutor_comment": "gà ",
+      "created_at": "2026-08-16T11:26:54.534Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "02be",
+      "session_id": "ss_1786882877691",
+      "student_id": "u-student-1",
+      "attendance_status": true,
+      "tutor_comment": "",
+      "created_at": "2026-08-16T12:21:17.701Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "5129",
+      "attendance_id": "att_1786884089862_u-student-1",
+      "session_id": "ss_1786884089854",
+      "student_id": "u-student-1",
+      "attendance_status": true,
+      "tutor_comment": "",
+      "created_at": "2026-08-16T12:41:29.862Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    },
+    {
+      "id": "2b7f",
+      "attendance_id": "att_1786884089862_u-student-2",
+      "session_id": "ss_1786884089854",
+      "student_id": "u-student-2",
+      "attendance_status": false,
+      "tutor_comment": "",
+      "created_at": "2026-08-16T12:41:29.862Z",
+      "update": "2026-08-16T12:41:29.862Z"
+    }
+  ],
+  "class_sessions": [
+    {
+      "id": "052a",
+      "session_id": "ss_1786882877691",
+      "course_id": "c-test-today-02",
+      "actual_date": "2026-08-16T12:21:17.691Z",
+      "start_time": "16:00",
+      "end_time": "19:00",
+      "lesson_title": "Lớp Lập Trình Web - Đang Trong Giờ Học",
+      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "tutor_note": "",
+      "session_status": "completed",
+      "created_at": "2026-08-16T12:21:17.691Z",
+      "updated_at": "2026-08-16T12:21:17.691Z"
+    },
+    {
+      "id": "66c6",
+      "session_id": "ss_1786884089854",
+      "course_id": "c-test-today-01",
+      "actual_date": "2026-08-16T12:41:29.854Z",
+      "start_time": "14:00",
+      "end_time": "16:00",
+      "lesson_title": "Lớp Toán Nâng Cao - Đã Đến Giờ Xác Nhận",
+      "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
+      "tutor_note": "",
+      "session_status": "completed",
+      "created_at": "2026-08-16T12:41:29.854Z",
+      "updated_at": "2026-08-16T12:41:29.854Z"
+    }
+  ],
+  "featured_content": [
+    {
+      "id": "fc-01",
+      "featured_tutors": {
+        "enabled": true,
+        "display_count": 4,
+        "tutor_ids": [
+          "tutor_01",
+          "tutor_1782855815613",
+          "tutor_1786120063307",
+          "tutor_1785489685273"
+        ],
+        "updated_at": "2026-08-19T21:54:14.524Z"
+      },
+      "featured_reviews": {
+        "enabled": true,
+        "display_count": 4,
+        "review_ids": [
+          "rev-01",
+          "rev-02",
+          "rev-03"
+        ],
+        "updated_at": "2026-08-20T00:00:00.000Z"
+      },
+      "featured_courses": {
+        "enabled": true,
+        "display_count": 8,
+        "course_ids": [],
+        "updated_at": "2026-08-19T22:48:08.710Z"
+      }
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }

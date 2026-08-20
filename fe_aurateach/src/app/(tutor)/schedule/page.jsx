@@ -5,25 +5,14 @@ import styles from "./schedule.module.css";
 import { tutorService } from "@/services/tutorService";
 import { courseService } from "@/services/courseService";
 
-const CLASS_COLORS = [
-  { bg: "#e0f2fe", text: "#0369a1", border: "#0ea5e9" },
-  { bg: "#fef3c7", text: "#b45309", border: "#f59e0b" },
-  { bg: "#dcfce7", text: "#15803d", border: "#22c55e" },
-  { bg: "#f3e8ff", text: "#6b21a8", border: "#a855f7" },
-  { bg: "#ffe4e6", text: "#b91c1c", border: "#f43f5e" },
-  { bg: "#ffedd5", text: "#c2410c", border: "#f97316" },
-  { bg: "#e2e8f0", text: "#334155", border: "#64748b" },
-];
-
-const getColorForClass = (classId) => {
-  if (!classId) return CLASS_COLORS[0];
-  let hash = 0;
-  for (let i = 0; i < classId.length; i++) {
-    hash = classId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % CLASS_COLORS.length;
-  return CLASS_COLORS[index];
+// Màu thống nhất theo theme xanh navy của AuraTeach
+const CLASS_COLOR = {
+  bg: "#eef2ff",
+  text: "#1e40af",
+  border: "#0a37a3",
 };
+
+const getColorForClass = () => CLASS_COLOR;
 
 const getUserIdFromCookie = () => {
   try {
@@ -138,7 +127,7 @@ export default function SchedulePage() {
     classes.forEach((cls, classIdx) => {
       if (!cls.time_slot || !cls.time_slot.includes("-")) return;
 
-      const colorStyle = getColorForClass(cls._id || cls.id || cls.class_name);
+      const colorStyle = getColorForClass();
       const [start, end] = cls.time_slot.split("-");
       const startHour = parseInt(start.split(":")[0]);
       const endHour = parseInt(end.split(":")[0]);
@@ -179,7 +168,7 @@ export default function SchedulePage() {
               <div className={styles.classTitle} title={cls.class_name} style={{ color: colorStyle.text }}>
                 {cls.title || cls.class_name}
               </div>
-              <span className={styles.timeBadge} style={{ backgroundColor: "rgba(0, 0, 0, 0.05)", color: colorStyle.text }}>
+              <span className={styles.timeBadge} style={{ backgroundColor: "rgba(10, 55, 163, 0.08)", color: colorStyle.text }}>
                 {cls.time_slot}
               </span>
             </div>
@@ -194,7 +183,7 @@ export default function SchedulePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.meetBtn}
-                  style={{ backgroundColor: colorStyle.text, color: "#ffffff" }}
+                  style={{ backgroundColor: colorStyle.border, color: "#ffffff" }}
                 >
                   Vào lớp
                 </a>
@@ -296,7 +285,7 @@ export default function SchedulePage() {
       <div className={styles.statsBar}>
         <div className={styles.legendList}>
           <div className={styles.legendItem}>
-            <div className={styles.colorDot} style={{ backgroundColor: "#2563eb" }}></div>
+            <div className={styles.colorDot} style={{ backgroundColor: "#eef2ff", border: "2px solid #0a37a3" }}></div>
             <span>Lớp học đang hoạt động</span>
           </div>
           <div className={styles.legendItem}>

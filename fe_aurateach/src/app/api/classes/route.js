@@ -65,6 +65,13 @@ export async function GET(request) {
       });
     }
 
+    // Sắp xếp lớp mới tạo gần nhất lên đầu (trang 1)
+    filteredCourses.sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA; // mới nhất trước
+    });
+
     const totalItems = filteredCourses.length;
     const totalPages = Math.ceil(totalItems / limit) || 1;
     const startIndex = (page - 1) * limit;
@@ -143,8 +150,8 @@ export async function POST(request) {
       defaultStatus = body.status;
     }
 
-    // Tạo permanent_room_url nếu chưa có
-    const roomUrl = body.permanent_room_url || `https://meet.google.com/${generateRoomId()}`;
+    // Tạo permanent_room_url nếu chưa có — dùng route nội bộ /room/[roomId]
+    const roomUrl = body.permanent_room_url || `/room/${courseId}`;
 
     const newCourse = {
       course_id: courseId,
@@ -153,12 +160,12 @@ export async function POST(request) {
       category_id: body.category_id,
       level: body.level,
       description: body.description || "",
-      max_students: body.max_students || 5,
-      min_students: body.min_students || 2,
+      max_students: body.max_students,
+      min_students: body.min_students || 0,
       price_per_session: body.price_per_session,
       start_date: body.start_date,
       end_date: body.end_date,
-      total_weeks: body.total_weeks || 12,
+      total_weeks: body.total_weeks,
       schedule_days: body.schedule_days || [],
       time_slot: body.time_slot || `${body.start_time || '07:00'}-${body.end_time || '09:00'}`,
       thumbnail: body.thumbnail || body.image || '/img/class/default-class-1.jpg',

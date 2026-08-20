@@ -1,25 +1,47 @@
 import { NextResponse } from 'next/server';
 
-function generateMeetLink() {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  const segment = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `https://meet.google.com/${segment(3)}-${segment(4)}-${segment(3)}`;
+function generateMeetLink(courseId) {
+  return `/room/${courseId}`;
 }
 
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(':').map(Number);
-  return h * 60 + m;
+  return (h || 0) * 60 + (m || 0);
 }
 
 function isTimeOverlap(start1, end1, start2, end2) {
   return Math.max(start1, start2) < Math.min(end1, end2);
 }
 
+/**
+ * Lấy start/end phút từ một object (request hoặc course)
+ * Ưu tiên start_time/end_time, nếu không có thì parse từ time_slot
+ */
+function getTimeRange(item) {
+  let start = 0;
+  let end = 0;
+
+  if (item.start_time && item.end_time) {
+    start = timeToMinutes(item.start_time);
+    end = timeToMinutes(item.end_time);
+  } else if (item.time_slot && item.time_slot.includes('-')) {
+    const [s, e] = item.time_slot.split('-').map(t => t.trim());
+    start = timeToMinutes(s);
+    end = timeToMinutes(e);
+  }
+
+  return { start, end };
+}
+
 function checkScheduleConflict(request, tutorCourses) {
   const reqDays = request.schedule_days || [];
-  const reqStart = timeToMinutes(request.start_time);
-  const reqEnd = timeToMinutes(request.end_time);
+  const { start: reqStart, end: reqEnd } = getTimeRange(request);
+
+  // Nếu lớp yêu cầu không có ngày hoặc không có giờ → không coi là trùng
+  if (reqDays.length === 0 || (reqStart === 0 && reqEnd === 0)) {
+    return false;
+  }
 
   for (const course of tutorCourses) {
     if (course.status !== 'active') continue;
@@ -28,17 +50,7 @@ function checkScheduleConflict(request, tutorCourses) {
     const hasCommonDay = reqDays.some(day => courseDays.includes(day));
 
     if (hasCommonDay) {
-      let cStart = 0;
-      let cEnd = 0;
-
-      if (course.time_slot && course.time_slot.includes('-')) {
-        const [s, e] = course.time_slot.split('-');
-        cStart = timeToMinutes(s);
-        cEnd = timeToMinutes(e);
-      } else {
-        cStart = timeToMinutes(course.start_time);
-        cEnd = timeToMinutes(course.end_time);
-      }
+      const { start: cStart, end: cEnd } = getTimeRange(course);
 
       if (isTimeOverlap(reqStart, reqEnd, cStart, cEnd)) {
         return true;
@@ -46,6 +58,66 @@ function checkScheduleConflict(request, tutorCourses) {
     }
   }
   return false;
+}
+
+/**
+ * Kiểm tra lớp có phù hợp với gia sư hay không
+ */
+function isTutorSuitable(request, tutor) {
+  if (!tutor) return false;
+
+  // 1. Kiểm tra trình độ gia sư (Sinh viên / Giáo viên)
+  const requiredTutorLevel = (request.tutor_level || '').trim();
+  const tutorLevel = (tutor.level || '').trim();
+
+  if (requiredTutorLevel && tutorLevel && requiredTutorLevel !== tutorLevel) {
+    return false;
+  }
+
+  // 2. Kiểm tra cấp học
+  const reqLevel = request.level || request.grade_level;
+  const teachingLevels = Array.isArray(tutor.teaching_levels) ? tutor.teaching_levels : [];
+
+  if (reqLevel && teachingLevels.length > 0 && !teachingLevels.includes(reqLevel)) {
+    return false;
+  }
+
+  // 3. Trường hợp đặc biệt: Cấp 1 + hỗ trợ bài tập về nhà
+  if (reqLevel === 'Cấp 1' && request.category_id === 'cap1_homework') {
+    return true;
+  }
+
+  // 4. Kiểm tra môn học (expertise) – làm mềm hơn
+  const categoryName = (request.category_name || '').trim().toLowerCase();
+  if (!categoryName || categoryName === 'môn học') {
+    // Không có thông tin môn → cho phép (đã pass cấp + trình độ)
+    return true;
+  }
+
+  const expertise = (tutor.expertise || '').toLowerCase().trim();
+  if (!expertise) return false;
+
+  // Tách các môn
+  const expertiseList = expertise
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  // So khớp linh hoạt (chứa nhau hoặc bằng nhau)
+  const matched = expertiseList.some(exp => {
+    return (
+      exp === categoryName ||
+      exp.includes(categoryName) ||
+      categoryName.includes(exp)
+    );
+  });
+
+  // Fallback: expertise gốc có chứa tên môn
+  if (!matched && expertise.includes(categoryName)) {
+    return true;
+  }
+
+  return matched;
 }
 
 export async function GET(request) {
@@ -112,7 +184,9 @@ export async function GET(request) {
         pendingApproval.push(reqItem);
       } else {
         const isConflicted = checkScheduleConflict(reqItem, tutorCourses);
-        if (!isConflicted) {
+        const isSuitable = isTutorSuitable(reqItem, matchedTutor);
+
+        if (!isConflicted && isSuitable) {
           proposed.push(reqItem);
         }
       }
@@ -134,7 +208,7 @@ export async function POST(request) {
 
     if (body.action !== 'apply') {
       const reqId = `req-${Date.now()}`;
-      const meet_link = body.meet_link || generateMeetLink();
+      const meet_link = body.meet_link || generateMeetLink(reqId);
 
       const newClassRequest = {
         id: reqId,
@@ -148,7 +222,7 @@ export async function POST(request) {
         status: "pending",
         schedule_days: body.schedule_days || [],
         time_slot: `${body.start_time}-${body.end_time}`,
-        max_students: Number(body.max_students || 1),
+        max_students: 1,
         total_weeks: Number(body.total_weeks || (body.schedule_type === "2_terms" ? 36 : body.schedule_type === "custom" ? 4 : 18)),
         start_date: body.start_date,
         schedule_type: body.schedule_type || "1_term",
@@ -175,17 +249,62 @@ export async function POST(request) {
       }, { status: 201 });
     }
 
+    // ========== XỬ LÝ NHẬN DẠY (action = 'apply') ==========
     const { requests_id, tutor_id } = body;
 
     if (!requests_id || !tutor_id) {
       return NextResponse.json({ success: false, message: "Thiếu thông tin requests_id hoặc tutor_id" }, { status: 400 });
     }
 
+    // 1. Lấy thông tin gia sư
     const tutorsRes = await fetch("http://localhost:3007/tutors", { cache: 'no-store' });
     const tutors = await tutorsRes.json();
     const matchedTutor = tutors.find(t => t.tutor_id === tutor_id || t.user_id === tutor_id);
     const actualTutorId = matchedTutor ? matchedTutor.tutor_id : tutor_id;
 
+    // 2. Lấy thông tin lớp yêu cầu
+    const reqRes = await fetch("http://localhost:3007/class_requests", { cache: 'no-store' });
+    const allRequests = await reqRes.json();
+    const targetRequest = Array.isArray(allRequests)
+      ? allRequests.find(r => (r.requests_id || r.id) === requests_id)
+      : null;
+
+    if (!targetRequest) {
+      return NextResponse.json({ success: false, message: "Không tìm thấy yêu cầu lớp học" }, { status: 404 });
+    }
+
+    // 3. Lấy danh sách lớp đang dạy của gia sư
+    const coursesRes = await fetch("http://localhost:3007/courses", { cache: 'no-store' });
+    const allCourses = await coursesRes.json();
+    const tutorCourses = Array.isArray(allCourses)
+      ? allCourses.filter(c => c.tutor_id === actualTutorId && c.status === 'active')
+      : [];
+
+    // 4. Kiểm tra trùng lịch
+    const isConflicted = checkScheduleConflict(targetRequest, tutorCourses);
+    if (isConflicted) {
+      return NextResponse.json({
+        success: false,
+        message: "⚠️ Lớp này bị trùng lịch với lớp bạn đang dạy. Vui lòng chọn lớp khác!"
+      }, { status: 400 });
+    }
+
+    // 5. Kiểm tra đã ứng tuyển chưa
+    const appResCheck = await fetch("http://localhost:3007/request_applications", { cache: 'no-store' });
+    const existingApps = appResCheck.ok ? await appResCheck.json() : [];
+    const alreadyApplied = Array.isArray(existingApps) && existingApps.some(
+      app => (app.requests_id === requests_id || app.request_id === requests_id) &&
+             (app.tutor_id === actualTutorId || app.tutor_id === tutor_id)
+    );
+
+    if (alreadyApplied) {
+      return NextResponse.json({
+        success: false,
+        message: "Bạn đã đăng ký nhận dạy lớp này rồi!"
+      }, { status: 400 });
+    }
+
+    // 6. Tạo đơn nhận dạy
     const newApp = {
       id: `app-${Date.now()}`,
       requests_id: requests_id,
