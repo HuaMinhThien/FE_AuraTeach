@@ -20,6 +20,9 @@ export default function TutorDetailPage({ params }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [showBooking, setShowBooking] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showAllCourses, setShowAllCourses] = useState(false);
+
+  const COURSES_PREVIEW = 4;
 
   // Lấy thông tin user hiện tại từ cookie hoặc localStorage
   useEffect(() => {
@@ -89,9 +92,10 @@ export default function TutorDetailPage({ params }) {
           const reviewsList = Array.isArray(reviewsRes) ? reviewsRes : (reviewsRes.data || []);
           
           // Lấy chính xác mảng course_id thuộc gia sư này để lọc đánh giá khớp với database của bạn
-          const courseIds = coursesList.map(c => String(c.course_id || c.id));
-          const matchedReviews = reviewsList.filter(r => courseIds.includes(String(r.course_id)));
-          setTutorReviews(matchedReviews);
+          const matchedReviews = reviewsList.filter(r => 
+              String(r.tutor_id) === String(currentTutorId)
+            );
+            setTutorReviews(matchedReviews);
 
           // Xử lý dữ liệu trả về từ tutorService.getRelatedTutors
           const relatedListRaw = Array.isArray(relatedRes) ? relatedRes : (relatedRes.data || []);
@@ -349,24 +353,42 @@ export default function TutorDetailPage({ params }) {
           </div>
 
           <div className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Lớp học hiện có</h2>
+            <div className={styles.sectionTitleRow}>
+              <h2 className={styles.sectionTitle}>Lớp học hiện có</h2>
+              {tutorCourses.length > 0 && (
+                <span className={styles.courseCountBadge}>{tutorCourses.length} lớp</span>
+              )}
+            </div>            
             {tutorCourses.length > 0 ? (
-              <div className={styles.coursesGrid}>
-                {tutorCourses.map((course) => (
-                  <div key={course.course_id || course.id} className={styles.courseCard}>
-                    <div>
-                      <h3 className={styles.courseCardTitle}>{course.title}</h3>
-                      <p className={styles.courseCardDesc}>{course.description}</p>
+              <>
+                <div className={styles.coursesGrid}>
+                  {(showAllCourses ? tutorCourses : tutorCourses.slice(0, COURSES_PREVIEW)).map((course) => (
+                    <div key={course.course_id} className={styles.courseCard}>
+                      <div>
+                        <h3 className={styles.courseCardTitle}>{course.title}</h3>
+                        <p className={styles.courseCardDesc}>{course.description}</p>
+                      </div>
+                      <div className={styles.courseCardFooter}>
+                        <span className={styles.coursePrice}>
+                          {course.price_per_session || 'Liên hệ'}
+                        </span>
+                        <button className={styles.registerBtn} onClick={() => handleOpenBooking(course)}>Đăng ký học</button>
+                      </div>
                     </div>
-                    <div className={styles.courseCardFooter}>
-                      <span className={styles.coursePrice}>
-                        {course.price_per_session || course.price || 'Liên hệ'}
-                      </span>
-                      <button className={styles.registerBtn} onClick={() => handleOpenBooking(course)}>Đăng ký học</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                {tutorCourses.length > COURSES_PREVIEW && (
+                  <button
+                    className={styles.toggleCoursesBtn}
+                    onClick={() => setShowAllCourses((prev) => !prev)}
+                  >
+                    {showAllCourses
+                      ? "▲ Ẩn bớt"
+                      : `▼ Xem thêm ${tutorCourses.length - COURSES_PREVIEW} lớp`}
+                  </button>
+                )}
+              </>
             ) : (
               <p style={{ color: '#64748b', textAlign: 'center', padding: '20px 0' }}>
                 Gia sư này chưa có khóa học nào.

@@ -181,18 +181,18 @@ export default function LoginPage() {
         document.cookie = `token=${data.access_token || data.token}; path=/; max-age=${maxAgeSeconds}`;
       }
 
-      switch (userInfo.role) {
+      switch (data.user.role) {
         case "student":
-          router.push("/");
+          window.location.href = "/";
           break;
         case "tutor":
-          router.push("/tutor-dashboard");
+          window.location.href = "/tutor-dashboard";
           break;
         case "admin":
-          router.push("/admin-dashboard");
+          window.location.href = "/admin-dashboard";
           break;
         default:
-          router.push("/");
+          window.location.href = "/";
       }
     } catch (err) {
       console.error("❌ Login error:", err);

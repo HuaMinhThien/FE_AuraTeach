@@ -2,25 +2,31 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getClassroomRoomPath } from "@/utils/roomUtils";
 import styles from "./ClassCalendar.module.css";
 
 export default function ClassCalendar({ courses, onDateClick }) {
   const router = useRouter();
   const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [hoveredCourse, setHoveredCourse] = useState(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const [showTooltip, setShowTooltip] = useState(false);
   const [selectedCourseIds, setSelectedCourseIds] = useState([]);
   
   const wrapperRef = useRef(null);
   const rowRefs = useRef({});
+  const classBlockRefs = useRef({});
   const hasScrolledRef = useRef(false);
+
+  // Hàm chuẩn hóa đổi Date object thành chuỗi YYYY-MM-DD theo giờ địa phương (tránh lệch UTC)
+  const getLocalDateKey = (dateObj) => {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   // 1. Tạo danh sách các khóa học duy nhất (chỉ lấy các khóa không có trạng thái completed)
   const uniqueCourses = useMemo(() => {
     const map = new Map();
     courses.forEach(item => {
-      // ⚠️ Kiểm tra trạng thái của khóa học (nếu status hoặc course_status là "completed" thì bỏ qua)
       if (item.status === "completed" || item.course_status === "completed") return;
 
       const id = item.course_id;
@@ -34,16 +40,15 @@ export default function ClassCalendar({ courses, onDateClick }) {
     return Array.from(map.values());
   }, [courses]);
 
-  // 2. Tạo map các ngày có buổi học thực tế (chỉ lấy từ các khóa học chưa completed)
+  // 2. Tạo map các ngày có buổi học thực tế
   const classDates = useMemo(() => {
     const dates = {};
     courses.forEach(session => {
-      // ⚠️ Bỏ qua toàn bộ buổi học thuộc khóa học đã hoàn thành
       if (session.status === "completed" || session.course_status === "completed") return;
 
       const sessionDate = session.actual_date; 
       if (sessionDate) {
-        const dateKey = sessionDate.split("T")[0]; // Định dạng YYYY-MM-DD
+        const dateKey = sessionDate.split("T")[0]; 
         if (!dates[dateKey]) {
           dates[dateKey] = [];
         }
@@ -53,29 +58,27 @@ export default function ClassCalendar({ courses, onDateClick }) {
         
         dates[dateKey].push({
           course: session,
-          timeSlot: `${startTime} - ${endTime}`,
+          time: `${startTime} - ${endTime}`,
+          start_time: startTime,
+          end_time: endTime
         });
       }
     });
     return dates;
   }, [courses]);
 
-  // Lấy tất cả khung giờ 30 phút từ 00:00 đến 23:30
+  // Thay đổi khung giờ theo từng tiếng (60 phút) thay vì 30 phút
   const getAllTimeSlots = () => {
     const slots = [];
     for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const hourStr = String(h).padStart(2, '0');
-        const minStr = String(m).padStart(2, '0');
-        slots.push(`${hourStr}:${minStr}`);
-      }
+      const hourStr = String(h).padStart(2, '0');
+      slots.push(`${hourStr}:00`);
     }
     return slots;
   };
 
   const allTimeSlots = getAllTimeSlots();
 
-  // Parse thời gian thành số phút từ 00:00
   const timeToMinutes = (timeStr) => {
     if (!timeStr) return 0;
     const parts = timeStr.split(':');
@@ -83,31 +86,37 @@ export default function ClassCalendar({ courses, onDateClick }) {
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
   };
 
-  // Chuyển đổi khung giờ của buổi học sang danh sách các slot 30 phút để hiển thị trên bảng
-  const getSessionSlots = (timeSlotStr) => {
-    if (!timeSlotStr || timeSlotStr.includes("undefined")) return [];
-    const parts = timeSlotStr.split('-').map(t => t.trim());
-    if (parts.length < 2) return [];
-    
-    const startMin = timeToMinutes(parts[0]);
-    const endMin = timeToMinutes(parts[1]);
-    
-    const slots = [];
-    // ✅ Sửa thành <= để bao gồm cả mốc giờ kết thúc (ví dụ đến đúng 20:00)
-    for (let t = startMin; t <= endMin; t += 30) {
-      const h = Math.floor(t / 60);
-      const m = t % 60;
-      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-    }
-    return slots;
+  const getClassesAtSlot = (date, slotStr) => {
+    const dateKey = getLocalDateKey(date);
+    const dayClasses = classDates[dateKey] || [];
+    const slotMin = timeToMinutes(slotStr);
+
+    return dayClasses.filter(cls => {
+      const startMin = timeToMinutes(cls.start_time);
+      const endMin = timeToMinutes(cls.end_time);
+      return slotMin >= startMin && slotMin < endMin + 30;
+    });
   };
 
-  // Lấy tuần hiện tại
+  const hasClassAtSlot = (date, slotStr) => {
+    const matchingClasses = getClassesAtSlot(date, slotStr);
+    if (matchingClasses.length === 0) return false;
+    
+    if (selectedCourseIds.length > 0) {
+      return matchingClasses.some(cls => selectedCourseIds.includes(cls.course.course_id));
+    }
+    return true;
+  };
+
+  // Lấy tuần hiện tại (bắt đầu từ Thứ Hai)
   const getWeekDays = (baseDate) => {
     const date = new Date(baseDate);
     const day = date.getDay();
     const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    
     const monday = new Date(date.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+
     const week = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday);
@@ -138,17 +147,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
     hasScrolledRef.current = false;
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("vi-VN", {
-      weekday: "short",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
   const isToday = (date) => {
     const today = new Date();
     return (
@@ -158,54 +156,34 @@ export default function ClassCalendar({ courses, onDateClick }) {
     );
   };
 
-  // Kiểm tra có buổi học tại slot này không
-  const getClassesAtSlot = (date, timeSlot) => {
-    const dateKey = date.toISOString().split("T")[0];
+  const getClassesForDate = (date) => {
+    const dateKey = getLocalDateKey(date);
     const dayClasses = classDates[dateKey] || [];
-    const result = [];
-    
-    dayClasses.forEach(cls => {
-      const slots = getSessionSlots(cls.timeSlot);
-      if (slots.includes(timeSlot)) {
-        if (selectedCourseIds.length > 0 && !selectedCourseIds.includes(cls.course.course_id)) {
-          return;
-        }
-        result.push(cls);
-      }
-    });
-    
-    return result;
+    const totalMinutes = 24 * 60;
+    return dayClasses.map(cls => {
+      const startMin = timeToMinutes(cls.start_time);
+      const endMin = timeToMinutes(cls.end_time);
+      return {
+        course: cls.course,
+        time: cls.time,
+        startMin,
+        endMin,
+        durationMin: endMin - startMin,
+        topPercent: (startMin / totalMinutes) * 100,
+        heightPercent: ((endMin - startMin) / totalMinutes) * 100,
+      };
+    }).filter(cls => selectedCourseIds.length === 0 || selectedCourseIds.includes(cls.course.course_id));
   };
 
-  const hasClassAtSlot = (date, timeSlot) => {
-    return getClassesAtSlot(date, timeSlot).length > 0;
-  };
-
-  const handleMouseEnter = (e, course) => {
-    if (!course) return;
-    setHoveredCourse(course);
-    setShowTooltip(true);
-    
-    let x = e.clientX + 15;
-    let y = e.clientY - 10;
-    
-    const tooltipWidth = 260;
-    const tooltipHeight = 150;
-    
-    if (x + tooltipWidth > window.innerWidth) {
-      x = e.clientX - tooltipWidth - 15;
+  const handleJoinFromBlock = (course) => {
+    if (course) {
+      const roomPath = getClassroomRoomPath(course, "student");
+      if (roomPath) {
+        window.open(roomPath, "_blank");
+      } else {
+        alert("Lớp học này chưa có link tham gia!");
+      } 
     }
-    if (y + tooltipHeight > window.innerHeight) {
-      y = window.innerHeight - tooltipHeight - 10;
-    }
-    if (y < 10) y = 10;
-    
-    setTooltipPosition({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
-    setHoveredCourse(null);
   };
 
   const handleClassClick = (course) => {
@@ -214,7 +192,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
     }
   };
 
-  // Lọc theo lớp - dạng checkbox
   const handleFilterToggle = (courseId) => {
     setSelectedCourseIds(prev => {
       if (prev.includes(courseId)) {
@@ -226,7 +203,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
     hasScrolledRef.current = false;
   };
 
-  // Chọn tất cả
   const handleSelectAll = () => {
     const allIds = uniqueCourses.map(c => c.course_id);
     if (selectedCourseIds.length === allIds.length) {
@@ -237,11 +213,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
     hasScrolledRef.current = false;
   };
 
-  const getFirstCourseAtSlot = (date, timeSlot) => {
-    const classes = getClassesAtSlot(date, timeSlot);
-    return classes.length > 0 ? classes[0].course : null;
-  };
-
   // ===== TÍNH NĂNG TỰ ĐỘNG CUỘN =====
   useEffect(() => {
     if (courses.length === 0 || hasScrolledRef.current) return;
@@ -250,58 +221,56 @@ export default function ClassCalendar({ courses, onDateClick }) {
       const wrapper = wrapperRef.current;
       if (!wrapper) return;
 
-      let targetRowIndex = -1;
-      let maxClassCount = 0;
+      let targetBlockRef = null;
 
-      allTimeSlots.forEach((slot, index) => {
-        let classCount = 0;
+      if (selectedCourseIds.length === 1) {
+        const targetCourseId = selectedCourseIds[0];
+        for (const date of weekDays) {
+          const classesForDate = getClassesForDate(date);
+          const targetClass = classesForDate.find(cls => cls.course.course_id === targetCourseId);
+          if (targetClass) {
+            const dateKey = getLocalDateKey(date);
+            targetBlockRef = classBlockRefs.current[`${dateKey}-${targetCourseId}`];
+            break;
+          }
+        }
+      } else {
+        let targetDate = null;
+        let maxClassCount = 0;
+
         weekDays.forEach(date => {
-          if (hasClassAtSlot(date, slot)) {
-            classCount++;
+          const classesForDate = getClassesForDate(date);
+          if (classesForDate.length > maxClassCount) {
+            maxClassCount = classesForDate.length;
+            targetDate = date;
           }
         });
 
-        if (selectedCourseIds.length === 1) {
-          const targetCourseId = selectedCourseIds[0];
-          let hasTargetClass = false;
-          weekDays.forEach(date => {
-            const classes = getClassesAtSlot(date, slot);
-            if (classes.some(cls => cls.course.course_id === targetCourseId)) {
-              hasTargetClass = true;
-            }
-          });
-          if (hasTargetClass) {
-            targetRowIndex = index;
-            return;
-          }
-        } else {
-          if (classCount > maxClassCount) {
-            maxClassCount = classCount;
-            targetRowIndex = index;
-          }
+        if (targetDate && maxClassCount > 0) {
+          const classesForTargetDate = getClassesForDate(targetDate);
+          const targetClass = classesForTargetDate[0];
+          const dateKey = getLocalDateKey(targetDate);
+          targetBlockRef = classBlockRefs.current[`${dateKey}-${targetClass.course.course_id}`];
         }
-      });
-
-      if (targetRowIndex === -1) {
-        targetRowIndex = 0;
       }
 
-      const targetRow = rowRefs.current[targetRowIndex];
-      if (targetRow) {
+      if (targetBlockRef) {
         const wrapperRect = wrapper.getBoundingClientRect();
-        const rowRect = targetRow.getBoundingClientRect();
-        const offset = rowRect.top - wrapperRect.top - 60;
+        const blockRect = targetBlockRef.getBoundingClientRect();
+        const offset = blockRect.top - wrapperRect.top - 60;
         
         wrapper.scrollTo({
           top: wrapper.scrollTop + offset,
           behavior: 'smooth'
         });
         hasScrolledRef.current = true;
+      } else {
+        hasScrolledRef.current = true;
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [selectedCourseIds, currentWeek, courses, allTimeSlots, weekDays]);
+  }, [selectedCourseIds, currentWeek, courses, weekDays]);
 
   if (courses.length === 0) {
     return (
@@ -314,28 +283,6 @@ export default function ClassCalendar({ courses, onDateClick }) {
 
   return (
     <div className={styles.wrapper}>
-      {/* Tooltip */}
-      {showTooltip && hoveredCourse && (
-        <div
-          className={styles.tooltip}
-          style={{
-            position: "fixed",
-            left: tooltipPosition.x,
-            top: tooltipPosition.y,
-            zIndex: 1000,
-            pointerEvents: "none",
-          }}
-        >
-          <div className={styles.tooltipContent}>
-            <h4>{hoveredCourse.title}</h4>
-            <p><strong>Bài học:</strong> {hoveredCourse.lesson_title || "Chưa cập nhật"}</p>
-            <p><strong>Thời gian:</strong> {hoveredCourse.start_time?.substring(0, 5)} - {hoveredCourse.end_time?.substring(0, 5)}</p>
-            <p><strong>Gia sư:</strong> {hoveredCourse.tutor_name || "Chưa có thông tin"}</p>
-            <small>Nhấn để xem chi tiết</small>
-          </div>
-        </div>
-      )}
-
       {/* Calendar Header */}
       <div className={styles.calendarHeader}>
         <div className={styles.calendarNav}>
@@ -354,10 +301,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
       <div className={styles.filterSection}>
         <div className={styles.filterHeader}>
           <span className={styles.filterLabel}>📋 Lọc lớp học:</span>
-          <button 
-            className={styles.selectAllBtn}
-            onClick={handleSelectAll}
-          >
+          <button className={styles.selectAllBtn} onClick={handleSelectAll}>
             {selectedCourseIds.length === uniqueCourses.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
           </button>
         </div>
@@ -377,90 +321,81 @@ export default function ClassCalendar({ courses, onDateClick }) {
             </label>
           ))}
         </div>
-        {selectedCourseIds.length > 0 && selectedCourseIds.length < uniqueCourses.length && (
-          <div className={styles.filterStatus}>
-            Đang hiển thị <strong>{selectedCourseIds.length}</strong>/{uniqueCourses.length} lớp
-          </div>
-        )}
       </div>
 
       {/* TimeTable */}
-      <div 
-        className={styles.timetableWrapper} 
-        ref={wrapperRef}
-      >
+      <div className={styles.timetableWrapper} ref={wrapperRef}>
         <div className={styles.timetable}>
-          {/* Header */}
           <div className={styles.timetableHeader}>
             <div className={styles.timeHeaderCell}>Giờ</div>
             {weekDays.map((date, index) => {
               const isTodayDay = isToday(date);
               return (
-                <div
-                  key={index}
-                  className={`${styles.dayHeaderCell} ${isTodayDay ? styles.todayHeader : ""}`}
-                >
-                  <span className={styles.dayName}>
-                    {date.toLocaleDateString("vi-VN", { weekday: "short" })}
-                  </span>
-                  <span className={styles.dayNumberHeader}>
-                    {date.getDate()}
-                  </span>
+                <div key={index} className={`${styles.dayHeaderCell} ${isTodayDay ? styles.todayHeader : ""}`}>
+                  <span className={styles.dayName}>{date.toLocaleDateString("vi-VN", { weekday: "short" })}</span>
+                  <span className={styles.dayNumberHeader}>{date.getDate()}</span>
                 </div>
               );
             })}
           </div>
 
-          {/* Body */}
-          <div className={styles.timetableBody}>
-            {allTimeSlots.map((slot, slotIndex) => {
-              return (
+          <div className={styles.timetableBodyWrapper}>
+            <div className={styles.timetableBody}>
+              {allTimeSlots.map((slot, slotIndex) => (
                 <div 
                   key={slotIndex} 
                   className={styles.timetableRow}
-                  ref={(el) => {
-                    if (el) rowRefs.current[slotIndex] = el;
-                  }}
+                  ref={(el) => { if (el) rowRefs.current[slotIndex] = el; }}
                 >
                   <div className={styles.timeCell}>
                     <span className={styles.timeText}>{slot}</span>
                   </div>
-
-                  {weekDays.map((date, dayIndex) => {
-                    const hasClass = hasClassAtSlot(date, slot);
-                    const isTodayDay = isToday(date);
-                    const firstCourse = hasClass ? getFirstCourseAtSlot(date, slot) : null;
-
-                    return (
-                      <div
-                        key={dayIndex}
-                        className={`${styles.dayCell} ${hasClass ? styles.hasClass : ""} ${isTodayDay ? styles.todayCell : ""}`}
-                        onMouseEnter={(e) => hasClass && handleMouseEnter(e, firstCourse)}
-                        onMouseLeave={handleMouseLeave}
-                        onClick={() => hasClass && handleClassClick(firstCourse)}
-                      />
-                    );
-                  })}
+                  {weekDays.map((date, dayIndex) => (
+                    <div key={dayIndex} className={`${styles.dayCell} ${isToday(date) ? styles.todayCell : ""}`} />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+              ))}
+            </div>
 
-      {/* Legend */}
-      <div className={styles.calendarLegend}>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDotGreen}></span>
-          <span>Có buổi học</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDotGray}></span>
-          <span>Trống</span>
-        </div>
-        <div className={styles.legendItem}>
-          <span className={styles.legendDotBlue}></span>
-          <span>Hôm nay</span>
+            <div className={styles.classOverlay}>
+              {weekDays.map((date, dayIndex) => {
+                const classesForDate = getClassesForDate(date);
+                const dateKey = getLocalDateKey(date);
+                return (
+                  <div key={dayIndex} className={`${styles.classColumn} ${isToday(date) ? styles.todayColumn : ""}`}>
+                    {classesForDate.map((cls, idx) => (
+                      <div
+                        key={`${dateKey}-${cls.course.course_id}-${idx}`}
+                        className={styles.classBlock}
+                        ref={(el) => {
+                          if (el) classBlockRefs.current[`${dateKey}-${cls.course.course_id}`] = el;
+                        }}
+                        style={{
+                          top: `${cls.topPercent}%`,
+                          height: `${cls.heightPercent}%`,
+                        }}
+                        onClick={() => handleClassClick(cls.course)}
+                      >
+                        <div className={styles.classBlockContent}>
+                          <strong>{cls.course.title}</strong>
+                          <span>{cls.time}</span>
+                          <button
+                            className={styles.classJoinBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinFromBlock(cls.course);
+                            }}
+                          >
+                            Vào lớp
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>

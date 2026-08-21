@@ -1,12 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "../_css/sec2.module.css";
 import { courseService } from "@/services/courseService";
 
 export default function Tutor_sec2({ classesData, onRefreshData }) {
-  const list = classesData || [];
+  const [list, setList] = useState(classesData || []);
+
+  // Cập nhật lại list khi props classesData thay đổi từ cha
+  useEffect(() => {
+    setList(classesData || []);
+    
+    // Tự động gọi fetch ngầm số lượng học viên cho từng lớp nếu chưa có sẵn
+    if (classesData && classesData.length > 0) {
+      classesData.forEach(async (cls, index) => {
+        const courseId = cls.id || cls.course_id;
+        if (courseId && (cls.current_students === undefined || cls.current_students === null)) {
+          try {
+            const res = await courseService.getCourseDetail(courseId);
+            const detail = res?.data || res;
+            if (detail) {
+              const subs = detail.subscriptions || [];
+              const activeCount = subs.filter((sub) => sub.status === "active").length || detail.students?.length || 0;
+              
+              setList((prevList) => {
+                const newList = [...prevList];
+                if (newList[index]) {
+                  newList[index] = {
+                    ...newList[index],
+                    current_students: activeCount,
+                  };
+                }
+                return newList;
+              });
+            }
+          } catch (e) {
+            console.error("Lỗi tự động đếm học viên:", e);
+          }
+        }
+      });
+    }
+  }, [classesData]);
 
   // State Modal Chi tiết lớp học
   const [selectedClass, setSelectedClass] = useState(null);
@@ -50,6 +86,54 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
     }
   };
 
+  const parseDateTimeSlot = (dateStr, timeSlotStr, timeType = "start") => {
+    if (!dateStr || !timeSlotStr) return null;
+
+    try {
+      const now = new Date();
+      let year = now.getFullYear();
+      let month = now.getMonth();
+      let day = now.getDate();
+
+      const dateMatch = dateStr.match(/(\d{4}-\d{2}-\d{2})|(\d{1,2}-\d{1,2})/);
+      if (dateMatch) {
+        const matched = dateMatch[0];
+        if (matched.includes("-")) {
+          const parts = matched.split("-").map(Number);
+          if (parts.length === 3) {
+            [year, month, day] = [parts[0], parts[1] - 1, parts[2]];
+          } else if (parts.length === 2) {
+            [day, month] = [parts[0], parts[1] - 1];
+          }
+        }
+      } else if (!isNaN(Date.parse(dateStr))) {
+        const parsedDate = new Date(dateStr);
+        year = parsedDate.getFullYear();
+        month = parsedDate.getMonth();
+        day = parsedDate.getDate();
+      } else {
+        return null;
+      }
+
+      const timeParts = timeSlotStr.split("-");
+      let targetStr = timeType === "end" ? (timeParts.length > 1 ? timeParts[1].trim() : timeParts[0].trim()) : timeParts[0].trim();
+
+      const timeMatch = targetStr.match(/(\d{1,2}):(\d{2})/);
+      if (!timeMatch) return null;
+
+      return new Date(year, month, day, Number(timeMatch[1]), Number(timeMatch[2]), 0, 0);
+    } catch (err) {
+      console.error("Lỗi parse ngày giờ:", err);
+      return null;
+    }
+  };
+
+  const isSessionStarted = (lessonDateStr, timeSlotStr) => {
+    const startTargetDate = parseDateTimeSlot(lessonDateStr, timeSlotStr, "start");
+    if (!startTargetDate) return false;
+    return new Date() >= startTargetDate;
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.sectionHeader}>
@@ -66,8 +150,11 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
       ) : (
         <div className={styles.list}>
           {list.map((item) => {
+            // Lấy số lượng học viên ưu tiên từ state hiện tại
+            const studentCount = item.current_students ?? item.students_count ?? item.studentsCount ?? 0;
+
             return (
-              <div key={item.id} className={styles.classCard}>
+              <div key={item.id || item.course_id} className={styles.classCard}>
                 <div className={styles.imageWrapper}>
                   <Image
                     src={item.thumbnail || "/img/class/default-class-9.png"}
@@ -85,7 +172,7 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
                   <h4>{item.title}</h4>
                   <div className={styles.meta}>
                     <span>⏰ {item.time}</span>
-                    <span>👥 {item.studentsCount} học viên</span>
+                    <span>👥 {studentCount} học viên</span>
                   </div>
                 </div>
 
@@ -166,12 +253,17 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
             </div>
 
             <div className={styles.modalFooter}>
-              <button 
-                className={styles.btnPrimary} 
-                onClick={() => handleJoinRoom(selectedClass.permanent_room_url)}
-              >
-                Tham gia / Vào lớp
-              </button>
+              {isSessionStarted(
+                selectedClass.tag || selectedClass.next_lesson_date || selectedClass.date, 
+                selectedClass.time_slot || selectedClass.time
+              ) && (
+                <button 
+                  className={styles.btnPrimary} 
+                  onClick={() => handleJoinRoom(selectedClass.permanent_room_url)}
+                >
+                  Vào lớp
+                </button>
+              )}
               <button className={styles.btnSecondary} onClick={() => setSelectedClass(null)}>
                 Đóng
               </button>

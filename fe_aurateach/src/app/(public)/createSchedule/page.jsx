@@ -54,6 +54,13 @@ const getCurrentStudentId = async () => {
   return null;
 };
 
+const generateMeetLink = () => {
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  const segment = (len) =>
+    Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return `https://meet.google.com/${segment(3)}-${segment(4)}-${segment(3)}`;
+};
+
 const PRICE_LIMITS = {
   "Giáo viên": {
     lessThan3: {
@@ -371,20 +378,8 @@ export default function CreateClassRequest() {
 
   const priceLimitInfo = useMemo(() => {
     const tutorCfg = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
-    const base1On1 = tutorCfg.lessThan3[formData.grade_level];
-    const numStudents = Number(formData.max_student) || 1;
-
-    if (numStudents >= 3 && base1On1) {
-      const minCalculated = roundToThousand(base1On1.min / numStudents);
-      const maxCalculated = roundToThousand(base1On1.max / numStudents);
-      return {
-        min: minCalculated,
-        max: maxCalculated,
-        label: `${minCalculated.toLocaleString("vi-VN")}đ - ${maxCalculated.toLocaleString("vi-VN")}đ / buổi / HS`,
-      };
-    }
-    return base1On1;
-  }, [formData.tutor_level, formData.grade_level, formData.max_student]);
+    return tutorCfg.lessThan3[formData.grade_level];
+  }, [formData.tutor_level, formData.grade_level]);
 
   const isPriceValid = useMemo(() => {
     if (formData.price_per_session === "" || !priceLimitInfo) return true;
@@ -414,12 +409,8 @@ export default function CreateClassRequest() {
 
   const handleGenerateMeetLink = async () => {
     if (!(await checkAuthAndRole())) return;
-    try {
-      const generatedLink = `https://meet.google.com/abc-xyz-${Math.floor(Math.random() * 899 + 100)}`;
-      setFormData((prev) => ({ ...prev, meet_link: generatedLink }));
-    } catch (err) {
-      console.error("Lỗi tự động sinh Meet Link:", err);
-    }
+    const link = generateMeetLink();
+    setFormData((prev) => ({ ...prev, meet_link: link }));
   };
 
   const handleSubmit = async (e) => {
@@ -624,7 +615,7 @@ export default function CreateClassRequest() {
       category_id: req.category_id || 1, 
       level: req.level || req.grade_level || "Cơ bản",
       description: req.description || "Không có mô tả",
-      max_students: Number(req.max_student || 1),
+      max_students: 1,
       price_per_session: Number(req.price_per_session || 0),
       start_date: req.start_date ? req.start_date.split("T")[0] : new Date().toISOString().split('T')[0],
       end_date: calculatedEndDate,
@@ -730,7 +721,6 @@ export default function CreateClassRequest() {
   const renderPriceTable = () => {
     const activeLevelConfig = PRICE_LIMITS[formData.tutor_level] || PRICE_LIMITS["Giáo viên"];
     const levels = ["Cấp 1", "Cấp 2", "Cấp 3"];
-    const numStudents = Number(formData.max_student) || 1;
 
     return (
       <div style={{ marginTop: "15px", marginBottom: "15px" }}>
@@ -748,17 +738,13 @@ export default function CreateClassRequest() {
             <thead>
               <tr style={{ backgroundColor: "#edf2f7", borderBottom: "1px solid #cbd5e1" }}>
                 <th style={{ padding: "8px" }}>Cấp học</th>
-                <th style={{ padding: "8px" }}>Lớp 1 - 2 học sinh (1-1)</th>
-                <th style={{ padding: "8px" }}>Lớp 3 - 5 học sinh</th>
+                <th style={{ padding: "8px" }}>Mức học phí lớp 1 kèm 1</th>
               </tr>
             </thead>
             <tbody>
               {levels.map((lvl) => {
                 const isSelected = formData.grade_level === lvl;
                 const base = activeLevelConfig.lessThan3[lvl];
-                const divisor = numStudents >= 3 ? numStudents : 3;
-                const minDiv = roundToThousand(base.min / divisor);
-                const maxDiv = roundToThousand(base.max / divisor);
 
                 return (
                   <tr
@@ -769,8 +755,7 @@ export default function CreateClassRequest() {
                     }}
                   >
                     <td style={{ padding: "8px" }}>{lvl}</td>
-                    <td style={{ padding: "8px" }}>{base.min.toLocaleString("vi-VN")}đ - {base.max.toLocaleString("vi-VN")}đ</td>
-                    <td style={{ padding: "8px" }}>{minDiv.toLocaleString("vi-VN")}đ - {maxDiv.toLocaleString("vi-VN")}đ</td>
+                    <td style={{ padding: "8px" }}>{base.min.toLocaleString("vi-VN")}đ - {base.max.toLocaleString("vi-VN")}đ / buổi</td>
                   </tr>
                 );
               })}
@@ -863,21 +848,12 @@ export default function CreateClassRequest() {
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label>Số lượng học sinh (1 - 5 HS) <span>*</span></label>
+                    <label>Số lượng học sinh</label>
                     <input
-                      type="number"
-                      min="1"
-                      max="5"
+                      type="text"
                       className={styles.input}
-                      value={formData.max_student}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setFormData({
-                          ...formData,
-                          max_student: val === "" ? "" : Math.min(5, Math.max(1, parseInt(val, 10) || 1)),
-                        });
-                      }}
-                      required
+                      value="1 học sinh (1 kèm 1)"
+                      disabled
                     />
                   </div>
                 </div>
@@ -973,7 +949,7 @@ export default function CreateClassRequest() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Giờ bắt đầu dạy (Tự động +2 tiếng) <span>*</span></label>
+                  <label>Giờ bắt đầu dạy<span>*</span></label>
                   <div className={styles.rowTwo}>
                     <select
                       className={styles.select}

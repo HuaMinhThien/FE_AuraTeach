@@ -49,8 +49,18 @@ export default function TutorDashboardPage() {
 
       const now = new Date();
       const activeClasses = coursesData.filter(c => c.status !== "completed");    
-      const totalStudents = coursesData.reduce((sum, c) => sum + (c.students?.length || 0), 0);
-      
+
+      const uniqueStudentIds = new Set();
+      coursesData.forEach(c => {
+        const studentList = c.students || [];
+        studentList.forEach(st => {
+          // Lấy ID học viên (dựa vào cột khóa chính của bảng Student, ví dụ: student_id hoặc id)
+          const stId = st.student_id || st.id || st.user_id;
+          if (stId) uniqueStudentIds.add(stId);
+        });
+      });
+      const totalStudents = uniqueStudentIds.size;
+
       const availableWallet = tutorDetail?.available_balance || 0;
       const pendingWallet = tutorDetail?.pending_balance || 0;
       const calculatedTotalIncome = availableWallet + pendingWallet;
@@ -63,6 +73,8 @@ export default function TutorDashboardPage() {
         openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
         rating: `${tutorDetail?.rating || 0}/5.0`
       });
+
+      console.log("Dữ liệu các khóa học từ API:", coursesData);
 
       const formattedClasses = coursesData
         .map((course) => {
@@ -113,8 +125,12 @@ export default function TutorDashboardPage() {
 
           // Fallback phòng hờ nếu khóa học chưa có bản ghi nào trong class_sessions
           if (!nextStartDateTime) {
-            nextStartDateTime = new Date(now.getTime() + 86400000);
-            nextEndDateTime = new Date(nextStartDateTime.getTime() + 7200000);
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1); // Lùi sang ngày mai
+            tomorrow.setHours(7, 0, 0, 0); // Đặt mặc định 7 giờ sáng ngày mai
+            
+            nextStartDateTime = tomorrow;
+            nextEndDateTime = new Date(nextStartDateTime.getTime() + 7200000); // Kéo dài 2 tiếng
           }
 
           const isLive = now >= new Date(nextStartDateTime.getTime() - 900000) && now <= nextEndDateTime;

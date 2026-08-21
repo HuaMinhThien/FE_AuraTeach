@@ -5,8 +5,10 @@ import Link from "next/link";
 import Header from "@/components/users/Header.jsx";
 import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import BookingDetailModal from "@/components/users/BookingDetailModal.jsx";
+import RatingModal from "@/components/users/RatingModal.jsx";
 import { authService } from "@/services/authService";
 import { courseService } from "@/services/courseService";
+import { reviewService } from "@/services/reviewService"; // <-- Thêm dòng này cùng với các import service khác
 import "../profile/profile.css";
 import "./lich-su-book.css";
 
@@ -18,6 +20,8 @@ export default function StudentBookingHistoryPage() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTutor, setSelectedTutor] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [courseToRate, setCourseToRate] = useState(null);
 
   useEffect(() => {
     const initPage = async () => {
@@ -150,6 +154,37 @@ export default function StudentBookingHistoryPage() {
     setSelectedTutor(null);
   };
 
+  const handleOpenRating = (course) => {
+    setCourseToRate(course);
+    setShowRatingModal(true);
+  };
+
+  const handleRatingSubmit = async (ratingData) => {
+    try {
+      // Gọi service đã tạo sẵn
+      const response = await reviewService.createReview({
+        studentId: currentUser.user_id || currentUser.id,
+        tutorId: courseToRate.tutor_id,
+        courseId: courseToRate.course_id || courseToRate.id,
+        rating: ratingData.rating,
+        comment: ratingData.comment,
+        isAnonymous: ratingData.isAnonymous === true,
+      });
+
+      // apiClient thường trả về trực tiếp dữ liệu (hoặc kết quả chuẩn hóa), kiểm tra response thành công
+      if (response && (response.success !== false)) {
+        alert("Cảm ơn bạn đã đánh giá!");
+        setShowRatingModal(false);
+        setCourseToRate(null);
+      } else {
+        alert(response?.message || "Có lỗi xảy ra");
+      }
+    } catch (error) {
+      console.error("Lỗi gửi đánh giá:", error);
+      alert(error.message || "Không thể gửi đánh giá lúc này");
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -258,6 +293,19 @@ export default function StudentBookingHistoryPage() {
           tutorInfo={selectedTutor}
           onClose={handleCloseModal}
           onJoinClass={handleJoinClass}
+          onRating={handleOpenRating}
+        />
+      )}
+
+      {/* Rating Modal */}
+      {showRatingModal && courseToRate && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          onSubmit={handleRatingSubmit}
+          courseTitle={courseToRate.title}
+          tutorName={getTutorName(courseToRate.tutor_id)}
+          studentName={currentUser?.full_name || currentUser?.name || ""}
         />
       )}
     </>
