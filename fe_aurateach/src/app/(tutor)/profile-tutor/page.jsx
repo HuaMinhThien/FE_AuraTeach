@@ -5,6 +5,7 @@ import styles from "./TutorProfile.module.css";
 import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
 import { categoryService } from "@/services/categoryService";
+import { uploadService } from "@/services/uploadService"; // 👈 Thêm dòng này vào đầu file
 
 const TIME_SLOT_OPTIONS = [
   "07:00 - 09:00",
@@ -57,7 +58,7 @@ export default function TutorProfile() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTimeSlotsDropdownOpen, setIsTimeSlotsDropdownOpen] = useState(false);
   const [isDaysDropdownOpen, setIsDaysDropdownOpen] = useState(false);
-
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editFields, setEditFields] = useState({
     phone: "",
@@ -101,6 +102,39 @@ export default function TutorProfile() {
         };
       }
     });
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploadingAvatar(true);
+      // Gọi uploadService với folder 'avatars'
+      const res = await uploadService.uploadFile(file, "avatars");
+      
+      // Tùy thuộc vào cấu trúc trả về của API upload (ví dụ: res.url hoặc res.data.url)
+      const avatarUrl = res.url || res.data?.url || res.data;
+
+      // Cập nhật vào editFields để chuẩn bị gửi lưu/duyệt
+      setEditFields((prev) => ({
+        ...prev,
+        avatar: avatarUrl,
+      }));
+
+      // Nếu bạn muốn hiển thị trực tiếp luôn trên giao diện tạm thời
+      setTutorData((prev) => ({
+        ...prev,
+        avatar: avatarUrl,
+      }));
+
+      alert("✅ Tải ảnh đại diện thành công!");
+    } catch (error) {
+      console.error("Lỗi upload avatar:", error);
+      alert("❌ Tải ảnh đại diện thất bại. Vui lòng thử lại.");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const isTimeSlotSelected = (slot) => {
@@ -238,6 +272,7 @@ export default function TutorProfile() {
               experience: mergedData.experience || "",
               level: mergedData.level || "Giáo viên",
               cv_link: mergedData.cv_link || "",
+              avatar: mergedData.avatar || "", // <-- Thêm dòng này
               expertise: expArray,
               certificates: mergedData.certificates || [],
               available_days: daysArray,
@@ -293,7 +328,8 @@ export default function TutorProfile() {
         expertise: tutorData.expertise || "",
         certificates: tutorData.certificates || [],
         available_days: tutorData.available_days || "",
-        available_time_slots: tutorData.available_time_slots || ""
+        available_time_slots: tutorData.available_time_slots || "",
+        avatar: tutorData.avatar || "",
       };
 
       const newPayload = {
@@ -305,7 +341,8 @@ export default function TutorProfile() {
         expertise: editFields.expertise.join(", "),
         certificates: editFields.certificates,
         available_days: editFields.available_days.join(", "),
-        available_time_slots: editFields.available_time_slots.join(", ")
+        available_time_slots: editFields.available_time_slots.join(", "),
+        avatar: editFields.avatar,
       };
 
       const tutorId = tutorData.id || tutorData.tutor_id;
@@ -392,13 +429,42 @@ export default function TutorProfile() {
 
       {/* Header Card */}
       <div className={styles.headerCard}>
-        <div className={styles.avatarWrapper}>
+        <div className={styles.avatarWrapper} style={{ position: "relative" }}>
           <img
-            src={tutorData.avatar || "/img/avt/avt.jpg"}
+            src={isEditing ? (editFields.avatar || tutorData.avatar || "/img/avt/avt.jpg") : (tutorData.avatar || "/img/avt/avt.jpg")}
             alt={tutorData.full_name}
             className={styles.avatar}
             onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
           />
+
+          {/* Nút đổi avatar chỉ hiện khi đang ở chế độ chỉnh sửa */}
+          {isEditing && (
+            <label style={{
+              position: "absolute",
+              bottom: "5px",
+              right: "5px",
+              background: "#0284c7",
+              color: "#fff",
+              borderRadius: "50%",
+              width: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+            }} title="Đổi ảnh đại diện">
+              {uploadingAvatar ? "⏳" : "📷"}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                style={{ display: "none" }}
+                disabled={uploadingAvatar}
+              />
+            </label>
+          )}
+
           <span className={`${styles.statusBadge} ${tutorData.status === "active" ? styles.statusActive : styles.statusLocked}`}>
             {tutorData.status === "active" ? "Đang hoạt động" : "Tạm khóa"}
           </span>
