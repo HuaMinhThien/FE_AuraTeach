@@ -376,7 +376,7 @@ export default function SessionConfirm() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Danh Sách Xác Nhận Buổi Học Lớp Hôm Nay</h2>
+      <h2 className={styles.title}>Danh Sách Xác Nhận Buổi Học Hôm Nay</h2>
 
       {/* Hiển thị danh sách các lớp thỏa điều kiện */}
       <div className={styles.classList}>

@@ -318,6 +318,18 @@
   font-weight: 600;
 }
 
+.salaryCol {
+  background-color: #fefce8 !important;
+  color: #854d0e !important;
+  border-left: 2px solid #fcd34d !important;
+}
+
+.priceTable tr.activeTableRow .salaryCol {
+  background-color: #fef9c3 !important;
+  color: #713f12 !important;
+  font-weight: 700;
+}
+
 /* Description Suggestion */
 .descriptionSuggestionBox {
   margin-top: 10px;
@@ -623,6 +635,19 @@
   color: #fca5a5;
 }
 
+/* Màu vàng cho lương tutor trong card */
+.salarySubValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fde68a;
+}
+
+.salaryMonthlyValue {
+  font-weight: 700;
+  color: #fde68a;
+  font-size: 14px;
+}
+
 .totalRow {
   display: flex;
   justify-content: space-between;
@@ -805,6 +830,36 @@
   font-style: italic;
 }
 
+/* Ô hiển thị tổng lương tutor (readonly) */
+.salaryReadonlyBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: #fefce8;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  min-height: 42px;
+  justify-content: center;
+}
+
+.salaryReadonlyValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: #854d0e;
+}
+
+.salaryReadonlyNote {
+  font-size: 12px;
+  color: #a16207;
+}
+
+.salaryReadonlyPlaceholder {
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
 /* Thêm vào cuối file admin-create-class.module.css */
 
 .formValidationHint {
@@ -832,4 +887,56 @@
   font-size: 13px;
   color: #92400e;
   padding: 2px 0;
+}
+
+/* ===== SLOT INFO BANNER ===== */
+.slotInfoBanner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1e40af;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.slotInfoIcon {
+  flex-shrink: 0;
+  font-size: 15px;
+  margin-top: 1px;
+}
+
+/* Cảnh báo đạt giới hạn tutor */
+.maxTutorWarning {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+
+/* Tutor item bị disabled khi đã đủ slot */
+.tutorItemDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Badge hiển thị số nhóm trên mỗi tutor đã chọn */
+.slotBadge {
+  flex-shrink: 0;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
 }

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 const JSON_SERVER_URL = 'http://localhost:3007';
 
-// 1. GET: Lấy toàn bộ dữ liệu cần thiết cho trang Thu nhập của Gia sư
+// ====================== GET ======================
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -12,73 +12,148 @@ export async function GET(request) {
       return NextResponse.json({ success: false, message: 'Thiếu user_id' }, { status: 400 });
     }
 
-    // 1. Tìm gia sư theo user_id
+    // 1. Tìm gia sư
     let tutorRes = await fetch(`${JSON_SERVER_URL}/tutors?user_id=${userId}`, { cache: 'no-store' });
     let tutors = await tutorRes.json();
-    let tutor = tutors[0];
+    let tutor = Array.isArray(tutors) ? tutors[0] : null;
 
-    // 2. Dự phòng: Nếu không tìm thấy theo user_id, thử tìm theo id
     if (!tutor) {
       tutorRes = await fetch(`${JSON_SERVER_URL}/tutors?id=${userId}`, { cache: 'no-store' });
       tutors = await tutorRes.json();
-      tutor = tutors[0];
+      tutor = Array.isArray(tutors) ? tutors[0] : null;
     }
 
     if (!tutor) {
       return NextResponse.json({ success: false, message: 'Không tìm thấy hồ sơ Gia sư' }, { status: 404 });
     }
 
-    // Lấy danh sách ngân hàng & danh sách yêu cầu rút tiền của Gia sư này
-    const [bankAccountsRes, payoutRequestsRes] = await Promise.all([
-      fetch(`${JSON_SERVER_URL}/tutor_bank_accounts?tutor_id=${tutor.tutor_id}`, { cache: 'no-store' }),
-      fetch(`${JSON_SERVER_URL}/payout_requests?tutor_id=${tutor.tutor_id}`, { cache: 'no-store' }),
+    const tutorId = tutor.tutor_id;
+
+    // 2. Lấy song song dữ liệu
+    const [bankAccountsRes, payoutRes, sessionsRes, coursesRes] = await Promise.all([
+      fetch(`${JSON_SERVER_URL}/tutor_bank_accounts?tutor_id=${tutorId}`, { cache: 'no-store' }),
+      fetch(`${JSON_SERVER_URL}/tutor_payouts?tutor_id=${tutorId}`, { cache: 'no-store' }),
+      fetch(`${JSON_SERVER_URL}/class_sessions`, { cache: 'no-store' }),
+      fetch(`${JSON_SERVER_URL}/courses`, { cache: 'no-store' }),
     ]);
 
     const bankAccounts = (await bankAccountsRes.json()) || [];
-    const payoutRequests = (await payoutRequestsRes.json()) || [];
+    let payoutHistory = (await payoutRes.json()) || [];
 
-    // Sắp xếp yêu cầu rút tiền mới nhất lên đầu
-    payoutRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    // Sắp xếp mới nhất lên đầu
+    if (Array.isArray(payoutHistory)) {
+      payoutHistory.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else {
+      payoutHistory = [];
+    }
+
+    // 3. Tính Tiền lương tháng này
+    // Công thức: (price_per_session * số học sinh thực tế) * 0.65
+    // Chỉ tính khi lớp thực sự có học sinh
+    let monthlySalary = 0;
+    try {
+      const allSessions = await sessionsRes.json();
+      const allCourses = await coursesRes.json();
+
+      if (Array.isArray(allSessions) && Array.isArray(allCourses)) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        const tutorCourses = allCourses.filter((c) => c.tutor_id === tutorId);
+
+        allSessions.forEach((session) => {
+          if (session.session_status !== 'completed') return;
+
+          const course = tutorCourses.find(
+            (c) => (c.course_id || c.id) === session.course_id
+          );
+          if (!course) return;
+
+          const sessionDate = new Date(session.actual_date);
+          if (
+            sessionDate.getFullYear() !== currentYear ||
+            sessionDate.getMonth() !== currentMonth
+          ) {
+            return;
+          }
+
+          const price = Number(course.price_per_session) || 0;
+
+          // ===== CHỈ TÍNH KHI LỚP CÓ HỌC SINH THỰC TẾ =====
+          let numStudents = 0;
+          if (Array.isArray(course.students) && course.students.length > 0) {
+            numStudents = course.students.length;
+          }
+          // Nếu không có học sinh → numStudents = 0 → không cộng tiền
+          // ==================================================
+
+          monthlySalary += price * numStudents * 0.65;
+        });
+
+        monthlySalary = Math.round(monthlySalary);
+      }
+    } catch (err) {
+      console.error('Lỗi tính monthlySalary:', err);
+      monthlySalary = 0;
+    }
 
     return NextResponse.json({
       success: true,
       data: {
         tutor,
         bankAccounts,
-        payoutRequests,
+        payoutHistory,
+        monthlySalary,
       },
     });
   } catch (error) {
-    console.error('Lỗi GET API payout-requests:', error);
+    console.error('Lỗi GET API tutor-payout-requests:', error);
     return NextResponse.json({ success: false, message: 'Lỗi máy chủ nội bộ' }, { status: 500 });
   }
 }
 
-// 2. POST: Xử lý tạo mới Ngân hàng hoặc Tạo yêu cầu rút tiền
+// ====================== POST ======================
 export async function POST(request) {
   try {
     const body = await request.json();
     const { action } = body;
 
-    // A. THÊM TÀI KHOẢN NGÂN HÀNG MỚI
+    // A. Thêm tài khoản ngân hàng mới
     if (action === 'add_bank_account') {
-      const { tutor_id, bank_name, bank_code, account_number, account_holder_name, is_default } = body;
+      const {
+        tutor_id,
+        bank_name,
+        bank_code,
+        account_number,
+        account_holder_name,
+        is_default,
+      } = body;
 
       if (!tutor_id || !bank_name || !account_number || !account_holder_name) {
-        return NextResponse.json({ success: false, message: 'Vui lòng điền đầy đủ thông tin ngân hàng' }, { status: 400 });
+        return NextResponse.json(
+          { success: false, message: 'Vui lòng điền đầy đủ thông tin ngân hàng' },
+          { status: 400 }
+        );
       }
 
-      // Nếu tài khoản mới đặt là default, chuyển các tài khoản cũ về is_default = false
+      // Bỏ mặc định các tài khoản cũ nếu cần
       if (is_default) {
-        const oldBanksRes = await fetch(`${JSON_SERVER_URL}/tutor_bank_accounts?tutor_id=${tutor_id}`);
+        const oldBanksRes = await fetch(
+          `${JSON_SERVER_URL}/tutor_bank_accounts?tutor_id=${tutor_id}`,
+          { cache: 'no-store' }
+        );
         const oldBanks = await oldBanksRes.json();
-        for (const bank of oldBanks) {
-          if (bank.is_default) {
-            await fetch(`${JSON_SERVER_URL}/tutor_bank_accounts/${bank.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ is_default: false }),
-            });
+
+        if (Array.isArray(oldBanks)) {
+          for (const bank of oldBanks) {
+            if (bank.is_default) {
+              await fetch(`${JSON_SERVER_URL}/tutor_bank_accounts/${bank.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_default: false }),
+              });
+            }
           }
         }
       }
@@ -100,68 +175,69 @@ export async function POST(request) {
         body: JSON.stringify(newBankAccount),
       });
 
+      if (!saveRes.ok) throw new Error('Không thể lưu tài khoản ngân hàng');
+
       const savedData = await saveRes.json();
-      return NextResponse.json({ success: true, message: 'Thêm ngân hàng thành công', data: savedData });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Thêm ngân hàng thành công',
+        data: savedData,
+      });
     }
 
-    // B. TẠO YÊU CẦU RÚT TIỀN (Chuẩn theo ERD Payout_requests)
-    if (action === 'create_payout_request') {
-      const { tutor_id, bank_account_id, amount } = body;
+    // B. Đặt ngân hàng làm mặc định
+    if (action === 'set_default_bank') {
+      const { tutor_id, bank_account_id } = body;
 
-      if (!tutor_id || !bank_account_id || !amount || amount <= 0) {
-        return NextResponse.json({ success: false, message: 'Thông tin yêu cầu rút tiền không hợp lệ' }, { status: 400 });
+      if (!tutor_id || !bank_account_id) {
+        return NextResponse.json(
+          { success: false, message: 'Thiếu thông tin tutor_id hoặc bank_account_id' },
+          { status: 400 }
+        );
       }
 
-      // Kiểm tra số dư của Gia sư
-      const tutorRes = await fetch(`${JSON_SERVER_URL}/tutors?tutor_id=${tutor_id}`);
-      const tutors = await tutorRes.json();
-      const tutor = tutors[0];
+      // Lấy tất cả tài khoản của gia sư
+      const banksRes = await fetch(
+        `${JSON_SERVER_URL}/tutor_bank_accounts?tutor_id=${tutor_id}`,
+        { cache: 'no-store' }
+      );
+      const banks = await banksRes.json();
 
-      if (!tutor) {
-        return NextResponse.json({ success: false, message: 'Gia sư không tồn tại' }, { status: 404 });
+      if (!Array.isArray(banks) || banks.length === 0) {
+        return NextResponse.json(
+          { success: false, message: 'Không tìm thấy tài khoản ngân hàng' },
+          { status: 404 }
+        );
       }
 
-      if ((tutor.available_balance || 0) < amount) {
-        return NextResponse.json({ success: false, message: 'Số dư khả dụng không đủ để thực hiện giao dịch' }, { status: 400 });
+      // Cập nhật: tài khoản được chọn → true, các tài khoản khác → false
+      for (const bank of banks) {
+        const shouldBeDefault =
+          bank.bank_account_id === bank_account_id || bank.id === bank_account_id;
+
+        await fetch(`${JSON_SERVER_URL}/tutor_bank_accounts/${bank.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_default: shouldBeDefault }),
+        });
       }
 
-      const requestCode = `PR-${Date.now().toString().slice(-6)}`;
-
-      const newPayoutRequest = {
-        payout_req_id: `pr_${Date.now()}`,
-        bank_account_id,
-        tutor_id,
-        processed_by: null,
-        request_code: requestCode,
-        amount: Number(amount),
-        status: 'pending', // 'pending' | 'approved' | 'rejected'
-        rejection_reason: null,
-        processed_at: null,
-        created_at: new Date().toISOString(),
-      };
-
-      // 1. Lưu bản ghi rút tiền
-      const saveReq = await fetch(`${JSON_SERVER_URL}/payout_requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPayoutRequest),
+      return NextResponse.json({
+        success: true,
+        message: 'Đã đặt tài khoản làm mặc định thành công',
       });
-
-      // 2. Tạm trừ số tiền khỏi ví khả dụng (available_balance)
-      const updatedAvailable = (tutor.available_balance || 0) - amount;
-      await fetch(`${JSON_SERVER_URL}/tutors/${tutor.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ available_balance: updatedAvailable }),
-      });
-
-      const savedData = await saveReq.json();
-      return NextResponse.json({ success: true, message: 'Tạo yêu cầu rút tiền thành công', data: savedData });
     }
 
-    return NextResponse.json({ success: false, message: 'Hành động không được hỗ trợ' }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: 'Hành động không được hỗ trợ' },
+      { status: 400 }
+    );
   } catch (error) {
-    console.error('Lỗi POST API payout-requests:', error);
-    return NextResponse.json({ success: false, message: 'Lỗi máy chủ nội bộ' }, { status: 500 });
+    console.error('Lỗi POST API tutor-payout-requests:', error);
+    return NextResponse.json(
+      { success: false, message: 'Lỗi máy chủ nội bộ' },
+      { status: 500 }
+    );
   }
 }

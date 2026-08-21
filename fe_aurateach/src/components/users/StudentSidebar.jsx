@@ -61,7 +61,6 @@ export default function StudentSidebar({ unreadCount = 0 }) {
           </Link>
         ))}
         <button onClick={handleLogout} className="sidebar-link logout">
-          <span className="sidebar-icon"></span>
           Đăng xuất
         </button>
       </nav>

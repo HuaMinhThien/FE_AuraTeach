@@ -25,7 +25,7 @@
 
 .logoIcon {
   font-size: 28px;
-  background-color: #eff6ff;
+  /* background-color: #eff6ff; */
   padding: 6px;
   border-radius: 8px;
   
@@ -41,7 +41,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #0a37a3;
 }
 
 .logoText span {

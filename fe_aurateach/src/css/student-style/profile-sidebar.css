@@ -1,18 +1,20 @@
 /* Student Sidebar Styles */
 .profile-sidebar {
   width: 260px;
+  /* height: 70vh; */
+  height: fit-content;
   flex-shrink: 0;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 24px 0;
-  height: fit-content;
   position: sticky;
   top: 100px;
 }
 
 .sidebar-title {
   padding: 0 20px 16px 20px;
+  text-align: center;
   border-bottom: 1px solid #f3f4f6;
 }
 
@@ -26,8 +28,10 @@
 
 .sidebar-nav {
   display: flex;
+  gap: 15px;
   flex-direction: column;
   padding: 8px 0;
+  align-items: center;
 }
 
 .sidebar-link {
@@ -42,9 +46,10 @@
   transition: all 0.2s;
   border: none;
   background: none;
-  width: 100%;
+  width: 85%;
   cursor: pointer;
   font-family: inherit;
+  border-radius: 8px;
 }
 
 .sidebar-link:hover {
@@ -53,9 +58,9 @@
 }
 
 .sidebar-link.active {
-  background: #eef2ff;
-  color: #4f46e5;
-  border-right: 3px solid #4f46e5;
+  color: #0a37a3;
+    background-color: #eff6ff;
+    font-weight: 600
 }
 
 .sidebar-link .sidebar-icon {
@@ -66,15 +71,30 @@
 }
 
 .sidebar-link.logout {
-  margin-top: 8px;
-  border-top: 1px solid #f3f4f6;
-  padding-top: 16px;
-  color: #ef4444;
+    color: #e11d48;
+    cursor: pointer;
+    background-color: #fff1f2;
+    border: 1px solid #ffe4e6;
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: 85%;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all .2s ease-in-out;
+    display: flex;
+    margin-top: auto;
+
+
 }
 
 .sidebar-link.logout:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  background-color: #f43f5e;
+    color: #ffffff;     
+    border-color: #f43f5e;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
 }
 
 /* Responsive */

@@ -102,7 +102,7 @@ export default function Sidebar() {
     { name: "Quản lý lớp học", path: "/admin-classes-management" },
     { name: "Tạo lớp học mới", path: "/admin-create-class" },
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
-    { name: "Duyệt yêu cầu rút tiền", path: "/admin-tutor-payout-requests" },
+    { name: "Trả lương cho gia sư", path: "/admin-tutor-payout-requests" },
     { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },
     { name: "Nội dung trang home", path: "/admin-content-management" },
   ];

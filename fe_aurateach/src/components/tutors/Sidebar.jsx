@@ -106,8 +106,8 @@ export default function Sidebar() {
                     <Image 
                         src="/img/logo-aurateach.png" 
                         alt="Logo AuraTeach" 
-                        width={50} 
-                        height={40} 
+                        width={60} 
+                        height={50} 
                         priority
                     />
                 </div>

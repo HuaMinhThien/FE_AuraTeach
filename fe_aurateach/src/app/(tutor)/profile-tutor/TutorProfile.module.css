@@ -562,3 +562,95 @@
   border-color: #0035a6;
   box-shadow: 0 0 0 2px rgba(0, 53, 166, 0.1);
 }
+
+/* ===== TOGGLE NHẬN LỚP ĐỀ XUẤT TỪ ADMIN ===== */
+.suggestionToggleCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  gap: 1rem;
+}
+
+.suggestionToggleLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.suggestionToggleIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.suggestionToggleTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.2rem 0;
+}
+
+.suggestionToggleDesc {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Nút toggle (pill switch) */
+.toggleSwitch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 1.625rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  padding: 0;
+  outline: none;
+}
+
+.toggleSwitch:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+}
+
+.toggleSwitch:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggleOn {
+  background-color: #2563eb;
+}
+
+.toggleOff {
+  background-color: #cbd5e1;
+}
+
+/* Hình tròn trượt bên trong */
+.toggleThumb {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: left 0.25s ease;
+}
+
+.toggleOn .toggleThumb {
+  left: calc(100% - 1.2rem - 0.2rem);
+}
+
+.toggleOff .toggleThumb {
+  left: 0.2rem;
+}
