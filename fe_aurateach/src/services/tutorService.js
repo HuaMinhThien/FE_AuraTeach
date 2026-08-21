@@ -132,4 +132,19 @@ export const tutorService = {
       throw error;
     }
   },
+
+  toggleSuggestions: async (userId, acceptSuggested) => {
+    try {
+      const response = await apiClient.patch('/tutor/toggle-suggestions', {
+        userId: userId,
+        accept_suggested_classes: acceptSuggested,
+      });
+      
+      // 🚀 Sửa ở đây: Phải đảm bảo trả về toàn bộ response.data từ Laravel 
+      // (vì response.data chứa { success: true, message: "...", data: {...} })
+      return response.data !== undefined ? response.data : response; 
+    } catch (error) {
+      throw error;
+    }
+  },
 };

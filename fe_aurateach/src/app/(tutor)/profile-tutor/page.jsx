@@ -74,6 +74,9 @@ export default function TutorProfile() {
 
   const [newCertUrl, setNewCertUrl] = useState("");
 
+  const [acceptSuggested, setAcceptSuggested] = useState(true);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   const isCategorySelected = (catName) => {
     if (!catName) return false;
     const cleanCat = catName.toLowerCase().trim();
@@ -249,6 +252,7 @@ export default function TutorProfile() {
           
           if (isMounted) {
             setTutorData(mergedData);
+            setAcceptSuggested(mergedData.accept_suggested_classes !== false);
 
             const expArray = mergedData.expertise 
               ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
@@ -316,6 +320,38 @@ export default function TutorProfile() {
       isMounted = false;
     };
   }, []);
+
+  const handleToggleSuggestions = async () => {
+    if (toggleLoading) return;
+    const newValue = !acceptSuggested; 
+    setToggleLoading(true);
+
+    try {
+        const currentUserId = getUserIdFromCookie();
+        const result = await tutorService.toggleSuggestions(currentUserId, newValue);
+
+        console.log("🔍 Kiểm tra log API:", result);
+
+        // ĐIỀU KIỆN ĐÚNG:
+        // Đôi khi result là { success: true, ... } 
+        // nhưng đôi khi do apiClient trả về, nó nằm trong result.data
+        const isSuccess = result?.success === true || result?.data?.success === true;
+
+        if (isSuccess) {
+            setAcceptSuggested(newValue);
+            console.log("✅ Cập nhật state thành công");
+        } else {
+            // Hiển thị message từ API nếu có, nếu không thì báo lỗi chung
+            const msg = result?.message || "Không rõ nguyên nhân";
+            alert("❌ Lỗi: " + msg);
+        }
+    } catch (err) {
+        console.error("Lỗi:", err);
+        alert("Không thể kết nối đến máy chủ.");
+    } finally {
+        setToggleLoading(false);
+    }
+};
 
   const handleSave = async () => {
     try {
@@ -425,6 +461,29 @@ export default function TutorProfile() {
             }}>Hủy</button>
           </div>
         )}
+      </div>
+
+      <div className={styles.suggestionToggleCard}>
+        <div className={styles.suggestionToggleLeft}>
+          <span className={styles.suggestionToggleIcon}></span>
+          <div>
+            <p className={styles.suggestionToggleTitle}>Nhận lớp đề xuất từ Admin</p>
+            <p className={styles.suggestionToggleDesc}>
+              {acceptSuggested
+                ? "Đang bật — Admin có thể đề xuất lớp học phù hợp cho bạn."
+                : "Đã tắt — Bạn sẽ không nhận đề xuất lớp học từ Admin."}
+            </p>
+          </div>
+        </div>
+        <button
+          className={`${styles.toggleSwitch} ${acceptSuggested ? styles.toggleOn : styles.toggleOff}`}
+          onClick={handleToggleSuggestions}
+          disabled={toggleLoading}
+          aria-label={acceptSuggested ? "Tắt nhận lớp đề xuất" : "Bật nhận lớp đề xuất"}
+          title={acceptSuggested ? "Nhấn để tắt" : "Nhấn để bật"}
+        >
+          <span className={styles.toggleThumb}></span>
+        </button>
       </div>
 
       {/* Header Card */}

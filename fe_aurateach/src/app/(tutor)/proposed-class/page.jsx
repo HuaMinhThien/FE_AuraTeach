@@ -122,7 +122,10 @@ export default function ProposedClassPage() {
 
     setSubmitting(true);
     try {
-      const result = await classRequestService.acceptAdminSuggestion(course.course_id || course.id, currentTutorId);
+      // ✅ SỬA LẠI: Truyền chính xác course.request_id
+      const classId = course.request_id || course.course_id || course.id;
+      
+      const result = await classRequestService.acceptAdminSuggestion(classId, currentTutorId);
       if (result && result.success !== false) {
         alert("🎉 Nhận lớp thành công!");
         setSelectedClass(null);

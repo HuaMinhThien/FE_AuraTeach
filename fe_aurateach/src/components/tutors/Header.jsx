@@ -84,15 +84,9 @@ export default function Header() {
                 </div>
 
                 <div className="tutor-wallets" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    <div className="wallet-item" style={{ background: "#fffbeb", padding: "4px 10px", borderRadius: "8px", border: "1px solid #fde68a" }}>
-                        <span style={{ fontSize: "11px", color: "#d97706", display: "block", fontWeight: "500" }}>Chờ nhận</span>
-                        <strong style={{ color: "#b45309", fontSize: "14px" }}>
-                            {balances.pending.toLocaleString("vi-VN")}đ
-                        </strong>
-                    </div>
 
                     <div className="wallet-item" style={{ background: "#f0fdf4", padding: "4px 10px", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
-                        <span style={{ fontSize: "11px", color: "#16a34a", display: "block", fontWeight: "500" }}>Khả dụng (Rút)</span>
+                        <span style={{ fontSize: "11px", color: "#16a34a", display: "block", fontWeight: "500" }}>Khả dụng</span>
                         <strong style={{ color: "#15803d", fontSize: "14px" }}>
                             {balances.available.toLocaleString("vi-VN")}đ
                         </strong>

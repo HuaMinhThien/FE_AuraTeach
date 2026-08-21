@@ -522,6 +522,14 @@ export default function TutorApprovalPage() {
                 {/* Cột dữ liệu CŨ */}
                 <div className={styles.compareColOld}>
                   <h3 className={styles.colTitleOld}>Dữ Liệu Cũ</h3>
+                  <div className={styles.infoItem} style={{ textAlign: "center" }}>
+                    <label>Ảnh đại diện cũ</label>
+                    <img
+                      src={selectedRequest.old_data?.avatar || "/img/avt/avt.jpg"}
+                      alt="Avatar cũ"
+                      style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", margin: "0 auto" }}
+                    />
+                  </div>
                   <div className={styles.infoItem}>
                     <label>Số điện thoại</label>
                     <p className={selectedRequest.old_data?.phone !== selectedRequest.new_data?.phone ? styles.changedText : ""}>
@@ -599,6 +607,21 @@ export default function TutorApprovalPage() {
                 {/* Cột dữ liệu MỚI */}
                 <div className={styles.compareColNew}>
                   <h3 className={styles.colTitleNew}>Dữ Liệu Mới (Cần Duyệt)</h3>
+                  <div className={styles.infoItem} style={{ textAlign: "center" }}>
+                    <label>Ảnh đại diện mới</label>
+                    <img
+                      src={selectedRequest.new_data?.avatar || "/img/avt/avt.jpg"}
+                      alt="Avatar mới"
+                      style={{ 
+                        width: "80px", 
+                        height: "80px", 
+                        borderRadius: "50%", 
+                        objectFit: "cover", 
+                        margin: "0 auto",
+                        border: selectedRequest.old_data?.avatar !== selectedRequest.new_data?.avatar ? "2px solid #22c55e" : "none" 
+                      }}
+                    />
+                  </div>
                   <div className={styles.infoItem}>
                     <label>Số điện thoại</label>
                     <p className={selectedRequest.old_data?.phone !== selectedRequest.new_data?.phone ? styles.highlightNew : ""}>

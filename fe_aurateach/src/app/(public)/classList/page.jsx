@@ -74,7 +74,7 @@ export default function ClassListPage() {
             tutor: course.tutor
           });
 
-          const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMjQiIGZpbGw9IiNFNUU3RUIiLz4KPHBhdGggZD0iTTE2IDE4QzE2IDE1LjI0IDguMjQgMTIgMTIgMTJDMTEuNTUyIDIxIDIwIDM2IDI0IDM2QzI4IDM2IDM2LjQ0OCAyMSAzNiAxMkMyOS43NiAxMiAyNCAxNS4yNCAyNCAxOFoiIGZpbGw9IiM5Q0FGRjYiLz48L3N2Zz4=';
+          const defaultAvatar = 'https://res.cloudinary.com/ghbrskob/image/upload/v1786685723/aurateach_reports/v09h1kwwsnzbczsggiuy.webp';
           const user = course.tutor?.user;
 
           // Format thời gian học nếu có
@@ -87,7 +87,7 @@ export default function ClassListPage() {
           return {
             ...course,
             tutor_name: user?.full_name || 'Gia sư AuraTeach',
-            tutor_avatar: (user?.avatar && user.avatar !== '/img/tutors/default.png') ? user.avatar : defaultAvatar,
+            tutor_avatar: (user?.avatar && user.avatar !== 'https://res.cloudinary.com/ghbrskob/image/upload/v1786685723/aurateach_reports/v09h1kwwsnzbczsggiuy.webp') ? user.avatar : defaultAvatar,
             experience: course.tutor?.Experience || 'Chưa cập nhật',
             category_name: course.category?.category_name || 'Chưa phân loại',
             students_count: course.current_students || 0,

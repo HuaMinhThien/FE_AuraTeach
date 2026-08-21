@@ -36,4 +36,25 @@ export const classSessionService = {
       throw error;
     }
   },
+
+  createSession: async (sessionData) => {
+    try {
+      const response = await apiClient.post('/class-sessions', sessionData);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error("❌ Lỗi khi tạo buổi học:", error);
+      throw error;
+    }
+  },
+
+  // 🚀 BỔ SUNG: Lưu điểm danh từng học sinh
+  createSessionAttendance: async (attendanceData) => {
+    try {
+      const response = await apiClient.post('/session_attendance', attendanceData);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error("❌ Lỗi khi lưu điểm danh sinh viên:", error);
+      throw error;
+    }
+  }
 };
