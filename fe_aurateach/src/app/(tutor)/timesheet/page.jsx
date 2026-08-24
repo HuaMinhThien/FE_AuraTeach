@@ -92,10 +92,14 @@ export default function TutorTimesheetPage() {
   const monthlyData = useMemo(() => {
     if (!tutorId) return null;
 
+    // ===== KỲ CHẤM CÔNG: từ ngày 5 tháng này → ngày 5 tháng sau =====
+    const startDate = new Date(selectedYear, selectedMonth, 5);
+    const endDate = new Date(selectedYear, selectedMonth + 1, 5);
+
     const filteredSessions = sessions.filter((s) => {
       if (!s.actual_date) return false;
       const d = new Date(s.actual_date);
-      return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth;
+      return d >= startDate && d < endDate;
     });
 
     // Nhóm theo course
@@ -153,10 +157,9 @@ export default function TutorTimesheetPage() {
       totalIncome,
       totalCompleted,
       totalUncompleted,
-      totalHours: Math.round(totalHours * 10) / 10, // làm tròn 1 chữ số thập phân
+      totalHours: Math.round(totalHours * 10) / 10,
     };
   }, [tutorId, courses, sessions, selectedMonth, selectedYear]);
-
   // ===== Helpers =====
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
@@ -287,6 +290,11 @@ export default function TutorTimesheetPage() {
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           Danh sách lớp học trong {monthNames[selectedMonth]}/{selectedYear}
+          <span style={{ fontWeight: 400, fontSize: '14px', color: '#64748b', marginLeft: 8 }}>
+            ({String(5).padStart(2, '0')}/{String(selectedMonth + 1).padStart(2, '0')}/{selectedYear}
+            {' → '}
+            {String(5).padStart(2, '0')}/{String(selectedMonth === 11 ? 1 : selectedMonth + 2).padStart(2, '0')}/{selectedMonth === 11 ? selectedYear + 1 : selectedYear})
+          </span>
         </h2>
 
         {monthlyData.courseList.length === 0 ? (
