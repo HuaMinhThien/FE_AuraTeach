@@ -117,6 +117,10 @@ export default function Sidebar() {
             text: "Lịch trình"
         },
         {
+            path: "/timesheet",
+            text: "Bảng chấm công"
+        },
+        {
             path: "/income",
             text: "Thu nhập"
         },
