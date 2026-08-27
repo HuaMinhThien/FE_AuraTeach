@@ -106,7 +106,7 @@ export default function BookingDetailModal({
           {/* Tutor Info */}
           {tutorInfo && (
             <div className="booking-detail-tutor">
-              <h4 className="detail-section-title">👨‍🏫 Thông tin gia sư</h4>
+              <h4 className="detail-section-title"> Thông tin gia sư</h4>
               <div className="tutor-info-grid">
                 <div className="tutor-info-item">
                   <span className="tutor-info-label">Học vấn</span>
@@ -136,7 +136,7 @@ export default function BookingDetailModal({
 
           {/* Course Details */}
           <div className="booking-detail-info">
-            <h4 className="detail-section-title">📋 Thông tin khóa học</h4>
+            <h4 className="detail-section-title"> Thông tin khóa học</h4>
             <div className="detail-info-grid">
               <div className="detail-info-item">
                 <span className="detail-info-label">Mã lớp</span>
@@ -184,12 +184,12 @@ export default function BookingDetailModal({
           {/* Actions */}
           <div className="booking-detail-actions">
             <button className="detail-report-btn" onClick={handleReportTutor}>
-              ⚠️ Tố cáo gia sư
+               Báo cáo gia sư
             </button>
                         <div className="detail-action-right">
               {onRating && (
                 <button className="detail-rating-btn" onClick={() => onRating(course)}>
-                  ⭐ Đánh giá
+                   Đánh giá
                 </button>
               )}
               <button className="detail-close-btn" onClick={onClose}>
@@ -201,12 +201,12 @@ export default function BookingDetailModal({
                   className="detail-join-btn"
                   onClick={() => onJoinClass(course.permanent_room_url)}
                 >
-                  🎯 Tham gia lớp học
+                  Tham gia lớp học
                 </button>
               )}
               {course?.status !== 'active' && (
                 <button className="detail-join-btn disabled" disabled>
-                  {course?.status === 'closed' ? '🔒 Lớp đã đóng' : '⏳ Chờ duyệt'}
+                  {course?.status === 'closed' ? ' Lớp đã đóng' : ' Chờ duyệt'}
                 </button>
               )}
             </div>
