@@ -368,7 +368,7 @@ const currentStudents = course.students || [];
           </div>
 <div className={styles.tag}>
             <span className={`${styles.tagBadge} ${isClassOpen ? styles.statusActive : styles.statusClosed}`}>
-              {isClassOpen ? '🟢 Đang mở' : '🔴 Đã đóng'}
+              {isClassOpen ? ' Đang mở' : ' Đã đóng'}
             </span>
           </div>
         </div>
@@ -379,55 +379,13 @@ const currentStudents = course.students || [];
         <div className={styles.mainContent}>
           {/* Introduction Section */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>📖 Giới thiệu chương trình</h2>
+            <h2 className={styles.sectionTitle}>Giới thiệu chương trình</h2>
             <div className={styles.description}>
               <p>{course.description}</p>
             </div>
           </section>
 
-          {/* ✅ LIST CÁC MÃ LỚP (SECTIONS) */}
-          {sections.length > 0 && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>📋 Danh sách các mã lớp đang mở</h2>
-              <div className={styles.sectionsList}>
-                {sections.map((sec) => {
-                  const secStudentsCount = sec.students ? sec.students.length : 0;
-                  const isSecFull = secStudentsCount >= sec.max_students;
-                  const isCurrentSec = sec.course_id === course.course_id;
 
-                  return (
-                    <div 
-                      key={sec.course_id} 
-                      className={`${styles.sectionItem} ${isCurrentSec ? styles.activeSection : ''}`}
-                    >
-                      <div className={styles.sectionInfo}>
-                        <div className={styles.sectionMain}>
-                          <span className={styles.sectionCode}>MÃ LỚP: {sec.course_id.split('_').pop().toUpperCase()}</span>
-                          <span className={styles.sectionTutor}> GV: {sec.tutor_name}</span>
-                        </div>
-                        <div className={styles.sectionStats}>
-                          <span className={`${styles.sectionSlots} ${isSecFull ? styles.slotsFull : ''}`}>
-                            👥 Còn {sec.max_students - secStudentsCount}/{sec.max_students} chỗ
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {!isCurrentSec ? (
-                        <button 
-                          className={styles.viewSecBtn}
-                          onClick={() => router.push(`/classList/${sec.course_id}`)}
-                        >
-                          Xem lớp này
-                        </button>
-                      ) : (
-                        <span className={styles.currentLabel}>Đang xem</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
 
           {/* Course Details Section */}
           <section className={styles.section}>
@@ -597,7 +555,7 @@ const currentStudents = course.students || [];
                 onClick={handleJoinClass} 
                 className={styles.joinButton}
               >
-                🎯 Tham gia lớp học
+                Tham gia lớp học
               </button>
             )}
 
@@ -608,13 +566,12 @@ const currentStudents = course.students || [];
               disabled={bookingLoading || isBooked || isFull || !isClassOpen || !canBook}
             >
 {bookingLoading ? "Đang xử lý..." : 
-               isBooked ? "✅ Bạn đã đăng ký" : 
-               isFull ? "🔴 Lớp đã đủ học viên" :
-               !isClassOpen ? "🔴 Lớp đã đóng" :
-               !canBook ? "⏳ Đang chờ gia sư nhận lớp" : 
-               "📝 Đăng ký học ngay"}
+               isBooked ? "Bạn đã đăng ký" : 
+               isFull ? "Lớp đã đủ học viên" :
+               !isClassOpen ? "Lớp đã đóng" :
+               !canBook ? "Đang chờ gia sư nhận lớp" : 
+               "Đăng ký học ngay"}
             </button>
-            <button className={styles.consultButton}>💬 Đặt lịch tư vấn</button>
           </div>
 
           {/* Tutor Card */}

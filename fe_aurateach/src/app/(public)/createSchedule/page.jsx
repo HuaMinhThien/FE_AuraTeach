@@ -43,8 +43,12 @@ const getCurrentStudentId = () => {
   );
 };
 
-// Sinh link phòng học nội bộ dựa trên courseId
-const generateRoomLink = (courseId) => `/room/${courseId}`;
+// Hàm kiểm tra định dạng đường dẫn Google Meet
+const isValidGoogleMeetLink = (url) => {
+  if (!url) return false;
+  const regex = /^(https?:\/\/)?meet\.google\.com\/[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}(\?.*)?$/i;
+  return regex.test(url.trim());
+};
 
 const PRICE_LIMITS = {
   "Giáo viên": {
@@ -374,19 +378,22 @@ export default function CreateClassRequest() {
     }));
   };
 
-  // Sinh link phòng học nội bộ — dùng timestamp tạm, sẽ được thay bằng course_id thực khi submit
-  const handleGenerateMeetLink = () => {
-    if (!checkAuthAndRole()) return;
-    const tempId = `room_${Date.now()}`;
-    const link = generateRoomLink(tempId);
-    setFormData((prev) => ({ ...prev, meet_link: link }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (loading) return;
     if (!checkAuthAndRole()) return;
+
+    // Validation link Google Meet bắt buộc và đúng định dạng
+    if (!formData.meet_link || !formData.meet_link.trim()) {
+      alert("⚠️ Vui lòng nhập đường dẫn Google Meet!");
+      return;
+    }
+
+    if (!isValidGoogleMeetLink(formData.meet_link)) {
+      alert("⚠️ Link Google Meet không đúng định dạng! Ví dụ hợp lệ: https://meet.google.com/abc-defg-hij");
+      return;
+    }
 
     // Validation giá & ngày học
     const priceEntered = Number(formData.price_per_session);
@@ -449,7 +456,7 @@ export default function CreateClassRequest() {
         tutor_level: formData.tutor_level || "Giáo viên",
         start_time: formData.start_time,
         end_time: endTime,
-        meet_link: formData.meet_link || generateRoomLink(`room_${Date.now()}`),
+        meet_link: formData.meet_link.trim(),
       };
 
       // 1. Nếu đang chọn lộ trình / chỉnh sửa lớp đã có requests_id
@@ -556,9 +563,8 @@ export default function CreateClassRequest() {
       time_slot: req.time_slot || `${req.start_time}-${req.end_time}`,
       thumbnail: "/img/class/default-class-1.jpg",
       status: "active",
-      permanent_room_url: generateRoomLink(newCourseId),
+      permanent_room_url: req.meet_link,
       students: []
-      
     };
 
     try {
@@ -705,7 +711,7 @@ export default function CreateClassRequest() {
           className={styles.openModalBtn}
           onClick={handleOpenCreateModal}
         >
-          + Đăng Yêu Cầu Tạo Lớp Theo Nhu Cầu
+          + Tạo Lớp Theo Nhu Cầu cùa bạn 
         </button>
       </div>
 
@@ -716,7 +722,7 @@ export default function CreateClassRequest() {
               ✕
             </button>
             <h2 className={styles.sectionTitle}>
-              {editingRequestId ? "Chỉnh Sửa Yêu Cầu Tạo Lớp" : "Đăng Yêu Cầu Tạo Lớp Theo Nhu Cầu"}
+              {editingRequestId ? "Chỉnh Sửa Yêu Cầu Tạo Lớp" : "Tạo Lớp Theo Nhu Cầu của bạn"}
             </h2>
 
             <div className={styles.layout}>
@@ -824,18 +830,18 @@ export default function CreateClassRequest() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Link Google Meet</label>
-                  <div className={styles.meetBox}>
-                    <input
-                      type="text"
-                      className={styles.meetInput}
-                      value={formData.meet_link || "Chưa khởi tạo..."}
-                      readOnly
-                    />
-                    <button type="button" className={styles.genBtn} onClick={handleGenerateMeetLink}>
-                      {formData.meet_link ? "Tạo lại link" : "Lấy link Meet"}
-                    </button>
-                  </div>
+                  <label>Link Google Meet <span>*</span></label>
+                  <input
+                    type="url"
+                    className={styles.input}
+                    placeholder="https://meet.google.com/xxx-yyyy-zzz"
+                    value={formData.meet_link}
+                    onChange={(e) => setFormData({ ...formData, meet_link: e.target.value })}
+                    required
+                  />
+                  <small style={{ color: "#64748b", fontSize: "11px", marginTop: "4px", display: "block" }}>
+                    * Nhập đường dẫn cuộc họp Google Meet của bạn (VD: https://meet.google.com/abc-defg-hij)
+                  </small>
                 </div>
 
                 <div className={styles.sectionTitle} style={{ marginTop: "20px" }}>

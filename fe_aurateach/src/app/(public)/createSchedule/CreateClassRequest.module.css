@@ -21,7 +21,7 @@
 }
 
 .openModalBtn {
-  background-color: #2563eb;
+  background-color: #00236f;
   color: #ffffff;
   border: none;
   padding: 12px 24px;
@@ -33,7 +33,7 @@
 }
 
 .openModalBtn:hover {
-  background-color: #1d4ed8;
+  background-color: #0d47a1;
 }
 
 .layout {
@@ -154,7 +154,7 @@
 .submitBtn {
   width: 100%;
   padding: 12px;
-  background-color: #2563eb;
+  background-color: #00236f;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -165,7 +165,7 @@
 }
 
 .submitBtn:hover {
-  background-color: #1d4ed8;
+  background-color: #0d47a1;
 }
 
 .summaryCard {

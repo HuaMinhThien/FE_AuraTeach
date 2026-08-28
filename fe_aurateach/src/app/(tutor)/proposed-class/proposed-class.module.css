@@ -40,7 +40,7 @@
 }
 
 .searchInput:focus {
-  border-color: #2563eb;
+  border-color: #00236f;
 }
 
 .filterTabs {
@@ -51,9 +51,9 @@
 
 .tabBtn {
   padding: 12px 20px;
-  border: 1px solid #2563eb;
+  border: 1px solid #00236f;
   background-color: #fff;
-  color: #2563eb;
+  color: #00236f;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -64,11 +64,12 @@
 }
 
 .tabBtn:hover {
-  background-color: #eff6ff;
+  background-color: #0d47a1;
+  color: #fff;
 }
 
 .activeTab {
-  background-color: #2563eb;
+  background-color: #00236f;
   color: #fff;
 }
 
@@ -184,7 +185,7 @@
 .detailBtn {
   width: 100%;
   padding: 10px;
-  background-color: #0284c7;
+  background-color: #00236f;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -194,7 +195,7 @@
 }
 
 .detailBtn:hover:not(:disabled) {
-  background-color: #0369a1;
+  background-color: #0d47a1;
 }
 
 .detailBtn:disabled,

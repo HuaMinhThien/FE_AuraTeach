@@ -6,13 +6,25 @@ import { getClassroomRoomPath } from "@/utils/roomUtils";
 export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseClass, getStatusBadge }) {
   if (!selectedClass) return null;
 
-  const handleJoinRoom = () => {
-    const url = getClassroomRoomPath(selectedClass, "tutor");
-    
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } else {
-      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học!");
+  const handleJoinRoom = (selectedClass) => {
+    try {
+      // Lấy trực tiếp trường permanent_room_url từ object selectedClass
+      if (selectedClass && selectedClass.permanent_room_url) {
+        const roomUrl = selectedClass.permanent_room_url;
+
+        // Mở liên kết trong tab mới nếu là đường dẫn HTTP/HTTPS
+        if (roomUrl.startsWith("http://") || roomUrl.startsWith("https://")) {
+          window.open(roomUrl, "_blank");
+        } else {
+          // Mở trong cùng trang nếu là route nội bộ
+          window.location.href = roomUrl;
+        }
+      } else {
+        alert("Lớp học này chưa có liên kết phòng học (permanent_room_url)!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tham gia phòng học:", error);
+      alert("Đã xảy ra lỗi khi cố gắng chuyển hướng đến đường dẫn phòng học!");
     }
   };
 
@@ -25,7 +37,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
         </div>
 
         <div className={styles.modalBody}>
-          <h3 className={styles.mClassName}>{selectedClass.class_name}</h3>
+          <h3 className={styles.mClassName}>{selectedClass.class_name || selectedClass.title}</h3>
           <div className={styles.mBadgeRow}>
             {getStatusBadge(selectedClass.status)}
             <span>Thời gian học: <strong>{selectedClass.total_weeks} tuần</strong></span>
@@ -33,13 +45,13 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
 
           <div className={styles.mInfoGrid}>
             <p>📅 <strong>Ngày mở lớp:</strong> {selectedClass.start_date}</p>
-            <p>📅 <strong>Ngày kết thúc:</strong> {selectedClass.end_date}</p>
+            <p>📅 <strong>Ngày kết thúc:</strong> {selectedClass.end_date || "Chưa cập nhật"}</p>
           </div>
 
           <div>
             <button 
               type="button"
-              onClick={handleJoinRoom}
+              onClick={handleJoinRoom ? () => handleJoinRoom(selectedClass) : null}
               style={{
                 backgroundColor: "#2563eb",
                 color: "#ffffff",
@@ -84,11 +96,11 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
                 </thead>
                 <tbody>
                   {selectedClass.students.map((st, index) => (
-                    <tr key={st.student_id || index}>
+                    <tr key={typeof st === 'object' ? (st.student_id || index) : index}>
                       <td>{index + 1}</td>
-                      <td><strong>{st.full_name}</strong></td>
-                      <td>{st.email}</td>
-                      <td>{st.phone || "Chưa cập nhật"}</td>
+                      <td><strong>{typeof st === 'object' ? st.full_name : st}</strong></td>
+                      <td>{typeof st === 'object' ? st.email : "N/A"}</td>
+                      <td>{typeof st === 'object' ? (st.phone || "Chưa cập nhật") : "N/A"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -99,7 +111,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
 
         <div className={styles.modalFooter}>
           {selectedClass.status === "active" && (
-            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.class_id)}>
+            <button className={styles.footerCloseBtn} onClick={() => onCloseClass(selectedClass.class_id || selectedClass.id)}>
                Khóa lớp (Dừng nhận thêm)
             </button>
           )}

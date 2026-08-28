@@ -244,7 +244,6 @@ export default function TutorApprovalPage() {
                       <th>Email</th>
                       <th>Số điện thoại</th>
                       
-                      <th>Lĩnh vực</th>
                       <th>Ngày đăng ký</th>
                       <th>Hành động</th>
                     </tr>
@@ -263,12 +262,6 @@ export default function TutorApprovalPage() {
                         <td>{tutor.email}</td>
                         <td>{tutor.phone}</td>
                         
-                        <td>
-                          <span className={styles.badgeExpertise}>
-                            {tutor.expertise || "Chưa cập nhật"}
-                          </span>
-                        </td>
-                        
                         <td>{new Date(tutor.created_at).toLocaleDateString("vi-VN")}</td>
                         <td>
                           <div className={styles.actionGroup}>
@@ -278,16 +271,7 @@ export default function TutorApprovalPage() {
                             >
                               Chi tiết & Duyệt
                             </button>
-                            <button
-                              className={`${styles.btn} ${styles.btnDanger}`}
-                              onClick={() => {
-                                setSelectedTutor(tutor);
-                                setShowRejectModal(true);
-                                setRejectReason("");
-                              }}
-                            >
-                              Từ chối
-                            </button>
+                            
                           </div>
                         </td>
                       </tr>
@@ -310,7 +294,6 @@ export default function TutorApprovalPage() {
                     <tr>
                       <th>Mã Yêu Cầu</th>
                       <th>Gia sư (ID)</th>
-                      <th>Lĩnh vực mới</th>
                       <th>Trình độ mới</th>
                       <th>Thời gian yêu cầu</th>
                       <th>Trạng thái</th>
@@ -322,9 +305,6 @@ export default function TutorApprovalPage() {
                       <tr key={req.id} className={styles.tableRow}>
                         <td className={styles.boldText}>#{req.id}</td>
                         <td>{req.tutor_id}</td>
-                        <td>
-                          <span className={styles.badgeExpertise}>{req.new_data?.expertise}</span>
-                        </td>
                         <td>
                           <span className={styles.badgeLevel}>{req.new_data?.level || "Không đổi"}</span>
                         </td>

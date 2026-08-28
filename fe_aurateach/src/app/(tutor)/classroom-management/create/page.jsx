@@ -103,6 +103,21 @@ export default function CreateClassPage() {
   const [dateErrorMessage, setDateErrorMessage] = useState("");
   const [tutorId, setTutorId] = useState("");
 
+  // Kiểm tra Validate định dạng link Google Meet
+  const handleMeetLinkChange = (value) => {
+    setMeetLink(value);
+    if (!value.trim()) {
+      setMeetError("⚠️ Vui lòng nhập link Google Meet cho lớp học!");
+    } else {
+      const meetRegex = /^https:\/\/meet\.google\.com\/[a-z0-9-]+$/i;
+      if (!meetRegex.test(value.trim())) {
+        setMeetError("⚠️ Link Google Meet không hợp lệ (Ví dụ hợp lệ: https://meet.google.com/abc-defg-hij)");
+      } else {
+        setMeetError("");
+      }
+    }
+  };
+
   // Xử lý tự động tính giờ kết thúc khi đổi giờ bắt đầu (+2 tiếng cố định)
   const handleStartTimeChange = (newStartTime) => {
     setStartTime(newStartTime);
@@ -449,6 +464,19 @@ export default function CreateClassPage() {
       return;
     }
 
+    if (!meetLink.trim()) {
+      setMeetError("⚠️ Vui lòng nhập link Google Meet cho lớp học!");
+      alert("⚠️ Vui lòng nhập link Google Meet cho lớp học!");
+      return;
+    }
+
+    const meetRegex = /^https:\/\/meet\.google\.com\/[a-z0-9-]+$/i;
+    if (!meetRegex.test(meetLink.trim())) {
+      setMeetError("⚠️ Link Google Meet không hợp lệ (Ví dụ hợp lệ: https://meet.google.com/abc-defg-hij)");
+      alert("⚠️ Link Google Meet không hợp lệ. Vui lòng kiểm tra lại!");
+      return;
+    }
+
     if (!description.trim()) {
       alert("⚠️ Vui lòng nhập mô tả nội dung & phương pháp giảng dạy!");
       return;
@@ -494,6 +522,7 @@ export default function CreateClassPage() {
       schedule_days: selectedDays,
       time_slot: `${startTime}-${endTime}`,
       thumbnail: selectedImage,
+      meet_link: meetLink.trim(),
     };
 
     try {
@@ -557,14 +586,25 @@ export default function CreateClassPage() {
             </div>
 
             <div className={styles.formGroup}>
+              <label>Đường liên kết Google Meet <span className={styles.required}>*</span></label>
+              <input 
+                type="url"
+                placeholder="Ví dụ: https://meet.google.com/abc-defg-hij"
+                value={meetLink}
+                onChange={(e) => handleMeetLinkChange(e.target.value)}
+                required
+              />
+              {meetError && <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "14px" }}>{meetError}</p>}
+            </div>
+
+            {/* <div className={styles.formGroup}>
               <label>Đường liên kết phòng học AuraTeach</label>
               <input 
                 type="text"
                 value={roomPreviewPath}
                 readOnly
               />
-              {meetError && <p className={styles.errorAlert} style={{ marginTop: "8px", fontSize: "14px" }}>{meetError}</p>}
-            </div>
+            </div> */}
 
             <div className={styles.rowGrid}>
               <div className={styles.formGroup}>
@@ -980,7 +1020,7 @@ export default function CreateClassPage() {
             <button 
               type="submit" 
               className={styles.submitBtn} 
-              disabled={isSubmitting || !!conflictMessage || !!meetError || !!dateErrorMessage || !isAllowed || (level !== "Cấp 1" && filteredCategories.length === 0) || !!priceError}
+              disabled={isSubmitting || !!conflictMessage || !meetLink.trim() || !!meetError || !!dateErrorMessage || !isAllowed || (level !== "Cấp 1" && filteredCategories.length === 0) || !!priceError}
             >
               {isSubmitting ? "Đang xử lý tạo lớp..." : "Tạo lớp ➔"}
             </button>
