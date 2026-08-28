@@ -190,7 +190,7 @@ export default function SchedulePage() {
               </div>
               {cls && (
                 <a
-                  href={getClassroomRoomPath(cls, "tutor")}
+                  href={cls.permanent_room_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.meetBtn}
