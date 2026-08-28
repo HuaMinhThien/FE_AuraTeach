@@ -63,37 +63,55 @@ class AdminService {
   }
 
   // ===== REGISTRATION STATS =====
-  async getRegistrationStats(period = 'week') {
+  async getRegistrationStats(period = 'week', customRange = null) {
     if (this.useApi) {
-      return this.getRegistrationStatsWithApi(period);
+      return this.getRegistrationStatsWithApi(period, customRange);
     } else {
-      return this.getRegistrationStatsWithJson(period);
+      return this.getRegistrationStatsWithJson(period, customRange);
     }
   }
 
-  async getRegistrationStatsWithJson(period = 'week') {
+  async getRegistrationStatsWithJson(period = 'week', customRange = null) {
     try {
       const response = await fetch(`${this.jsonServerUrl}/users`);
       const users = await response.json();
 
-      const now = new Date();
-      const days = period === 'week' ? 7 : period === 'year' ? 365 : 30;
       const result = [];
 
-      for (let i = days; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        
-        const dayStudents = users.filter(u => 
-          u.role === 'student' && u.created_at?.startsWith(dateStr)
-        ).length;
-        
-        const dayTutors = users.filter(u => 
-          u.role === 'tutor' && u.created_at?.startsWith(dateStr)
-        ).length;
-
-        result.push({ date: dateStr, students: dayStudents, tutors: dayTutors });
+      if (period === 'custom' && customRange && customRange.startDate && customRange.endDate) {
+        const start = new Date(customRange.startDate);
+        const end = new Date(customRange.endDate);
+        const current = new Date(start);
+        while (current <= end) {
+          const dateStr = current.toISOString().split('T')[0];
+          const dayStudents = users.filter(u => u.role === 'student' && u.created_at?.startsWith(dateStr)).length;
+          const dayTutors = users.filter(u => u.role === 'tutor' && u.created_at?.startsWith(dateStr)).length;
+          result.push({ date: dateStr, students: dayStudents, tutors: dayTutors });
+          current.setDate(current.getDate() + 1);
+        }
+      } else if (period === 'year') {
+        const monthMap = {};
+        users.forEach(u => {
+          if (!u.created_at) return;
+          const month = u.created_at.substring(0, 7);
+          if (!monthMap[month]) monthMap[month] = { students: 0, tutors: 0 };
+          if (u.role === 'student') monthMap[month].students++;
+          if (u.role === 'tutor') monthMap[month].tutors++;
+        });
+        Object.keys(monthMap).sort().forEach(month => {
+          result.push({ date: month, students: monthMap[month].students, tutors: monthMap[month].tutors });
+        });
+      } else {
+        const now = new Date();
+        const days = period === 'week' ? 7 : 30;
+        for (let i = days; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(date.getDate() - i);
+          const dateStr = date.toISOString().split('T')[0];
+          const dayStudents = users.filter(u => u.role === 'student' && u.created_at?.startsWith(dateStr)).length;
+          const dayTutors = users.filter(u => u.role === 'tutor' && u.created_at?.startsWith(dateStr)).length;
+          result.push({ date: dateStr, students: dayStudents, tutors: dayTutors });
+        }
       }
 
       return { success: true, data: result };
@@ -103,9 +121,13 @@ class AdminService {
     }
   }
 
-  async getRegistrationStatsWithApi(period = 'week') {
+  async getRegistrationStatsWithApi(period = 'week', customRange = null) {
     try {
-      const response = await fetch(`${this.apiBaseUrl}/admin/dashboard/registrations?period=${period}`);
+      let url = `${this.apiBaseUrl}/admin/dashboard/registrations?period=${period}`;
+      if (period === 'custom' && customRange) {
+        url += `&startDate=${customRange.startDate}&endDate=${customRange.endDate}`;
+      }
+      const response = await fetch(url);
       const result = await response.json();
       return result;
     } catch (error) {
@@ -115,33 +137,57 @@ class AdminService {
   }
 
   // ===== REVENUE STATS =====
-  async getRevenueStats(period = 'week') {
+  async getRevenueStats(period = 'week', customRange = null) {
     if (this.useApi) {
-      return this.getRevenueStatsWithApi(period);
+      return this.getRevenueStatsWithApi(period, customRange);
     } else {
-      return this.getRevenueStatsWithJson(period);
+      return this.getRevenueStatsWithJson(period, customRange);
     }
   }
 
-  async getRevenueStatsWithJson(period = 'week') {
+  async getRevenueStatsWithJson(period = 'week', customRange = null) {
     try {
       const response = await fetch(`${this.jsonServerUrl}/payments`);
       const payments = await response.json();
 
-      const now = new Date();
-      const days = period === 'week' ? 7 : period === 'year' ? 365 : 30;
       const result = [];
 
-      for (let i = days; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        
-        const dayRevenue = payments
-          .filter(p => p.payment_status === 'paid' && p.paid_at?.startsWith(dateStr))
-          .reduce((sum, p) => sum + (p.amount * 0.35), 0);
-
-        result.push({ date: dateStr, revenue: dayRevenue });
+      if (period === 'custom' && customRange && customRange.startDate && customRange.endDate) {
+        const start = new Date(customRange.startDate);
+        const end = new Date(customRange.endDate);
+        const current = new Date(start);
+        while (current <= end) {
+          const dateStr = current.toISOString().split('T')[0];
+          const dayRevenue = payments
+            .filter(p => p.payment_status === 'paid' && p.paid_at?.startsWith(dateStr))
+            .reduce((sum, p) => sum + (p.amount * 0.35), 0);
+          result.push({ date: dateStr, revenue: dayRevenue });
+          current.setDate(current.getDate() + 1);
+        }
+      } else if (period === 'year') {
+        const monthMap = {};
+        payments.forEach(p => {
+          if (p.payment_status === 'paid' && p.paid_at) {
+            const month = p.paid_at.substring(0, 7);
+            if (!monthMap[month]) monthMap[month] = 0;
+            monthMap[month] += p.amount * 0.35;
+          }
+        });
+        Object.keys(monthMap).sort().forEach(month => {
+          result.push({ date: month, revenue: monthMap[month] });
+        });
+      } else {
+        const now = new Date();
+        const days = period === 'week' ? 7 : 30;
+        for (let i = days; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(date.getDate() - i);
+          const dateStr = date.toISOString().split('T')[0];
+          const dayRevenue = payments
+            .filter(p => p.payment_status === 'paid' && p.paid_at?.startsWith(dateStr))
+            .reduce((sum, p) => sum + (p.amount * 0.35), 0);
+          result.push({ date: dateStr, revenue: dayRevenue });
+        }
       }
 
       return { success: true, data: result };
@@ -151,9 +197,13 @@ class AdminService {
     }
   }
 
-  async getRevenueStatsWithApi(period = 'week') {
+  async getRevenueStatsWithApi(period = 'week', customRange = null) {
     try {
-      const response = await fetch(`${this.apiBaseUrl}/admin/dashboard/revenue?period=${period}`);
+      let url = `${this.apiBaseUrl}/admin/dashboard/revenue?period=${period}`;
+      if (period === 'custom' && customRange) {
+        url += `&startDate=${customRange.startDate}&endDate=${customRange.endDate}`;
+      }
+      const response = await fetch(url);
       const result = await response.json();
       return result;
     } catch (error) {

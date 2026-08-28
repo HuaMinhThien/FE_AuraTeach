@@ -86,6 +86,19 @@
   font-size: 16px;
 }
 
+.starIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.studentsIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  margin-right: 4px;
+}
+
 .ratingValue {
   font-weight: 600;
   color: #1a1a2e;

@@ -335,7 +335,7 @@ export default function TutorProfile() {
           </div>
 
           <div className={styles.badgeGroup}>
-            <span className={`${styles.badge} ${styles.badgeRating}`}>⭐ {tutorData.rating ?? "0"} Đánh giá</span>
+            <span className={`${styles.badge} ${styles.badgeRating}`}><img src="/img/icons/star.png" alt="star" className={styles.badgeIcon} /> {tutorData.rating ?? "0"} Đánh giá</span>
             
             {isEditing ? (
               <select
@@ -368,7 +368,7 @@ export default function TutorProfile() {
             )}
 
             <span className={`${styles.badge} ${tutorData.verification_status === "Đã xác minh" || tutorData.verification_status === "approved" ? styles.badgeVerifyVerified : styles.badgeVerifyPending}`}>
-              ✔️ {tutorData.verification_status || "Chưa xác minh"}
+              <img src="/img/icons/security.png" alt="xác minh" className={styles.badgeIcon} /> {tutorData.verification_status || "Chưa xác minh"}
             </span>
           </div>
         </div>

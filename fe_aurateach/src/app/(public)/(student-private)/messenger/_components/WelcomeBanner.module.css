@@ -5,7 +5,7 @@
   justify-content: center;
   height: 100%;
   padding: 40px 32px;
-  background: linear-gradient(135deg, #faf5ff 0%, #eef2ff 50%, #f0f9ff 100%);
+  background: linear-gradient(135deg, #f0f4ff 0%, #eef2ff 50%, #f0f9ff 100%);
   position: relative;
   overflow: hidden;
 }
@@ -21,12 +21,12 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #00236f, #2c5bf2);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 35, 111, 0.25);
   animation: float 3s ease-in-out infinite;
 }
 
@@ -42,13 +42,13 @@
 .welcomeTitle {
   font-size: 22px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #0b2b6d;
   margin: 0 0 10px;
   line-height: 1.3;
 }
 
 .highlight {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #00236f, #2c5bf2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -56,7 +56,7 @@
 
 .welcomeDesc {
   font-size: 14px;
-  color: #6b7280;
+  color: #4b5563;
   margin: 0 0 28px;
   line-height: 1.6;
 }
@@ -89,11 +89,17 @@
 .statNumber {
   font-size: 20px;
   font-weight: 700;
-  color: #4f46e5;
+  color: #00236f;
+}
+
+.statIconImg {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .unreadStat .statNumber {
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .statLabel {
@@ -111,7 +117,7 @@
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   text-align: left;
-  border-left: 3px solid #4f46e5;
+  border-left: 3px solid #00236f;
 }
 
 .tipIcon {
@@ -140,13 +146,13 @@
 .circle {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.12;
+  opacity: 0.08;
 }
 
 .circle1 {
   width: 200px;
   height: 200px;
-  background: #4f46e5;
+  background: #00236f;
   top: -60px;
   right: -40px;
 }
@@ -154,7 +160,7 @@
 .circle2 {
   width: 140px;
   height: 140px;
-  background: #7c3aed;
+  background: #2c5bf2;
   bottom: -30px;
   left: -50px;
 }
@@ -162,7 +168,7 @@
 .circle3 {
   width: 80px;
   height: 80px;
-  background: #6366f1;
+  background: #1259c9;
   bottom: 80px;
   right: 60px;
 }

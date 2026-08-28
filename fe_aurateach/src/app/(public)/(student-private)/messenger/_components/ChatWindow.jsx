@@ -142,7 +142,7 @@ export default function ChatWindow({
             <div>
               <span className={styles.headerName}>{otherUserName}</span>
               <span className={styles.headerRole}>
-                {otherUserRole === "tutor" ? "👨‍🏫 Gia sư" : "🎓 Học viên"}
+                {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}
               </span>
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function ChatWindow({
           </div>
         </div>
         <div className={styles.emptyMessages}>
-          <span className={styles.emptyIcon}>💬</span>
+          <img src="/img/icons/messenger (1).png" alt="chat" className={styles.emptyIconImg} />
           <p>Chưa có tin nhắn nào</p>
           <p className={styles.emptySub}>Hãy bắt đầu cuộc trò chuyện</p>
         </div>
@@ -180,12 +180,12 @@ export default function ChatWindow({
               {otherUserName?.charAt(0) || "?"}
             </div>
           )}
-          <div>
-            <span className={styles.headerName}>{otherUserName}</span>
-            <span className={styles.headerRole}>
-              {otherUserRole === "tutor" ? "👨‍🏫 Gia sư" : "🎓 Học viên"}
-            </span>
-          </div>
+            <div>
+              <span className={styles.headerName}>{otherUserName}</span>
+              <span className={styles.headerRole}>
+                {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}
+              </span>
+            </div>
         </div>
         <div className={styles.headerActions}>
           <button className={styles.headerBtn} title="Làm mới">
