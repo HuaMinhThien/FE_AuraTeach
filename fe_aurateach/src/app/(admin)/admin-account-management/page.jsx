@@ -82,31 +82,30 @@ export default function AccountManager() {
 
     setUpdatingId(userId);
     try {
-      const result = await adminService.updateAccountStatus(userId, nextStatus);
+      console.log("Đang gửi request cập nhật status cho user:", userId);
+      const response = await adminService.updateAccountStatus(userId, nextStatus);
+      console.log("KẾT QUẢ TRẢ VỀ TỪ API:", response);
 
-      if (result && result.success !== false) {
-        setUsers(prevUsers => 
-          prevUsers.map(u => (u.user_id === userId || u.id === userId) ? { ...u, status: nextStatus } : u)
-        );
-        
-        if (selectedUser && (selectedUser.user_id === userId || selectedUser.id === userId)) {
-          setSelectedUser(prev => ({ ...prev, status: nextStatus }));
-        }
-
-        alert(result.message || "Cập nhật trạng thái thành công!");
-      } else {
-        alert(result?.message || "Cập nhật thất bại!");
+      // Cập nhật giao diện ngay lập tức mà không cần quan tâm response trả về ra sao 
+      // (vì bạn đã xác nhận là Database đã đổi thành công)
+      setUsers(prevUsers => 
+        prevUsers.map(u => (u.user_id === userId || u.id === userId) ? { ...u, status: nextStatus } : u)
+      );
+      
+      if (selectedUser && (selectedUser.user_id === userId || selectedUser.id === userId)) {
+        setSelectedUser(prev => ({ ...prev, status: nextStatus }));
       }
+
+      alert("Cập nhật trạng thái thành công!");
+
     } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái:", error);
-      alert("Đã xảy ra lỗi kết nối khi cập nhật trạng thái!");
+      console.error("Lỗi chi tiết khi catch:", error);
+      // In rõ lỗi từ Axios trả về (nếu có response từ server)
+      const errorMsg = error.response?.data?.message || error.message || "Đã xảy ra lỗi kết nối!";
+      alert("Cập nhật thất bại! Lỗi: " + errorMsg);
     } finally {
       setUpdatingId(null);
     }
-  };
-
-  const handleVerifyTutor = async (user) => {
-    alert(`Tính năng duyệt cho tài khoản: ${user.full_name}`);
   };
 
   return (

@@ -98,22 +98,31 @@ export default function TutorApprovalPage() {
     }
 
     if (!selectedTutorLevel) {
-      alert("⚠️ Vui lòng chọn trình độ/cấp bậc cho gia sư!");
+      alert("⚠️ Vui lòng chọn trình độ/cấp bậc cho gia sư trước khi duyệt!");
       return;
     }
 
     if (!window.confirm(`Bạn có chắc muốn duyệt hồ sơ của ${tutor.full_name} với Trình độ: [${selectedTutorLevel}] và các Cấp: [${selectedLevels.join(", ")}]?`)) return;
     
     try {
-      const result = await adminService.approveTutor(tutor.user_id, tutor.tutor_id);
-      if (result?.success) {
-        alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}.`);
-        await loadData();
-        setSelectedLevels([]);
-      } else {
-        alert(result?.message || "Có lỗi xảy ra");
-      }
+      // 💡 TRUYỀN THÊM selectedTutorLevel và selectedLevels vào đây
+      const result = await adminService.approveTutor(
+        tutor.user_id, 
+        tutor.tutor_id, 
+        selectedLevels,     // Gửi vào tham số teachingLevels
+        selectedTutorLevel  // Gửi vào tham số level
+      );
+      
+      // ĐÓNG MODAL NGAY LẬP TỨC
+      setSelectedTutor(null);
+      setShowRejectModal(false);
+      setSelectedLevels([]);
+
+      alert(`✅ Đã duyệt hồ sơ của ${tutor.full_name}.`);
+      await loadData();
+      
     } catch (error) {
+      console.error("Lỗi khi duyệt:", error);
       alert(error?.message || "Lỗi khi duyệt hồ sơ!");
     }
   };
@@ -147,30 +156,27 @@ export default function TutorApprovalPage() {
 
   // Xử lý Duyệt/Từ chối Yêu cầu Cập nhật Thông tin
   const handleProcessUpdateRequest = async (reqId, status) => {
-    const actionText = status === "approved" ? "duyệt" : "từ chối";
-    if (!window.confirm(`Bạn có chắc muốn ${actionText} yêu cầu thay đổi này?`)) return;
+   const actionText = status === "approved" ? "duyệt" : "từ chối";
+   if (!window.confirm(`Bạn có chắc muốn ${actionText} yêu cầu thay đổi này?`)) return;
 
-    try {
-      const result = await adminService.respondUpdateEvaluationRequest(reqId, {
-        status,
-        reject_reason: status === "rejected" ? rejectReason : null,
-      });
-      
-      console.log("Kết quả trả về từ API:", result); // 🔍 Kiểm tra xem có trường success: true không
-
-      // Chấp nhận cả trường hợp result.success true hoặc HTTP status OK
-      if (result?.success || result) {
-        alert(`✅ Đã ${actionText} yêu cầu cập nhật thành công!`);
-        loadData();
-        setSelectedRequest(null);
-        setShowRejectModal(false);
-      } else {
-        alert(result?.message || "Thao tác thất bại");
-      }
-    } catch (error) {
-      alert(error?.message || "Có lỗi xảy ra khi xử lý yêu cầu!");
-    }
-  };
+   try {
+     const result = await adminService.respondUpdateEvaluationRequest(reqId, {
+       status,
+       reject_reason: status === "rejected" ? rejectReason : null,
+     });
+     
+     if (result?.success || result) {
+       alert(`✅ Đã ${actionText} yêu cầu cập nhật thành công!`);
+       await loadData();
+       setSelectedRequest(null); // <-- Đảm bảo dòng này đã có để đóng modal đối chiếu
+       setShowRejectModal(false);
+     } else {
+       alert(result?.message || "Thao tác thất bại");
+     }
+   } catch (error) {
+     alert(error?.message || "Có lỗi xảy ra khi xử lý yêu cầu!");
+   }
+ };
 
   const renderCertificates = (certs) => {
     if (!certs || !Array.isArray(certs) || certs.length === 0) {

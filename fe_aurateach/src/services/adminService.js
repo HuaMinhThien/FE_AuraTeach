@@ -11,6 +11,18 @@ export const adminService = {
     return response.data !== undefined ? response.data : response;
   },
 
+  updateAccountStatus: async (userId, status) => {
+    try {
+      const response = await apiClient.patch(`/admin/users/${userId}/status`, { 
+        status: status 
+      });
+      // QUAN TRỌNG: Phải trả về response.data để component nhận được dữ liệu JSON từ Laravel/NodeJS trả về
+      return response.data; 
+    } catch (error) {
+      throw error; // Ném lỗi ra ngoài để khối try...catch ở component bắt được
+    }
+  },
+
   // --- Các hàm thống kê cũ ---
   getStats: async () => {
     const response = await apiClient.get('/admin/dashboard/stats');
@@ -112,7 +124,7 @@ export const adminService = {
     return response;
   },
 
-  getPayoutRequests: async () => {
+  getTutorPayouts: async () => {
     return await apiClient.get('/admin-tutor-payout-requests');
   },
 

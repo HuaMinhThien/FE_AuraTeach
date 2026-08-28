@@ -49,9 +49,7 @@ export const tutorService = {
   // 🚀 CÁC HÀM CÓ TÍCH HỢP CONSOLE.LOG BẮT LỖI CHI TIẾT
 
   async getTutorEarningsData(userId) {
-    try {
-      console.log("🟡 Đang gọi API getTutorEarningsData với user_id:", userId);
-      
+    try {      
       // 🚀 Sửa lại cách truyền tham số cho apiClient để Laravel chắc chắn nhận được user_id
       const response = await apiClient.get("/tutors/earnings", {
         params: { user_id: userId } 
@@ -85,19 +83,17 @@ export const tutorService = {
     }
   },
 
-  createPayoutRequest: async (payoutData) => {
-    console.log("🟡 Đang gửi yêu cầu rút tiền lên server:", payoutData);
+  setDefaultBank: async (bankData) => {
+    console.log("🟡 Đang gửi yêu cầu đặt ngân hàng mặc định lên server:", bankData);
     try {
       const response = await apiClient.post('/tutors/earnings-actions', {
-        action: 'create_payout_request',
-        ...payoutData,
+        action: 'set_default_bank',
+        ...bankData,
       });
-      console.log("🟢 Phản hồi thành công tạo yêu cầu rút tiền:", response);
-      
-      // 🚀 Trả thẳng response vì apiClient đã tự lo việc bóc tách data (hoặc trả về nguyên cục)
+      console.log("🟢 Phản hồi thành công đặt ngân hàng mặc định:", response);
       return response; 
     } catch (error) {
-      console.error("🔴 Lỗi API createPayoutRequest chi tiết:", {
+      console.error("🔴 Lỗi API setDefaultBank chi tiết:", {
         message: error.message,
         status: error.response?.status,
         data: error.response?.data
