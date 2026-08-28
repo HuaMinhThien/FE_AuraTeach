@@ -121,7 +121,7 @@ export default function BookingModal({
             </div>
             <div className="booking-course-details">
               <h3 className="booking-course-name">{course?.title}</h3>
-              <p className="booking-course-tutor">👨‍🏫 {tutorName || "Gia sư"}</p>
+              <p className="booking-course-tutor">{tutorName || "Gia sư"}</p>
               <div className="booking-course-meta">
                 <span className="booking-meta-item">📅 {course?.schedule_days?.join(", ")}</span>
                 <span className="booking-meta-item">⏰ {course?.time_slot}</span>
@@ -131,7 +131,7 @@ export default function BookingModal({
 
           {/* Payment - QR Only */}
           <div className="booking-payment-section">
-            <h4 className="booking-section-title">💳 Phương thức thanh toán</h4>
+            <h4 className="booking-section-title">Phương thức thanh toán</h4>
             <div className="booking-payment-options">
               <label className="booking-payment-option active">
                 <input

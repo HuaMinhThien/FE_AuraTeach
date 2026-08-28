@@ -403,7 +403,7 @@ const currentStudents = course.students || [];
                       <div className={styles.sectionInfo}>
                         <div className={styles.sectionMain}>
                           <span className={styles.sectionCode}>MÃ LỚP: {sec.course_id.split('_').pop().toUpperCase()}</span>
-                          <span className={styles.sectionTutor}>👨‍🏫 GV: {sec.tutor_name}</span>
+                          <span className={styles.sectionTutor}> GV: {sec.tutor_name}</span>
                         </div>
                         <div className={styles.sectionStats}>
                           <span className={`${styles.sectionSlots} ${isSecFull ? styles.slotsFull : ''}`}>
@@ -431,7 +431,7 @@ const currentStudents = course.students || [];
 
           {/* Course Details Section */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>📋 Thông tin chi tiết</h2>
+            <h2 className={styles.sectionTitle}> Thông tin chi tiết</h2>
             <div className={styles.detailsGrid}>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Mã lớp</span>
@@ -485,10 +485,10 @@ const currentStudents = course.students || [];
                       rel="noopener noreferrer" 
                       className={styles.meetLink}
                     >
-                      🔗 Phòng học AuraTeach
+                       Phòng học AuraTeach
                     </a>
                   ) : hasMeetLink ? (
-                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký mới vào được phòng học</span>
+                    <span className={styles.meetLocked}> Chỉ học viên đã đăng ký mới vào được phòng học</span>
                   ) : (
                     "Chưa cập nhật"
                   )}
