@@ -1,4 +1,3 @@
-// src/app/api/classes/route.js
 import { NextResponse } from "next/server";
 
 const API_BASE = "http://localhost:3007";
@@ -169,7 +168,8 @@ export async function POST(request) {
       schedule_days: body.schedule_days || [],
       time_slot: body.time_slot || `${body.start_time || '07:00'}-${body.end_time || '09:00'}`,
       thumbnail: body.thumbnail || body.image || '/img/class/default-class-1.jpg',
-      permanent_room_url: roomUrl,
+      // permanent_room_url: roomUrl,
+      permanent_room_url: body.meet_link || body.google_meet_link || "",
       status: defaultStatus,
       students: body.students || [],
       created_by: body.created_by || null,

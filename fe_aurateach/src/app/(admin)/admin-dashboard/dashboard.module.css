@@ -100,7 +100,7 @@
 
 .refreshButton {
   padding: 8px 16px;
-  background: #4f46e5;
+  background: #00236f;
   color: white;
   border: none;
   border-radius: 8px;
@@ -111,7 +111,7 @@
 }
 
 .refreshButton:hover {
-  background: #4338ca;
+  background: #0d47a1;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
@@ -280,7 +280,7 @@
 
 .retryButton {
   padding: 10px 24px;
-  background: #4f46e5;
+  background: #00236f;
   color: white;
   border: none;
   border-radius: 8px;
@@ -290,7 +290,7 @@
 }
 
 .retryButton:hover {
-  background: #4338ca;
+  background: #0d47a1;
 }
 
 /* RESPONSIVE */

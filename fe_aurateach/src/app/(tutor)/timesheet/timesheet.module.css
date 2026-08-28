@@ -109,14 +109,14 @@
   margin: 0;
   font-size: 22px;
   font-weight: 700;
-  color: #FFA237;
+  color: #000;
 }
 
 .cardValue1 {
   margin: 0;
   font-size: 22px;
   font-weight: 700;
-  color: #4EC2FF;
+  color: #000;
 }
 
 .cardSub {
@@ -126,27 +126,24 @@
 }
 
 .incomeCard {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  background-color: #fff;
   border-color: #bbf7d0;
 }
 
 .incomeCard .cardValue {
-  color: #15803d;
+  color: #000;
 }
 
 .completedCard {
-  background: #f0f9ff;
-  border-color: #bae6fd;
+  background: #fff;
 }
 
 .missedCard {
-  background: #fff7ed;
-  border-color: #fed7aa;
+  background: #fff;
 }
 
 .statusCard {
   background: #f8fafc;
-  border-color: #e2e8f0;
 }
 
 .warningBadge {
@@ -337,12 +334,11 @@
 }
 
 .hoursCard {
-  background: #f5f3ff;
-  border-color: #ddd6fe;
+  background: #fff;
 }
 
 .hoursCard .cardValue {
-  color: #6d28d9;
+  color: #000000;
 }
 /* Responsive */
 @media (max-width: 900px) {

@@ -90,7 +90,7 @@ export default function AdminTutorReports() {
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1>📋 Báo cáo gia sư</h1>
+          <h1>Báo cáo gia sư</h1>
           <p>Quản lý và xử lý báo cáo từ học viên</p>
         </div>
         <span className={styles.badgePending}>{getPendingCount()} chờ xử lý</span>

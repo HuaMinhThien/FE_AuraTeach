@@ -33,8 +33,15 @@ export default function TutorProfile() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  
+  // ✅ State lưu dữ liệu yêu cầu đang chờ duyệt tóm tắt
+  const [pendingRequestData, setPendingRequestData] = useState(null);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  // State hiển thị Modal xem thông tin đã thay đổi
+  const [showChangesModal, setShowChangesModal] = useState(false);
 
   // States quản lý trường chỉnh sửa
   const [editFields, setEditFields] = useState({
@@ -145,14 +152,13 @@ export default function TutorProfile() {
           setTutorData(mergedData);
 
           // ✅ LẤY TRẠNG THÁI TOGGLE NHẬN LỚP ĐỀ XUẤT
-          // Mặc định true nếu field chưa tồn tại (backward-compatible)
           setAcceptSuggested(mergedData.accept_suggested_classes !== false);
 
           const expArray = mergedData.expertise 
             ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
             : [];
 
-          setEditFields({
+          const initialFields = {
             phone: mergedData.phone || "",
             bio: mergedData.bio || "",
             experience: mergedData.experience || "",
@@ -160,7 +166,9 @@ export default function TutorProfile() {
             cv_link: mergedData.cv_link || "",
             expertise: expArray,
             certificates: mergedData.certificates || []
-          });
+          };
+
+          setEditFields(initialFields);
 
           const currentTutorId = tutorObj.id || tutorObj.tutor_id;
           const checkRes = await fetch(`/api/admin-tutor-update-requests?tutor_id=${currentTutorId}`);
@@ -168,6 +176,19 @@ export default function TutorProfile() {
           
           if (checkData.success && checkData.hasPending) {
             setHasPendingRequest(true);
+            
+            // ✅ ĐẢM BẢO LẤY DỮ LIỆU TỪ NGHỆ YÊU CẦU MỚI NHẤT
+            if (checkData.requests && Array.isArray(checkData.requests) && checkData.requests.length > 0) {
+              const latestReq = [...checkData.requests].sort((a, b) => {
+                const timeA = new Date(a.created_at || a.updated_at || 0).getTime();
+                const timeB = new Date(b.created_at || b.updated_at || 0).getTime();
+                if (timeA && timeB) return timeB - timeA;
+                return (b.tutor_update_req_id || "").localeCompare(a.tutor_update_req_id || "");
+              })[0];
+              setPendingRequestData(latestReq);
+            } else if (checkData.request) {
+              setPendingRequestData(checkData.request);
+            }
           }
         } else {
           setErrorMsg("Không tìm thấy dữ liệu gia sư.");
@@ -232,15 +253,18 @@ export default function TutorProfile() {
         certificates: editFields.certificates
       };
 
+      const reqBody = {
+        tutor_update_req_id: `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        tutor_id: tutorData.id || tutorData.tutor_id,
+        old_data: oldPayload,
+        new_data: newPayload,
+        created_at: new Date().toISOString()
+      };
+
       const response = await fetch("/api/admin-tutor-update-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tutor_update_req_id: `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          tutor_id: tutorData.id || tutorData.tutor_id,
-          old_data: oldPayload,
-          new_data: newPayload
-        })
+        body: JSON.stringify(reqBody)
       });
 
       const result = await response.json();
@@ -248,7 +272,9 @@ export default function TutorProfile() {
       if (result.success) {
         setIsEditing(false);
         setIsDropdownOpen(false);
+        setShowChangesModal(false);
         setHasPendingRequest(true);
+        setPendingRequestData(reqBody);
         alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
       } else {
         alert(`❌ ${result.message || "Gửi yêu cầu thất bại, vui lòng thử lại"}`);
@@ -262,9 +288,81 @@ export default function TutorProfile() {
   if (loading) return <div className={styles.loadingContainer}><div className={styles.spinner}></div></div>;
   if (errorMsg || !tutorData) return <div className={styles.errorContainer}>{errorMsg}</div>;
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount || 0);
+  // Dữ liệu so sánh: nếu đang trong trạng thái chờ duyệt và không chỉnh sửa, ưu tiên lấy dữ liệu từ pendingRequestData
+  const activeOldData = pendingRequestData?.old_data || {
+    phone: tutorData.phone || "",
+    level: tutorData.level || "Giáo viên",
+    experience: tutorData.experience || "",
+    cv_link: tutorData.cv_link || "",
+    expertise: tutorData.expertise || "",
+    bio: tutorData.bio || "",
+    certificates: tutorData.certificates || []
   };
+
+  const activeNewData = pendingRequestData?.new_data || {
+    phone: editFields.phone,
+    level: editFields.level,
+    experience: editFields.experience,
+    cv_link: editFields.cv_link,
+    expertise: editFields.expertise.join(", "),
+    bio: editFields.bio,
+    certificates: editFields.certificates
+  };
+
+  const parseCertCount = (certs) => {
+    if (Array.isArray(certs)) return certs.length;
+    if (typeof certs === "string") {
+      try { return JSON.parse(certs).length; } catch { return 0; }
+    }
+    return 0;
+  };
+
+  const changesList = [
+    { 
+      label: "Số điện thoại", 
+      oldVal: activeOldData.phone || "Chưa cập nhật", 
+      newVal: activeNewData.phone || "Chưa cập nhật", 
+      isChanged: activeOldData.phone !== activeNewData.phone 
+    },
+    { 
+      label: "Trình độ", 
+      oldVal: activeOldData.level || "Giáo viên", 
+      newVal: activeNewData.level, 
+      isChanged: activeOldData.level !== activeNewData.level 
+    },
+    { 
+      label: "Kinh nghiệm", 
+      oldVal: activeOldData.experience || "Chưa cập nhật", 
+      newVal: activeNewData.experience || "Chưa cập nhật", 
+      isChanged: activeOldData.experience !== activeNewData.experience 
+    },
+    { 
+      label: "Link CV / Portfolio", 
+      oldVal: activeOldData.cv_link || "Chưa cập nhật", 
+      newVal: activeNewData.cv_link || "Chưa cập nhật", 
+      isChanged: activeOldData.cv_link !== activeNewData.cv_link 
+    },
+    { 
+      label: "Lĩnh vực chuyên môn", 
+      oldVal: activeOldData.expertise || "Chưa cập nhật", 
+      newVal: activeNewData.expertise || "Chưa cập nhật", 
+      isChanged: activeOldData.expertise !== activeNewData.expertise 
+    },
+    { 
+      label: "Giới thiệu bản thân", 
+      oldVal: activeOldData.bio || "Chưa cập nhật", 
+      newVal: activeNewData.bio || "Chưa cập nhật", 
+      isChanged: activeOldData.bio !== activeNewData.bio 
+    },
+    { 
+      label: "Bằng cấp & Chứng chỉ", 
+      oldVal: `${parseCertCount(activeOldData.certificates)} hình ảnh`, 
+      newVal: `${parseCertCount(activeNewData.certificates)} hình ảnh`, 
+      isChanged: JSON.stringify(activeOldData.certificates) !== JSON.stringify(activeNewData.certificates) 
+    }
+  ];
+
+  const hasAnyChange = changesList.some((item) => item.isChanged);
 
   return (
     <div className={styles.profileContainer}>
@@ -272,21 +370,41 @@ export default function TutorProfile() {
         <h2>Hồ sơ cá nhân</h2>
         
         {hasPendingRequest ? (
-          <button 
-            className={styles.btnEdit} 
-            disabled 
-            style={{ opacity: 0.6, cursor: "not-allowed", backgroundColor: "#f59e0b", color: "#fff" }}
-          >
-            ⏳ Yêu cầu sửa đang chờ duyệt...
-          </button>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button 
+              className={styles.btnEdit} 
+              disabled 
+              style={{ opacity: 0.85, cursor: "not-allowed", backgroundColor: "#f59e0b", color: "#fff" }}
+            >
+              ⏳ Đang chờ duyệt yêu cầu sửa...
+            </button>
+            {/* Nút xem lại thông tin đã sửa khi đang chờ duyệt */}
+            <button 
+              type="button" 
+              className={styles.btnSave}
+              style={{ backgroundColor: "#2563eb", color: "#fff" }}
+              onClick={() => setShowChangesModal(true)}
+            >
+              👁️ Xem thông tin đã sửa
+            </button>
+          </div>
         ) : !isEditing ? (
           <button className={styles.btnEdit} onClick={() => setIsEditing(true)}>
             ⚙️ Chỉnh sửa thông tin
           </button>
         ) : (
-          <div className={styles.btnActionGroup}>
+          <div className={styles.btnActionGroup} style={{ display: "flex", gap: "8px" }}>
+            {/* Nút xem trước thông tin đã thay đổi khi đang edit */}
+            <button 
+              type="button" 
+              className={styles.btnSave}
+              style={{ backgroundColor: "#2563eb", color: "#fff" }}
+              onClick={() => setShowChangesModal(true)}
+            >
+              👁️ Xem thay đổi
+            </button>
             <button className={styles.btnSave} onClick={handleSave}>💾 Gửi yêu cầu duyệt</button>
-            <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); }}>Hủy</button>
+            <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); setShowChangesModal(false); }}>Hủy</button>
           </div>
         )}
       </div>
@@ -315,7 +433,7 @@ export default function TutorProfile() {
         </button>
       </div>
 
-      {/* Header Card */}
+      {/* Header Card (Chứa thêm 3 thông tin Email, Số điện thoại, Link CV) */}
       <div className={styles.headerCard}>
         <div className={styles.avatarWrapper}>
           <img
@@ -345,6 +463,7 @@ export default function TutorProfile() {
                 onChange={(e) => setEditFields({ ...editFields, level: e.target.value })}
               >
                 <option value="Giáo viên">Giáo viên</option>
+                <option value="Sinh viên">Sinh viên</option>
               </select>
             ) : (
               <span className={`${styles.badge} ${styles.badgeLevel}`}>
@@ -371,66 +490,47 @@ export default function TutorProfile() {
               <img src="/img/icons/security.png" alt="xác minh" className={styles.badgeIcon} /> {tutorData.verification_status || "Chưa xác minh"}
             </span>
           </div>
-        </div>
-      </div>
 
-      {/* Balance Cards */}
-      <div className={styles.gridContainer}>
-        <div className={styles.balanceCardMain}>
-          <p className={styles.balanceLabelMain}>Số dư khả dụng</p>
-          <div className={styles.balanceRow}>
-            <p className={styles.balanceAmountMain}>{formatCurrency(tutorData.available_balance || 0)}</p>
-            <button 
-              className={styles.btnPayout}
-              disabled={(tutorData.available_balance || 0) <= 0}
-              style={{
-                opacity: (tutorData.available_balance || 0) <= 0 ? 0.5 : 1,
-                cursor: (tutorData.available_balance || 0) <= 0 ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {tutorData.available_balance > 0 ? "Rút tiền về ví" : "Chưa có tiền"}
-            </button>
-          </div>
-        </div>
+          {/* 3 THÔNG TIN EMAIL, SỐ ĐIỆN THOẠI, LINK CV */}
+          <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", fontSize: "0.95rem", color: "#334155" }}>
+            <div>
+              <span className={styles.contactLabel} style={{ fontWeight: "600" }}>✉️ Email:</span> {tutorData.email}
+            </div>
 
-        <div className={styles.balanceCardSub}>
-          <p className={styles.balanceLabelSub}>Số dư đang treo</p>
-          <p className={styles.balanceAmountSub}>{formatCurrency(tutorData.pending_balance || 0)}</p>
-        </div>
+            <div>
+              <span className={styles.contactLabel} style={{ fontWeight: "600" }}>📞 Số điện thoại:</span>{" "}
+              {isEditing ? (
+                <input 
+                  type="text" 
+                  className={styles.inputField}
+                  style={{ padding: "4px 8px", width: "200px" }}
+                  value={editFields.phone}
+                  onChange={e => setEditFields({...editFields, phone: e.target.value})}
+                />
+              ) : (
+                tutorData.phone || "Chưa cập nhật"
+              )}
+            </div>
 
-        <div className={styles.contactCard}>
-          <div><span className={styles.contactLabel}>Email:</span> {tutorData.email}</div>
-          <div>
-            <span className={styles.contactLabel}>Hotline:</span>{" "}
-            {isEditing ? (
-              <input 
-                type="text" 
-                className={styles.inputField}
-                value={editFields.phone}
-                onChange={e => setEditFields({...editFields, phone: e.target.value})}
-              />
-            ) : (
-              tutorData.phone || "Chưa cập nhật"
-            )}
-          </div>
-
-          <div style={{ marginTop: "6px" }}>
-            <span className={styles.contactLabel}>Link CV / Portfolio:</span>{" "}
-            {isEditing ? (
-              <input 
-                type="url" 
-                className={styles.inputField}
-                value={editFields.cv_link}
-                onChange={e => setEditFields({...editFields, cv_link: e.target.value})}
-                placeholder="https://drive.google.com/..."
-              />
-            ) : tutorData.cv_link ? (
-              <a href={tutorData.cv_link} target="_blank" rel="noreferrer" className={styles.cvLink}>
-                📄 Xem CV
-              </a>
-            ) : (
-              <span style={{ color: "#9ca3af" }}>Chưa cập nhật</span>
-            )}
+            <div>
+              <span className={styles.contactLabel} style={{ fontWeight: "600" }}>📄 Link CV / Portfolio:</span>{" "}
+              {isEditing ? (
+                <input 
+                  type="url" 
+                  className={styles.inputField}
+                  style={{ padding: "4px 8px", width: "280px" }}
+                  value={editFields.cv_link}
+                  onChange={e => setEditFields({...editFields, cv_link: e.target.value})}
+                  placeholder="https://drive.google.com/..."
+                />
+              ) : tutorData.cv_link ? (
+                <a href={tutorData.cv_link} target="_blank" rel="noreferrer" className={styles.cvLink} style={{ color: "#2563eb", textDecoration: "underline" }}>
+                  Xem CV
+                </a>
+              ) : (
+                <span style={{ color: "#9ca3af" }}>Chưa cập nhật</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -656,6 +756,111 @@ export default function TutorProfile() {
           </div>
         )}
       </div>
+
+      {/* MODAL XEM CÁC THÔNG TIN ĐÃ THAY ĐỔI / ĐANG CHỜ DUYỆT */}
+      {showChangesModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.65)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000,
+          padding: "16px"
+        }}>
+          <div style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "16px",
+            width: "100%",
+            maxWidth: "650px",
+            maxHeight: "85vh",
+            overflowY: "auto",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+            padding: "24px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "1.25rem", color: "#1e293b" }}>
+                🔍 {hasPendingRequest ? "Thông tin yêu cầu sửa đang chờ duyệt" : "Thông tin chỉnh sửa"}
+              </h3>
+              <button 
+                onClick={() => setShowChangesModal(false)}
+                style={{ border: "none", background: "none", fontSize: "1.2rem", cursor: "pointer", color: "#64748b" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {!hasAnyChange ? (
+              <div style={{ padding: "24px 0", textAlign: "center", color: "#64748b" }}>
+                Chưa có thông tin nào được thay đổi.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {changesList.map((item, index) => (
+                  <div 
+                    key={index}
+                    style={{
+                      padding: "12px 16px",
+                      borderRadius: "8px",
+                      border: item.isChanged ? "2px solid #2563eb" : "1px solid #e2e8f0",
+                      backgroundColor: item.isChanged ? "#eff6ff" : "#ffffff",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                      <span style={{ fontWeight: "600", color: item.isChanged ? "#1e40af" : "#475569" }}>
+                        {item.label}
+                      </span>
+                      {item.isChanged && (
+                        <span style={{ fontSize: "0.75rem", backgroundColor: "#2563eb", color: "#ffffff", padding: "2px 8px", borderRadius: "12px", fontWeight: "600" }}>
+                          Đã thay đổi
+                        </span>
+                      )}
+                    </div>
+
+                    {item.isChanged ? (
+                      <div style={{ fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <div style={{ color: "#64748b", textDecoration: "line-through" }}>
+                          <strong>Cũ:</strong> {item.oldVal}
+                        </div>
+                        <div style={{ color: "#1d4ed8", fontWeight: "500" }}>
+                          <strong>Mới:</strong> {item.newVal}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: "0.9rem", color: "#64748b" }}>
+                        {item.newVal}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setShowChangesModal(false)}
+                style={{
+                  padding: "8px 24px",
+                  backgroundColor: "#2563eb",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  cursor: "pointer"
+                }}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
