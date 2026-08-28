@@ -356,12 +356,12 @@ const currentStudents = course.students || [];
         <h1 className={styles.title}>{course.title}</h1>
         <div className={styles.meta}>
           <div className={styles.rating}>
-            <span className={styles.star}>⭐</span>
+            <img src="/img/icons/star.png" alt="star" className={styles.starIcon} />
             <span className={styles.ratingValue}>{averageRating}</span>
             <span className={styles.reviews}>({courseReviews.length} đánh giá)</span>
           </div>
           <div className={styles.students}>
-            <span>👥 {currentStudentsCount}/{course.max_students} học viên</span>
+            <span><img src="/img/icons/group.png" alt="học viên" className={styles.studentsIcon} /> {currentStudentsCount}/{course.max_students} học viên</span>
           </div>
           <div className={styles.tag}>
             <span className={styles.tagBadge}>📚 {getCategoryName(course.category_id)}</span>

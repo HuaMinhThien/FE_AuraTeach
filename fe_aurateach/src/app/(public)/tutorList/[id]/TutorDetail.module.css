@@ -70,6 +70,18 @@
   font-size: 18px;
 }
 
+.verifiedIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.ratingStarIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
 .ratingMeta {
   color: #eab308;
   font-size: 14px;

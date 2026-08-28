@@ -211,7 +211,7 @@ export default function AdminClassesManagement() {
                       )}
                     </div>
                     <div className={styles.groupMeta}>
-                      <span>📅 {group.schedule_days?.join(', ')}</span>
+                      <span><img src="/img/icons/online-meeting.png" alt="Lịch" className={styles.metaIcon} /> {group.schedule_days?.join(', ')}</span>
                       <span>⏰ {group.time_slot}</span>
                       <span>🗓 Bắt đầu: {formatDate(group.start_date)}</span>
                     </div>

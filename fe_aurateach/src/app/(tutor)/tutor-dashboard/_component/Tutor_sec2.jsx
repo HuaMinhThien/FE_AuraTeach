@@ -123,7 +123,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
                   <h4>{item.title}</h4>
                   <div className={styles.meta}>
                     <span>⏰ {item.time}</span>
-                    <span>👥 {item.studentsCount} học viên</span>
+                    <span><img src="/img/icons/group.png" alt="học viên" className={styles.metaIcon} /> {item.studentsCount} học viên</span>
                   </div>
                 </div>
 

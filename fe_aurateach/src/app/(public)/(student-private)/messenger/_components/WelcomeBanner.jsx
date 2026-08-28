@@ -27,7 +27,7 @@ export default function WelcomeBanner({ userName = "bạn", unreadCount = 0, con
             </div>
           )}
           <div className={styles.statItem}>
-            <span className={styles.statNumber}>💬</span>
+            <img src="/img/icons/messenger (1).png" alt="Trò chuyện" className={styles.statIconImg} />
             <span className={styles.statLabel}>Trò chuyện ngay</span>
           </div>
         </div>

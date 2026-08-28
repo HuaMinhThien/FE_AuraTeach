@@ -28,6 +28,15 @@
   font-weight: 700;
   color: #1e293b;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIconImg {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .updateTime {
@@ -63,6 +72,28 @@
 }
 
 .periodSelector:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.customDateRange {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dateInput {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  color: #334155;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.dateInput:focus {
   border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
@@ -126,6 +157,12 @@
   flex-shrink: 0;
 }
 
+.statIconImg {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .statInfo {
   flex: 1;
   min-width: 0;
@@ -180,6 +217,18 @@
   font-size: 13px;
   color: #94a3b8;
   margin: 0 0 16px 0;
+}
+
+.chartTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chartIcon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
 
 /* LOADING */

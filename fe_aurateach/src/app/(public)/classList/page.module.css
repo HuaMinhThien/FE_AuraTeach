@@ -51,6 +51,15 @@
   border-radius: 30px;
   font-size: 14px;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tagIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .heroButtons {
@@ -67,11 +76,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
 }
 
 .heroBtnPrimary {
-  background-color: #2c5bf2;
+  background-color: #00236f;
   color: white;
+  box-shadow: 0 4px 14px rgba(21, 101, 192, 0.3);
+}
+
+.heroBtnPrimary:hover {
+  background-color: #0d47a1;
+  transform: translateY(-2px);
 }
 
 .heroBtnSecondary {
