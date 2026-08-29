@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getClassroomRoomPath } from "@/utils/roomUtils";
 import styles from "./ClassCalendar.module.css";
 
-export default function ClassCalendar({ courses, onDateClick }) {
+export default function ClassCalendar({ courses, makeupSessions = [], onDateClick }) {
   const router = useRouter();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedCourseIds, setSelectedCourseIds] = useState([]);
@@ -15,7 +15,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
   const classBlockRefs = useRef({});
   const hasScrolledRef = useRef(false);
 
-  // Tạo map các ngày có lớp học
+  // Tạo map các ngày có lớp học (lớp thường)
   const classDates = useMemo(() => {
     const dates = {};
     courses.forEach(course => {
@@ -46,14 +46,40 @@ export default function ClassCalendar({ courses, onDateClick }) {
             dates[dateKey].push({
               course: course,
               time: course.time_slot || "Chưa có giờ",
+              isMakeup: false,
             });
           }
           current.setDate(current.getDate() + 1);
         }
       }
     });
+
+    // ===== Thêm buổi học bù vào map =====
+    makeupSessions.forEach((session) => {
+      if (!session.actual_date || !session.start_time || !session.end_time) return;
+
+      const sessionDate = new Date(session.actual_date);
+      const dateKey = sessionDate.toISOString().split("T")[0];
+
+      if (!dates[dateKey]) {
+        dates[dateKey] = [];
+      }
+
+      dates[dateKey].push({
+        course: {
+          course_id: session.course_id,
+          title: session.course_title || session.lesson_title || "Buổi học bù",
+          permanent_room_url: session.permanent_room_url,
+          tutor_name: session.tutor_name,
+        },
+        time: `${session.start_time}-${session.end_time}`,
+        isMakeup: true,
+        session: session,
+      });
+    });
+
     return dates;
-  }, [courses]);
+  }, [courses, makeupSessions]);
 
   // Lấy tất cả khung giờ 30 phút từ 00:00 đến 23:30
   const getAllTimeSlots = () => {
@@ -167,19 +193,41 @@ export default function ClassCalendar({ courses, onDateClick }) {
         durationMin: endMin - startMin,
         topPercent: (startMin / totalMinutes) * 100,
         heightPercent: ((endMin - startMin) / totalMinutes) * 100,
+        isMakeup: cls.isMakeup || false,
+        session: cls.session || null,
       };
     }).filter(cls => selectedCourseIds.length === 0 || selectedCourseIds.includes(cls.course.course_id));
   };
 
+  // ===== SỬA HÀM VÀO LỚP: Ưu tiên mở permanent_room_url trong data =====
   const handleJoinFromBlock = (course) => {
-    if (course) {
+    if (!course) return;
+
+    // Ưu tiên lấy link phòng học lưu trực tiếp trong data
+    const roomUrl =
+      course.permanent_room_url ||
+      course.room_url ||
+      course.meeting_url ||
+      course.link ||
+      null;
+
+    if (roomUrl && typeof roomUrl === "string" && roomUrl.trim() !== "") {
+      window.open(roomUrl.trim(), "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Fallback: thử dùng utility (nếu có)
+    try {
       const roomPath = getClassroomRoomPath(course, "student");
       if (roomPath) {
-        window.open(roomPath, "_blank");
-      } else {
-        alert("Lớp học này chưa có link tham gia!");
+        window.open(roomPath, "_blank", "noopener,noreferrer");
+        return;
       }
+    } catch (e) {
+      console.warn("getClassroomRoomPath lỗi:", e);
     }
+
+    alert("Lớp học này chưa có link tham gia!");
   };
 
   const handleClassClick = (course) => {
@@ -306,9 +354,9 @@ export default function ClassCalendar({ courses, onDateClick }) {
           </button>
         </div>
         <div className={styles.filterOptions}>
-          {courses.map(course => (
+          {courses.map((course, index) => (
             <label 
-              key={course.course_id} 
+              key={`${course.course_id || course.id || "course"}-${index}`}
               className={`${styles.filterTag} ${selectedCourseIds.includes(course.course_id) ? styles.filterTagActive : ""}`}
             >
               <input
@@ -409,7 +457,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
                   >
                     {classesForDate.map((cls, idx) => (
                       <div
-                        key={`${dateKey}-${cls.course.course_id}`}
+                        key={`${dateKey}-${cls.course.course_id || "unknown"}-${cls.isMakeup ? "makeup" : "normal"}-${idx}`}
                         className={styles.classBlock}
                         ref={(el) => {
                           if (el) classBlockRefs.current[`${dateKey}-${cls.course.course_id}`] = el;
@@ -417,11 +465,33 @@ export default function ClassCalendar({ courses, onDateClick }) {
                         style={{
                           top: `${cls.topPercent}%`,
                           height: `${cls.heightPercent}%`,
+                          ...(cls.isMakeup
+                            ? {
+                                background: "#fff7ed",
+                                borderLeft: "4px solid #ea580c",
+                                color: "#c2410c",
+                              }
+                            : {}),
                         }}
                         onClick={() => handleClassClick(cls.course)}
                       >
                         <div className={styles.classBlockContent}>
-                          <strong>{cls.course.title}</strong>
+                          <strong>
+                            {cls.course.title}
+                            {cls.isMakeup && (
+                              <span style={{
+                                marginLeft: 6,
+                                padding: "1px 6px",
+                                background: "#ffedd5",
+                                color: "#c2410c",
+                                fontSize: 10,
+                                fontWeight: 600,
+                                borderRadius: 999,
+                              }}>
+                                Học bù
+                              </span>
+                            )}
+                          </strong>
                           <span>{cls.time}</span>
                           <button
                             className={styles.classJoinBtn}
@@ -429,6 +499,7 @@ export default function ClassCalendar({ courses, onDateClick }) {
                               e.stopPropagation();
                               handleJoinFromBlock(cls.course);
                             }}
+                            style={cls.isMakeup ? { background: "#ea580c", color: "#fff" } : {}}
                           >
                             Vào lớp
                           </button>
@@ -448,6 +519,17 @@ export default function ClassCalendar({ courses, onDateClick }) {
         <div className={styles.legendItem}>
           <span className={styles.legendDotGreen}></span>
           <span>Có lớp học</span>
+        </div>
+        <div className={styles.legendItem}>
+          <span style={{
+            width: 12,
+            height: 12,
+            borderRadius: "50%",
+            background: "#fff7ed",
+            border: "2px solid #ea580c",
+            display: "inline-block",
+          }}></span>
+          <span>Buổi học bù</span>
         </div>
         <div className={styles.legendItem}>
           <span className={styles.legendDotGray}></span>

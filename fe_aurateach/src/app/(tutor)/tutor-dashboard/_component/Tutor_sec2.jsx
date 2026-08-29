@@ -117,9 +117,23 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
                 </div>
 
                 <div className={styles.info}>
-                  <span className={`${styles.tag} ${item.isLive ? styles.urgent : ""}`}>
-                    {item.tag}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <span className={`${styles.tag} ${item.isLive ? styles.urgent : ""}`}>
+                      {item.tag}
+                    </span>
+                    {item.isMakeup && (
+                      <span style={{
+                        padding: "2px 8px",
+                        background: "#ffedd5",
+                        color: "#c2410c",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        borderRadius: 999
+                      }}>
+                        Học bù
+                      </span>
+                    )}
+                  </div>
                   <h4>{item.title}</h4>
                   <div className={styles.meta}>
                     <span>⏰ {item.time}</span>
@@ -160,7 +174,22 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
         <div className={styles.modalOverlay} onClick={() => setSelectedClass(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3>Chi tiết lớp học</h3>
+              <h3>
+                Chi tiết lớp học
+                {selectedClass.isMakeup && (
+                  <span style={{
+                    marginLeft: 10,
+                    padding: "3px 10px",
+                    background: "#ffedd5",
+                    color: "#c2410c",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    borderRadius: 999
+                  }}>
+                    Học bù
+                  </span>
+                )}
+              </h3>
               <button className={styles.closeBtn} onClick={() => setSelectedClass(null)}>✕</button>
             </div>
 
@@ -171,7 +200,7 @@ export default function Tutor_sec2({ classesData, pendingConfirmations = [], onR
               <div className={styles.detailGrid}>
                 <div><strong>Trình độ:</strong> {selectedClass.level || "N/A"}</div>
                 <div><strong>Học phí / giờ:</strong> {selectedClass.price_per_session?.toLocaleString("vi-VN")}đ/h</div>
-                <div><strong>Lịch học:</strong> {selectedClass.schedule_days?.join(", ")}</div>
+                <div><strong>Lịch học:</strong> {selectedClass.schedule_days?.join(", ") || "—"}</div>
                 <div><strong>Khung giờ:</strong> {selectedClass.time}</div>
               </div>
 

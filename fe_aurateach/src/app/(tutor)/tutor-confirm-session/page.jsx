@@ -40,6 +40,7 @@ export default function SessionConfirm() {
   const [currentTutorId, setCurrentTutorId] = useState(null);
 
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedMakeupSession, setSelectedMakeupSession] = useState(null); // buổi học bù đang chọn
   const [studentsInClass, setStudentsInClass] = useState([]);
   
   // States Form & Điểm danh
@@ -109,7 +110,6 @@ export default function SessionConfirm() {
     const currentDayStr = daysMap[now.getDay()]; 
 
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    console.log("lop hoc chua loc", courses);
     
     return courses.filter((course) => {
       // 0. Điều kiện 1: Lớp phải thuộc về gia sư đang đăng nhập
@@ -135,7 +135,10 @@ export default function SessionConfirm() {
 
       // 2. Điều kiện 3: Loại bỏ lớp đã xác nhận trong ngày hôm nay
       const isAlreadySubmittedToday = classSessions.some(
-        s => s.course_id === course.course_id && s.created_at && s.created_at.startsWith(todayStr)
+        s => s.course_id === course.course_id && 
+             !s.is_makeup && 
+             s.created_at && 
+             s.created_at.startsWith(todayStr)
       );
       if (isAlreadySubmittedToday) return false;
       
@@ -155,17 +158,63 @@ export default function SessionConfirm() {
       }
       return false;
     });
-  };  
+  };
 
-  const handleOpenDetail = (course) => {
+  // ===== LẤY CÁC BUỔI HỌC BÙ CẦN XÁC NHẬN HÔM NAY =====
+  const getTodayMakeupSessions = () => {
+    if (!currentTutorId) return [];
+
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return classSessions.filter((session) => {
+      // Chỉ lấy buổi học bù
+      if (session.is_makeup !== true) return false;
+
+      // Chỉ lấy buổi còn scheduled (chưa xác nhận)
+      if (session.session_status !== 'scheduled') return false;
+
+      // Kiểm tra ngày của buổi bù có phải hôm nay không
+      if (!session.actual_date) return false;
+      const sessionDateStr = new Date(session.actual_date).toISOString().split('T')[0];
+      if (sessionDateStr !== todayStr) return false;
+
+      // Kiểm tra buổi này thuộc lớp của gia sư đang đăng nhập
+      const relatedCourse = courses.find(c => (c.course_id || c.id) === session.course_id);
+      if (!relatedCourse || String(relatedCourse.tutor_id) !== String(currentTutorId)) {
+        return false;
+      }
+
+      // Kiểm tra đã đến giờ bắt đầu chưa (và trước 23:00)
+      if (session.start_time) {
+        const [startHour, startMin] = session.start_time.split(':').map(Number);
+        const startMinutes = startHour * 60 + (startMin || 0);
+        const endOfDayMinutes = 23 * 60;
+
+        if (currentMinutes >= startMinutes && currentMinutes <= endOfDayMinutes) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+  };
+
+  const handleOpenDetail = (course, makeupSession = null) => {
     setSelectedCourse(course);
+    setSelectedMakeupSession(makeupSession);
     setRecordLink('');
-    setTutorNote('');
+    setTutorNote(makeupSession?.tutor_note || '');
 
     const classStudents = users.filter(u => course.students && course.students.includes(u.user_id));
     setStudentsInClass(classStudents);
 
-    const savedDraft = localStorage.getItem(`draft_attendance_${course.course_id}`);
+    const draftKey = makeupSession 
+      ? `draft_attendance_makeup_${makeupSession.session_id || makeupSession.id}`
+      : `draft_attendance_${course.course_id}`;
+
+    const savedDraft = localStorage.getItem(draftKey);
     if (savedDraft) {
       setAttendance(JSON.parse(savedDraft));
     } else {
@@ -176,12 +225,23 @@ export default function SessionConfirm() {
       setAttendance(initAttendance);
     }
 
-    checkTimeAndStatus(course);
+    checkTimeAndStatus(course, makeupSession);
   };
 
-  const checkTimeAndStatus = (course) => {
+  const checkTimeAndStatus = (course, makeupSession = null) => {
     const now = new Date();
     
+    // Nếu là buổi học bù → dùng giờ của session
+    if (makeupSession && makeupSession.end_time) {
+      const [endHour, endMin] = makeupSession.end_time.split(':').map(Number);
+      const endTimeDate = new Date();
+      endTimeDate.setHours(endHour, endMin || 0, 0, 0);
+
+      setIsSubmitAllowed(now >= endTimeDate);
+      return;
+    }
+
+    // Buổi thường
     if (course.time_slot) {
       const times = course.time_slot.split('-');
       if (times.length === 2) {
@@ -208,7 +268,11 @@ export default function SessionConfirm() {
       }
     };
     setAttendance(updated);
-    localStorage.setItem(`draft_attendance_${selectedCourse.course_id}`, JSON.stringify(updated));
+
+    const draftKey = selectedMakeupSession 
+      ? `draft_attendance_makeup_${selectedMakeupSession.session_id || selectedMakeupSession.id}`
+      : `draft_attendance_${selectedCourse.course_id}`;
+    localStorage.setItem(draftKey, JSON.stringify(updated));
   };
 
   const handleCommentChange = (studentId, comment) => {
@@ -220,11 +284,16 @@ export default function SessionConfirm() {
       }
     };
     setAttendance(updated);
-    localStorage.setItem(`draft_attendance_${selectedCourse.course_id}`, JSON.stringify(updated));
+
+    const draftKey = selectedMakeupSession 
+      ? `draft_attendance_makeup_${selectedMakeupSession.session_id || selectedMakeupSession.id}`
+      : `draft_attendance_${selectedCourse.course_id}`;
+    localStorage.setItem(draftKey, JSON.stringify(updated));
   };
 
   const handleCloseModal = () => {
     setSelectedCourse(null);
+    setSelectedMakeupSession(null);
   };
 
   const handleSubmitSession = async (e) => {
@@ -235,38 +304,67 @@ export default function SessionConfirm() {
       return;
     }
 
-    const generatedSessionId = `ss_${Date.now()}`;
-
-    const sessionPayload = {
-      session_id: generatedSessionId,
-      course_id: selectedCourse.course_id,
-      actual_date: new Date().toISOString(),
-      start_time: selectedCourse.time_slot ? selectedCourse.time_slot.split('-')[0] : "",
-      end_time: selectedCourse.time_slot ? selectedCourse.time_slot.split('-')[1] : "",
-      lesson_title: selectedCourse.title,
-      record_url: recordLink,
-      tutor_note: tutorNote,
-      session_status: "completed",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
     try {
-      const resSession = await fetch(`${API_BASE_URL}/class_sessions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sessionPayload)
-      });
+      let actualSessionId = null;
 
-      if (!resSession.ok) {
-        const errText = await resSession.text();
-        console.error("Lỗi server class_sessions:", errText);
-        throw new Error("Không thể lưu buổi học vào class_sessions");
+      // ===== TRƯỜNG HỢP BUỔI HỌC BÙ → UPDATE SESSION CŨ =====
+      if (selectedMakeupSession) {
+        const updatePayload = {
+          record_url: recordLink,
+          tutor_note: tutorNote,
+          session_status: "completed",
+          updated_at: new Date().toISOString()
+        };
+
+        // json-server dùng id (không phải session_id) để PATCH
+        const sessionDbId = selectedMakeupSession.id;
+        const resUpdate = await fetch(`${API_BASE_URL}/class_sessions/${sessionDbId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatePayload)
+        });
+
+        if (!resUpdate.ok) {
+          throw new Error("Không thể cập nhật buổi học bù");
+        }
+
+        actualSessionId = selectedMakeupSession.session_id || selectedMakeupSession.id;
+      } 
+      // ===== TRƯỜNG HỢP BUỔI THƯỜNG → TẠO SESSION MỚI =====
+      else {
+        const generatedSessionId = `ss_${Date.now()}`;
+
+        const sessionPayload = {
+          session_id: generatedSessionId,
+          course_id: selectedCourse.course_id,
+          actual_date: new Date().toISOString(),
+          start_time: selectedCourse.time_slot ? selectedCourse.time_slot.split('-')[0] : "",
+          end_time: selectedCourse.time_slot ? selectedCourse.time_slot.split('-')[1] : "",
+          lesson_title: selectedCourse.title,
+          record_url: recordLink,
+          tutor_note: tutorNote,
+          session_status: "completed",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const resSession = await fetch(`${API_BASE_URL}/class_sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sessionPayload)
+        });
+
+        if (!resSession.ok) {
+          const errText = await resSession.text();
+          console.error("Lỗi server class_sessions:", errText);
+          throw new Error("Không thể lưu buổi học vào class_sessions");
+        }
+
+        const createdSession = await resSession.json();
+        actualSessionId = createdSession.session_id || createdSession.id || generatedSessionId;
       }
 
-      const createdSession = await resSession.json();
-      const actualSessionId = createdSession.session_id || createdSession.id || generatedSessionId;
-
+      // Lưu điểm danh
       const attendancePayloadList = Object.keys(attendance).map(studentId => ({
         attendance_id: `att_${Date.now()}_${studentId}`,
         session_id: actualSessionId,
@@ -289,9 +387,16 @@ export default function SessionConfirm() {
         )
       );
 
-      localStorage.removeItem(`draft_attendance_${selectedCourse.course_id}`);
+      // Xóa draft
+      const draftKey = selectedMakeupSession 
+        ? `draft_attendance_makeup_${selectedMakeupSession.session_id || selectedMakeupSession.id}`
+        : `draft_attendance_${selectedCourse.course_id}`;
+      localStorage.removeItem(draftKey);
 
-      alert("Xác nhận buổi học thành công!");
+      alert(selectedMakeupSession 
+        ? "Xác nhận buổi học bù thành công!" 
+        : "Xác nhận buổi học thành công!"
+      );
       handleCloseModal();
 
       // Đồng bộ cookie chuẩn xác để re-fetch dữ liệu
@@ -328,9 +433,12 @@ export default function SessionConfirm() {
             const hasClassToday = course.schedule_days && course.schedule_days.includes(currentDayStr);
             
             if (hasClassToday) {
-              // Kiểm tra xem đã có xác nhận session cho ngày hôm nay chưa
+              // Kiểm tra xem đã có xác nhận session cho ngày hôm nay chưa (chỉ buổi thường)
               const isAlreadyRecorded = existingSessions.some(
-                s => s.course_id === course.course_id && s.created_at && s.created_at.startsWith(todayStr)
+                s => s.course_id === course.course_id && 
+                     !s.is_makeup &&
+                     s.created_at && 
+                     s.created_at.startsWith(todayStr)
               );
 
               if (!isAlreadyRecorded) {
@@ -370,9 +478,9 @@ export default function SessionConfirm() {
     }
   }, [courses.length, currentTutorId]);
 
-  // Lấy danh sách đã lọc theo điều kiện gia sư + lịch hôm nay + giờ học + chưa xác nhận hôm nay
+  // Lấy danh sách đã lọc
   const validCourses = getTodayValidCourses();
-  console.log("Valid Courses:", validCourses);
+  const validMakeupSessions = getTodayMakeupSessions();
 
   return (
     <div className={styles.container}>
@@ -380,30 +488,74 @@ export default function SessionConfirm() {
 
       {/* Hiển thị danh sách các lớp thỏa điều kiện */}
       <div className={styles.classList}>
-        {validCourses.length === 0 ? (
+        {validCourses.length === 0 && validMakeupSessions.length === 0 ? (
           <div className={styles.emptyState}>Không có lớp học nào thuộc về bạn đang diễn ra hoặc cần xác nhận trong hôm nay.</div>
         ) : (
-          validCourses.map((item) => (
-            <div key={item.id || item.course_id} className={styles.classCard}>
-              <div className={styles.cardHeader}>
-                <h3 className={styles.courseTitle}>{item.title}</h3>
-                <span className={item.status === 'active' ? styles.badgeActive : styles.badgeEnded}>
-                  {item.status === 'active' ? 'Đang diễn ra' : 'Đã kết thúc'}
-                </span>
+          <>
+            {/* ===== BUỔI HỌC THƯỜNG ===== */}
+            {validCourses.map((item) => (
+              <div key={item.id || item.course_id} className={styles.classCard}>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.courseTitle}>{item.title}</h3>
+                  <span className={item.status === 'active' ? styles.badgeActive : styles.badgeEnded}>
+                    {item.status === 'active' ? 'Đang diễn ra' : 'Đã kết thúc'}
+                  </span>
+                </div>
+                <div className={styles.cardBody}>
+                  <p><strong>Khung giờ:</strong> {item.time_slot}</p>
+                  <p><strong>Ngày học:</strong> {item.schedule_days ? item.schedule_days.join(', ') : 'Chưa xếp'}</p>
+                  <p><strong>Sĩ số:</strong> {item.students ? item.students.length : 0} học sinh</p>
+                </div>
+                <button 
+                  className={styles.btnDetail}
+                  onClick={() => handleOpenDetail(item)}
+                >
+                  Xem chi tiết
+                </button>
               </div>
-              <div className={styles.cardBody}>
-                <p><strong>Khung giờ:</strong> {item.time_slot}</p>
-                <p><strong>Ngày học:</strong> {item.schedule_days ? item.schedule_days.join(', ') : 'Chưa xếp'}</p>
-                <p><strong>Sĩ số:</strong> {item.students ? item.students.length : 0} học sinh</p>
-              </div>
-              <button 
-                className={styles.btnDetail}
-                onClick={() => handleOpenDetail(item)}
-              >
-                Xem chi tiết
-              </button>
-            </div>
-          ))
+            ))}
+
+            {/* ===== BUỔI HỌC BÙ ===== */}
+            {validMakeupSessions.map((session) => {
+              const relatedCourse = courses.find(c => (c.course_id || c.id) === session.course_id);
+              if (!relatedCourse) return null;
+
+              return (
+                <div key={session.session_id || session.id} className={styles.classCard} style={{ borderLeft: '4px solid #ea580c' }}>
+                  <div className={styles.cardHeader}>
+                    <h3 className={styles.courseTitle}>
+                      {relatedCourse.title || session.lesson_title}
+                      <span style={{
+                        marginLeft: 8,
+                        padding: '2px 8px',
+                        background: '#ffedd5',
+                        color: '#c2410c',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        borderRadius: 999
+                      }}>
+                        Học bù
+                      </span>
+                    </h3>
+                    <span className={styles.badgeActive}>Chờ xác nhận</span>
+                  </div>
+                  <div className={styles.cardBody}>
+                    <p><strong>Khung giờ:</strong> {session.start_time} - {session.end_time}</p>
+                    <p><strong>Ngày bù:</strong> {new Date(session.actual_date).toLocaleDateString('vi-VN')}</p>
+                    <p><strong>Sĩ số:</strong> {relatedCourse.students ? relatedCourse.students.length : 0} học sinh</p>
+                    {session.tutor_note && <p><strong>Ghi chú:</strong> {session.tutor_note}</p>}
+                  </div>
+                  <button 
+                    className={styles.btnDetail}
+                    onClick={() => handleOpenDetail(relatedCourse, session)}
+                    style={{ background: '#ea580c' }}
+                  >
+                    Xác nhận buổi học bù
+                  </button>
+                </div>
+              );
+            })}
+          </>
         )}
       </div>
 
@@ -412,7 +564,22 @@ export default function SessionConfirm() {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <button className={styles.closeBtn} onClick={handleCloseModal}>&times;</button>
-            <h3>Chi Tiết Buổi Học - {selectedCourse.title}</h3>
+            <h3>
+              Chi Tiết Buổi Học - {selectedCourse.title}
+              {selectedMakeupSession && (
+                <span style={{
+                  marginLeft: 10,
+                  padding: '3px 10px',
+                  background: '#ffedd5',
+                  color: '#c2410c',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  borderRadius: 999
+                }}>
+                  Học bù
+                </span>
+              )}
+            </h3>
             
             <form onSubmit={handleSubmitSession}>
               <div className={styles.formGroup}>
@@ -486,8 +653,12 @@ export default function SessionConfirm() {
                 className={styles.btnSubmit}
                 disabled={!isSubmitAllowed}
                 title={!isSubmitAllowed ? "Chưa đến thời gian kết thúc buổi học để xác nhận" : ""}
+                style={selectedMakeupSession ? { background: '#ea580c' } : {}}
               >
-                {isSubmitAllowed ? "Xác nhận hoàn thành buổi học" : "Chờ hết giờ học để xác nhận"}
+                {isSubmitAllowed 
+                  ? (selectedMakeupSession ? "Xác nhận hoàn thành buổi học bù" : "Xác nhận hoàn thành buổi học") 
+                  : "Chờ hết giờ học để xác nhận"
+                }
               </button>
             </form>
           </div>

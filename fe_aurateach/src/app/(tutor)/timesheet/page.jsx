@@ -14,6 +14,15 @@ export default function TutorTimesheetPage() {
   const [payouts, setPayouts] = useState([]);
   const [expandedCourseId, setExpandedCourseId] = useState(null);
 
+  // ===== State cho Modal Học bù =====
+  const [showMakeupModal, setShowMakeupModal] = useState(false);
+  const [selectedMissedSession, setSelectedMissedSession] = useState(null);
+  const [makeupDate, setMakeupDate] = useState('');
+  const [makeupStartTime, setMakeupStartTime] = useState('19:00');
+  const [makeupEndTime, setMakeupEndTime] = useState('21:00');
+  const [makeupNote, setMakeupNote] = useState('');
+  const [isSubmittingMakeup, setIsSubmittingMakeup] = useState(false);
+
   // ===== Lấy cookie =====
   const getCookie = (name) => {
     if (typeof window === 'undefined') return null;
@@ -24,53 +33,53 @@ export default function TutorTimesheetPage() {
   };
 
   // ===== Load dữ liệu =====
-  useEffect(() => {
-    const init = async () => {
-      try {
-        setLoading(true);
-        const userCookie = getCookie('user_info');
-        if (!userCookie) {
-          setLoading(false);
-          return;
-        }
-
-        let raw = userCookie;
-        try { raw = decodeURIComponent(userCookie); } catch (e) {}
-        const userData = JSON.parse(raw);
-        const userId = userData.user_id || userData.id;
-
-        // Lấy tutor_id
-        const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${userId}`);
-        const tutors = await tutorRes.json();
-        if (!Array.isArray(tutors) || tutors.length === 0) {
-          setLoading(false);
-          return;
-        }
-        const actualTutorId = tutors[0].tutor_id;
-        setTutorId(actualTutorId);
-
-        // Lấy courses + sessions + payouts
-        const [coursesRes, sessionsRes, payoutsRes] = await Promise.all([
-          fetch(`http://localhost:3007/courses?tutor_id=${actualTutorId}`),
-          fetch(`http://localhost:3007/class_sessions`),
-          fetch(`http://localhost:3007/tutor_payouts?tutor_id=${actualTutorId}`),
-        ]);
-
-        const coursesData = await coursesRes.json();
-        const sessionsData = await sessionsRes.json();
-        const payoutsData = await payoutsRes.json();
-
-        setCourses(Array.isArray(coursesData) ? coursesData : []);
-        setSessions(Array.isArray(sessionsData) ? sessionsData : []);
-        setPayouts(Array.isArray(payoutsData) ? payoutsData : []);
-      } catch (err) {
-        console.error('Lỗi tải dữ liệu chấm công:', err);
-      } finally {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const userCookie = getCookie('user_info');
+      if (!userCookie) {
         setLoading(false);
+        return;
       }
-    };
 
-    init();
+      let raw = userCookie;
+      try { raw = decodeURIComponent(userCookie); } catch (e) {}
+      const userData = JSON.parse(raw);
+      const userId = userData.user_id || userData.id;
+
+      // Lấy tutor_id
+      const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${userId}`);
+      const tutors = await tutorRes.json();
+      if (!Array.isArray(tutors) || tutors.length === 0) {
+        setLoading(false);
+        return;
+      }
+      const actualTutorId = tutors[0].tutor_id;
+      setTutorId(actualTutorId);
+
+      // Lấy courses + sessions + payouts
+      const [coursesRes, sessionsRes, payoutsRes] = await Promise.all([
+        fetch(`http://localhost:3007/courses?tutor_id=${actualTutorId}`),
+        fetch(`http://localhost:3007/class_sessions`),
+        fetch(`http://localhost:3007/tutor_payouts?tutor_id=${actualTutorId}`),
+      ]);
+
+      const coursesData = await coursesRes.json();
+      const sessionsData = await sessionsRes.json();
+      const payoutsData = await payoutsRes.json();
+
+      setCourses(Array.isArray(coursesData) ? coursesData : []);
+      setSessions(Array.isArray(sessionsData) ? sessionsData : []);
+      setPayouts(Array.isArray(payoutsData) ? payoutsData : []);
+    } catch (err) {
+      console.error('Lỗi tải dữ liệu chấm công:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   // ===== Hàm tính số giờ từ start_time - end_time =====
@@ -88,18 +97,77 @@ export default function TutorTimesheetPage() {
     }
   };
 
+  // ===== Kiểm tra buổi đã có học bù chưa =====
+  const hasMakeupForSession = (sessionId) => {
+    return sessions.some(
+      (s) => s.is_makeup === true && s.makeup_for_session_id === sessionId
+    );
+  };
+
+  // ===== Mở modal tạo học bù =====
+  const openMakeupModal = (session) => {
+    setSelectedMissedSession(session);
+    setMakeupDate('');
+    setMakeupStartTime(session.start_time || '19:00');
+    setMakeupEndTime(session.end_time || '21:00');
+    setMakeupNote('');
+    setShowMakeupModal(true);
+  };
+
+  // ===== Tạo buổi học bù =====
+  const handleCreateMakeup = async (e) => {
+    e.preventDefault();
+    if (!selectedMissedSession || !makeupDate || !makeupStartTime || !makeupEndTime) {
+      alert('Vui lòng điền đầy đủ thông tin ngày và giờ!');
+      return;
+    }
+
+    try {
+      setIsSubmittingMakeup(true);
+
+      const res = await fetch('/api/class-sessions/makeup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          original_session_id: selectedMissedSession.session_id || selectedMissedSession.id,
+          actual_date: makeupDate,
+          start_time: makeupStartTime,
+          end_time: makeupEndTime,
+          tutor_note: makeupNote,
+          tutor_id: tutorId,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        alert('Đã tạo buổi học bù thành công!');
+        setShowMakeupModal(false);
+        setSelectedMissedSession(null);
+        await fetchData(); // refresh lại dữ liệu
+      } else {
+        alert(result.message || 'Không thể tạo buổi học bù');
+      }
+    } catch (error) {
+      console.error('Lỗi tạo học bù:', error);
+      alert('Có lỗi xảy ra khi tạo buổi học bù');
+    } finally {
+      setIsSubmittingMakeup(false);
+    }
+  };
+
   // ===== Tính toán dữ liệu theo tháng được chọn =====
   const monthlyData = useMemo(() => {
     if (!tutorId) return null;
 
-    // ===== KỲ CHẤM CÔNG: từ ngày 5 tháng này → ngày 5 tháng sau =====
+    // ===== KỲ CHẤM CÔNG: từ ngày 5 tháng này → HẾT ngày 5 tháng sau =====
     const startDate = new Date(selectedYear, selectedMonth, 5);
-    const endDate = new Date(selectedYear, selectedMonth + 1, 5);
+    const endDate = new Date(selectedYear, selectedMonth + 1, 5, 23, 59, 59, 999);
 
     const filteredSessions = sessions.filter((s) => {
       if (!s.actual_date) return false;
       const d = new Date(s.actual_date);
-      return d >= startDate && d < endDate;
+      return d >= startDate && d <= endDate;
     });
 
     // Nhóm theo course
@@ -160,6 +228,7 @@ export default function TutorTimesheetPage() {
       totalHours: Math.round(totalHours * 10) / 10,
     };
   }, [tutorId, courses, sessions, selectedMonth, selectedYear]);
+
   // ===== Helpers =====
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
@@ -263,7 +332,7 @@ export default function TutorTimesheetPage() {
           </div>
           <div>
             <p className={styles.cardLabel}>Buổi bỏ lỡ / quá hạn</p>
-            <p className={styles.cardValue} styles={{ color: "#FFA237" }}>
+            <p className={styles.cardValue}>
               {monthlyData.totalUncompleted} buổi
               {monthlyData.totalUncompleted > 0 && (
                 <span className={styles.warningBadge}>Cảnh báo</span>
@@ -272,7 +341,6 @@ export default function TutorTimesheetPage() {
           </div>
         </div>
 
-        {/* ===== THẺ MỚI: TỔNG GIỜ ĐÃ DẠY ===== */}
         <div className={`${styles.summaryCard} ${styles.hoursCard}`}>
           <div className={styles.cardIcon}>
             <Image src="/img/icons/clock.png" alt="Clock Icon" width={30} height={30} />
@@ -365,47 +433,75 @@ export default function TutorTimesheetPage() {
                             <th>Giờ học</th>
                             <th>Trạng thái</th>
                             <th>Ghi chú / Record</th>
+                            <th>Thao tác</th>
                           </tr>
                         </thead>
                         <tbody>
                           {item.allSessions
                             .sort((a, b) => new Date(a.actual_date) - new Date(b.actual_date))
-                            .map((s) => (
-                              <tr key={s.session_id || s.id}>
-                                <td>{formatDate(s.actual_date)}</td>
-                                <td>
-                                  {s.start_time && s.end_time
-                                    ? `${s.start_time} - ${s.end_time}`
-                                    : '—'}
-                                </td>
-                                <td>
-                                  {s.session_status === 'completed' ? (
-                                    <span className={styles.badgeCompleted}>Hoàn thành</span>
-                                  ) : (
-                                    <span className={styles.badgeMissed}>
-                                      Bỏ lỡ / Quá hạn
-                                    </span>
-                                  )}
-                                </td>
-                                <td>
-                                  {s.record_url ? (
-                                    <a
-                                      href={s.record_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className={styles.recordLink}
-                                    >
-                                      Xem record
-                                    </a>
-                                  ) : (
-                                    <span style={{ color: '#94a3b8' }}>—</span>
-                                  )}
-                                  {s.tutor_note && (
-                                    <div className={styles.note}>{s.tutor_note}</div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
+                            .map((s) => {
+                              const isMakeup = s.is_makeup === true;
+                              const alreadyHasMakeup = hasMakeupForSession(s.session_id || s.id);
+
+                              return (
+                                <tr key={s.session_id || s.id}>
+                                  <td>
+                                    {formatDate(s.actual_date)}
+                                    {isMakeup && (
+                                      <span className={styles.badgeMakeup}>Học bù</span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {s.start_time && s.end_time
+                                      ? `${s.start_time} - ${s.end_time}`
+                                      : '—'}
+                                  </td>
+                                  <td>
+                                    {s.session_status === 'completed' ? (
+                                      <span className={styles.badgeCompleted}>Hoàn thành</span>
+                                    ) : (
+                                      <span className={styles.badgeMissed}>
+                                        Bỏ lỡ / Quá hạn
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {s.record_url ? (
+                                      <a
+                                        href={s.record_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.recordLink}
+                                      >
+                                        Xem record
+                                      </a>
+                                    ) : (
+                                      <span style={{ color: '#94a3b8' }}>—</span>
+                                    )}
+                                    {s.tutor_note && (
+                                      <div className={styles.note}>{s.tutor_note}</div>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {/* Chỉ hiện nút tạo bù khi buổi uncompleted và chưa có bù */}
+                                    {s.session_status !== 'completed' && !isMakeup && (
+                                      alreadyHasMakeup ? (
+                                        <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
+                                          Đã tạo học bù
+                                        </span>
+                                      ) : (
+                                        <button
+                                          className={styles.makeupBtn}
+                                          onClick={() => openMakeupModal(s)}
+                                        >
+                                          Tạo học bù
+                                        </button>
+                                      )
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </tbody>
                       </table>
                     </div>
@@ -416,6 +512,97 @@ export default function TutorTimesheetPage() {
           </div>
         )}
       </div>
+
+      {/* ===== MODAL TẠO HỌC BÙ ===== */}
+      {showMakeupModal && selectedMissedSession && (
+        <div className={styles.modalOverlay} onClick={() => setShowMakeupModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Tạo buổi học bù</h3>
+              <button className={styles.closeBtn} onClick={() => setShowMakeupModal(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.missedInfo}>
+                <p><strong>Buổi nghỉ:</strong> {formatDate(selectedMissedSession.actual_date)}</p>
+                <p>
+                  <strong>Giờ gốc:</strong>{' '}
+                  {selectedMissedSession.start_time && selectedMissedSession.end_time
+                    ? `${selectedMissedSession.start_time} - ${selectedMissedSession.end_time}`
+                    : '—'}
+                </p>
+              </div>
+
+              <form onSubmit={handleCreateMakeup}>
+                <div className={styles.formGroup}>
+                  <label>Ngày bù *</label>
+                  <input
+                    type="date"
+                    value={makeupDate}
+                    onChange={(e) => setMakeupDate(e.target.value)}
+                    className={styles.inputControl}
+                    required
+                  />
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Giờ bắt đầu *</label>
+                    <input
+                      type="time"
+                      value={makeupStartTime}
+                      onChange={(e) => setMakeupStartTime(e.target.value)}
+                      className={styles.inputControl}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Giờ kết thúc *</label>
+                    <input
+                      type="time"
+                      value={makeupEndTime}
+                      onChange={(e) => setMakeupEndTime(e.target.value)}
+                      className={styles.inputControl}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Ghi chú</label>
+                  <textarea
+                    value={makeupNote}
+                    onChange={(e) => setMakeupNote(e.target.value)}
+                    className={styles.textarea}
+                    placeholder="Ví dụ: Bù buổi nghỉ ngày 16/08 do gia sư có việc đột xuất"
+                    rows={3}
+                  />
+                </div>
+
+                <div className={styles.modalFooter}>
+                  <button
+                    type="button"
+                    className={styles.cancelBtn}
+                    onClick={() => setShowMakeupModal(false)}
+                    disabled={isSubmittingMakeup}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.confirmBtn}
+                    disabled={isSubmittingMakeup}
+                  >
+                    {isSubmittingMakeup ? 'Đang tạo...' : 'Xác nhận tạo buổi bù'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}
