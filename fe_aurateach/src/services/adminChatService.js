@@ -77,6 +77,59 @@ class AdminChatService {
     return user?.user_id ?? user?.id ?? null;
   }
 
+  /**
+   * Tìm kiếm tất cả user đã đăng ký (trừ admin) theo tên hoặc email.
+   * API:  GET /api/admin/chat/search-users?q={keyword}
+   * JSON: lọc từ /users + kiểm tra conversation đã có chưa
+   *
+   * Trả về: [{ user_id, full_name, email, avatar, role, conversation_id|null }]
+   */
+  async searchUsers(keyword = "") {
+    if (this.useApi) {
+      const q = encodeURIComponent(keyword.trim());
+      return this._apiFetch(`/admin/chat/search-users?q=${q}`);
+    }
+
+    // JSON Server mode
+    const adminId = this._getCurrentUserId() || "u-admin-1";
+    const [allUsers, allConvs] = await Promise.all([
+      this._jsonFetch("/users"),
+      this._jsonFetch("/conversations"),
+    ]);
+
+    // Map user_id → conversation_id của các admin_support conv
+    const convByUser = {};
+    allConvs
+      .filter((c) => c.type === "admin_support" && c.participants?.includes(adminId))
+      .forEach((c) => {
+        const otherId = c.participants?.find((p) => p !== adminId);
+        if (otherId) convByUser[otherId] = c.id;
+      });
+
+    const kw = keyword.trim().toLowerCase();
+
+    const filtered = allUsers
+      .filter((u) => u.role !== "admin" && u.status !== "inactive")
+      .filter((u) => {
+        if (!kw) return true;
+        return (
+          u.full_name?.toLowerCase().includes(kw) ||
+          u.email?.toLowerCase().includes(kw)
+        );
+      })
+      .slice(0, 30)
+      .map((u) => ({
+        user_id:         u.user_id ?? u.id,
+        full_name:       u.full_name,
+        email:           u.email,
+        avatar:          u.avatar ?? null,
+        role:            u.role,
+        conversation_id: convByUser[u.user_id ?? u.id] ?? null,
+      }));
+
+    return { success: true, data: filtered };
+  }
+
   // ─── ADMIN SIDE ──────────────────────────────────────────────────────────
 
   /**

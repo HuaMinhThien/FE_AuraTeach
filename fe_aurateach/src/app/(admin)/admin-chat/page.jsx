@@ -7,6 +7,7 @@ import adminChatService from "@/services/adminChatService";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 3000;
+const SEARCH_DEBOUNCE = 350; // ms chờ trước khi gọi API tìm kiếm
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -36,7 +37,11 @@ function formatDateLabel(dateStr) {
   yesterday.setDate(today.getDate() - 1);
   if (date.toDateString() === today.toDateString()) return "Hôm nay";
   if (date.toDateString() === yesterday.toDateString()) return "Hôm qua";
-  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 function getInitials(name) {
@@ -67,6 +72,12 @@ function roleLabel(role) {
   return role ?? "";
 }
 
+function roleBadgeClass(role) {
+  if (role === "tutor") return styles.roleTutor;
+  if (role === "student") return styles.roleStudent;
+  return "";
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function Avatar({ name, src, size = 42 }) {
@@ -84,37 +95,84 @@ function Avatar({ name, src, size = 42 }) {
     );
   }
   return (
-    <div className={styles.avatarPlaceholder} style={{ width: size, height: size, fontSize: size * 0.35 }}>
+    <div
+      className={styles.avatarPlaceholder}
+      style={{ width: size, height: size, fontSize: size * 0.35 }}
+    >
       {getInitials(name)}
     </div>
   );
 }
 
+// Item trong danh sách conversation đang có
 function ConversationItem({ conv, isActive, onClick }) {
   const other = conv.other_user;
   const unread = conv.unread_count || 0;
   return (
     <div
-      className={`${styles.convItem} ${isActive ? styles.convItemActive : ""} ${unread > 0 ? styles.convItemUnread : ""}`}
+      className={`${styles.convItem} ${isActive ? styles.convItemActive : ""} ${
+        unread > 0 ? styles.convItemUnread : ""
+      }`}
       onClick={onClick}
     >
       <div className={styles.convAvatar}>
         <Avatar name={other?.full_name} src={other?.avatar} />
         {unread > 0 && (
-          <span className={styles.unreadBadge}>{unread > 99 ? "99+" : unread}</span>
+          <span className={styles.unreadBadge}>
+            {unread > 99 ? "99+" : unread}
+          </span>
         )}
       </div>
       <div className={styles.convInfo}>
         <div className={styles.convTop}>
-          <span className={`${styles.convName} ${unread > 0 ? styles.convNameBold : ""}`}>
+          <span
+            className={`${styles.convName} ${
+              unread > 0 ? styles.convNameBold : ""
+            }`}
+          >
             {other?.full_name || "Người dùng"}
           </span>
-          <span className={styles.convTime}>{formatTime(conv.last_message_time)}</span>
+          <span className={styles.convTime}>
+            {formatTime(conv.last_message_time)}
+          </span>
         </div>
-        <p className={`${styles.convLast} ${unread > 0 ? styles.convLastUnread : ""}`}>
+        <p
+          className={`${styles.convLast} ${
+            unread > 0 ? styles.convLastUnread : ""
+          }`}
+        >
           {conv.last_message || "Chưa có tin nhắn"}
         </p>
-        <span className={styles.convRole}>{roleLabel(other?.role)}</span>
+        <span className={`${styles.convRole} ${roleBadgeClass(other?.role)}`}>
+          {roleLabel(other?.role)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Item kết quả tìm kiếm user (chưa hoặc đã có conversation)
+function UserSearchItem({ user, isActive, onClick }) {
+  const hasConv = !!user.conversation_id;
+  return (
+    <div
+      className={`${styles.convItem} ${isActive ? styles.convItemActive : ""} ${
+        styles.searchResultItem
+      }`}
+      onClick={onClick}
+    >
+      <div className={styles.convAvatar}>
+        <Avatar name={user.full_name} src={user.avatar} />
+      </div>
+      <div className={styles.convInfo}>
+        <div className={styles.convTop}>
+          <span className={styles.convName}>{user.full_name}</span>
+          {!hasConv && <span className={styles.newChatBadge}>Mới</span>}
+        </div>
+        <p className={styles.convLast}>{user.email}</p>
+        <span className={`${styles.convRole} ${roleBadgeClass(user.role)}`}>
+          {roleLabel(user.role)}
+        </span>
       </div>
     </div>
   );
@@ -122,8 +180,16 @@ function ConversationItem({ conv, isActive, onClick }) {
 
 function MessageBubble({ msg, isOwn }) {
   return (
-    <div className={`${styles.msgWrapper} ${isOwn ? styles.msgOwn : styles.msgOther}`}>
-      <div className={`${styles.bubble} ${isOwn ? styles.bubbleOwn : styles.bubbleOther}`}>
+    <div
+      className={`${styles.msgWrapper} ${
+        isOwn ? styles.msgOwn : styles.msgOther
+      }`}
+    >
+      <div
+        className={`${styles.bubble} ${
+          isOwn ? styles.bubbleOwn : styles.bubbleOther
+        }`}
+      >
         <p className={styles.msgText}>{msg.content}</p>
       </div>
       <span className={styles.msgTime}>{formatMsgTime(msg.created_at)}</span>
@@ -145,7 +211,13 @@ export default function AdminChatPage() {
   const [loadingConvs, setLoadingConvs] = useState(true);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [error, setError] = useState(null);
+
+  // Search
   const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]); // users từ API
+  const [searching, setSearching] = useState(false);
+  const searchDebounceRef = useRef(null);
+  const isSearchMode = search.trim().length > 0;
 
   const bottomRef = useRef(null);
   const pollingRef = useRef(null);
@@ -168,7 +240,6 @@ export default function AdminChatPage() {
     try {
       setLoadingConvs(true);
       const res = await adminChatService.getAdminConversations();
-      // Chuẩn hóa: đảm bảo luôn có conversation_id (BE dùng conversation_id, JSON Server dùng id)
       const normalized = (res.data || []).map((c) => ({
         ...c,
         conversation_id: c.conversation_id ?? c.id,
@@ -181,37 +252,139 @@ export default function AdminChatPage() {
     }
   };
 
-  // ── Select conversation ───────────────────────────────────────────────────
-  const handleSelect = useCallback(async (conv) => {
-    setSelected(conv);
-    setMessages([]);
-    stopPolling();
+  // ── Search với debounce ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
 
-    // đánh dấu đã đọc trong local state ngay lập tức
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.conversation_id === conv.conversation_id ? { ...c, unread_count: 0 } : c
-      )
-    );
-
-    setLoadingMsgs(true);
-    try {
-      const res = await adminChatService.getAdminMessages(conv.conversation_id);
-      // Chuẩn hóa message_id (BE dùng message_id, JSON Server dùng id)
-      const msgs = (res.data || []).map((m) => ({
-        ...m,
-        message_id: m.message_id ?? m.id,
-      }));
-      setMessages(msgs);
-    } catch (e) {
-      console.error("Lỗi tải tin nhắn:", e);
-    } finally {
-      setLoadingMsgs(false);
+    if (!search.trim()) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
     }
 
-    startPolling(conv.conversation_id);
-    setTimeout(() => textareaRef.current?.focus(), 200);
-  }, []);
+    setSearching(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await adminChatService.searchUsers(search.trim());
+        setSearchResults(res.data || []);
+      } catch (e) {
+        console.error("searchUsers error:", e);
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, SEARCH_DEBOUNCE);
+
+    return () => clearTimeout(searchDebounceRef.current);
+  }, [search]);
+
+  // ── Select conversation (từ danh sách sẵn có) ────────────────────────────
+  const handleSelectConv = useCallback(
+    async (conv) => {
+      setSelected(conv);
+      setMessages([]);
+      setSearch(""); // đóng search mode khi chọn conv
+      stopPolling();
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.conversation_id === conv.conversation_id
+            ? { ...c, unread_count: 0 }
+            : c
+        )
+      );
+
+      setLoadingMsgs(true);
+      try {
+        const res = await adminChatService.getAdminMessages(conv.conversation_id);
+        setMessages(
+          (res.data || []).map((m) => ({
+            ...m,
+            message_id: m.message_id ?? m.id,
+          }))
+        );
+      } catch (e) {
+        console.error("Lỗi tải tin nhắn:", e);
+      } finally {
+        setLoadingMsgs(false);
+      }
+
+      startPolling(conv.conversation_id);
+      setTimeout(() => textareaRef.current?.focus(), 200);
+    },
+    []
+  );
+
+  // ── Chọn user từ kết quả search ──────────────────────────────────────────
+  const handleSelectUser = useCallback(
+    async (user) => {
+      setSearch("");
+      setSearchResults([]);
+
+      // Nếu đã có conversation thì mở thẳng
+      if (user.conversation_id) {
+        const existing = conversations.find(
+          (c) => c.conversation_id === user.conversation_id
+        );
+        if (existing) {
+          handleSelectConv(existing);
+          return;
+        }
+        // Conversation tồn tại trong DB nhưng chưa load vào state → load lại
+        await loadConversations();
+        // Tìm lại sau khi load
+        setSelected((prev) => prev); // trigger re-render, handleSelectConv sẽ được gọi bởi useEffect bên dưới
+        // Tạo một object tạm để mở chat ngay
+        const tmpConv = {
+          conversation_id: user.conversation_id,
+          other_user: {
+            user_id: user.user_id,
+            full_name: user.full_name,
+            avatar: user.avatar,
+            role: user.role,
+          },
+          last_message: "",
+          last_message_time: null,
+          unread_count: 0,
+        };
+        handleSelectConv(tmpConv);
+        return;
+      }
+
+      // Chưa có conversation → tạo mới qua ensureAdminConversation
+      try {
+        // Dùng ensureAdminConversation với user_id của người dùng được chọn
+        const res = await adminChatService.ensureAdminConversation(user.user_id);
+        const convData = res.data;
+        const newConv = {
+          ...convData,
+          conversation_id: convData.conversation_id ?? convData.id,
+          other_user: {
+            user_id: user.user_id,
+            full_name: user.full_name,
+            avatar: user.avatar,
+            role: user.role,
+          },
+          last_message: "",
+          last_message_time: convData.last_message_time ?? new Date().toISOString(),
+          unread_count: 0,
+        };
+
+        // Thêm vào danh sách nếu chưa có
+        setConversations((prev) => {
+          const exists = prev.some(
+            (c) => c.conversation_id === newConv.conversation_id
+          );
+          return exists ? prev : [newConv, ...prev];
+        });
+
+        handleSelectConv(newConv);
+      } catch (e) {
+        alert("Không thể tạo cuộc trò chuyện: " + e.message);
+      }
+    },
+    [conversations, handleSelectConv]
+  );
 
   // ── Polling ───────────────────────────────────────────────────────────────
   const stopPolling = () => {
@@ -228,13 +401,15 @@ export default function AdminChatPage() {
       if (!isPollingRef.current) return;
       try {
         const res = await adminChatService.getAdminMessages(conversationId);
-        const fresh = (res.data || []).map((m) => ({ ...m, message_id: m.message_id ?? m.id }));
+        const fresh = (res.data || []).map((m) => ({
+          ...m,
+          message_id: m.message_id ?? m.id,
+        }));
         setMessages((prev) => {
           const ids = new Set(prev.map((m) => m.message_id));
           const newMsgs = fresh.filter((m) => !ids.has(m.message_id));
           return newMsgs.length ? [...prev, ...newMsgs] : prev;
         });
-        // cập nhật last_message trong danh sách
         if (fresh.length > 0) {
           const last = fresh[fresh.length - 1];
           setConversations((prev) =>
@@ -256,30 +431,33 @@ export default function AdminChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ── Send message ──────────────────────────────────────────────────────────
+  // ── Send ──────────────────────────────────────────────────────────────────
   const handleSend = async () => {
     const text = input.trim();
     if (!text || !selected || sending) return;
     setSending(true);
     setInput("");
 
-    // optimistic update
     const tmpId = `tmp_${Date.now()}`;
-    const tmpMsg = {
-      message_id: tmpId,
-      conversation_id: selected.conversation_id,
-      sender_id: admin.user_id,
-      sender_role: "admin",
-      content: text,
-      created_at: new Date().toISOString(),
-      is_read: false,
-    };
-    setMessages((prev) => [...prev, tmpMsg]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        message_id: tmpId,
+        conversation_id: selected.conversation_id,
+        sender_id: admin.user_id,
+        sender_role: "admin",
+        content: text,
+        created_at: new Date().toISOString(),
+        is_read: false,
+      },
+    ]);
 
     try {
-      const res = await adminChatService.sendAdminMessage(selected.conversation_id, text);
-      const saved = res.data;
-      // thay tmp bằng bản thật
+      const res = await adminChatService.sendAdminMessage(
+        selected.conversation_id,
+        text
+      );
+      const saved = { ...res.data, message_id: res.data?.message_id ?? res.data?.id };
       setMessages((prev) =>
         prev.map((m) => (m.message_id === tmpId ? saved : m))
       );
@@ -291,7 +469,6 @@ export default function AdminChatPage() {
         )
       );
     } catch (e) {
-      // rollback optimistic msg
       setMessages((prev) => prev.filter((m) => m.message_id !== tmpId));
       setInput(text);
       alert("Không thể gửi tin nhắn: " + e.message);
@@ -308,14 +485,10 @@ export default function AdminChatPage() {
     }
   };
 
-  // ── Filter conversations ──────────────────────────────────────────────────
-  const filtered = conversations.filter((c) => {
-    if (!search) return true;
-    const name = c.other_user?.full_name?.toLowerCase() || "";
-    return name.includes(search.toLowerCase());
-  });
-
-  const totalUnread = conversations.reduce((s, c) => s + (c.unread_count || 0), 0);
+  const totalUnread = conversations.reduce(
+    (s, c) => s + (c.unread_count || 0),
+    0
+  );
   const msgGroups = groupByDate(messages);
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -332,7 +505,9 @@ export default function AdminChatPage() {
     return (
       <div className={styles.centered}>
         <p className={styles.errorText}>{error}</p>
-        <button className={styles.retryBtn} onClick={loadConversations}>Thử lại</button>
+        <button className={styles.retryBtn} onClick={loadConversations}>
+          Thử lại
+        </button>
       </div>
     );
   }
@@ -350,50 +525,104 @@ export default function AdminChatPage() {
             )}
           </p>
         </div>
-        <button className={styles.refreshBtn} onClick={loadConversations} title="Làm mới">
+        <button
+          className={styles.refreshBtn}
+          onClick={loadConversations}
+          title="Làm mới"
+        >
           ↻
         </button>
       </div>
 
       <div className={styles.layout}>
-        {/* ── Conversation list ── */}
+        {/* ── Sidebar ── */}
         <aside className={styles.sidebar}>
+          {/* Search box */}
           <div className={styles.searchBox}>
             <span className={styles.searchIcon}>🔍</span>
             <input
               className={styles.searchInput}
-              placeholder="Tìm người dùng..."
+              placeholder="Tìm tên hoặc email người dùng..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {search && (
+              <button
+                className={styles.searchClear}
+                onClick={() => setSearch("")}
+                title="Xóa tìm kiếm"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <div className={styles.convList}>
-            {filtered.length === 0 ? (
-              <div className={styles.emptyConv}>
-                <span>💬</span>
-                <p>{search ? "Không tìm thấy" : "Chưa có cuộc trò chuyện nào"}</p>
-              </div>
+            {/* ── MODE: đang tìm kiếm ── */}
+            {isSearchMode ? (
+              searching ? (
+                <div className={styles.searchingIndicator}>
+                  <div className={styles.spinnerSm} />
+                  <span>Đang tìm...</span>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className={styles.emptyConv}>
+                  <span>🔍</span>
+                  <p>Không tìm thấy người dùng nào</p>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.sectionLabel}>
+                    {searchResults.length} kết quả
+                  </div>
+                  {searchResults.map((user) => (
+                    <UserSearchItem
+                      key={user.user_id}
+                      user={user}
+                      isActive={
+                        selected?.other_user?.user_id === user.user_id
+                      }
+                      onClick={() => handleSelectUser(user)}
+                    />
+                  ))}
+                </>
+              )
             ) : (
-              filtered.map((conv) => (
-                <ConversationItem
-                  key={conv.conversation_id}
-                  conv={conv}
-                  isActive={selected?.conversation_id === conv.conversation_id}
-                  onClick={() => handleSelect(conv)}
-                />
-              ))
+              /* ── MODE: danh sách conversations ── */
+              conversations.length === 0 ? (
+                <div className={styles.emptyConv}>
+                  <span>💬</span>
+                  <p>Chưa có cuộc trò chuyện nào</p>
+                  <p className={styles.emptyConvHint}>
+                    Tìm kiếm người dùng để bắt đầu chat
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.sectionLabel}>Cuộc trò chuyện</div>
+                  {conversations.map((conv) => (
+                    <ConversationItem
+                      key={conv.conversation_id}
+                      conv={conv}
+                      isActive={
+                        selected?.conversation_id === conv.conversation_id
+                      }
+                      onClick={() => handleSelectConv(conv)}
+                    />
+                  ))}
+                </>
+              )
             )}
           </div>
         </aside>
 
-        {/* ── Chat window ── */}
+        {/* ── Chat area ── */}
         <main className={styles.chatArea}>
           {!selected ? (
             <div className={styles.emptyChat}>
               <div className={styles.emptyChatIcon}>💬</div>
               <h3>Chọn một cuộc trò chuyện</h3>
-              <p>Chọn người dùng bên trái để bắt đầu hỗ trợ</p>
+              <p>Hoặc tìm kiếm người dùng để bắt đầu nhắn tin</p>
             </div>
           ) : (
             <>
@@ -410,7 +639,13 @@ export default function AdminChatPage() {
                       {selected.other_user?.full_name || "Người dùng"}
                     </p>
                     <p className={styles.chatHeaderRole}>
-                      {roleLabel(selected.other_user?.role)}
+                      <span
+                        className={`${styles.chatRoleBadge} ${roleBadgeClass(
+                          selected.other_user?.role
+                        )}`}
+                      >
+                        {roleLabel(selected.other_user?.role)}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -425,7 +660,9 @@ export default function AdminChatPage() {
                 ) : msgGroups.length === 0 ? (
                   <div className={styles.emptyMessages}>
                     <p>Chưa có tin nhắn nào</p>
-                    <p className={styles.emptyMessagesSub}>Hãy gửi tin nhắn đầu tiên</p>
+                    <p className={styles.emptyMessagesSub}>
+                      Hãy gửi tin nhắn đầu tiên
+                    </p>
                   </div>
                 ) : (
                   msgGroups.map((group, gi) => (

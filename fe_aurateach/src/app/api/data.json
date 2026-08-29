@@ -2645,6 +2645,17 @@
       "last_message": "Hồ sơ của bạn đã được xét duyệt",
       "last_message_time": "2026-08-28T14:30:00.000Z",
       "unread_count": 0
+    },
+    {
+      "id": "iKod32UNuY0",
+      "participants": [
+        "user_1785316486801_kvbbi7",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "",
+      "last_message_time": "2026-08-29T21:59:40.656Z",
+      "unread_count": 0
     }
   ],
   "messages": [
