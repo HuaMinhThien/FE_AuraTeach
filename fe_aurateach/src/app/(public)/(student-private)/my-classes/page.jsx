@@ -14,6 +14,7 @@ export default function MyClassesPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [makeupSessions, setMakeupSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -79,7 +80,7 @@ export default function MyClassesPage() {
         b => b.status === "confirmed" || b.status === "pending"
       );
       
-console.log(`📋 Active bookings: ${activeBookings.length}`);
+      console.log(`📋 Active bookings: ${activeBookings.length}`);
       
       // Lấy thông tin chi tiết từng course (từ bookings)
       let coursesList = [];
@@ -125,7 +126,6 @@ console.log(`📋 Active bookings: ${activeBookings.length}`);
       }
 
       // ✅ BỔ SUNG: Lấy các lớp riêng tư do chính student này tạo (createSchedule)
-      // Các lớp này không có booking nhưng vẫn phải hiển thị trong "Lịch học của tôi".
       try {
         const allCoursesRes = await fetch(`${API_BASE}/courses`);
         const allCourses = await allCoursesRes.json();
@@ -162,7 +162,49 @@ console.log(`📋 Active bookings: ${activeBookings.length}`);
         console.error("❌ Lỗi lấy lớp riêng tư do student tạo:", err);
       }
 
-      console.log(`📚 Danh sách courses: ${coursesList.length}`);
+      // ===== KHỬ TRÙNG COURSE THEO course_id =====
+      const uniqueCoursesMap = new Map();
+      coursesList.forEach((c) => {
+        const id = c.course_id || c.id;
+        if (id && !uniqueCoursesMap.has(id)) {
+          uniqueCoursesMap.set(id, c);
+        }
+      });
+      coursesList = Array.from(uniqueCoursesMap.values());
+
+      // ===== LẤY BUỔI HỌC BÙ =====
+      try {
+        const sessionsRes = await fetch(`${API_BASE}/class_sessions`);
+        const allSessions = await sessionsRes.json();
+        const courseIds = coursesList.map(c => c.course_id || c.id);
+
+        const makeups = (Array.isArray(allSessions) ? allSessions : []).filter(
+          (s) =>
+            s.is_makeup === true &&
+            courseIds.includes(s.course_id) &&
+            (s.session_status === "scheduled" || s.session_status === "completed")
+        );
+
+        // Gắn thêm tên lớp + tutor vào buổi bù để dễ hiển thị
+        const enrichedMakeups = makeups.map((s) => {
+          const relatedCourse = coursesList.find(
+            (c) => (c.course_id || c.id) === s.course_id
+          );
+          return {
+            ...s,
+            course_title: relatedCourse?.title || s.lesson_title || "Buổi học bù",
+            tutor_name: relatedCourse?.tutor_name || "Gia sư",
+            permanent_room_url: relatedCourse?.permanent_room_url || null,
+          };
+        });
+
+        setMakeupSessions(enrichedMakeups);
+      } catch (err) {
+        console.error("❌ Lỗi lấy buổi học bù:", err);
+        setMakeupSessions([]);
+      }
+
+      console.log(`📚 Danh sách courses (đã khử trùng): ${coursesList.length}`);
       setCourses(coursesList);
       
     } catch (error) {
@@ -217,6 +259,11 @@ console.log(`📋 Active bookings: ${activeBookings.length}`);
               <div className={styles.statsBadge}>
                 <span className={styles.totalClasses}>
                   📖 {courses.length} lớp đang học
+                  {makeupSessions.length > 0 && (
+                    <span style={{ marginLeft: 8, color: "#c2410c" }}>
+                      • {makeupSessions.length} buổi học bù
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
@@ -233,6 +280,7 @@ console.log(`📋 Active bookings: ${activeBookings.length}`);
             ) : (
               <ClassCalendar
                 courses={courses}
+                makeupSessions={makeupSessions}
                 onDateClick={handleDateClick}
               />
             )}
