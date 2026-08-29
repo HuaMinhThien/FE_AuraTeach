@@ -23,6 +23,30 @@ export default function TutorTimesheetPage() {
   const [makeupNote, setMakeupNote] = useState('');
   const [isSubmittingMakeup, setIsSubmittingMakeup] = useState(false);
 
+  // Danh sách giờ bắt đầu: 07:00 → 21:00 (bước 30 phút)
+  const START_TIME_OPTIONS = useMemo(() => {
+    const options = [];
+    for (let h = 7; h <= 21; h++) {
+      for (const m of [0, 30]) {
+        if (h === 21 && m === 30) break; // tối đa 21:00
+        const hh = String(h).padStart(2, '0');
+        const mm = String(m).padStart(2, '0');
+        options.push(`${hh}:${mm}`);
+      }
+    }
+    return options;
+  }, []);
+
+  // Ngày tối thiểu = ngày mai
+  const minMakeupDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }, []);
+
   // ===== Lấy cookie =====
   const getCookie = (name) => {
     if (typeof window === 'undefined') return null;
@@ -47,7 +71,6 @@ export default function TutorTimesheetPage() {
       const userData = JSON.parse(raw);
       const userId = userData.user_id || userData.id;
 
-      // Lấy tutor_id
       const tutorRes = await fetch(`http://localhost:3007/tutors?user_id=${userId}`);
       const tutors = await tutorRes.json();
       if (!Array.isArray(tutors) || tutors.length === 0) {
@@ -57,7 +80,6 @@ export default function TutorTimesheetPage() {
       const actualTutorId = tutors[0].tutor_id;
       setTutorId(actualTutorId);
 
-      // Lấy courses + sessions + payouts
       const [coursesRes, sessionsRes, payoutsRes] = await Promise.all([
         fetch(`http://localhost:3007/courses?tutor_id=${actualTutorId}`),
         fetch(`http://localhost:3007/class_sessions`),
@@ -97,6 +119,26 @@ export default function TutorTimesheetPage() {
     }
   };
 
+  const timeToMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + (m || 0);
+  };
+
+  // Cộng 2 tiếng vào giờ bắt đầu → giờ kết thúc
+  const addTwoHours = (startTime) => {
+    const [h, m] = startTime.split(':').map(Number);
+    let newH = h + 2;
+    if (newH > 23) newH = 23;
+    return `${String(newH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+  };
+
+  // Khi đổi giờ bắt đầu → tự cập nhật giờ kết thúc (+2h)
+  const handleStartTimeChange = (value) => {
+    setMakeupStartTime(value);
+    setMakeupEndTime(addTwoHours(value));
+  };
+
   // ===== Kiểm tra buổi đã có học bù chưa =====
   const hasMakeupForSession = (sessionId) => {
     return sessions.some(
@@ -104,12 +146,160 @@ export default function TutorTimesheetPage() {
     );
   };
 
+  // ===== Kiểm tra trùng lịch (gia sư + học sinh) =====
+  const checkScheduleConflict = (dateStr, startTime, endTime, courseId) => {
+    const conflicts = [];
+    const dayMap = {
+      0: 'Chủ Nhật',
+      1: 'Thứ 2',
+      2: 'Thứ 3',
+      3: 'Thứ 4',
+      4: 'Thứ 5',
+      5: 'Thứ 6',
+      6: 'Thứ 7',
+    };
+
+    const targetDate = new Date(dateStr + 'T00:00:00');
+    const dayName = dayMap[targetDate.getDay()];
+    const newStart = timeToMinutes(startTime);
+    const newEnd = timeToMinutes(endTime);
+
+    const isOverlap = (s1, e1, s2, e2) => s1 < e2 && s2 < e1;
+
+    // 1) Trùng với các buổi class_sessions đã có (của gia sư)
+    sessions.forEach((s) => {
+      if (!s.actual_date || !s.start_time || !s.end_time) return;
+      if (s.session_status === 'cancelled') return;
+
+      const sDate = new Date(s.actual_date).toISOString().split('T')[0];
+      if (sDate !== dateStr) return;
+
+      // Chỉ kiểm tra buổi thuộc lớp của gia sư này
+      const relatedCourse = courses.find(
+        (c) => (c.course_id || c.id) === s.course_id
+      );
+      if (!relatedCourse) return;
+
+      const sStart = timeToMinutes(s.start_time);
+      const sEnd = timeToMinutes(s.end_time);
+
+      if (isOverlap(newStart, newEnd, sStart, sEnd)) {
+        conflicts.push(
+          `Gia sư đã có buổi "${s.lesson_title || relatedCourse.title || s.course_id}" lúc ${s.start_time}-${s.end_time}`
+        );
+      }
+    });
+
+    // 2) Trùng lịch cố định (schedule_days + time_slot) của các lớp khác của gia sư
+    courses.forEach((c) => {
+      const cId = c.course_id || c.id;
+      if (cId === courseId) return; // bỏ qua chính lớp đang bù
+      if (c.status && c.status !== 'active') return;
+      if (!Array.isArray(c.schedule_days) || !c.time_slot) return;
+      if (!c.schedule_days.includes(dayName)) return;
+
+      const [cStartStr, cEndStr] = c.time_slot.split('-').map((t) => t.trim());
+      if (!cStartStr || !cEndStr) return;
+
+      const cStart = timeToMinutes(cStartStr);
+      const cEnd = timeToMinutes(cEndStr);
+
+      if (isOverlap(newStart, newEnd, cStart, cEnd)) {
+        conflicts.push(
+          `Gia sư trùng lịch lớp "${c.title || cId}" (${c.time_slot}) vào ${dayName}`
+        );
+      }
+    });
+
+    // 3) Trùng lịch học sinh trong lớp (các lớp khác của học sinh đó)
+    const currentCourse = courses.find(
+      (c) => (c.course_id || c.id) === courseId
+    );
+    const studentIds = Array.isArray(currentCourse?.students)
+      ? currentCourse.students
+      : [];
+
+    if (studentIds.length > 0) {
+      // Lấy tất cả courses (cần fetch thêm nếu chưa có đủ)
+      // Ở đây dùng courses hiện có + sessions; để chính xác hơn có thể mở rộng fetch all courses
+      courses.forEach((c) => {
+        const cId = c.course_id || c.id;
+        if (cId === courseId) return;
+        if (c.status && c.status !== 'active') return;
+        if (!Array.isArray(c.students) || c.students.length === 0) return;
+        if (!Array.isArray(c.schedule_days) || !c.time_slot) return;
+        if (!c.schedule_days.includes(dayName)) return;
+
+        const hasSharedStudent = c.students.some((sid) =>
+          studentIds.includes(sid)
+        );
+        if (!hasSharedStudent) return;
+
+        const [cStartStr, cEndStr] = c.time_slot.split('-').map((t) => t.trim());
+        if (!cStartStr || !cEndStr) return;
+
+        const cStart = timeToMinutes(cStartStr);
+        const cEnd = timeToMinutes(cEndStr);
+
+        if (isOverlap(newStart, newEnd, cStart, cEnd)) {
+          conflicts.push(
+            `Học sinh trùng lịch lớp "${c.title || cId}" (${c.time_slot}) vào ${dayName}`
+          );
+        }
+      });
+
+      // Trùng với session cụ thể của học sinh (các buổi khác)
+      sessions.forEach((s) => {
+        if (!s.actual_date || !s.start_time || !s.end_time) return;
+        if (s.session_status === 'cancelled') return;
+
+        const sDate = new Date(s.actual_date).toISOString().split('T')[0];
+        if (sDate !== dateStr) return;
+
+        const relatedCourse = courses.find(
+          (c) => (c.course_id || c.id) === s.course_id
+        );
+        if (!relatedCourse) return;
+        if (!Array.isArray(relatedCourse.students)) return;
+
+        const hasSharedStudent = relatedCourse.students.some((sid) =>
+          studentIds.includes(sid)
+        );
+        if (!hasSharedStudent) return;
+
+        // Bỏ qua chính session gốc đang bù
+        if (
+          selectedMissedSession &&
+          (s.session_id === selectedMissedSession.session_id ||
+            s.id === selectedMissedSession.id)
+        ) {
+          return;
+        }
+
+        const sStart = timeToMinutes(s.start_time);
+        const sEnd = timeToMinutes(s.end_time);
+
+        if (isOverlap(newStart, newEnd, sStart, sEnd)) {
+          conflicts.push(
+            `Học sinh trùng buổi "${s.lesson_title || relatedCourse.title}" lúc ${s.start_time}-${s.end_time}`
+          );
+        }
+      });
+    }
+
+    // Khử trùng thông báo
+    return [...new Set(conflicts)];
+  };
+
   // ===== Mở modal tạo học bù =====
   const openMakeupModal = (session) => {
     setSelectedMissedSession(session);
     setMakeupDate('');
-    setMakeupStartTime(session.start_time || '19:00');
-    setMakeupEndTime(session.end_time || '21:00');
+    const defaultStart = session.start_time && session.start_time >= '07:00' && session.start_time <= '21:00'
+      ? session.start_time
+      : '19:00';
+    setMakeupStartTime(defaultStart);
+    setMakeupEndTime(addTwoHours(defaultStart));
     setMakeupNote('');
     setShowMakeupModal(true);
   };
@@ -119,6 +309,41 @@ export default function TutorTimesheetPage() {
     e.preventDefault();
     if (!selectedMissedSession || !makeupDate || !makeupStartTime || !makeupEndTime) {
       alert('Vui lòng điền đầy đủ thông tin ngày và giờ!');
+      return;
+    }
+
+    // Validate ngày >= ngày mai
+    if (makeupDate < minMakeupDate) {
+      alert('Ngày bù phải cách ngày hiện tại ít nhất 1 ngày (từ ngày mai trở đi).');
+      return;
+    }
+
+    // Validate giờ trong khoảng 07:00 - 21:00
+    const startMin = timeToMinutes(makeupStartTime);
+    if (startMin < timeToMinutes('07:00') || startMin > timeToMinutes('21:00')) {
+      alert('Giờ bắt đầu chỉ được chọn từ 07:00 đến 21:00.');
+      return;
+    }
+
+    const courseId =
+      selectedMissedSession.course_id ||
+      (courses.find((c) =>
+        (c.course_id || c.id) === selectedMissedSession.course_id
+      )?.course_id);
+
+    // Kiểm tra trùng lịch
+    const conflicts = checkScheduleConflict(
+      makeupDate,
+      makeupStartTime,
+      makeupEndTime,
+      courseId
+    );
+
+    if (conflicts.length > 0) {
+      alert(
+        'Không thể tạo buổi học bù vì bị trùng lịch:\n\n• ' +
+          conflicts.join('\n• ')
+      );
       return;
     }
 
@@ -144,7 +369,7 @@ export default function TutorTimesheetPage() {
         alert('Đã tạo buổi học bù thành công!');
         setShowMakeupModal(false);
         setSelectedMissedSession(null);
-        await fetchData(); // refresh lại dữ liệu
+        await fetchData();
       } else {
         alert(result.message || 'Không thể tạo buổi học bù');
       }
@@ -160,7 +385,6 @@ export default function TutorTimesheetPage() {
   const monthlyData = useMemo(() => {
     if (!tutorId) return null;
 
-    // ===== KỲ CHẤM CÔNG: từ ngày 5 tháng này → HẾT ngày 5 tháng sau =====
     const startDate = new Date(selectedYear, selectedMonth, 5);
     const endDate = new Date(selectedYear, selectedMonth + 1, 5, 23, 59, 59, 999);
 
@@ -170,7 +394,6 @@ export default function TutorTimesheetPage() {
       return d >= startDate && d <= endDate;
     });
 
-    // Nhóm theo course
     const courseMap = {};
 
     courses.forEach((course) => {
@@ -190,10 +413,8 @@ export default function TutorTimesheetPage() {
         numStudents = course.students.length;
       }
 
-      // Công thức: mỗi buổi completed = price * numStudents * 0.65
       const income = completed.length * price * (numStudents || 1) * 0.65;
 
-      // Tính tổng giờ của lớp này
       let courseHours = 0;
       completed.forEach((s) => {
         courseHours += calculateHours(s.start_time, s.end_time);
@@ -214,7 +435,6 @@ export default function TutorTimesheetPage() {
 
     const courseList = Object.values(courseMap);
 
-    // Tổng hợp
     const totalIncome = courseList.reduce((sum, c) => sum + c.income, 0);
     const totalCompleted = courseList.reduce((sum, c) => sum + c.completedCount, 0);
     const totalUncompleted = courseList.reduce((sum, c) => sum + c.uncompletedCount, 0);
@@ -280,7 +500,6 @@ export default function TutorTimesheetPage() {
           <p className={styles.subtitle}>Theo dõi buổi dạy và thu nhập theo tháng</p>
         </div>
 
-        {/* Month / Year Picker */}
         <div className={styles.monthPicker}>
           <select
             value={selectedMonth}
@@ -377,7 +596,6 @@ export default function TutorTimesheetPage() {
 
               return (
                 <div key={courseId} className={styles.courseCard}>
-                  {/* Header lớp */}
                   <div className={styles.courseHeader}>
                     <div className={styles.courseInfo}>
                       <h3 className={styles.courseName}>
@@ -412,7 +630,6 @@ export default function TutorTimesheetPage() {
                     </div>
                   </div>
 
-                  {/* Nút xem chi tiết */}
                   <button
                     className={styles.detailBtn}
                     onClick={() =>
@@ -423,7 +640,6 @@ export default function TutorTimesheetPage() {
                     <span>{isExpanded ? '▲' : '▼'}</span>
                   </button>
 
-                  {/* Danh sách buổi học chi tiết */}
                   {isExpanded && (
                     <div className={styles.sessionList}>
                       <table className={styles.sessionTable}>
@@ -483,7 +699,6 @@ export default function TutorTimesheetPage() {
                                     )}
                                   </td>
                                   <td>
-                                    {/* Chỉ hiện nút tạo bù khi buổi uncompleted và chưa có bù */}
                                     {s.session_status !== 'completed' && !isMakeup && (
                                       alreadyHasMakeup ? (
                                         <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
@@ -537,10 +752,11 @@ export default function TutorTimesheetPage() {
 
               <form onSubmit={handleCreateMakeup}>
                 <div className={styles.formGroup}>
-                  <label>Ngày bù *</label>
+                  <label>Ngày bù * <span style={{ fontWeight: 400, color: '#64748b' }}>(từ ngày mai trở đi)</span></label>
                   <input
                     type="date"
                     value={makeupDate}
+                    min={minMakeupDate}
                     onChange={(e) => setMakeupDate(e.target.value)}
                     className={styles.inputControl}
                     required
@@ -549,23 +765,29 @@ export default function TutorTimesheetPage() {
 
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label>Giờ bắt đầu *</label>
-                    <input
-                      type="time"
+                    <label>Giờ bắt đầu * <span style={{ fontWeight: 400, color: '#64748b' }}>(07:00 – 21:00)</span></label>
+                    <select
                       value={makeupStartTime}
-                      onChange={(e) => setMakeupStartTime(e.target.value)}
+                      onChange={(e) => handleStartTimeChange(e.target.value)}
                       className={styles.inputControl}
                       required
-                    />
+                    >
+                      {START_TIME_OPTIONS.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className={styles.formGroup}>
-                    <label>Giờ kết thúc *</label>
+                    <label>Giờ kết thúc <span style={{ fontWeight: 400, color: '#64748b' }}>(tự +2 giờ)</span></label>
                     <input
-                      type="time"
+                      type="text"
                       value={makeupEndTime}
-                      onChange={(e) => setMakeupEndTime(e.target.value)}
                       className={styles.inputControl}
-                      required
+                      readOnly
+                      disabled
+                      style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
                     />
                   </div>
                 </div>
