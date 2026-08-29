@@ -53,7 +53,10 @@ export default function ConversationList({
         {sortedConversations.map((conv) => {
           const isActive = conv.id === selectedId;
           const unreadCount = conv.unread_count || 0;
-          const displayName = conv.other_user?.full_name || "Người dùng";
+          const isAdminConv = conv.is_admin_conv || conv.type === "admin_support";
+          const displayName = isAdminConv
+            ? (conv.other_user?.full_name || "AuraTeach Admin")
+            : (conv.other_user?.full_name || "Người dùng");
           const displayAvatar = conv.other_user?.avatar || "/img/default-avatar.svg";
 
           return (
@@ -84,7 +87,12 @@ export default function ConversationList({
 
               <div className={styles.conversationInfo}>
                 <div className={styles.conversationHeader}>
-                  <span className={`${styles.name} ${unreadCount > 0 ? styles.nameUnread : ""}`}>{displayName}</span>
+                  <span className={`${styles.name} ${unreadCount > 0 ? styles.nameUnread : ""}`}>
+                    {displayName}
+                    {isAdminConv && (
+                      <span className={styles.adminBadge}>Hỗ trợ</span>
+                    )}
+                  </span>
                   <span className={styles.time}>
                     {formatTime(conv.last_message_time)}
                   </span>
