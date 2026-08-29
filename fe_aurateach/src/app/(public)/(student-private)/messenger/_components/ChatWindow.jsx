@@ -142,7 +142,8 @@ export default function ChatWindow({
             <div>
               <span className={styles.headerName}>{otherUserName}</span>
               <span className={styles.headerRole}>
-                {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}
+                {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : otherUserRole === "admin" ? "🛡️" : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />}
+                {" "}{otherUserRole === "tutor" ? "Gia sư" : otherUserRole === "admin" ? "Ban hỗ trợ AuraTeach" : "Học viên"}
               </span>
             </div>
           </div>
@@ -183,7 +184,8 @@ export default function ChatWindow({
             <div>
               <span className={styles.headerName}>{otherUserName}</span>
               <span className={styles.headerRole}>
-                {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}
+                {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : otherUserRole === "admin" ? "🛡️" : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />}
+                {" "}{otherUserRole === "tutor" ? "Gia sư" : otherUserRole === "admin" ? "Ban hỗ trợ AuraTeach" : "Học viên"}
               </span>
             </div>
         </div>
@@ -211,7 +213,7 @@ export default function ChatWindow({
             <div className={styles.dateDivider}>
               <span>{group.dateDisplay}</span>
             </div>
-              {group.messages.map((msg, index) => {
+            {group.messages.map((msg, index) => {
               const currentUserId = getCurrentUserId();
               const isOwn = msg.sender_id === currentUserId;
 
@@ -284,7 +286,7 @@ export default function ChatWindow({
 
               return (
                 <div
-                  key={msg.id || index}
+                  key={msg.message_id ?? msg.id ?? index}
                   className={`${styles.messageWrapper} ${isOwn ? styles.own : styles.other}`}
                 >
                   {!isOwn && (

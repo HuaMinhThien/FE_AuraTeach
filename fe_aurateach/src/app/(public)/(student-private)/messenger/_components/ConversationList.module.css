@@ -202,3 +202,18 @@
     font-size: 11px;
   }
 }
+
+/* Admin support badge */
+.adminBadge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #0a37a3;
+  background: #dbeafe;
+  padding: 1px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}

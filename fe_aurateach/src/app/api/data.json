@@ -2611,6 +2611,40 @@
       "last_message": "",
       "last_message_time": "2026-07-31T09:29:23.820Z",
       "unread_count": 0
+    },
+    {
+      "id": "conv_admin_student1",
+      "participants": [
+        "u-student-1",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "aloooooooo",
+      "last_message_time": "2026-08-29T20:30:55.971Z",
+      "unread_count": 0,
+      "increment_unread_for": null
+    },
+    {
+      "id": "conv_admin_student2",
+      "participants": [
+        "u-student-2",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "",
+      "last_message_time": "2026-08-01T08:00:00.000Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_admin_tutor01",
+      "participants": [
+        "u-01",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "Hồ sơ của bạn đã được xét duyệt",
+      "last_message_time": "2026-08-28T14:30:00.000Z",
+      "unread_count": 0
     }
   ],
   "messages": [
@@ -3218,6 +3252,50 @@
       "content": "ăedsfawedf",
       "created_at": "2026-07-29T12:31:44.620Z",
       "is_read": false
+    },
+    {
+      "id": "msg_admin_001",
+      "conversation_id": "conv_admin_student1",
+      "sender_id": "u-admin-1",
+      "sender_role": "admin",
+      "receiver_id": "u-student-1",
+      "receiver_role": "student",
+      "content": "Xin chào! Admin có thể giúp gì cho bạn?",
+      "created_at": "2026-08-29T10:00:00.000Z",
+      "is_read": false
+    },
+    {
+      "id": "msg_admin_002",
+      "conversation_id": "conv_admin_tutor01",
+      "sender_id": "u-admin-1",
+      "sender_role": "admin",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "Hồ sơ gia sư của bạn đã được xem xét và chấp thuận.",
+      "created_at": "2026-08-28T14:30:00.000Z",
+      "is_read": true
+    },
+    {
+      "id": "msg_admin_003",
+      "conversation_id": "conv_admin_tutor01",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "content": "Cảm ơn admin nhiều!",
+      "created_at": "2026-08-28T14:35:00.000Z",
+      "is_read": true
+    },
+    {
+      "conversation_id": "conv_admin_student1",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": null,
+      "receiver_role": "admin",
+      "content": "aloooooooo",
+      "created_at": "2026-08-29T20:30:55.971Z",
+      "is_read": false,
+      "id": "H7hmMOEaenc"
     }
   ],
   "notifications": [

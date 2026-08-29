@@ -6,9 +6,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import styles from "./Sidebar.module.css";
 import Image from "next/image";
+import adminChatService from "@/services/adminChatService";
 
 const API_BASE = "http://localhost:3007";
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80";
+const CHAT_POLL_INTERVAL = 15000; // polling unread count mỗi 15s
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -17,6 +19,7 @@ export default function Sidebar() {
   const [mounted, setMounted] = useState(false);
   const [adminData, setAdminData] = useState(null);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   
   // State quản lý src của Avatar để tránh lặp vô hạn khi lỗi link
   const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);
@@ -89,6 +92,31 @@ export default function Sidebar() {
     }
   }, [pathname]);
 
+  // Fetch số lượng tin nhắn chat chưa đọc của admin từ Laravel API
+  useEffect(() => {
+    if (!mounted) return;
+
+    const fetchChatUnread = async () => {
+      try {
+        const res = await adminChatService.getAdminUnreadCount();
+        setUnreadChatCount(res.unread_count || 0);
+      } catch {
+        setUnreadChatCount(0);
+      }
+    };
+
+    fetchChatUnread();
+    const interval = setInterval(fetchChatUnread, CHAT_POLL_INTERVAL);
+    return () => clearInterval(interval);
+  }, [mounted]);
+
+  // Reset chat unread khi đang ở trang admin-chat
+  useEffect(() => {
+    if (pathname === "/admin-chat") {
+      setUnreadChatCount(0);
+    }
+  }, [pathname]);
+
   const handleLogout = () => {
     document.cookie = "user_info=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -113,6 +141,7 @@ export default function Sidebar() {
     { name: "Quản lý tài khoản người dùng", path: "/admin-account-management" },
     { name: "Trả lương cho gia sư", path: "/admin-tutor-payout-requests" },
     { name: "Báo cáo gia sư", path: "/admin-tutor-reports" },
+    { name: "Hỗ trợ người dùng", path: "/admin-chat", badge: unreadChatCount },
     { name: "Nội dung trang home", path: "/admin-content-management" },
   ];
 

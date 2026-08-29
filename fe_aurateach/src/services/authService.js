@@ -89,6 +89,9 @@ class AuthService {
         }
         if (data.token) {
           localStorage.setItem('token', data.token);
+        } else if (data.access_token) {
+          // Laravel Sanctum trả về 'access_token'
+          localStorage.setItem('token', data.access_token);
         }
       }
 
