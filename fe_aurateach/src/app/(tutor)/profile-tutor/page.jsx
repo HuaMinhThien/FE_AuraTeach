@@ -349,17 +349,22 @@ export default function TutorProfile() {
 
         console.log("🔍 Kiểm tra log API:", result);
 
-        // ĐIỀU KIỆN ĐÚNG:
-        // Đôi khi result là { success: true, ... } 
-        // nhưng đôi khi do apiClient trả về, nó nằm trong result.data
-        const isSuccess = result?.success === true || result?.data?.success === true;
+        // Chuẩn hóa lấy dữ liệu (hỗ trợ cả trường hợp bị bọc qua .data của axios hoặc trả thẳng)
+        const resData = result?.data || result;
+
+        // Kiểm tra success hoặc kiểm tra nếu server trả về message thành công
+        const isSuccess = resData?.success === true || resData?.message?.includes("thành công");
 
         if (isSuccess) {
-            setAcceptSuggested(newValue);
-            console.log("✅ Cập nhật state thành công");
+            // Lấy giá trị receive_suggestions mới từ server trả về nếu có, không thì dùng newValue
+            const finalValue = resData?.receive_suggestions !== undefined 
+                ? resData.receive_suggestions 
+                : newValue;
+
+            setAcceptSuggested(finalValue);
+            console.log("✅ Cập nhật state thành công:", finalValue);
         } else {
-            // Hiển thị message từ API nếu có, nếu không thì báo lỗi chung
-            const msg = result?.message || "Không rõ nguyên nhân";
+            const msg = resData?.message || "Không thể cập nhật trạng thái.";
             alert("❌ Lỗi: " + msg);
         }
     } catch (err) {
@@ -368,7 +373,7 @@ export default function TutorProfile() {
     } finally {
         setToggleLoading(false);
     }
-};
+  };
 
   const handleSave = async () => {
     try {

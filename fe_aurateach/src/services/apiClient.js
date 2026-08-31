@@ -1,20 +1,11 @@
 const API_BASE_URL =  "http://localhost:8000/api";
 // const API_BASE_URL = "https://api.aurateach.io.vn/api";
 const getHeaders = (customHeaders = {}, isFormData = false) => {
-  // 🔍 Hỗ trợ tìm token ở nhiều key phổ biến khác nhau trong localStorage và cookie
-  let token = 
+  // 🔍 Hỗ trợ tìm token ở nhiều key phổ biến khác nhau trong localStorage
+  const token = 
     localStorage.getItem("access_token") || 
     localStorage.getItem("token") || 
     localStorage.getItem("user_token");
-
-  // Fallback: đọc từ cookie "token" nếu localStorage không có
-  if (!token && typeof document !== "undefined") {
-    const cookieToken = document.cookie
-      .split("; ")
-      .find(row => row.startsWith("token="))
-      ?.split("=")[1];
-    if (cookieToken) token = cookieToken;
-  }
 
   console.log("🔐 [apiClient] Token lấy từ storage:", token ? token.substring(0, 10) + "..." : "KHÔNG CÓ TOKEN!");
   

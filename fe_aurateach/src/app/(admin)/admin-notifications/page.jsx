@@ -188,9 +188,9 @@ export default function AdminNotificationsPage() {
             <p>Không có thông báo nào</p>
           </div>
         ) : (
-          filteredNotifications.map((notif, index) => (
+          filteredNotifications.map((notif) => (
             <div
-              key={notif.notification_id || notif.id || index}
+              key={notif.id}
               className={`${styles.notifItem} ${!notif.is_read ? styles.unread : ""}`}
               onClick={() => handleMarkAsRead(notif)}
             >

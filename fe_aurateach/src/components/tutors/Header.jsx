@@ -31,16 +31,25 @@ export default function Header() {
 
         const fetchEarningsData = async () => {
             try {
-                const userId = user.user_id || user.tutor_id || user.id;
+                const userId = user.user_id || user.tutor_id || user.id || 'u-Wy4QdEzm';
                 if (!userId) return;
 
-                // Gọi duy nhất 1 API getTutorEarningsData đã tính toán sẵn lương ở backend
                 const response = await tutorService.getTutorEarningsData(userId);
-                const resData = response.data !== undefined ? response.data : response;
+                console.log("📦 Header - Dữ liệu thu nhập trả về từ API:", response);
 
-                if (resData && resData.success && resData.data) {
-                    // Lấy trực tiếp tiền lương tháng này từ backend trả về
-                    setMonthlySalary(resData.data.monthly_salary || 0);
+                if (response) {
+                    // Hứng trọn mọi trường hợp cấu trúc trả về (giống trang income)
+                    const actualData = response.data || response;
+                    const tutorObj = actualData.tutor || actualData;
+                    
+                    // Hỗ trợ cả 2 kiểu tên biến từ backend (monthlySalary hoặc monthly_salary)
+                    const salary = actualData.monthlySalary 
+                                || actualData.monthly_salary 
+                                || tutorObj.monthlySalary 
+                                || tutorObj.monthly_salary 
+                                || 0;
+
+                    setMonthlySalary(salary);
                 }
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin tiền lương tháng:", error);
@@ -49,7 +58,6 @@ export default function Header() {
         };
 
         fetchEarningsData();
-        
     }, [user]);
 
     const getValidAvatar = (avatar) => {
