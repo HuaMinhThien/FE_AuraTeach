@@ -20,7 +20,18 @@ class AdminChatService {
 
   _getToken() {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("token");
+    // Đọc theo cùng thứ tự ưu tiên với apiClient.js
+    const fromStorage =
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("user_token");
+    if (fromStorage) return fromStorage;
+    // Fallback: cookie "token" (set bởi login page)
+    const cookieToken = document.cookie
+      .split("; ")
+      .find(row => row.startsWith("token="))
+      ?.split("=")[1];
+    return cookieToken || null;
   }
 
   _authHeaders() {
@@ -289,7 +300,9 @@ class AdminChatService {
    */
   async ensureAdminConversation(userId) {
     if (this.useApi) {
-      return this._apiFetch("/conversations/with-admin");
+      // Nếu có userId (admin gọi để mở chat với user cụ thể), truyền vào query string
+      const query = userId ? `?user_id=${userId}` : '';
+      return this._apiFetch(`/conversations/with-admin${query}`);
     }
 
     const uid = userId ?? this._getCurrentUserId();
