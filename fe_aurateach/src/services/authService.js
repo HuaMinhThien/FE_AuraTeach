@@ -89,9 +89,11 @@ class AuthService {
         }
         if (data.token) {
           localStorage.setItem('token', data.token);
+          localStorage.setItem('access_token', data.token);
         } else if (data.access_token) {
           // Laravel Sanctum trả về 'access_token'
           localStorage.setItem('token', data.access_token);
+          localStorage.setItem('access_token', data.access_token);
         }
       }
 
@@ -185,6 +187,7 @@ class AuthService {
       document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
     }
     return { success: true };
   }

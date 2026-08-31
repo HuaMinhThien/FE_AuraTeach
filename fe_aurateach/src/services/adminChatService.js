@@ -20,7 +20,8 @@ class AdminChatService {
 
   _getToken() {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("token");
+    // Đọc cả 2 key để tương thích — authService lưu 'access_token' (Laravel Sanctum)
+    return localStorage.getItem("access_token") || localStorage.getItem("token") || null;
   }
 
   _authHeaders() {
