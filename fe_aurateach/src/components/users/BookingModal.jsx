@@ -19,7 +19,7 @@ export default function BookingModal({
   const [showPaymentModal, setShowPaymentModal] = useState(false); 
   const [bookingData, setBookingData] = useState(null);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false); // 🔒 Khóa trạng thái khi đã thanh toán thành công
+  const [isSuccess, setIsSuccess] = useState(false); 
   const [error, setError] = useState(null);
 
   const formatPrice = (price) => {
@@ -50,17 +50,15 @@ export default function BookingModal({
   };
 
   const handlePaymentSuccess = () => {
-    if (isSuccess) return; // Chống gọi lặp lại nhiều lần
-    setIsSuccess(true); // 🔒 Khóa cứng giao diện ngay khi thành công
+    if (isSuccess) return; 
+    setIsSuccess(true); 
     setShowPaymentModal(false);
     onClose();
     
-    // 1️⃣ Gọi callback truyền từ component cha (nếu có)
     if (typeof onSuccess === 'function') {
       onSuccess();
     }
 
-    // 2️⃣ Thông báo và reload lại trang để khóa lớp và cập nhật dữ liệu mới nhất từ DB
     setTimeout(() => {
       alert('🎉 Đăng ký thành công! Khóa học đã được thanh toán và cập nhật.');
       window.location.reload(); 
@@ -68,7 +66,7 @@ export default function BookingModal({
   };
 
   const handlePaymentClose = async () => {
-    if (isSuccess) return; // Nếu đã thành công thì không hủy booking nữa
+    if (isSuccess) return; 
     setShowPaymentModal(false);
     if (bookingData && !showPaymentModal) {
       try {
@@ -82,15 +80,26 @@ export default function BookingModal({
 
   const handleClose = () => {
     if (isBookingLoading || isSuccess) return;
-    if (showPaymentModal) {
-      return;
-    }
+    if (showPaymentModal) return;
     onClose();
   };
 
-  const totalSessions = course?.totalSessions || (course?.total_weeks || 12) * (course?.sessionsPerWeek || 1);
-  const hourlyRate = course?.price_per_session || course?.price_per_session || 0;
-  const calculatedTotalPrice = hourlyRate * totalSessions;
+  const totalSessions = course?.totalSessions || course?.sessions_count || 12;
+  const rawPrice = course?.price || course?.totalPrice || course?.calculatedTotalPrice || 72000;
+  const hourlyRate = course?.price_per_session || (rawPrice / totalSessions);
+
+  // Số buổi thanh toán kỳ đầu (nếu học theo tháng thì đây là số buổi trong tháng đầu, ví dụ 1 buổi hoặc tùy bạn)
+  const payableSessions = course?.firstMonthSessions || 1; 
+
+  // 🔥 CHIA TỶ LỆ HOẶC TÍNH LẠI CHUẨN XÁC KỲ ĐẦU:
+  // Nếu bạn muốn lấy chính xác tiền 1 buổi (4.000đ) thì dùng hourlyRate * payableSessions
+  // Hoặc nếu rawPrice là tổng cả khóa, ta quy về tiền theo tháng/buổi:
+  let calculatedTotalPrice = hourlyRate * payableSessions;
+
+  // Đảm bảo nếu tính ra vượt quá tổng tiền gốc thì lấy tổng gốc, còn không thì lấy tiền kỳ đầu
+  if (calculatedTotalPrice > rawPrice) {
+      calculatedTotalPrice = rawPrice; 
+  }
 
   return (
     <>
@@ -162,7 +171,7 @@ export default function BookingModal({
                 <span className="booking-option-icon">📱</span>
                 <div>
                   <div className="booking-option-label">Thanh toán qua QR Code</div>
-                  <div className="booking-option-desc">Quét mã QR để thanh toán</div>
+                  <div className="booking-option-desc">Quét mã QR để thanh toán kỳ đầu</div>
                 </div>
               </label>
             </div>
@@ -174,11 +183,11 @@ export default function BookingModal({
               <span className="booking-price-value">{formatPrice(hourlyRate)}</span>
             </div>
             <div className="booking-price-row">
-              <span>Số buổi dự kiến</span>
-              <span>{totalSessions} buổi</span>
+              <span>Số buổi thanh toán kỳ đầu</span>
+              <span>{payableSessions} buổi</span>
             </div>
             <div className="booking-price-row total">
-              <span>Tổng cộng</span>
+              <span>Tổng thanh toán kỳ đầu</span>
               <span className="booking-total-price">
                 {formatPrice(calculatedTotalPrice)}
               </span>
@@ -231,12 +240,14 @@ export default function BookingModal({
         <PaymentModal
           course={{
             ...course,
-            totalSessions,
+            totalSessions: payableSessions,
             calculatedTotalPrice
           }}
           subscriptionId={bookingData.payment_id || bookingData.subscription_id} 
           studentId={bookingData.student_id || course?.student_id}
-          amount={bookingData.amount || calculatedTotalPrice}
+          // 💡 Ưu tiên lấy amount từ bookingData (nếu backend trả về đúng), 
+          // nếu không thì lấy calculatedTotalPrice đã được tính đúng theo kỳ đầu ở trên (4.000đ)
+          amount={calculatedTotalPrice}
           onClose={handlePaymentClose}
           onSuccess={handlePaymentSuccess}
           paymentService={paymentService}

@@ -93,6 +93,10 @@ export default function Sidebar() {
             text: "Lớp học đề xuất"
         },
         { path: "/schedule", text: "Lịch trình" },
+        {
+            path: "/timesheet",
+            text: "Bảng chấm công"
+        },
         { path: "/income", text: "Thu nhập" },
         { path: "/profile-tutor", text: "Hồ sơ" },
         { 

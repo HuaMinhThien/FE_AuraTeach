@@ -6,6 +6,31 @@ import { useRouter } from "next/navigation";
 import styles from "../_css/sec2.module.css";
 import { courseService } from "@/services/courseService";
 
+// 🔥 Hàm helper hiển thị nhãn trạng thái buổi học chuẩn màu sắc
+const getStatusBadge = (status, isMakeup, isLive) => {
+  if (isMakeup) {
+    return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffedd5', color: '#c2410c', fontWeight: 600 }}>Học bù</span>;
+  }
+  if (isLive) {
+    return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#dc3545', color: '#fff', fontWeight: 600 }}>Đang diễn ra</span>;
+  }
+
+  switch (String(status)) {
+    case '1':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#6c757d', color: '#fff' }}>Chưa diễn ra</span>;
+    case '2':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0dcaf0', color: '#000' }}>Sắp diễn ra</span>;
+    case '3':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#198754', color: '#fff' }}>Đang diễn ra</span>;
+    case '4':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffc107', color: '#000' }}>Chờ xác nhận</span>;
+    case '5':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0d6efd', color: '#fff' }}>Đã hoàn thành</span>;
+    default:
+      return null;
+  }
+};
+
 export default function Tutor_sec2({ classesData, onRefreshData }) {
   const [list, setList] = useState(classesData || []);
 
@@ -55,9 +80,6 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
     }
   };
 
-  /**
-   * Mở modal chi tiết và tự động gọi API lấy danh sách học sinh active của lớp
-   */
   const handleOpenDetail = async (item) => {
     setSelectedClass(item);
 
@@ -150,7 +172,6 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
       ) : (
         <div className={styles.list}>
           {list.map((item) => {
-            // Lấy số lượng học viên ưu tiên từ state hiện tại
             const studentCount = item.current_students ?? item.students_count ?? item.studentsCount ?? 0;
 
             return (
@@ -166,13 +187,21 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
                 </div>
 
                 <div className={styles.info}>
-                  <span className={`${styles.tag} ${item.isLive ? styles.urgent : ""}`}>
-                    {item.tag}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+                    {/* Hiển thị badge trạng thái chuẩn màu */}
+                    {getStatusBadge(item.status, item.isMakeup, item.isLive)}
+                    
+                    {/* Hiển thị thêm nhãn ngày tháng từ dashboard truyền sang nếu có */}
+                    {item.tag && !item.isLive && (
+                      <span className={styles.tag} style={{ fontSize: 11, padding: "2px 8px" }}>
+                        {item.tag}
+                      </span>
+                    )}
+                  </div>
                   <h4>{item.title}</h4>
                   <div className={styles.meta}>
                     <span>⏰ {item.time}</span>
-                    <span>👥 {studentCount} học viên</span>
+                    <span><img src="/img/icons/group.png" alt="học viên" className={styles.metaIcon} /> {studentCount} học viên</span>
                   </div>
                 </div>
 
@@ -204,7 +233,10 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
         <div className={styles.modalOverlay} onClick={() => setSelectedClass(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3>Chi tiết lớp học</h3>
+              <h3>
+                Chi tiết lớp học
+                {getStatusBadge(selectedClass.status, selectedClass.isMakeup, selectedClass.isLive)}
+              </h3>              
               <button className={styles.closeBtn} onClick={() => setSelectedClass(null)}>✕</button>
             </div>
 
@@ -215,7 +247,7 @@ export default function Tutor_sec2({ classesData, onRefreshData }) {
               <div className={styles.detailGrid}>
                 <div><strong>Trình độ:</strong> {selectedClass.level || "N/A"}</div>
                 <div><strong>Học phí / giờ:</strong> {selectedClass.price_per_session?.toLocaleString("vi-VN")}đ/h</div>
-                <div><strong>Lịch học:</strong> {selectedClass.schedule_days?.join(", ") || "Theo lịch biểu"}</div>
+                <div><strong>Lịch học:</strong> {selectedClass.schedule_days?.join(", ") || "—"}</div>
                 <div><strong>Khung giờ:</strong> {selectedClass.time}</div>
               </div>
 

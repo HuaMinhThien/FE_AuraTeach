@@ -58,4 +58,22 @@ export const courseService = {
       throw error;
     }
   },
+
+  getTimesheetData: async (month, year) => {
+    try {
+      const response = await apiClient.get('/tutor/timesheet-data', {
+        params: { month, year }
+      });
+
+      // Trả về object chứa { courses, sessions } dù response có bị bóc tách qua Axios hay chưa
+      const data = response.data || response;
+      return {
+        courses: Array.isArray(data.courses) ? data.courses : [],
+        sessions: Array.isArray(data.sessions) ? data.sessions : []
+      };
+    } catch (error) {
+      console.error("❌ Lỗi lấy dữ liệu timesheet gộp:", error);
+      return { courses: [], sessions: [] };
+    }
+  },
 };

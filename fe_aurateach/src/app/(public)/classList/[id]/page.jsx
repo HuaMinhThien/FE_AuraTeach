@@ -73,25 +73,50 @@ export default function ClassDetailPage({ params }) {
 
       let isAlreadyBooked = false;
 
-      if (studentId) {
-        const stringStudentId = String(studentId);
-        // Đã loại bỏ 'pending' và 'pending_payment' khỏi danh sách hợp lệ để tránh hiển thị nhầm là đã thanh toán
-        const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed'];
-        
-        const courseStudents = Array.isArray(courseObj.students) ? courseObj.students.map(String) : [];
-        const isInCourseStudents = courseStudents.includes(stringStudentId);
+      // 💡 Bước A: Kiểm tra nhanh trong localStorage trước để tránh độ trễ API/Database
+      if (studentId && courseId) {
+        const localChecked = localStorage.getItem(`booked_${studentId}_${courseId}`);
+        if (localChecked === 'true') {
+          isAlreadyBooked = true;
+        }
+      }
 
+      // Bước B: Nếu localStorage chưa có, tiến hành check sâu từ dữ liệu API trả về
+      if (!isAlreadyBooked && studentId) {
+        const stringUserId = String(studentId); // u-d4W7Kon9
+
+        // 1. Kiểm tra trong danh sách subscriptions dựa vào cấu trúc dữ liệu thực tế vừa log
         const hasValidSubscription = subscriptions.some(sub => {
-          const subStudentId = String(sub.student_id || sub.user_id || sub.userId || sub.id || '');
-          const subStatus = String(sub.status || sub.pivot?.status || 'active').toLowerCase();
-          
-          const isMatched = (subStudentId === stringStudentId) || (subStudentId === 'st-1k6I5I' && isInCourseStudents);
-          const isValidStatus = validStatuses.includes(subStatus); // Không dùng điều kiện thuần !sub.status nữa để kiểm soát chặt hơn
+          if (!sub) return false;
 
+          // Lấy user_id từ bên trong sub.student.user (nếu có) hoặc sub.student_id
+          const subUserId = String(sub.student?.user?.user_id || sub.user_id || '');
+          const subStatus = String(sub.status || '').toLowerCase();
+          
+          const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed', 'pending', 'waiting', 'processing'];
+          
+          // Khớp nếu user_id của bản ghi trùng với user_id đang đăng nhập
+          const isMatched = (subUserId === stringUserId);
+          const isValidStatus = validStatuses.includes(subStatus);
+
+          // Quan trọng: Status hợp lệ VÀ KHÔNG PHẢI cancelled
           return isMatched && isValidStatus && subStatus !== 'cancelled';
         });
 
+        // 2. Kiểm tra trong mảng courseObj.students (nếu các phần tử cũng có dạng chứa student/user)
+        const courseStudents = Array.isArray(courseObj.students) ? courseObj.students : [];
+        const isInCourseStudents = courseStudents.some(stu => {
+          if (!stu) return false;
+          const sUserId = String(stu.user?.user_id || stu.user_id || '');
+          return sUserId === stringUserId;
+        });
+
         isAlreadyBooked = isInCourseStudents || hasValidSubscription;
+        
+        // Nếu API xác nhận đã đăng ký, đồng bộ ngược lại vào localStorage để cache
+        if (isAlreadyBooked) {
+          localStorage.setItem(`booked_${studentId}_${courseId}`, 'true');
+        }
       }
 
       setIsBooked(isAlreadyBooked);
@@ -151,16 +176,11 @@ export default function ClassDetailPage({ params }) {
       });
 
       const responseData = result.data || result;
-      const subStatus = String(responseData?.status || responseData?.pivot?.status || '').toLowerCase();
-
-      // Chỉ chuyển trạng thái thành đã đặt/đã khóa nút khi thanh toán hoàn tất hoặc là hình thức miễn phí/tiền mặt xác nhận luôn
-      const isCompletedNow = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed'].includes(subStatus);
       
-      if (isCompletedNow) {
-        setIsBooked(true);
-      } else {
-        // Nếu là trạng thái chờ thanh toán (pending / pending_payment), tạm thời chưa cho là đã book xong
-        setIsBooked(false);
+      // 🔥 Ép buộc khóa nút và lưu cache ngay lập tức khi gửi request thành công
+      setIsBooked(true);
+      if (courseId && studentId) {
+        localStorage.setItem(`booked_${studentId}_${courseId}`, 'true');
       }
 
       return {
@@ -181,7 +201,19 @@ export default function ClassDetailPage({ params }) {
   const handleBookingSuccess = async () => {
     setIsBooked(true);
     setShowBookingModal(false);
-    await fetchClassData(false);
+    
+    // Lưu cache vào localStorage theo ID khóa học và ID user
+    const studentId = currentUser?.user_id || currentUser?.id;
+    if (courseId && studentId) {
+      localStorage.setItem(`booked_${studentId}_${courseId}`, 'true');
+    }
+
+    if (course) {
+      setCourse(prev => ({
+        ...prev,
+        current_students: (prev.current_students !== undefined ? prev.current_students : (prev.students?.length || 0)) + 1
+      }));
+    }
   };
 
   const getCategoryName = (categoryId) => {
@@ -214,23 +246,114 @@ export default function ClassDetailPage({ params }) {
     });
   };
 
-  const calculateTotalMonths = (startDate, endDate) => {
-    if (!startDate || !endDate) return 1;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 1;
+  // --- Logic tính toán học phí chênh lệch chu kỳ mùng 5 hằng tháng ---
+  const calculateProratedFirstBill = (courseObj, pricePerSession) => {
+    const courseStartDate = courseObj.start_date;
+    const courseEndDate = courseObj.end_date;
 
-    const diffYears = end.getFullYear() - start.getFullYear();
-    const diffMonths = end.getMonth() - start.getMonth();
-    let totalMonths = diffYears * 12 + diffMonths;
-
-    const diffDays = (end - start) / (1000 * 60 * 60 * 24);
-    if (totalMonths <= 0) {
-      totalMonths = Math.max(1, Math.round(diffDays / 30));
+    if (!courseStartDate || !courseEndDate || !pricePerSession) {
+      return { 
+        totalSessions: 0, totalCoursePrice: 0, calculatedMonths: 1, 
+        firstMonthAmount: 0, firstMonthSessions: 0, nextBillingDateText: "05/09/2026",
+        isCombined: false, joinDateText: "" 
+      };
     }
 
-    return Math.max(1, totalMonths);
+    const dayMapping = {
+      "Chủ Nhật": 0, "CN": 0, "Sunday": 0, "0": 0,
+      "Thứ 2": 1, "Monday": 1, "1": 1,
+      "Thứ 3": 2, "Tuesday": 2, "2": 2,
+      "Thứ 4": 3, "Wednesday": 3, "3": 3,
+      "Thứ 5": 4, "Thursday": 4, "4": 4,
+      "Thứ 6": 5, "Friday": 5, "5": 5,
+      "Thứ 7": 6, "Saturday": 6, "6": 6
+    };
+
+    let activeDaysOfWeek = [];
+    const schedules = Array.isArray(courseObj.schedules) ? courseObj.schedules : [];
+    if (schedules.length > 0) {
+      schedules.forEach(s => {
+        const val = s.day_of_week ?? s.days ?? s;
+        if (dayMapping[val] !== undefined) activeDaysOfWeek.push(dayMapping[val]);
+      });
+    } else if (courseObj.schedule_days) {
+      const daysArr = Array.isArray(courseObj.schedule_days) ? courseObj.schedule_days : String(courseObj.schedule_days).split(',').map(d => d.trim());
+      daysArr.forEach(d => {
+        if (dayMapping[d] !== undefined) activeDaysOfWeek.push(dayMapping[d]);
+      });
+    }
+    activeDaysOfWeek = [...new Set(activeDaysOfWeek)];
+
+    const parseLocalDate = (dateStr) => {
+      if (!dateStr) return null;
+      const cleanDateStr = String(dateStr).split('T')[0];
+      const [year, month, day] = cleanDateStr.split('-').map(Number);
+      if (!year || !month || !day) return new Date(dateStr);
+      return new Date(year, month - 1, day, 0, 0, 0);
+    };
+
+    let start = parseLocalDate(courseStartDate);
+    let end = parseLocalDate(courseEndDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || activeDaysOfWeek.length === 0) {
+      return { totalSessions: 0, totalCoursePrice: 0, calculatedMonths: 1, firstMonthAmount: 0, firstMonthSessions: 0 };
+    }
+
+    const countSessionsInRange = (fromDate, toDate) => {
+      let count = 0;
+      let curr = new Date(fromDate);
+      let limit = new Date(toDate);
+      while (curr <= limit) {
+        if (activeDaysOfWeek.includes(curr.getDay())) {
+          count++;
+        }
+        curr.setDate(curr.getDate() + 1);
+      }
+      return count;
+    };
+
+    let totalSessions = countSessionsInRange(start, end);
+    if (totalSessions > 36) {
+      totalSessions = 36;
+    }
+    
+    const totalCoursePrice = totalSessions * pricePerSession;
+
+    let joinDate = new Date(start);
+    let d = joinDate.getDate();
+    let m = joinDate.getMonth();
+    let y = joinDate.getFullYear();
+
+    let nextBillingDate;
+    let isCombined = false;
+
+    if (d >= 1 && d <= 4) {
+      nextBillingDate = new Date(y, m + 1, 5);
+      isCombined = true;
+    } else {
+      nextBillingDate = new Date(y, m + 1, 5);
+    }
+
+    if (nextBillingDate > end) {
+      nextBillingDate = new Date(end);
+    }
+
+    let firstPeriodSessions = countSessionsInRange(joinDate, nextBillingDate);
+    if (firstPeriodSessions > totalSessions) firstPeriodSessions = totalSessions;
+    
+    let firstMonthAmount = firstPeriodSessions * pricePerSession;
+    let calculatedMonths = Math.max(1, Math.round(totalSessions / 8)); 
+
+    return {
+      totalSessions,
+      totalCoursePrice,
+      calculatedMonths,
+      firstMonthAmount,
+      firstMonthSessions: firstPeriodSessions,
+      nextBillingDateText: nextBillingDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      isCombined,
+      joinDateText: joinDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    };
   };
 
   if (pageLoading) {
@@ -250,22 +373,20 @@ export default function ClassDetailPage({ params }) {
         .join(", ") 
     : (course.schedule_days || "Chưa cập nhật");
 
-  const sessionsPerWeek = schedulesList.length > 0 
-    ? schedulesList.length 
-    : (Array.isArray(course.schedule_days) ? course.schedule_days.length : 1);
-
-  const totalWeeks = course?.total_weeks || 12;
-  const totalSessions = sessionsPerWeek * totalWeeks;
-
   const firstSchedule = schedulesList.length > 0 ? schedulesList[0] : {};
   const displayTimeSlot = firstSchedule.time_slot || course.time_slot || "Chưa cập nhật";
   const displayStartDate = firstSchedule.start_time || firstSchedule.start_date || course.start_date;
   const displayEndDate = firstSchedule.end_time || firstSchedule.end_date || course.end_date;
   const roomUrl = firstSchedule.meeting_platform || firstSchedule.room_url || course.permanent_room_url;
 
-  const totalCoursePrice = (course.price_per_session || 0) * totalSessions;
-  const calculatedMonths = calculateTotalMonths(displayStartDate, displayEndDate);
-  const pricePerMonth = Math.round(totalCoursePrice / calculatedMonths);
+  const pricePerSessionVal = course.price_per_session || 0;
+  const billingData = calculateProratedFirstBill(course, pricePerSessionVal);
+
+  const totalSessions = billingData.totalSessions > 0 ? billingData.totalSessions : 1;
+  const totalCoursePrice = billingData.totalCoursePrice > 0 ? billingData.totalCoursePrice : (pricePerSessionVal * totalSessions);
+  
+  const currentMonthPrice = billingData.firstMonthAmount > 0 ? billingData.firstMonthAmount : totalCoursePrice;
+  const currentMonthSessions = billingData.firstMonthSessions > 0 ? billingData.firstMonthSessions : totalSessions;
 
   const handleJoinClass = () => {
     if (roomUrl) {
@@ -318,19 +439,19 @@ export default function ClassDetailPage({ params }) {
         <h1 className={styles.title}>{course.title}</h1>
         <div className={styles.meta}>
           <div className={styles.rating}>
-            <span className={styles.star}>⭐</span>
+            <img src="/img/icons/star.png" alt="star" className={styles.starIcon} />
             <span className={styles.ratingValue}>{averageRating}</span>
             <span className={styles.reviews}>({courseReviews.length} đánh giá)</span>
           </div>
           <div className={styles.students}>
-            <span>👥 {currentStudentsCount}/{course.max_students || 0} học viên</span>
+            <span><img src="/img/icons/group.png" alt="học viên" className={styles.studentsIcon} /> {currentStudentsCount}/{course.max_students} học viên</span>
           </div>
           <div className={styles.tag}>
             <span className={styles.tagBadge}>📚 {getCategoryName(course.category_id)}</span>
           </div>
           <div className={styles.tag}>
             <span className={`${styles.tagBadge} ${course.status === 'active' ? styles.statusActive : styles.statusClosed}`}>
-              {course.status === 'active' ? '🟢 Đang mở' : '🔴 Đã đóng'}
+              {course.status === 'active' ? 'Đang mở' : 'Đã đóng'}
             </span>
           </div>
         </div>
@@ -339,14 +460,14 @@ export default function ClassDetailPage({ params }) {
       <div className={styles.content}>
         <div className={styles.mainContent}>
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>📖 Giới thiệu chương trình</h2>
+            <h2 className={styles.sectionTitle}>Giới thiệu chương trình</h2>
             <div className={styles.description}>
               <p>{course.description}</p>
             </div>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>📋 Thông tin chi tiết</h2>
+            <h2 className={styles.sectionTitle}>Thông tin chi tiết</h2>
             <div className={styles.detailsGrid}>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Mã lớp</span>
@@ -368,7 +489,7 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Số buổi</span>
-                <span className={styles.detailValue}>{totalSessions} buổi ({sessionsPerWeek} buổi/tuần x {totalWeeks} tuần)</span>
+                <span className={styles.detailValue}>{totalSessions} buổi thực tế</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Thời gian học</span>
@@ -400,7 +521,7 @@ export default function ClassDetailPage({ params }) {
                       🔗 Google Meet
                     </a>
                   ) : hasMeetLink ? (
-                    <span className={styles.meetLocked}>🔒 Chỉ học viên đã đăng ký mới xem được link</span>
+                    <span className={styles.meetLocked}>Chỉ học viên đã đăng ký mới xem được link</span>
                   ) : (
                     "Chưa cập nhật"
                   )}
@@ -417,7 +538,7 @@ export default function ClassDetailPage({ params }) {
 
           <section className={styles.section}>
             <div className={styles.reviewsHeader}>
-              <h2 className={styles.sectionTitle}>⭐ Đánh giá từ học viên</h2>
+              <h2 className={styles.sectionTitle}>Đánh giá từ học viên</h2>
               <div className={styles.reviewsSummary}>
                 <span className={styles.summaryRating}>{averageRating}</span>
                 <span className={styles.summaryStars}>⭐⭐⭐⭐⭐</span>
@@ -451,14 +572,39 @@ export default function ClassDetailPage({ params }) {
           <div className={styles.priceCard}>
             <div className={styles.priceHeader}>
               <span className={styles.price}>
-                {course.price_per_session ? `${formatPrice(pricePerMonth)}đ` : 'Liên hệ'}
+                {course.price_per_session ? `${formatPrice(currentMonthPrice)}đ` : 'Liên hệ'}
               </span>
-              {course.price_per_session && <span className={styles.priceUnit}>/1 tháng</span>}
+              {course.price_per_session && <span className={styles.priceUnit}>/ kỳ đầu ({currentMonthSessions} buổi)</span>}
             </div>
 
             {course.price_per_session && (
-              <div style={{ fontSize: "13px", color: "#666", marginBottom: "15px", textAlign: "center" }}>
-                Tổng học phí cả kỳ ({calculatedMonths} tháng): <strong>{formatPrice(totalCoursePrice)}đ</strong>
+              <div style={{ 
+                background: "#f8f9fa", 
+                border: "1px solid #e9ecef", 
+                borderRadius: "8px", 
+                padding: "12px", 
+                fontSize: "13px", 
+                color: "#495057", 
+                marginBottom: "15px",
+                textAlign: "left"
+              }}>
+                <div style={{ fontWeight: "600", color: "#2b32b2", marginBottom: "6px" }}>
+                  💡 Lịch đóng học phí & Gia hạn:
+                </div>
+                <div style={{ marginBottom: "4px" }}>
+                  • <strong>Kỳ thanh toán đầu:</strong> {currentMonthSessions} buổi từ ngày {billingData.joinDateText}.
+                </div>
+                <div style={{ marginBottom: "4px" }}>
+                  • <strong>Ngày gia hạn tiếp theo:</strong> <span>{billingData.nextBillingDateText}</span> (Mùng 5 hàng tháng).
+                </div>
+                {billingData.isCombined && (
+                  <div style={{ color: "#d97706", fontStyle: "italic", fontSize: "12px", marginTop: "4px" }}>
+                    *(Do đăng ký gần đầu tháng, hệ thống đã tối ưu gộp chi phí để tránh việc bạn phải đóng tiền 2 lần sát nhau).*
+                  </div>
+                )}
+                <div style={{ borderTop: "1px dashed #dee2e6", marginTop: "8px", paddingTop: "6px", color: "#6c757d" }}>
+                  Tổng học phí toàn khóa ({totalSessions} buổi): <strong>{formatPrice(totalCoursePrice)}đ</strong>
+                </div>
               </div>
             )}
 
@@ -477,7 +623,7 @@ export default function ClassDetailPage({ params }) {
               </div>
               <div className={styles.detailRow}>
                 <span className={styles.detailIcon}>📚</span>
-                <span>{totalSessions} buổi học ({sessionsPerWeek} buổi/tuần - {calculatedMonths} tháng)</span>
+                <span>{totalSessions} buổi học thực tế</span>
               </div>
             </div>
 
@@ -496,13 +642,12 @@ export default function ClassDetailPage({ params }) {
                isBooked ? "Đã đăng ký khóa học" : 
                isFull ? "Lớp đã đủ học viên" :
                course.status !== 'active' ? "Lớp đã đóng" : 
-               "📝 Đăng ký học ngay"}
+               "Đăng ký học ngay"}
             </button>
-            <button className={styles.consultButton}>Đặt lịch tư vấn</button>
           </div>
 
           <div className={styles.tutorCard}>
-            <h3 className={styles.tutorCardTitle}>👨‍🏫 GIA SƯ HƯỚNG DẪN</h3>
+            <h3 className={styles.tutorCardTitle}>GIA SƯ HƯỚNG DẪN</h3>
             <div className={styles.tutorInfo}>
               <div className={styles.tutorAvatar}>
                 <Avatar 
@@ -519,7 +664,7 @@ export default function ClassDetailPage({ params }) {
                   {tutorInfo?.bio || "Gia sư giàu kinh nghiệm giảng dạy."}
                 </p>
                 <div className={styles.tutorExtra}>
-                  <span>⭐ {tutorInfo?.rating || 5.0}/5</span>
+                  <span>{tutorInfo?.rating || 5.0}/5</span>
                   <span className={styles.tutorDivider}>•</span>
                   <span>{tutorInfo?.Experience || tutorInfo?.experience || "Chưa cập nhật"}</span>
                 </div>
@@ -536,13 +681,14 @@ export default function ClassDetailPage({ params }) {
       </div>
 
       {showBookingModal && (
-        <BookingModal
+        <BookingModal 
           course={{
             ...course,
-            sessionsPerWeek,
-            totalSessions
+            totalSessions: totalSessions,            
+            firstMonthSessions: currentMonthSessions,   
+            calculatedTotalPrice: currentMonthPrice,    
           }}
-          tutorName={userTutor?.full_name || "Gia sư"}
+          tutorName={tutorInfo?.full_name || userTutor?.full_name}
           onClose={() => setShowBookingModal(false)}
           onConfirm={confirmBooking}
           onSuccess={handleBookingSuccess}

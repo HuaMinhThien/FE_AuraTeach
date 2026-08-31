@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './page.module.css';
 import { courseService } from '@/services/courseService';
 import { categoryService } from '@/services/categoryService';
@@ -208,12 +209,12 @@ export default function ClassListPage() {
           </p>
 
           <div className={styles.heroTags}>
-            <span className={styles.tag}> Gia sư xác thực</span>
-            <span className={styles.tag}> Học nhóm nhỏ</span>
+            <span className={styles.tag}><img src="/img/icons/security.png" alt="xác thực" className={styles.tagIcon} /> Gia sư xác thực</span>
+            <span className={styles.tag}><img src="/img/icons/group.png" alt="học nhóm" className={styles.tagIcon} /> Học nhóm nhỏ</span>
           </div>
 
           <div className={styles.heroButtons}>
-            <button className={styles.heroBtnPrimary}>Tìm gia sư ngay</button>
+            <Link href="/tutorList" className={styles.heroBtnPrimary}>Tìm gia sư ngay</Link>
           </div>
         </div>
 

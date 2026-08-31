@@ -141,8 +141,7 @@ export default function ChatWindow({
         <div>
           <span className={styles.headerName}>{otherUserName}</span>
           <span className={styles.headerRole}>
-            {otherUserRole === "tutor" ? "👨‍🏫 Gia sư" : "🎓 Học viên"}
-          </span>
+            {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}          </span>
         </div>
       </div>
       <div className={styles.headerActions}>
@@ -156,7 +155,7 @@ export default function ChatWindow({
       <div className={styles.chatWindow}>
         {renderUserInfoHeader()}
         <div className={styles.emptyMessages}>
-          <span className={styles.emptyIcon}>💬</span>
+          <img src="/img/icons/messenger (1).png" alt="chat" className={styles.emptyIconImg} />
           <p>Chưa có tin nhắn nào</p>
           <p className={styles.emptySub}>Hãy bắt đầu cuộc trò chuyện</p>
         </div>

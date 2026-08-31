@@ -12,7 +12,15 @@ const CLASS_COLOR = {
   border: "#0a37a3",
 };
 
+const MAKEUP_COLOR = {
+  bg: "#fff7ed",
+  text: "#c2410c",
+  border: "#ea580c",
+};
+
 const getColorForClass = () => CLASS_COLOR;
+const getColorForMakeup = () => MAKEUP_COLOR;
+
 
 const getUserIdFromCookie = () => {
   try {
@@ -33,6 +41,7 @@ const getUserIdFromCookie = () => {
 export default function SchedulePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [classes, setClasses] = useState([]);
+  const [makeupSessions, setMakeupSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,7 +84,7 @@ export default function SchedulePage() {
 
   // Các phần logic hiển thị lịch và giao diện giữ nguyên...
   const todayString = new Date().toDateString();
-  const currentDay = currentDate.getDay(); 
+  const currentDay = currentDate.getDay();
   const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
   const monday = new Date(currentDate);
   monday.setDate(currentDate.getDate() + mondayOffset);
@@ -143,7 +152,11 @@ export default function SchedulePage() {
         if (dayIdx === undefined) return;
 
         const targetDayInstance = currentWeekDays[dayIdx].dateObj;
-        const targetDateKey = new Date(targetDayInstance.getFullYear(), targetDayInstance.getMonth(), targetDayInstance.getDate());
+        const targetDateKey = new Date(
+          targetDayInstance.getFullYear(),
+          targetDayInstance.getMonth(),
+          targetDayInstance.getDate()
+        );
 
         if (cls.start_date && targetDateKey < new Date(cls.start_date).setHours(0,0,0,0)) return;
         if (cls.end_date && targetDateKey > new Date(cls.end_date).setHours(0,0,0,0)) return;
@@ -165,11 +178,21 @@ export default function SchedulePage() {
             }}
           >
             <div className={styles.cardHeaderFlex}>
-              <div className={styles.classTitle} title={cls.class_name} style={{ color: colorStyle.text }}>
-                {cls.title || cls.class_name}
+              <div
+                className={styles.classTitle}
+                title={cls.class_name}
+                style={{ color: colorStyle.text }}
+              >                
+              {cls.title || cls.class_name}
               </div>
-              <span className={styles.timeBadge} style={{ backgroundColor: "rgba(10, 55, 163, 0.08)", color: colorStyle.text }}>
-                {cls.time_slot}
+              <span
+                className={styles.timeBadge}
+                style={{
+                  backgroundColor: "rgba(10, 55, 163, 0.08)",
+                  color: colorStyle.text,
+                }}
+              >                
+              {cls.time_slot}
               </span>
             </div>
             
@@ -194,6 +217,100 @@ export default function SchedulePage() {
       });
     });
 
+    makeupSessions.forEach((session) => {
+      if (!session.actual_date || !session.start_time || !session.end_time) return;
+
+      const sessionDate = new Date(session.actual_date);
+      const sessionDateOnly = new Date(
+        sessionDate.getFullYear(),
+        sessionDate.getMonth(),
+        sessionDate.getDate()
+      );
+
+      // Tìm xem buổi này có nằm trong tuần đang xem không
+      const dayIdx = currentWeekDays.findIndex((d) => {
+        const dOnly = new Date(
+          d.dateObj.getFullYear(),
+          d.dateObj.getMonth(),
+          d.dateObj.getDate()
+        );
+        return dOnly.getTime() === sessionDateOnly.getTime();
+      });
+
+      if (dayIdx === -1) return; // không thuộc tuần này
+
+      const colorStyle = getColorForMakeup();
+      const startHour = parseInt(session.start_time.split(":")[0]);
+      const endHour = parseInt(session.end_time.split(":")[0]);
+      const duration = Math.max(endHour - startHour, 1);
+
+      const topPosition = startHour * ROW_HEIGHT;
+      const cardHeight = duration * ROW_HEIGHT - 8;
+      const leftPosition = (dayIdx * 100) / 7;
+
+      // Tìm tên lớp từ courses
+      const relatedCourse = classes.find(
+        (c) => (c.course_id || c.id) === session.course_id
+      );
+      const className =
+        relatedCourse?.title ||
+        relatedCourse?.class_name ||
+        session.lesson_title ||
+        "Buổi học bù";
+
+      cards.push(
+        <div
+          key={`makeup-${session.session_id || session.id}`}
+          className={styles.slotCard}
+          style={{
+            top: `${topPosition}px`,
+            left: `calc(${leftPosition}% + 4px)`,
+            width: `calc(${100 / 7}% - 8px)`,
+            height: `${cardHeight}px`,
+            backgroundColor: colorStyle.bg,
+            color: colorStyle.text,
+            borderLeft: `4px solid ${colorStyle.border}`,
+          }}
+        >
+          <div className={styles.cardHeaderFlex}>
+            <div
+              className={styles.classTitle}
+              title={className}
+              style={{ color: colorStyle.text }}
+            >
+              {className}
+            </div>
+            <span
+              className={styles.timeBadge}
+              style={{
+                backgroundColor: "rgba(234, 88, 12, 0.12)",
+                color: colorStyle.text,
+              }}
+            >
+              {session.start_time} - {session.end_time}
+            </span>
+          </div>
+
+          <div className={styles.cardFooterFlex}>
+            <div className={styles.tutorName} style={{ color: colorStyle.text }}>
+              🔄 Học bù
+            </div>
+            {relatedCourse?.permanent_room_url && (
+              <a
+                href={relatedCourse.permanent_room_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.meetBtn}
+                style={{ backgroundColor: colorStyle.border, color: "#ffffff" }}
+              >
+                Vào lớp
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    });
+
     return cards;
   };
 
@@ -209,16 +326,22 @@ export default function SchedulePage() {
       const dayIdx = mapScheduleDayIndex[dayStr];
       if (dayIdx === undefined) return;
       const targetDayInstance = currentWeekDays[dayIdx].dateObj;
-      const targetDateKey = new Date(targetDayInstance.getFullYear(), targetDayInstance.getMonth(), targetDayInstance.getDate());
+      const targetDateKey = new Date(
+        targetDayInstance.getFullYear(),
+        targetDayInstance.getMonth(),
+        targetDayInstance.getDate()
+      );
 
       let isValid = true;
-      if (cls.start_date && targetDateKey < new Date(cls.start_date).setHours(0,0,0,0)) isValid = false;
-      if (cls.end_date && targetDateKey > new Date(cls.end_date).setHours(0,0,0,0)) isValid = false;
+      if (cls.start_date && targetDateKey < new Date(cls.start_date).setHours(0, 0, 0, 0))
+        isValid = false;
+      if (cls.end_date && targetDateKey > new Date(cls.end_date).setHours(0, 0, 0, 0))
+        isValid = false;
       
       if (isValid) actualDaysInWeek++;
     });
 
-    return total + (diff * actualDaysInWeek);
+    return total + diff * actualDaysInWeek;
   }, 0);
 
   return (
@@ -285,11 +408,30 @@ export default function SchedulePage() {
       <div className={styles.statsBar}>
         <div className={styles.legendList}>
           <div className={styles.legendItem}>
-            <div className={styles.colorDot} style={{ backgroundColor: "#eef2ff", border: "2px solid #0a37a3" }}></div>
+            <div
+              className={styles.colorDot}
+              style={{ backgroundColor: "#eef2ff", border: "2px solid #0a37a3" }}
+            ></div>            
             <span>Lớp học đang hoạt động</span>
           </div>
           <div className={styles.legendItem}>
-            <div className={styles.colorDot} style={{ backgroundColor: "#ffedd5", border: "1px dashed #f97316" }}></div>
+            <div
+              className={styles.colorDot}
+              style={{
+                backgroundColor: "#fff7ed",
+                border: "2px solid #ea580c",
+              }}
+            ></div>
+            <span>Buổi học bù</span>
+          </div>
+          <div className={styles.legendItem}>
+            <div
+              className={styles.colorDot}
+              style={{
+                backgroundColor: "#ffedd5",
+                border: "1px dashed #f97316",
+              }}
+            ></div>            
             <span>Lịch trống sẵn sàng</span>
           </div>
         </div>

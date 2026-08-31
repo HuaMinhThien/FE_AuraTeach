@@ -54,11 +54,10 @@ const getCurrentStudentId = async () => {
   return null;
 };
 
-const generateMeetLink = () => {
-  const chars = "abcdefghijklmnopqrstuvwxyz";
-  const segment = (len) =>
-    Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  return `https://meet.google.com/${segment(3)}-${segment(4)}-${segment(3)}`;
+const isValidGoogleMeetLink = (url) => {
+  if (!url) return false;
+  const regex = /^(https?:\/\/)?meet\.google\.com\/[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}(\?.*)?$/i;
+  return regex.test(url.trim());
 };
 
 const PRICE_LIMITS = {
@@ -407,12 +406,6 @@ export default function CreateClassRequest() {
     });
   };
 
-  const handleGenerateMeetLink = async () => {
-    if (!(await checkAuthAndRole())) return;
-    const link = generateMeetLink();
-    setFormData((prev) => ({ ...prev, meet_link: link }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -428,6 +421,16 @@ export default function CreateClassRequest() {
 
     if (checkConflictSchedule()) {
       alert("⚠️ Lịch học bị trùng với khóa học hiện có. Vui lòng chọn thời gian khác!");
+      return;
+    }
+
+    if (!formData.meet_link || !formData.meet_link.trim()) {
+      alert("⚠️ Vui lòng nhập đường dẫn Google Meet!");
+      return;
+    }
+
+    if (!isValidGoogleMeetLink(formData.meet_link)) {
+      alert("⚠️ Link Google Meet không đúng định dạng! Ví dụ hợp lệ: https://meet.google.com/abc-defg-hij");
       return;
     }
 

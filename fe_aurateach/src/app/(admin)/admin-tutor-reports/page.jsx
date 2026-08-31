@@ -210,7 +210,7 @@ export default function AdminTutorReports() {
               ×
             </button>
 
-            <h2>📄 Chi tiết báo cáo</h2>
+            <h2>Chi tiết báo cáo</h2>
 
             <div className={styles.modalBody}>
               <div className={styles.modalGrid}>

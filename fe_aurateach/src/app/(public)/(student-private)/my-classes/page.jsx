@@ -15,6 +15,7 @@ export default function MyClassesPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [makeupSessions, setMakeupSessions] = useState([]);
 
   useEffect(() => {
     const initPage = async () => {
@@ -128,7 +129,12 @@ export default function MyClassesPage() {
               </p>
               <div className={styles.statsBadge}>
                 <span className={styles.totalClasses}>
-                  📖 {sessions.length} buổi học đã lên lịch
+                  {sessions.length} buổi học đã lên lịch
+                  {makeupSessions.length > 0 && (
+                    <span style={{ marginLeft: 8, color: "#c2410c" }}>
+                      • {makeupSessions.length} buổi học bù
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
@@ -146,6 +152,7 @@ export default function MyClassesPage() {
               <ClassCalendar
                 courses={sessions} 
                 onDateClick={handleDateClick}
+                makeupSessions={makeupSessions}
               />
             )}
           </div>

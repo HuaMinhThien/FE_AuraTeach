@@ -304,10 +304,10 @@ export default function TutorDetailPage({ params }) {
             <div>
               <div className={styles.nameRow}>
                 <h1 className={styles.tutorName}>{accountUser.full_name}</h1>
-                <span className={styles.verifiedCheck}>✓</span>
+                <img src="/img/icons/security.png" alt="xác minh" className={styles.verifiedIcon} />
               </div>
               <div className={styles.ratingMeta}>
-                ⭐ {displayRating} 
+                <img src="/img/icons/star.png" alt="star" className={styles.ratingStarIcon} /> {displayRating} 
                 <span>({tutorReviews.length} đánh giá)</span>
               </div>
               <div className={styles.statsContainer}>

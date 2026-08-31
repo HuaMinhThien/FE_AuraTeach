@@ -10,15 +10,25 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
     ? selectedClass.subscriptions.filter((sub) => sub.status === "active")
     : [];
 
-  const handleJoinRoom = () => {
-    const url = selectedClass.schedules && selectedClass.schedules.length > 0 
-      ? selectedClass.schedules[0].meeting_platform 
-      : null;
-    
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } else {
-      alert("Lớp học hiện tại chưa được cấu hình đường link phòng học Google Meet trong lịch trình!");
+  const handleJoinRoom = (selectedClass) => {
+    try {
+      // Lấy trực tiếp trường permanent_room_url từ object selectedClass
+      if (selectedClass && selectedClass.permanent_room_url) {
+        const roomUrl = selectedClass.permanent_room_url;
+
+        // Mở liên kết trong tab mới nếu là đường dẫn HTTP/HTTPS
+        if (roomUrl.startsWith("http://") || roomUrl.startsWith("https://")) {
+          window.open(roomUrl, "_blank");
+        } else {
+          // Mở trong cùng trang nếu là route nội bộ
+          window.location.href = roomUrl;
+        }
+      } else {
+        alert("Lớp học này chưa có liên kết phòng học (permanent_room_url)!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tham gia phòng học:", error);
+      alert("Đã xảy ra lỗi khi cố gắng chuyển hướng đến đường dẫn phòng học!");
     }
   };
 

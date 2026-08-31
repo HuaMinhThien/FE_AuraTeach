@@ -26,6 +26,7 @@ export default function AdminClassesManagement() {
       case '3': return 'Đang diễn ra';
       case '4': return 'Đã hoàn thành';
       case 'completed': return 'Đã hoàn thành';
+      case 'uncompleted': return 'Chưa hoàn thành';
       case 'scheduled': return 'Sắp diễn ra';
       default: return statusCode || 'N/A';
     }
@@ -168,10 +169,19 @@ export default function AdminClassesManagement() {
     if (Array.isArray(selectedSession.attendance) && selectedSession.attendance.length > 0) {
       return selectedSession.attendance;
     }
-    const targetSessionId = selectedSession.session_id || selectedSession.id;
-    return attendanceRecords.filter(
-      (a) => a.session_id === targetSessionId || a.class_session_id === targetSessionId
-    );
+    const sessionId = selectedSession.session_id || null;
+    const dbId = selectedSession.id || null;
+
+    return attendanceRecords.filter((a) => {
+      const attSessionId = a.session_id || a.class_session_id || '';
+      // Khớp đúng session_id (ss_makeup_...) hoặc id json-server
+      if (sessionId && attSessionId === sessionId) return true;
+      if (dbId && attSessionId === dbId) return true;
+      // Fallback: so sánh chuỗi chứa nhau (phòng trường hợp format hơi khác)
+      if (sessionId && String(attSessionId).includes(String(sessionId))) return true;
+      if (sessionId && String(sessionId).includes(String(attSessionId)) && attSessionId) return true;
+      return false;
+    });
   };
 
   const currentAttendance = getCurrentSessionAttendance();
@@ -290,14 +300,32 @@ export default function AdminClassesManagement() {
               {currentCourseSessions.length > 0 ? (
                 currentCourseSessions.map((session) => {
                   const displayDate = formatDate(session.actual_date || session.session_date);
+                  const isMakeup = session.is_makeup === true;
                   const statusCode = session.status || session.session_status;
                   return (
                     <div
                       key={session.id || session.session_id}
                       className={styles.sessionCard}
                       onClick={() => setSelectedSession(session)}
+                      style={isMakeup ? { borderLeft: '4px solid #ea580c' } : {}}
+
                     >
-                      <div className={styles.sessionBadge}>{displayDate || `Buổi ${session.session_number}`}</div>
+                      <div className={styles.sessionBadge}>
+                        {displayDate || `Buổi ${session.session_number}`}
+                        {isMakeup && (
+                          <span style={{
+                            marginLeft: 6,
+                            padding: '1px 6px',
+                            background: '#ffedd5',
+                            color: '#c2410c',
+                            fontSize: 10,
+                            fontWeight: 600,
+                            borderRadius: 999,
+                          }}>
+                            Học bù
+                          </span>
+                        )}
+                      </div>                      
                       <div className={styles.sessionTitle}>
                         {session.title || session.lesson_title || `Buổi học ngày ${displayDate}`}
                       </div>
@@ -329,6 +357,19 @@ export default function AdminClassesManagement() {
 
             <h2>
               Chi Tiết Buổi Học Ngày {formatDate(selectedSession.actual_date || selectedSession.session_date)}:{' '}
+              {selectedSession.is_makeup && (
+                <span style={{
+                  marginLeft: 10,
+                  padding: '3px 10px',
+                  background: '#ffedd5',
+                  color: '#c2410c',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  borderRadius: 999,
+                }}>
+                  Học bù
+                </span>
+              )}
               {selectedSession.title || selectedSession.lesson_title || ''}
             </h2>
             <div className={styles.sessionDetailInfo}>
@@ -343,6 +384,9 @@ export default function AdminClassesManagement() {
                 <strong>Trạng thái buổi học:</strong>{' '}
                 {getSessionStatusLabel(selectedSession.status || selectedSession.session_status)}
               </p>
+              {selectedSession.is_makeup && selectedSession.makeup_for_session_id && (
+                <p><strong>Bù cho buổi:</strong> {selectedSession.makeup_for_session_id}</p>
+              )}          
               {currentSessionConfirmation && (
                 <>
                   <p>
@@ -421,7 +465,7 @@ export default function AdminClassesManagement() {
                         record.status === 'attended';
 
                       return (
-                        <tr key={record.id || record.student_id || index}>
+                        <tr key={record.id || record.attendance_id || record.student_id || index}>
                           <td>{index + 1}</td>
                           <td>
                             <strong>{studentInfo.full_name}</strong>
@@ -441,7 +485,14 @@ export default function AdminClassesManagement() {
                   </tbody>
                 </table>
               ) : (
-                <p className={styles.noData}>Chưa có dữ liệu điểm danh cho buổi học này.</p>
+                <p className={styles.noData}>
+                  Chưa có dữ liệu điểm danh.
+                  {selectedSession.is_makeup && (
+                    <span style={{ display: 'block', marginTop: 6, color: '#94a3b8', fontSize: 13 }}>
+                      (Buổi học bù — điểm danh chỉ có sau khi gia sư xác nhận hoàn thành)
+                    </span>
+                  )}
+                </p>              
               )}
             </div>
           </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './income.module.css';
 import { tutorService } from '@/services/tutorService';
-import { authService } from "@/services/authService"; // 🚀 Import service kết nối BE
+import { authService } from "@/services/authService";
 
 export default function TutorRevenuePage() {
   const [loading, setLoading] = useState(true);
@@ -27,69 +27,42 @@ export default function TutorRevenuePage() {
   const [newIsDefault, setNewIsDefault] = useState(false);
   const [isSubmittingBank, setIsSubmittingBank] = useState(false);
 
-  // Helper lấy cookie
-  const getCookie = (name) => {
-    if (typeof window === 'undefined') return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      const rawValue = parts.pop().split(';').shift();
-      try {
-        // Giải mã ký tự URL-encoded (%7B, %22,...) thành JSON chuẩn
-        return decodeURIComponent(rawValue);
-      } catch (e) {
-        return rawValue;
-      }
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    fetchPageData();
-    fetchVietQrBanks();
-  }, []);
-
-  // 1. Tải dữ liệu trang thông qua tutorService
+  // 🚀 1. Tải dữ liệu tổng thể của trang (User -> ID -> Thu nhập)
   const fetchPageData = async () => {
     try {
       setLoading(true);
 
-      // Gọi API lấy user từ authService
       const currentUser = await authService.getCurrentUser();
       console.log("🔍 Phản hồi gốc từ authService.getCurrentUser():", currentUser);
 
-      // Thử bóc tách theo tất cả các đường dẫn phổ biến của Laravel Resource / Response
       const userData = currentUser?.data?.user || currentUser?.user || currentUser?.data || currentUser;
-      
-      // Lấy id một cách linh hoạt nhất
-      const userId = userData?.user_id || userData?.id || userData?.userId || 'u-Wy4QdEzm'; // Ép cứng luôn ID của bạn vào đây làm dự phòng nếu API bận
+      const userId = userData?.user_id || userData?.id || userData?.userId || 'u-Wy4QdEzm';
 
       console.log("🎯 User ID quyết định sử dụng:", userId);
 
       if (!userId) {
         console.error('Vẫn không tìm thấy userId!');
-        setLoading(false);
         return;
       }
 
-      // 2. Gọi API lấy dữ liệu thu nhập qua tutorService
       const result = await tutorService.getTutorEarningsData(userId);
+      console.log("📦 Dữ liệu thu nhập trả về từ API:", result);
 
       if (result && (result.success || result.data)) {
         const actualData = result.data || result;
         setTutorData(actualData.tutor || actualData);
-        setBankAccounts(result.data.bankAccounts || []);
-        setPayoutHistory(result.data.payoutHistory || []);
-        setMonthlySalary(result.data.monthlySalary || 0);
+        setBankAccounts(actualData.bankAccounts || []);
+        setPayoutHistory(actualData.payoutHistory || []);
+        setMonthlySalary(actualData.monthlySalary || 0);
       }
     } catch (error) {
-      console.error('Lỗi khi tải dữ liệu thu nhập:', error);
+      console.error('❌ Lỗi khi tải dữ liệu thu nhập:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Lấy danh sách Ngân hàng Việt Nam từ API VietQR công khai
+  // 🚀 2. Lấy danh sách Ngân hàng Việt Nam từ API VietQR công khai
   const fetchVietQrBanks = async () => {
     try {
       const res = await fetch('https://api.vietqr.io/v2/banks');
@@ -101,6 +74,12 @@ export default function TutorRevenuePage() {
       console.error('Lỗi fetch VietQR Banks:', error);
     }
   };
+
+  // Khởi chạy khi component mount lần đầu
+  useEffect(() => {
+    fetchPageData();
+    fetchVietQrBanks();
+  }, []);
 
   // 3. Xử lý Thêm Ngân Hàng Mới thông qua tutorService
   const handleAddBankSubmit = async (e) => {
@@ -114,31 +93,30 @@ export default function TutorRevenuePage() {
     const bankName = selectedBankObj ? selectedBankObj.name : newBankCode;
 
     try {
-  setIsSubmittingBank(true);
-  
-  const result = await tutorService.addBankAccount({
-    tutor_id: tutorData.tutor_id,
-    bank_name: bankName,
-    bank_code: newBankCode,
-    account_number: newAccountNumber,
-    account_holder_name: newAccountHolder,
-    is_default: newIsDefault,
-  });
+      setIsSubmittingBank(true);
+      
+      const result = await tutorService.addBankAccount({
+        tutor_id: tutorData?.tutor_id,
+        bank_name: bankName,
+        bank_code: newBankCode,
+        account_number: newAccountNumber,
+        account_holder_name: newAccountHolder,
+        is_default: newIsDefault,
+      });
 
-  console.log("🔍 Kết quả nhận được từ addBankAccount:", result);
+      console.log("🔍 Kết quả nhận được từ addBankAccount:", result);
 
-  // 🚀 Đảm bảo các dấu ngoặc mở/đóng đúng chuẩn JavaScript
-  if (result && (result.success || result.bank_account_id || result?.data?.bank_account_id)) {
-    alert('Đã thêm tài khoản ngân hàng thành công!');
-    setShowAddBankModal(false);
-    setNewBankCode('');
-    setNewAccountNumber('');
-    setNewAccountHolder('');
-    setNewIsDefault(false);
-    await fetchPageData();
-  } else {
-    alert(result?.message || 'Lỗi thêm ngân hàng');
-  }
+      if (result && (result.success || result.bank_account_id || result?.data?.bank_account_id)) {
+        alert('Đã thêm tài khoản ngân hàng thành công!');
+        setShowAddBankModal(false);
+        setNewBankCode('');
+        setNewAccountNumber('');
+        setNewAccountHolder('');
+        setNewIsDefault(false);
+        await fetchPageData();
+      } else {
+        alert(result?.message || 'Lỗi thêm ngân hàng');
+      }
     } catch (error) {
       console.error('Lỗi tạo ngân hàng:', error);
       alert('Có lỗi xảy ra khi tạo ngân hàng');
@@ -147,18 +125,16 @@ export default function TutorRevenuePage() {
     }
   };
 
-  // 4. Xử lý Gửi Yêu Cầu Rút Tiền thông qua tutorService
+  // 4. Xử lý Đặt tài khoản mặc định
   const handleSetDefaultBank = async (bank) => {
     if (bank.is_default) return;
     const confirmMsg = `Bạn có chắc muốn đặt tài khoản\n${bank.bank_name} - ${bank.account_number}\nlàm tài khoản nhận lương mặc định không?`;
     if (!confirm(confirmMsg)) return;
 
     try {
-      // 🚀 Lấy chính xác ID ngân hàng từ đối tượng bank được click
       const bankAccountId = bank.bank_account_id || bank.id;
-
       const result = await tutorService.setDefaultBank({
-        tutor_id: tutorData.tutor_id,
+        tutor_id: tutorData?.tutor_id,
         bank_account_id: bankAccountId,
       });
 
@@ -169,7 +145,7 @@ export default function TutorRevenuePage() {
 
       if (isSuccess) {
         alert('Đã đặt tài khoản làm mặc định thành công!');
-        await fetchPageData(); // Tải lại dữ liệu để cập nhật giao diện badge "Mặc định"
+        await fetchPageData();
       } else {
         alert(responseData?.message || result?.message || 'Không thể đặt làm mặc định');
       }
@@ -185,7 +161,6 @@ export default function TutorRevenuePage() {
 
     if (payout.bank_account_id) {
       try {
-        // Ưu tiên tìm trong danh sách đã có
         const found = bankAccounts.find(
           (b) =>
             b.bank_account_id === payout.bank_account_id ||
@@ -194,7 +169,6 @@ export default function TutorRevenuePage() {
         if (found) {
           setDetailBankInfo(found);
         } else {
-          // Fallback call API
           const res = await fetch(
             `http://localhost:3007/tutor_bank_accounts?bank_account_id=${payout.bank_account_id}`
           );
@@ -220,7 +194,6 @@ export default function TutorRevenuePage() {
     }).format(amount || 0);
   };
 
-  // Lọc danh sách ngân hàng VietQR theo từ khóa tìm kiếm
   const filteredVietQrBanks = vietQrBanks.filter((b) => {
     const kw = bankSearchKeyword.toLowerCase();
     return (
@@ -259,10 +232,9 @@ export default function TutorRevenuePage() {
           </span>
           <div className={styles.mainBalance}>{formatCurrency(monthlySalary)}</div>
           <span className={styles.cardTrend}>
-            Đã trừ 35% phí sàn • Chỉ tính buổi đã hoàn thành trong tháng
+            Đã trừ 35% phí sàn • Tính theo lịch nguyên tháng (đã bao gồm buổi học bù và trừ buổi hủy do gia sư)
           </span>
         </div>
-
       </div>
 
       {/* SECTION BÊN DƯỚI: LAYOUT 2 CỘT */}
@@ -292,6 +264,9 @@ export default function TutorRevenuePage() {
                   {payoutHistory.map((item) => {
                     const amount = item.total_amount || item.amount || 0;
                     const status = item.status || 'pending';
+                    
+                    let statusLabel = 'Chờ duyệt';
+                    let statusClass = '';
                     let dotColor = '#d97706';
 
                     if (status === 'approved') {
@@ -390,7 +365,7 @@ export default function TutorRevenuePage() {
                     >
                       Mặc định
                     </span>
-                  )}                    
+                  )}
                 </div>
               ))}
 
@@ -399,7 +374,7 @@ export default function TutorRevenuePage() {
                 onClick={() => setShowAddBankModal(true)}
               >
                 <span className={styles.plusIcon}>+</span>
-                <span>Thêm tài khoản ngân hàng mới</span>                
+                <span>Thêm tài khoản ngân hàng mới</span>
               </div>
             </div>
           </div>
@@ -408,7 +383,7 @@ export default function TutorRevenuePage() {
           <div className={styles.tipCard}>
             <div className={styles.tipIcon}>💡</div>
             <div className={styles.tipContent}>
-            <h4>Mẹo nhận lương nhanh</h4>
+              <h4>Mẹo nhận lương nhanh</h4>
               <p>
                 Hãy đảm bảo Tên chủ tài khoản ngân hàng trùng khớp hoàn toàn với
                 thông tin cá nhân để đơn được duyệt nhanh chóng.
@@ -440,7 +415,6 @@ export default function TutorRevenuePage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* Trạng thái */}
               <div
                 style={{
                   display: 'flex',
@@ -471,7 +445,6 @@ export default function TutorRevenuePage() {
                 </span>
               </div>
 
-              {/* Mã */}
               <div>
                 <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 4 }}>
                   Mã nhận lương
@@ -481,7 +454,6 @@ export default function TutorRevenuePage() {
                 </div>
               </div>
 
-              {/* Ngân hàng */}
               <div
                 style={{
                   background: '#f0f9ff',
@@ -520,7 +492,6 @@ export default function TutorRevenuePage() {
                 )}
               </div>
 
-              {/* Tổng buổi + Tổng tiền */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div
                   style={{
@@ -552,7 +523,6 @@ export default function TutorRevenuePage() {
                 </div>
               </div>
 
-              {/* Note */}
               {selectedPayout.note && (
                 <div>
                   <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 4 }}>
@@ -573,7 +543,6 @@ export default function TutorRevenuePage() {
                 </div>
               )}
 
-              {/* Ngày */}
               <div style={{ fontSize: '13px', color: '#64748b', textAlign: 'right' }}>
                 Ngày tạo:{' '}
                 {selectedPayout.created_at
@@ -594,18 +563,18 @@ export default function TutorRevenuePage() {
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
-          >        
+          >
             <div className={styles.modalHeader}>
               <h3>Thêm tài khoản ngân hàng</h3>
               <button
                 className={styles.closeBtn}
                 onClick={() => setShowAddBankModal(false)}
-              >                ✕
+              >
+                ✕
               </button>
             </div>
 
             <form onSubmit={handleAddBankSubmit} className={styles.bankForm}>
-              {/* CHỌN NGÂN HÀNG CÓ LOGO VÀ TÌM KIẾM */}
               <div className={styles.formGroup}>
                 <label className={styles.cardLabel}>Chọn ngân hàng *</label>
 
@@ -627,7 +596,7 @@ export default function TutorRevenuePage() {
                         className={`${styles.bankOptionCard} ${
                           isSelected ? styles.bankOptionSelected : ''
                         }`}
-                      onClick={() => setNewBankCode(b.code)}
+                        onClick={() => setNewBankCode(b.code)}
                       >
                         <div className={styles.bankLogoWrapper}>
                           {b.logo ? (
@@ -635,7 +604,8 @@ export default function TutorRevenuePage() {
                               src={b.logo}
                               alt={b.shortName || b.code}
                               className={styles.bankLogoImg}
-                            />                          ) : (
+                            />
+                          ) : (
                             <span className={styles.bankBadge}>{b.code}</span>
                           )}
                         </div>
@@ -643,7 +613,7 @@ export default function TutorRevenuePage() {
                           <div className={styles.bankShortName}>
                             {b.shortName || b.code}
                           </div>
-                         <div className={styles.bankFullName}>{b.name}</div>
+                          <div className={styles.bankFullName}>{b.name}</div>
                         </div>
                         {isSelected && <img src="/img/icons/security.png" alt="selected" className={styles.checkIconImg} />}
                       </div>
@@ -658,7 +628,7 @@ export default function TutorRevenuePage() {
                         fontSize: '13px',
                       }}
                     >
-                     Không tìm thấy ngân hàng phù hợp
+                      Không tìm thấy ngân hàng phù hợp
                     </div>
                   )}
                 </div>
@@ -679,14 +649,14 @@ export default function TutorRevenuePage() {
               <div className={styles.formGroup}>
                 <label className={styles.cardLabel}>
                   Tên chủ tài khoản (Viết hoa không dấu) *
-                </label>                
+                </label>
                 <input
                   type="text"
                   placeholder="Ví dụ: HUA MINH THIEN"
                   value={newAccountHolder}
                   onChange={(e) =>
                     setNewAccountHolder(e.target.value.toUpperCase())
-                  }                  
+                  }
                   className={styles.inputControl}
                   required
                 />
@@ -706,15 +676,15 @@ export default function TutorRevenuePage() {
                   type="button"
                   className={styles.cancelBtn}
                   onClick={() => setShowAddBankModal(false)}
-                >                  
-                Hủy
+                >
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   className={styles.saveBankBtn}
                   disabled={isSubmittingBank || !newBankCode}
-                >                  
-                {isSubmittingBank ? 'Đang lưu...' : 'Lưu ngân hàng'}
+                >
+                  {isSubmittingBank ? 'Đang lưu...' : 'Lưu ngân hàng'}
                 </button>
               </div>
             </form>

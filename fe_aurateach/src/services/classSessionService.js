@@ -56,5 +56,28 @@ export const classSessionService = {
       console.error("❌ Lỗi khi lưu điểm danh sinh viên:", error);
       throw error;
     }
-  }
+  },
+
+  confirmSessionAndAttendance: async (payload) => {
+    try {
+      const response = await apiClient.post('/class-sessions/confirm-attendance', payload);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error("❌ Lỗi khi xác nhận buổi học:", error);
+      throw error;
+    }
+  },
+
+  getTodaySessions: async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/class-sessions/today${queryString ? `?${queryString}` : ""}`;
+      
+      const response = await apiClient.get(endpoint);
+      return response.data !== undefined ? response.data : response;
+    } catch (error) {
+      console.error("❌ Lỗi khi lấy danh sách buổi học hôm nay:", error);
+      throw error;
+    }
+  },
 };

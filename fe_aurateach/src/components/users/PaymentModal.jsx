@@ -301,7 +301,7 @@ export default function PaymentModal({
                 {status === 'paid' && (
                   <div className="payment-success-actions">
                     <button className="payment-done-btn" onClick={onSuccess}>
-                      ✅ Hoàn tất
+                      Hoàn tất
                     </button>
                   </div>
                 )}

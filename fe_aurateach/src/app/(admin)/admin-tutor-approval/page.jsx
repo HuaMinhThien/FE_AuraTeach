@@ -238,7 +238,6 @@ export default function TutorApprovalPage() {
                       <th>Họ tên</th>
                       <th>Email</th>
                       <th>Số điện thoại</th>
-                      <th>Lĩnh vực</th>
                       <th>Ngày đăng ký</th>
                       <th>Hành động</th>
                     </tr>
@@ -256,11 +255,6 @@ export default function TutorApprovalPage() {
                         <td className={styles.boldText}>{tutor.full_name}</td>
                         <td>{tutor.email}</td>
                         <td>{tutor.phone}</td>
-                        <td>
-                          <span className={styles.badgeExpertise}>
-                            {tutor.expertise || "Chưa cập nhật"}
-                          </span>
-                        </td>
                         <td>{new Date(tutor.created_at).toLocaleDateString("vi-VN")}</td>
                         <td>
                           <div className={styles.actionGroup}>
@@ -269,16 +263,6 @@ export default function TutorApprovalPage() {
                               onClick={() => handleOpenTutorDetail(tutor)}
                             >
                               Chi tiết & Duyệt
-                            </button>
-                            <button
-                              className={`${styles.btn} ${styles.btnDanger}`}
-                              onClick={() => {
-                                setSelectedTutor(tutor);
-                                setShowRejectModal(true);
-                                setRejectReason("");
-                              }}
-                            >
-                              Từ chối
                             </button>
                           </div>
                         </td>
@@ -312,9 +296,6 @@ export default function TutorApprovalPage() {
                       <tr key={req.update_req_id || req.id} className={styles.tableRow}>
                         <td className={styles.boldText}>#{req.update_req_id || req.id}</td>
                         <td>{req.tutor_id}</td>
-                        <td>
-                          <span className={styles.badgeExpertise}>{req.new_data?.expertise}</span>
-                        </td>
                         <td>
                           <span className={styles.badgeLevel}>{req.new_data?.level || "Không đổi"}</span>
                         </td>

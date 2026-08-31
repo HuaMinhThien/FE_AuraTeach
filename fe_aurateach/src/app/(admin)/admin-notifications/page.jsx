@@ -67,9 +67,9 @@ export default function AdminNotificationsPage() {
   const getTypeIcon = (type) => {
     switch (type) {
       case "booking": return "📩";
-      case "payment": return "💰";
-      case "system": return "🔔";
-      default: return "💬";
+      case "payment": return <img src="/img/icons/money.png" alt="payment" className={styles.notifTypeIcon} />;
+      case "system": return <img src="/img/icons/notificationn.png" alt="system" className={styles.notifTypeIcon} />;
+      default: return <img src="/img/icons/messenger (1).png" alt="message" className={styles.notifTypeIcon} />;
     }
   };
 
@@ -111,7 +111,7 @@ export default function AdminNotificationsPage() {
       <div className={styles.page}>
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <h1>🔔 Thông báo</h1>
+            <h1 className={styles.headerIcon}><img src="/img/icons/notificationn.png" alt="Thông báo" className={styles.headerIconImg} /> Thông báo</h1>
           </div>
         </header>
         <div style={{ 
@@ -146,7 +146,7 @@ export default function AdminNotificationsPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <h1>🔔 Thông báo</h1>
+          <h1 className={styles.headerIcon}><img src="/img/icons/notificationn.png" alt="Thông báo" className={styles.headerIconImg} /> Thông báo</h1>
           <span className={styles.headerCount}>
             {unreadCount > 0 ? `${unreadCount} chưa đọc` : "Tất cả đã đọc"}
           </span>
@@ -154,7 +154,7 @@ export default function AdminNotificationsPage() {
         <div className={styles.headerRight}>
           {unreadCount > 0 && (
             <button className={styles.markAllBtn} onClick={handleMarkAllAsRead}>
-              ✅ Đánh dấu tất cả đã đọc
+              <img src="/img/icons/security.png" alt="Đã đọc" className={styles.btnIcon} /> Đánh dấu tất cả đã đọc
             </button>
           )}
         </div>
@@ -184,7 +184,7 @@ export default function AdminNotificationsPage() {
       <div className={styles.notifList}>
         {filteredNotifications.length === 0 ? (
           <div className={styles.emptyState}>
-            <span className={styles.emptyIcon}>🔔</span>
+            <img src="/img/icons/notificationn.png" alt="empty" className={styles.emptyIconImg} />
             <p>Không có thông báo nào</p>
           </div>
         ) : (

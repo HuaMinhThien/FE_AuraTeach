@@ -3,11 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from './session-confirmation.module.css';
 
-// Import các service
-import { courseService } from '@/services/courseService';
+// Chỉ sử dụng duy nhất classSessionService
 import { classSessionService } from '@/services/classSessionService';
-import { userService } from '@/services/userService';
-import { tutorService } from '@/services/tutorService';
 
 // Hàm helper đọc và parse cookie an toàn
 const getCookie = (name) => {
@@ -33,14 +30,33 @@ const getCookie = (name) => {
   return null;
 };
 
+// 🔥 Hàm helper hiển thị nhãn trạng thái buổi học theo chuẩn mới
+const getStatusBadge = (status, isMakeup) => {
+  if (isMakeup) {
+    return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffedd5', color: '#c2410c' }}>Học bù</span>;
+  }
+
+  switch (String(status)) {
+    case '1':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#6c757d', color: '#fff' }}>Chưa diễn ra</span>;
+    case '2':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0dcaf0', color: '#000' }}>Sắp diễn ra</span>;
+    case '3':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#198754', color: '#fff' }}>Đang diễn ra</span>;
+    case '4':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffc107', color: '#000' }}>Chờ xác nhận</span>;
+    case '5':
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0d6efd', color: '#fff' }}>Đã hoàn thành</span>;
+    default:
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#f8f9fa', color: '#000' }}>Đang diễn ra</span>;
+  }
+};
+
 export default function SessionConfirm() {
-  const [courses, setCourses] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [tutors, setTutors] = useState([]);
-  const [classSessions, setClassSessions] = useState([]);
+  const [todayItems, setTodayItems] = useState([]);
   const [currentTutorId, setCurrentTutorId] = useState(null);
 
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [studentsInClass, setStudentsInClass] = useState([]);
   
   // States Form & Điểm danh
@@ -51,132 +67,98 @@ export default function SessionConfirm() {
 
   useEffect(() => {
     const userId = getCookie('user_info');  
-    fetchData(userId);
+    console.log("🍪 [Cookie] Giá trị đọc được từ cookie 'user_info':", userId);
+    setCurrentTutorId(userId);
+    if (userId) {
+      fetchTodayData(userId);
+    }
   }, []);
 
-  const fetchData = async (cookieUserId) => {
-    let finalTutorId = null;
+  const fetchTodayData = async (tutorId) => {
     try {
-      const [dataCourses, dataUsers, dataTutors, dataSessions] = await Promise.all([
-        courseService.getCourses(),
-        userService.getUsers(),
-        tutorService.getTutors(),
-        classSessionService.getSessions().catch(() => [])
-      ]);
+      console.log("🚀 [FE Request] Bắt đầu gọi getTodaySessions với tutor_id:", tutorId);
       
-      setCourses(Array.isArray(dataCourses) ? dataCourses : (dataCourses.data || []));
-      setUsers(Array.isArray(dataUsers) ? dataUsers : (dataUsers.data || []));
-      setTutors(Array.isArray(dataTutors) ? dataTutors : (dataTutors.data || []));
-      setClassSessions(Array.isArray(dataSessions) ? dataSessions : (dataSessions.data || []));
+      const res = await classSessionService.getTodaySessions({ tutor_id: tutorId });
+      console.log("📥 [FE Response Raw] Dữ liệu thô nhận từ API:", res);
 
-      const tutorsList = Array.isArray(dataTutors) ? dataTutors : (dataTutors.data || []);
+      const responseData = res?.data !== undefined ? res.data : res;
+      const sessionsArray = Array.isArray(responseData) 
+        ? responseData 
+        : (responseData?.data || []);
 
-      if (cookieUserId) {
-        const isDirectTutor = tutorsList.some(t => String(t.tutor_id) === String(cookieUserId));
-        
-        if (isDirectTutor) {
-          finalTutorId = cookieUserId;
-        } else {
-          const matchedTutor = tutorsList.find(t => String(t.user_id) === String(cookieUserId));
-          if (matchedTutor) {
-            finalTutorId = matchedTutor.tutor_id;
-          }
-        }
+      console.log("📦 [FE Parsed Data] Danh sách buổi học sau khi parse:", sessionsArray);
+
+      if (sessionsArray.length === 0) {
+        console.warn("⚠️ [FE Warning] API trả về mảng rỗng! Không có buổi học nào cho gia sư này vào hôm nay.");
       }
-      
-      setCurrentTutorId(finalTutorId);
+
+      setTodayItems(sessionsArray);
     } catch (err) {
-      console.error("Lỗi khi fetch dữ liệu API qua Service:", err);
+      console.error("❌ [FE Error] Lỗi chi tiết khi gọi getTodaySessions:", err);
+      if (err.response) {
+        console.error("🔴 Status code:", err.response.status);
+        console.error("🔴 Response error data:", err.response.data);
+      }
     }
   };
 
-  const getTodayValidCourses = () => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const daysMap = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-    const currentDayStr = daysMap[now.getDay()]; 
+  const handleOpenDetail = (sessionItem) => {    
+    setSelectedSession(sessionItem);
+    setRecordLink(sessionItem.record_url || '');
+    setTutorNote(sessionItem.document_url || sessionItem.tutor_note || '');
 
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    
-    return courses.filter((course) => {
-      if (!currentTutorId || String(course.tutor_id) !== String(currentTutorId)) {
-        return false;
-      }
-      
-      if (course.end_date) {
-        const endDateParts = course.end_date.split('T')[0].split('-').map(Number);
-        if (endDateParts.length === 3) {
-          const courseEndDate = new Date(endDateParts[0], endDateParts[1] - 1, endDateParts[2]);
-          if (todayStart > courseEndDate) {
-            return false;
-          }
-        }
-      }
+    // 🔥 Quét toàn bộ các khả năng trường chứa danh sách học sinh từ API trả về
+    const classStudents = 
+      sessionItem.flattened_students || 
+      sessionItem.students || 
+      sessionItem.attendances || 
+      sessionItem.class_students ||
+      sessionItem.course?.students ||
+      sessionItem.course?.users ||
+      sessionItem.course?.subscriptions?.map(sub => sub.student?.user || sub.student || sub.user) || 
+      [];
 
-      const hasClassToday = course.schedule_days && course.schedule_days.includes(currentDayStr);
-      if (!hasClassToday) return false;
-
-      const isAlreadySubmittedToday = classSessions.some(
-        s => String(s.course_id) === String(course.course_id) && s.created_at && s.created_at.startsWith(todayStr)
-      );
-      if (isAlreadySubmittedToday) return false;
-      
-      if (course.time_slot) {
-        const times = course.time_slot.split('-');
-        if (times.length === 2) {
-          const [startHour, startMin] = times[0].split(':').map(Number);
-          const startMinutes = startHour * 60 + startMin;
-          const endOfDayMinutes = 23 * 60;
-
-          if (currentMinutes >= startMinutes && currentMinutes <= endOfDayMinutes) {
-            return true;
-          }
-        }
-      }
-      return false;
-    });
-  };  
-
-  const handleOpenDetail = (course) => {
-    setSelectedCourse(course);
-    setRecordLink('');
-    setTutorNote('');
-
-    const classStudents = users.filter(u => course.students && course.students.includes(u.user_id));
+    console.log("👥 [Debug Students] Danh sách học sinh bắt được:", classStudents);
     setStudentsInClass(classStudents);
 
-    const savedDraft = localStorage.getItem(`draft_attendance_${course.course_id}`);
+    const sessionId = sessionItem.session_id || sessionItem.id;
+    const draftKey = `draft_attendance_${sessionId}`;
+
+    const savedDraft = localStorage.getItem(draftKey);    
     if (savedDraft) {
-      setAttendance(JSON.parse(savedDraft));
+      try {
+        setAttendance(JSON.parse(savedDraft));
+      } catch (e) {
+        setAttendance({});
+      }
     } else {
       const initAttendance = {};
       classStudents.forEach(st => {
-        initAttendance[st.user_id] = { present: false, comment: '' };
+        const sId = st.student_id || st.user_id || st.id;
+        initAttendance[sId] = { 
+          present: st.attendance_status === 'present' || false, 
+          comment: st.tutor_comment || '' 
+        };
       });
       setAttendance(initAttendance);
     }
 
-    checkTimeAndStatus(course);
+    checkTimeAndStatus(sessionItem);
   };
 
-  const checkTimeAndStatus = (course) => {
+  const checkTimeAndStatus = (sessionItem) => {
     const now = new Date();
-    
-    if (course.time_slot) {
-      const times = course.time_slot.split('-');
-      if (times.length === 2) {
-        const [endHour, endMin] = times[1].split(':').map(Number);
-        const endTimeDate = new Date();
-        endTimeDate.setHours(endHour, endMin, 0, 0);
+    const endTimeStr = sessionItem.end_time || (sessionItem.time_slot ? sessionItem.time_slot.split('-')[1] : null);
 
-        if (now >= endTimeDate) {
-          setIsSubmitAllowed(true);
-        } else {
-          setIsSubmitAllowed(false);
-        }
-      }
+    if (endTimeStr) {
+      const [endHour, endMin] = endTimeStr.trim().split(':').map(Number);
+      const endTimeDate = new Date();
+      endTimeDate.setHours(endHour, endMin || 0, 0, 0);
+
+      const allowed = now >= endTimeDate;
+      setIsSubmitAllowed(allowed);
+    } else {
+      setIsSubmitAllowed(true);
     }
   };
 
@@ -189,7 +171,9 @@ export default function SessionConfirm() {
       }
     };
     setAttendance(updated);
-    localStorage.setItem(`draft_attendance_${selectedCourse.course_id}`, JSON.stringify(updated));
+
+    const sessionId = selectedSession.session_id || selectedSession.id;
+    localStorage.setItem(`draft_attendance_${sessionId}`, JSON.stringify(updated));  
   };
 
   const handleCommentChange = (studentId, comment) => {
@@ -201,173 +185,151 @@ export default function SessionConfirm() {
       }
     };
     setAttendance(updated);
-    localStorage.setItem(`draft_attendance_${selectedCourse.course_id}`, JSON.stringify(updated));
+
+    const sessionId = selectedSession.session_id || selectedSession.id;
+    localStorage.setItem(`draft_attendance_${sessionId}`, JSON.stringify(updated));  
   };
 
   const handleCloseModal = () => {
-    setSelectedCourse(null);
+    setSelectedSession(null);
   };
 
   const handleSubmitSession = async (e) => {
     e.preventDefault();
-
-    if (!recordLink.trim()) {
-      alert("Vui lòng điền link video record của buổi học!");
-      return;
-    }
-
-    const generatedSessionId = `ss_${Date.now()}`;
-
-    const sessionPayload = {
-      session_id: generatedSessionId,
-      course_id: selectedCourse.course_id,
-      actual_date: new Date().toISOString(),
-      start_time: selectedCourse.time_slot ? selectedCourse.time_slot.split('-')[0] : "",
-      end_time: selectedCourse.time_slot ? selectedCourse.time_slot.split('-')[1] : "",
-      lesson_title: selectedCourse.title,
-      record_url: recordLink,
-      tutor_note: tutorNote,
-      session_status: "completed",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
     try {
-      // 🚀 Gọi qua classSessionService sạch sẽ
-      const resSession = await classSessionService.createSession(sessionPayload);
-      const createdSession = resSession.data !== undefined ? resSession.data : resSession;
-      const actualSessionId = createdSession?.session_id || createdSession?.id || generatedSessionId;
+      const sessionId = selectedSession.session_id || selectedSession.id;
+      const courseId = selectedSession.course_id;
+      
+      const attendancesPayload = studentsInClass.map(student => {
+        const sId = student.student_id || student.user_id || student.id;
+        return {
+          student_id: sId,
+          attendance_status: attendance[sId]?.present ? 'present' : 'absent',
+          tutor_comment: attendance[sId]?.comment || ''
+        };
+      });
 
-      const attendancePayloadList = Object.keys(attendance).map(studentId => ({
-        attendance_id: `att_${Date.now()}_${studentId}`,
-        session_id: actualSessionId,
-        student_id: studentId,
-        attendance_status: attendance[studentId].present,
-        tutor_comment: attendance[studentId].comment || "",
-        created_at: new Date().toISOString(),
-        update: new Date().toISOString()
-      }));
+      const payload = {
+        session_id: sessionId,
+        course_id: courseId,
+        actual_date: selectedSession.actual_date || new Date().toISOString(),
+        lesson_title: selectedSession.lesson_title || selectedSession.title,
+        record_url: recordLink,
+        document_url: tutorNote, 
+        attendances: attendancesPayload,
+        is_makeup: !!selectedSession.is_makeup
+      };
 
-      await Promise.all(
-        attendancePayloadList.map(attData =>
-          classSessionService.createSessionAttendance(attData).catch(err => {
-            console.warn("Lưu điểm danh sinh viên thất bại:", attData.student_id);
-          })
-        )
-      );
+      const res = await classSessionService.confirmSessionAndAttendance(payload);
 
-      localStorage.removeItem(`draft_attendance_${selectedCourse.course_id}`);
-
-      alert("Xác nhận buổi học thành công!");
-      handleCloseModal();
-
-      const activeUserId = getCookie('user_info');
-      await fetchData(activeUserId);
-    } catch (error) {
-      console.error("Lỗi khi gửi dữ liệu xác nhận buổi học:", error);
-      alert("Có lỗi xảy ra khi lưu dữ liệu. Vui lòng thử lại!");
-    }
-  };
-
-  // --- TỰ ĐỘNG LƯU TRẠNG THÁI "UNCOMPLETED" NẾU QUÁ 23:00 MÀ CHƯA XÁC NHẬN ---
-  useEffect(() => {
-    const checkDeadlineAndAutoUpdate = async () => {
-      const now = new Date();
-      const daysMap = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-      const currentDayStr = daysMap[now.getDay()];
-
-      if (now.getHours() >= 23) {
-        let existingSessions = [];
-        try {
-          const res = await classSessionService.getSessions();
-          existingSessions = Array.isArray(res) ? res : (res.data || []);
-        } catch (e) {
-          console.error("Lỗi lấy danh sách class_sessions:", e);
-        }
-
-        const todayStr = now.toISOString().split('T')[0];
-
-        for (const course of courses) {
-          if (currentTutorId && String(course.tutor_id) === String(currentTutorId)) {
-            const hasClassToday = course.schedule_days && course.schedule_days.includes(currentDayStr);
-            
-            if (hasClassToday) {
-              const isAlreadyRecorded = existingSessions.some(
-                s => String(s.course_id) === String(course.course_id) && s.created_at && s.created_at.startsWith(todayStr)
-              );
-
-              if (!isAlreadyRecorded) {
-                const failSession = {
-                  session_id: `ss_uncompleted_${Date.now()}_${course.course_id}`,
-                  course_id: course.course_id,
-                  actual_date: new Date().toISOString(),
-                  start_time: course.time_slot ? course.time_slot.split('-')[0] : "",
-                  end_time: course.time_slot ? course.time_slot.split('-')[1] : "",
-                  lesson_title: course.title,
-                  record_link: "",
-                  tutor_note: "Chưa hoàn thành xác nhận buổi học trước 23:00",
-                  session_status: "uncompleted",
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString()
-                };
-                
-                try {
-                  await classSessionService.createSession(failSession);
-                  localStorage.removeItem(`draft_attendance_${course.course_id}`);
-                } catch (err) {
-                  console.error("Lỗi auto update 23h:", err);
-                }
-              }
-            }
-          }
+      if (res) {
+        alert("Xác nhận buổi học thành công!");
+        localStorage.removeItem(`draft_attendance_${sessionId}`);
+        handleCloseModal();
+        if (currentTutorId) {
+          fetchTodayData(currentTutorId);
         }
       }
-    };
-
-    if (courses.length > 0) {
-      checkDeadlineAndAutoUpdate();
+    } catch (error) {
+      console.error("❌ [Submit Error] Lỗi xác nhận buổi học:", error);
+      alert("Có lỗi xảy ra, vui lòng kiểm tra lại dữ liệu.");
     }
-  }, [courses.length, currentTutorId]);
-
-  const validCourses = getTodayValidCourses();
+  };
 
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Danh Sách Xác Nhận Buổi Học Hôm Nay</h2>
 
       <div className={styles.classList}>
-        {validCourses.length === 0 ? (
-          <div className={styles.emptyState}>Không có lớp học nào thuộc về bạn đang diễn ra hoặc cần xác nhận trong hôm nay.</div>
+        {todayItems.length === 0 ? (
+          <div className={styles.emptyState}>Không có lớp học hoặc buổi học nào cần xác nhận trong hôm nay.</div>
         ) : (
-          validCourses.map((item) => (
-            <div key={item.id || item.course_id} className={styles.classCard}>
-              <div className={styles.cardHeader}>
-                <h3 className={styles.courseTitle}>{item.title}</h3>
-                <span className={item.status === 'active' ? styles.badgeActive : styles.badgeEnded}>
-                  {item.status === 'active' ? 'Đang diễn ra' : 'Đã kết thúc'}
-                </span>
-              </div>
-              <div className={styles.cardBody}>
-                <p><strong>Khung giờ:</strong> {item.time_slot}</p>
-                <p><strong>Ngày học:</strong> {item.schedule_days ? item.schedule_days.join(', ') : 'Chưa xếp'}</p>
-                <p><strong>Sĩ số:</strong> {item.students ? item.students.length : 0} học sinh</p>
-              </div>
-              <button 
-                className={styles.btnDetail}
-                onClick={() => handleOpenDetail(item)}
+          todayItems.map((item) => {
+            const isMakeup = item.is_makeup;
+            const title = item.lesson_title || item.title || 'Buổi học hôm nay';
+            const timeSlot = item.time_slot || `${item.start_time || ''} - ${item.end_time || ''}`;
+            
+            // Tính toán sĩ số an toàn từ nhiều trường dữ liệu trả về của API
+            const totalStudents = (
+              item.flattened_students || 
+              item.students || 
+              item.attendances || 
+              item.class_students ||
+              item.course?.students ||
+              item.course?.users ||
+              item.course?.subscriptions || 
+              []
+            ).length;
+
+            return (
+              <div 
+                key={item.session_id || item.id} 
+                className={styles.classCard} 
+                style={isMakeup ? { borderLeft: '4px solid #ea580c' } : {}}
               >
-                Xem chi tiết
-              </button>
-            </div>
-          ))
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.courseTitle}>
+                    {title}
+                    {isMakeup && (
+                      <span style={{
+                        marginLeft: 8,
+                        padding: '2px 8px',
+                        background: '#ffedd5',
+                        color: '#c2410c',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        borderRadius: 999
+                      }}>
+                        Học bù
+                      </span>
+                    )}
+                  </h3>
+                  
+                  {/* 🔥 Hiển thị Badge trạng thái tự động */}
+                  <div>
+                    {getStatusBadge(item.session_status, isMakeup)}
+                  </div>
+                </div>
+
+                <div className={styles.cardBody}>
+                  <p><strong>Khung giờ:</strong> {timeSlot}</p>
+                  <p><strong>Sĩ số:</strong> {totalStudents} học sinh</p>                 
+                  {item.tutor_note && <p><strong>Ghi chú:</strong> {item.tutor_note}</p>}
+                </div>
+
+                <button 
+                  className={styles.btnDetail}
+                  onClick={() => handleOpenDetail(item)}
+                  style={isMakeup ? { background: '#ea580c' } : {}}
+                >
+                  {isMakeup ? 'Xác nhận buổi học bù' : 'Xem chi tiết & Điểm danh'}
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
 
-      {selectedCourse && (
+      {selectedSession && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <button className={styles.closeBtn} onClick={handleCloseModal}>&times;</button>
-            <h3>Chi Tiết Buổi Học - {selectedCourse.title}</h3>
+            <h3>
+              Chi Tiết Buổi Học - {selectedSession.lesson_title || selectedSession.title}
+              {selectedSession.is_makeup && (
+                <span style={{
+                  marginLeft: 10,
+                  padding: '3px 10px',
+                  background: '#ffedd5',
+                  color: '#c2410c',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  borderRadius: 999
+                }}>
+                  Học bù
+                </span>
+              )}
+            </h3>           
             
             <form onSubmit={handleSubmitSession}>
               <div className={styles.formGroup}>
@@ -396,22 +358,24 @@ export default function SessionConfirm() {
                 <div className={styles.attendanceTitle}>Danh sách điểm danh học sinh:</div>
                 
                 {studentsInClass.length === 0 ? (
-                  <p className={styles.emptyState}>Chưa có học sinh trong lớp học này.</p>
+                  <p className={styles.emptyState}>Chưa có thông tin học sinh trong buổi này.</p>
                 ) : (
-                  studentsInClass.map((st) => {
-                    const isChecked = attendance[st.user_id]?.present || false;
+                  studentsInClass.map((st, index) => {
+                    const studentId = st.student_id || st.user_id || st.id;
+                    const uniqueKey = `${studentId}-${index}`; 
+                    const isChecked = attendance[studentId]?.present || false;
                     return (
                       <div 
-                        key={st.user_id} 
+                        key={uniqueKey} 
                         className={`${styles.studentRow} ${isChecked ? styles.studentPresent : ''}`}
                       >
                         <div className={styles.studentInfo}>
                           <img 
                             src={st.avatar || '/img/avt/avt.jpg'} 
-                            alt={st.full_name} 
+                            alt={st.full_name || st.name} 
                             className={styles.avatar} 
                           />
-                          <span className={styles.studentName}>{st.full_name}</span>
+                          <span className={styles.studentName}>{st.full_name || st.name}</span>
                         </div>
 
                         <div className={styles.checkGroup}>
@@ -419,15 +383,15 @@ export default function SessionConfirm() {
                             type="text"
                             placeholder="Nhận xét học sinh..."
                             className={styles.commentInput}
-                            value={attendance[st.user_id]?.comment || ''}
-                            onChange={(e) => handleCommentChange(st.user_id, e.target.value)}
+                            value={attendance[studentId]?.comment || ''}
+                            onChange={(e) => handleCommentChange(studentId, e.target.value)}
                           />
 
                           <input 
                             type="checkbox" 
                             className={styles.checkbox}
                             checked={isChecked}
-                            onChange={() => handleToggleCheck(st.user_id)}
+                            onChange={() => handleToggleCheck(studentId)}
                           />
                         </div>
                       </div>
@@ -441,8 +405,12 @@ export default function SessionConfirm() {
                 className={styles.btnSubmit}
                 disabled={!isSubmitAllowed}
                 title={!isSubmitAllowed ? "Chưa đến thời gian kết thúc buổi học để xác nhận" : ""}
+                style={selectedSession.is_makeup ? { background: '#ea580c' } : {}}
               >
-                {isSubmitAllowed ? "Xác nhận hoàn thành buổi học" : "Chờ hết giờ học để xác nhận"}
+                {isSubmitAllowed 
+                  ? (selectedSession.is_makeup ? "Xác nhận hoàn thành buổi học bù" : "Xác nhận hoàn thành buổi học") 
+                  : "Chờ hết giờ học để xác nhận"
+                }            
               </button>
             </form>
           </div>
