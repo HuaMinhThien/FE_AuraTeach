@@ -10,6 +10,7 @@ import adminChatService from "@/services/adminChatService";
 
 
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80";
+const CHAT_POLL_INTERVAL = 15000; // polling unread count mỗi 15s
 
 export default function Sidebar() {
   const pathname = usePathname();

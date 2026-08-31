@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { authService } from "@/services/authService";
 import { courseService } from "@/services/courseService";
 import { classSessionService } from "@/services/classSessionService";
@@ -39,7 +39,7 @@ export default function TutorTimesheetPage() {
   const [expandedCourseId, setExpandedCourseId] = useState(null);
   
   const [showMakeupModal, setShowMakeupModal] = useState(false);
-  const [selectedMissedSession, setSelectedMissedSession] = useState(null);
+  const [selectedCancelledSession, setSelectedCancelledSession] = useState(null);
   const [makeupDate, setMakeupDate] = useState("");
   const [makeupStartTime, setMakeupStartTime] = useState("08:00");
   const [makeupEndTime, setMakeupEndTime] = useState("10:00");
@@ -50,7 +50,7 @@ export default function TutorTimesheetPage() {
     const options = [];
     for (let h = 7; h <= 21; h++) {
       for (const m of [0, 30]) {
-        if (h === 21 && m === 30) break; // tối đa 21:00
+        if (h === 21 && m === 30) break;
         const hh = String(h).padStart(2, '0');
         const mm = String(m).padStart(2, '0');
         options.push(`${hh}:${mm}`);
@@ -69,28 +69,25 @@ export default function TutorTimesheetPage() {
     return `${y}-${m}-${day}`;
   }, []);
 
+  const getSessionStatusInfo = (session) => {
+    // Lấy giá trị trạng thái từ trường nào mà API đang trả về
+    const status = session.session_status ?? session.status;
 
-  const calculateHours = (startTime, endTime) => {
-    if (!startTime || !endTime) return 0;
-    try {
-      const [sh, sm] = startTime.split(':').map(Number);
-      const [eh, em] = endTime.split(':').map(Number);
-      const startMinutes = sh * 60 + (sm || 0);
-      const endMinutes = eh * 60 + (em || 0);
-      const diff = endMinutes - startMinutes;
-      return diff > 0 ? diff / 60 : 0;
-    } catch {
-      return 0;
+    // Dùng dấu so sánh lỏng (==) hoặc chuyển về String/Number để bắt trọn số 5 hoặc chuỗi '5'
+    if (status == 5 || status === 'completed') {
+      return { label: 'Hoàn thành', type: 'completed' };
     }
+    if (status == 2 || status === 'upcoming') {
+      return { label: 'Sắp diễn ra', type: 'upcoming' };
+    }
+    if (status == 3 || status === 'ongoing') {
+      return { label: 'Đang diễn ra', type: 'ongoing' };
+    }
+    
+    // Mặc định nếu không khớp cái nào
+    return { label: 'Sắp diễn ra', type: 'upcoming' };
   };
 
-  const timeToMinutes = (timeStr) => {
-    if (!timeStr) return 0;
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + (m || 0);
-  };
-
-  // Cộng 2 tiếng vào giờ bắt đầu → giờ kết thúc
   const addTwoHours = (startTime) => {
     const [h, m] = startTime.split(':').map(Number);
     let newH = h + 2;
@@ -98,14 +95,13 @@ export default function TutorTimesheetPage() {
     return `${String(newH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
   };
 
-  // Khi đổi giờ bắt đầu → tự cập nhật giờ kết thúc (+2h)
   const handleStartTimeChange = (value) => {
     setMakeupStartTime(value);
     setMakeupEndTime(addTwoHours(value));
   };
 
   const openMakeupModal = (session) => {
-    setSelectedMissedSession(session);
+    setSelectedCancelledSession(session);
     setMakeupDate("");
     setMakeupStartTime("08:00");
     setMakeupEndTime("10:00");
@@ -117,18 +113,17 @@ export default function TutorTimesheetPage() {
     return sessions.some(s => s.original_session_id === sessionId && s.is_makeup);
   };
 
-  // 🚀 Xử lý kiểm tra trùng lịch và tạo buổi học bù
   const handleCreateMakeup = async (e) => {
     e.preventDefault();
-    if (!selectedMissedSession) return;
+    if (!selectedCancelledSession) return;
 
     try {
       setIsSubmittingMakeup(true);
 
-      const courseId = selectedMissedSession.course_id || selectedMissedSession.courseId;
+      const courseId = selectedCancelledSession.course_id || selectedCancelledSession.courseId;
       const payload = {
         course_id: courseId,
-        original_session_id: selectedMissedSession.session_id || selectedMissedSession.id,
+        original_session_id: selectedCancelledSession.session_id || selectedCancelledSession.id,
         actual_date: makeupDate,
         start_time: makeupStartTime,
         end_time: makeupEndTime,
@@ -136,7 +131,6 @@ export default function TutorTimesheetPage() {
         is_makeup: true
       };
 
-      // 1. Kiểm tra trùng lịch trước qua service nếu có
       if (courseService.checkScheduleConflict) {
         const conflictCheck = await courseService.checkScheduleConflict({
           tutor_id: currentUser?.user_id || currentUser?.id,
@@ -151,13 +145,10 @@ export default function TutorTimesheetPage() {
         }
       }
 
-      // 2. Gửi yêu cầu tạo buổi học bù lên hệ thống
       await classSessionService.createMakeupSession(payload);
       
       alert("Đã tạo buổi học bù thành công!");
       setShowMakeupModal(false);
-
-      // Reload lại dữ liệu bảng chấm công
       window.location.reload(); 
 
     } catch (error) {
@@ -168,7 +159,6 @@ export default function TutorTimesheetPage() {
     }
   };
 
-  // 🔄 Load dữ liệu chính
   useEffect(() => {
     async function loadTimesheetData() {
       try {
@@ -183,14 +173,11 @@ export default function TutorTimesheetPage() {
 
         const userId = user.user_id || user.id || user._id;
         
-        // Gọi API gộp đã viết bên Laravel
         const res = await courseService.getTimesheetData(userId, {
           month: selectedMonth,
           year: selectedYear
         });
 
-        // Backend trả về dạng: { courses: [...], sessions: [...] }
-        // Cần bọc an toàn để tránh crash nếu API trả về cấu trúc khác
         const data = res?.data || res || {};
         
         setCourses(Array.isArray(data.courses) ? data.courses : []);
@@ -204,18 +191,15 @@ export default function TutorTimesheetPage() {
     }
 
     loadTimesheetData();
-  }, [selectedMonth, selectedYear]); // Chạy lại mỗi khi đổi tháng hoặc năm
+  }, [selectedMonth, selectedYear]);
 
-  // Tổng hợp dữ liệu cho giao diện
   const courseListMap = courses.map((course) => {
     const courseId = course.id || course._id || course.course_id;
     
-    // Lọc các buổi học của khóa này và khớp với tháng/năm đang chọn
     const courseSessions = sessions.filter(s => {
       const sCourseId = s.course_id || s.courseId;
       if (String(sCourseId) !== String(courseId)) return false;
 
-      // Đảm bảo an toàn tuyệt đối bằng cách check lại tháng/năm dựa trên actual_date của buổi học
       if (s.actual_date) {
         const sessionDate = new Date(s.actual_date);
         const sMonth = sessionDate.getMonth() + 1;
@@ -225,7 +209,11 @@ export default function TutorTimesheetPage() {
       return false;
     });
     
-    const completedCount = courseSessions.filter(s => s.session_status === 'completed').length;
+    const completedCount = courseSessions.filter(s => {
+      const status = String(s.session_status || s.status || '');
+      return status === 'completed' || status === '5';
+    }).length;
+
     const pricePerSession = course.price_per_session || course.price || 0;
     const income = completedCount * pricePerSession;
 
@@ -238,19 +226,25 @@ export default function TutorTimesheetPage() {
       income,
       allSessions: courseSessions
     };
-  }).filter(item => item.allSessions.length > 0); // Chỉ giữ lại các lớp có ít nhất 1 buổi học trong tháng này
+  }).filter(item => item.allSessions.length > 0);
 
   const totalIncome = courseListMap.reduce((acc, item) => acc + item.income, 0);
   const totalCompleted = courseListMap.reduce((acc, item) => acc + item.completedCount, 0);
-  const totalUncompleted = courseListMap.reduce((acc, item) => {
-    return acc + item.allSessions.filter(s => s.session_status !== 'completed' && !s.is_makeup).length;
+  
+  // Đếm số buổi bị hủy chưa tạo học bù
+  const totalCancelled = courseListMap.reduce((acc, item) => {
+    return acc + item.allSessions.filter(s => {
+      const status = String(s.session_status || s.status || '');
+      return (status === 'cancelled' || status === 'huy') && !s.is_makeup;
+    }).length;
   }, 0);
+
   const totalHours = totalCompleted * 2;
 
   const monthlyData = {
     totalIncome,
     totalCompleted,
-    totalUncompleted,
+    totalCancelled,
     totalHours,
     courseList: courseListMap
   };
@@ -318,11 +312,11 @@ export default function TutorTimesheetPage() {
             <Image src="/img/icons/warning.png" alt="Icon" width={30} height={30} />
           </div>
           <div>
-            <p className={styles.cardLabel}>Buổi bỏ lỡ / quá hạn</p>
+            <p className={styles.cardLabel}>Buổi đã hủy</p>
             <p className={styles.cardValue}>
-              {monthlyData.totalUncompleted} buổi
-              {monthlyData.totalUncompleted > 0 && (
-                <span className={styles.warningBadge}>Cảnh báo</span>
+              {monthlyData.totalCancelled} buổi
+              {monthlyData.totalCancelled > 0 && (
+                <span className={styles.warningBadge}>Cần bù</span>
               )}
             </p>
           </div>
@@ -418,6 +412,7 @@ export default function TutorTimesheetPage() {
                               const sessionId = s.session_id || s.id;
                               const isMakeup = s.is_makeup === true;
                               const alreadyHasMakeup = hasMakeupForSession(sessionId);
+                              const statusInfo = getSessionStatusInfo(s);
 
                               return (
                                 <tr key={sessionId}>
@@ -431,10 +426,18 @@ export default function TutorTimesheetPage() {
                                       : '—'}
                                   </td>
                                   <td>
-                                    {s.session_status === 'completed' ? (
-                                      <span className={styles.badgeCompleted}>Hoàn thành</span>
+                                    {statusInfo.type === 'completed' ? (
+                                      <span className={styles.badgeCompleted}>{statusInfo.label}</span>
+                                    ) : statusInfo.type === 'cancelled' ? (
+                                      <span className={styles.badgeMissed}>{statusInfo.label}</span>
+                                    ) : statusInfo.type === 'ongoing' ? (
+                                      <span style={{ color: '#d97706', background: '#fef3c7', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                                        {statusInfo.label}
+                                      </span>
                                     ) : (
-                                      <span className={styles.badgeMissed}>Bỏ lỡ / Quá hạn</span>
+                                      <span style={{ color: '#2563eb', background: '#eff6ff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                                        {statusInfo.label}
+                                      </span>
                                     )}
                                   </td>
                                   <td>
@@ -453,7 +456,7 @@ export default function TutorTimesheetPage() {
                                     {s.tutor_note && <div className={styles.note}>{s.tutor_note}</div>}
                                   </td>
                                   <td>
-                                    {s.session_status !== 'completed' && !isMakeup && (
+                                    {statusInfo.type === 'cancelled' && !isMakeup && (
                                       alreadyHasMakeup ? (
                                         <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
                                           Đã tạo học bù
@@ -483,7 +486,7 @@ export default function TutorTimesheetPage() {
       </div>
 
       {/* ===== MODAL TẠO HỌC BÙ ===== */}
-      {showMakeupModal && selectedMissedSession && (
+      {showMakeupModal && selectedCancelledSession && (
         <div className={styles.modalOverlay} onClick={() => setShowMakeupModal(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
@@ -493,11 +496,11 @@ export default function TutorTimesheetPage() {
 
             <div className={styles.modalBody}>
               <div className={styles.missedInfo}>
-                <p><strong>Buổi nghỉ:</strong> {formatDate(selectedMissedSession.actual_date)}</p>
+                <p><strong>Buổi hủy:</strong> {formatDate(selectedCancelledSession.actual_date)}</p>
                 <p>
                   <strong>Giờ gốc:</strong>{' '}
-                  {selectedMissedSession.start_time && selectedMissedSession.end_time
-                    ? `${selectedMissedSession.start_time} - ${selectedMissedSession.end_time}`
+                  {selectedCancelledSession.start_time && selectedCancelledSession.end_time
+                    ? `${selectedCancelledSession.start_time} - ${selectedCancelledSession.end_time}`
                     : '—'}
                 </p>
               </div>
@@ -548,7 +551,7 @@ export default function TutorTimesheetPage() {
                     value={makeupNote}
                     onChange={(e) => setMakeupNote(e.target.value)}
                     className={styles.textarea}
-                    placeholder="Ví dụ: Bù buổi nghỉ do gia sư có việc đột xuất"
+                    placeholder="Ví dụ: Bù buổi nghỉ do lớp bị hủy"
                     rows={3}
                   />
                 </div>
