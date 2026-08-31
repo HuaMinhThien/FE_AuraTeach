@@ -14,14 +14,14 @@ export default function StatsCards({ stats }) {
     {
       title: 'Học viên',
       value: stats?.totalStudents?.toLocaleString() || '0',
-      icon: '👨‍🎓',
+      icon: '/img/icons/multiple-users-silhouette.png',
       color: '#4f46e5',
       bgColor: '#eef2ff',
     },
     {
       title: 'Gia sư',
       value: stats?.totalTutors?.toLocaleString() || '0',
-      icon: '👨‍🏫',
+      icon: '/img/icons/team.png',
       color: '#059669',
       bgColor: '#ecfdf5',
     },
@@ -35,7 +35,7 @@ export default function StatsCards({ stats }) {
     {
       title: 'Doanh thu',
       value: formatCurrency(stats?.totalRevenue || 0),
-      icon: '💰',
+      icon: '/img/icons/money.png',
       color: '#dc2626',
       bgColor: '#fef2f2',
     },
@@ -49,7 +49,11 @@ export default function StatsCards({ stats }) {
             className={styles.statIcon}
             style={{ backgroundColor: card.bgColor }}
           >
-            <span style={{ color: card.color }}>{card.icon}</span>
+            {card.icon.endsWith('.png') ? (
+              <img src={card.icon} alt={card.title} className={styles.statIconImg} />
+            ) : (
+              <span style={{ color: card.color }}>{card.icon}</span>
+            )}
           </div>
           <div className={styles.statInfo}>
             <p className={styles.statTitle}>{card.title}</p>

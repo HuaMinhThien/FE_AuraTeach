@@ -6,9 +6,9 @@ import styles from "../_css/sec3.module.css";
 
 const TYPE_ICONS = {
   booking: "📩",
-  payment: "💰",
-  system: "🔔",
-  message: "💬",
+  payment: "/img/icons/money.png",
+  system: "/img/icons/notificationn.png",
+  message: "/img/icons/messenger (1).png",
 };
 
 const TYPE_CLASSES = {
@@ -118,7 +118,11 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
           items.slice(0, 5).map((act) => (
             <div key={act.id} className={styles.activityItem}>
               <div className={`${styles.iconBox} ${act.iconClass}`}>
-                {act.icon}
+                {act.icon.endsWith('.png') ? (
+                  <img src={act.icon} alt="icon" className={styles.activityIconImg} />
+                ) : (
+                  act.icon
+                )}
               </div>
               <div className={styles.details}>
                 <div className={styles.contentBody}>

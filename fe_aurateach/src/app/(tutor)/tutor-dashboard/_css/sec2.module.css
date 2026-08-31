@@ -72,13 +72,21 @@
     gap: 12px;
     font-size: 12px;
     color: #64748b;
+    align-items: center;
 }
+
+.metaIcon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
 .action {
     display: flex;
     gap: 8px;
 }
 .btnPrimary {
-    background-color: #2563eb;
+    background-color: #00236f;
     color: #fff;
     border: none;
     padding: 8px 16px;
@@ -88,7 +96,7 @@
     cursor: pointer;
 }
 .btnPrimary:hover {
-    background-color: #1d4ed8;
+    background-color: #0d47a1;
 }
 .btnSecondary {
     background-color: #f8fafc;

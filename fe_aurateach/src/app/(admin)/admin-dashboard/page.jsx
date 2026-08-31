@@ -15,19 +15,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState('week');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
-  }, [period]);
+  }, [period, startDate, endDate]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
     try {
+      const customRange = period === 'custom' && startDate && endDate ? { startDate, endDate } : null;
       const [statsData, regData, revData] = await Promise.all([
         adminService.getStats(),
-        adminService.getRegistrationStats(period),
-        adminService.getRevenueStats(period),
+        adminService.getRegistrationStats(period, customRange),
+        adminService.getRevenueStats(period, customRange),
       ]);
       
       // 👇 Thêm dòng log này để nhìn rõ cấu trúc thực tế trên F12 -> Console
@@ -51,7 +54,20 @@ export default function AdminDashboard() {
     fetchDashboardData();
   };
 
-  // ✅ Hàm xử lý nút "Xuất báo cáo"
+  const getPeriodLabel = (p) => {
+    if (p === 'week') return '7 ngày qua';
+    if (p === 'month') return '30 ngày qua';
+    if (p === 'year') return '12 tháng qua';
+    if (p === 'custom' && startDate && endDate) {
+      const s = new Date(startDate).toLocaleDateString('vi-VN');
+      const e = new Date(endDate).toLocaleDateString('vi-VN');
+      return `từ ${s} đến ${e}`;
+    }
+    return '';
+  };
+
+  const periodLabel = getPeriodLabel(period);
+
   const handleExportReport = () => {
     alert('📊 Đang xuất báo cáo...');
     // TODO: Thêm logic xuất báo cáo PDF/Excel
@@ -81,7 +97,7 @@ export default function AdminDashboard() {
     <div className={styles.dashboard}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <h1>📊 Tổng quan</h1>
+          <h1 className={styles.headerIcon}><img src="/img/icons/group.png" alt="dashboard" className={styles.headerIconImg} /> Tổng quan</h1>
           <span className={styles.updateTime}>
             Cập nhật: {new Date().toLocaleString('vi-VN')}
           </span>
@@ -96,7 +112,33 @@ export default function AdminDashboard() {
             <option value="week">📅 7 ngày qua</option>
             <option value="month">📅 30 ngày qua</option>
             <option value="year">📅 12 tháng qua</option>
+            <option value="custom">📅 Tùy chọn</option>
           </select>
+
+          {period === 'custom' && (
+            <div className={styles.customDateRange}>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  if (endDate && endDate < e.target.value) {
+                    setEndDate(e.target.value);
+                  }
+                }}
+                className={styles.dateInput}
+              />
+              <span>đến</span>
+              <input
+                type="date"
+                value={endDate}
+                min={startDate || undefined}
+                onChange={(e) => setEndDate(e.target.value)}
+                className={styles.dateInput}
+              />
+            </div>
+          )}
+
           <button 
             onClick={handleExportReport} 
             className={styles.exportButton}
@@ -113,19 +155,19 @@ export default function AdminDashboard() {
 
       <div className={styles.chartsGrid}>
         <div className={styles.chartCard}>
-          <h3>📈 Đăng ký tài khoản mới</h3>
+          <h3 className={styles.chartTitle}><img src="/img/icons/group.png" alt="Đăng ký" className={styles.chartIcon} /> Đăng ký tài khoản mới</h3>
           <p className={styles.chartSubtitle}>
-            Số lượng học viên và gia sư đăng ký trong 7 ngày qua
+            Số lượng học viên và gia sư đăng ký trong {periodLabel}
           </p>
-          <RegistrationChart data={registrations} />
+          <RegistrationChart data={registrations} period={period} />
         </div>
         
         <div className={styles.chartCard}>
-          <h3>💰 Doanh thu theo ngày</h3>
+          <h3 className={styles.chartTitle}><img src="/img/icons/money.png" alt="Doanh thu" className={styles.chartIcon} /> Doanh thu theo ngày</h3>
           <p className={styles.chartSubtitle}>
-            Doanh thu thực tế sau khi trừ phí nền tảng (10%) trong 7 ngày qua
+            Tổng phí nền tảng (35%) thu được từ tất cả gia sư trong {periodLabel}
           </p>
-          <RevenueChart data={revenue} />
+          <RevenueChart data={revenue} period={period} />
         </div>
       </div>
     </div>

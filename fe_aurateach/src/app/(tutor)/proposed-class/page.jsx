@@ -195,13 +195,13 @@ export default function ProposedClassPage() {
             className={`${styles.tabBtn} ${activeTab === 'student' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('student')}
           >
-            📝 Yêu cầu từ học sinh
+            Yêu cầu từ học sinh
           </button>
           <button
             className={`${styles.tabBtn} ${activeTab === 'admin' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('admin')}
           >
-            📩 Đề xuất từ Admin 
+            Đề xuất từ Admin 
             {adminSuggestions.length > 0 && (
               <span className={styles.tabBadge}>{adminSuggestions.length}</span>
             )}
@@ -212,8 +212,8 @@ export default function ProposedClassPage() {
       {/* Title */}
       <h2 className={styles.sectionTitle}>
         {activeTab === 'student' 
-          ? '📝 Lớp tạo theo nhu cầu từ học sinh'
-          : `📩 Đề xuất từ Admin (${totalPending} lớp chờ nhận)`
+          ? 'Lớp tạo theo nhu cầu từ học sinh'
+          : `Đề xuất từ Admin (${totalPending} lớp chờ nhận)`
         }
       </h2>
 

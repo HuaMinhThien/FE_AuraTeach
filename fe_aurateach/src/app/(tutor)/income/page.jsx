@@ -645,7 +645,7 @@ export default function TutorRevenuePage() {
                           </div>
                          <div className={styles.bankFullName}>{b.name}</div>
                         </div>
-                        {isSelected && <span className={styles.checkIcon}>✓</span>}
+                        {isSelected && <img src="/img/icons/security.png" alt="selected" className={styles.checkIconImg} />}
                       </div>
                     );
                   })}

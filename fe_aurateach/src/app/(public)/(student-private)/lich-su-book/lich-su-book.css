@@ -68,7 +68,7 @@
 
 .price-cell {
   font-weight: 600;
-  color: #4f46e5;
+  color: #0d47a1;
 }
 
 /* Status Badges */
@@ -136,7 +136,7 @@
   align-items: center;
   justify-content: center;
   padding: 6px 16px;
-  background: #4f46e5;
+  background: #00236f;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -151,7 +151,7 @@
 }
 
 .view-detail-btn:hover {
-  background: #4338ca;
+  background: #0d47a1;
   transform: translateY(-1px);
 }
 
@@ -181,7 +181,7 @@
 .find-class-btn {
   display: inline-block;
   padding: 12px 32px;
-  background: #4f46e5;
+  background: #00236f;
   color: #fff;
   border-radius: 8px;
   text-decoration: none;
@@ -190,7 +190,7 @@
 }
 
 .find-class-btn:hover {
-  background: #4338ca;
+  background: #0d47a1;
   transform: translateY(-2px);
 }
 

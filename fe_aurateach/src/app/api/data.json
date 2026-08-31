@@ -2611,6 +2611,51 @@
       "last_message": "",
       "last_message_time": "2026-07-31T09:29:23.820Z",
       "unread_count": 0
+    },
+    {
+      "id": "conv_admin_student1",
+      "participants": [
+        "u-student-1",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "aloooooooo",
+      "last_message_time": "2026-08-29T20:30:55.971Z",
+      "unread_count": 0,
+      "increment_unread_for": null
+    },
+    {
+      "id": "conv_admin_student2",
+      "participants": [
+        "u-student-2",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "",
+      "last_message_time": "2026-08-01T08:00:00.000Z",
+      "unread_count": 0
+    },
+    {
+      "id": "conv_admin_tutor01",
+      "participants": [
+        "u-01",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "Hồ sơ của bạn đã được xét duyệt",
+      "last_message_time": "2026-08-28T14:30:00.000Z",
+      "unread_count": 0
+    },
+    {
+      "id": "iKod32UNuY0",
+      "participants": [
+        "user_1785316486801_kvbbi7",
+        "u-admin-1"
+      ],
+      "type": "admin_support",
+      "last_message": "",
+      "last_message_time": "2026-08-29T21:59:40.656Z",
+      "unread_count": 0
     }
   ],
   "messages": [
@@ -3218,6 +3263,50 @@
       "content": "ăedsfawedf",
       "created_at": "2026-07-29T12:31:44.620Z",
       "is_read": false
+    },
+    {
+      "id": "msg_admin_001",
+      "conversation_id": "conv_admin_student1",
+      "sender_id": "u-admin-1",
+      "sender_role": "admin",
+      "receiver_id": "u-student-1",
+      "receiver_role": "student",
+      "content": "Xin chào! Admin có thể giúp gì cho bạn?",
+      "created_at": "2026-08-29T10:00:00.000Z",
+      "is_read": false
+    },
+    {
+      "id": "msg_admin_002",
+      "conversation_id": "conv_admin_tutor01",
+      "sender_id": "u-admin-1",
+      "sender_role": "admin",
+      "receiver_id": "u-01",
+      "receiver_role": "tutor",
+      "content": "Hồ sơ gia sư của bạn đã được xem xét và chấp thuận.",
+      "created_at": "2026-08-28T14:30:00.000Z",
+      "is_read": true
+    },
+    {
+      "id": "msg_admin_003",
+      "conversation_id": "conv_admin_tutor01",
+      "sender_id": "u-01",
+      "sender_role": "tutor",
+      "receiver_id": "u-admin-1",
+      "receiver_role": "admin",
+      "content": "Cảm ơn admin nhiều!",
+      "created_at": "2026-08-28T14:35:00.000Z",
+      "is_read": true
+    },
+    {
+      "conversation_id": "conv_admin_student1",
+      "sender_id": "u-student-1",
+      "sender_role": "student",
+      "receiver_id": null,
+      "receiver_role": "admin",
+      "content": "aloooooooo",
+      "created_at": "2026-08-29T20:30:55.971Z",
+      "is_read": false,
+      "id": "H7hmMOEaenc"
     }
   ],
   "notifications": [
@@ -4946,30 +5035,30 @@
       "updated_at": "2026-08-18T09:09:41.683Z"
     },
     {
-      "id": "req-1787044535102",
+      "id": "req-1787296760569",
       "student_id": "user_1785316486801_kvbbi7",
       "category_id": "cat-02",
-      "title": "huhuhuhuhuh",
-      "description": "ưdsfasfsfad",
+      "title": "Luyện thi đại học môn toán",
+      "description": "Cần Tìm gia sư có chuyên môn cao và có tính kiên nhẫn cao",
       "level": "Cấp 3",
-      "price_per_session": 270000,
+      "price_per_session": 250000,
       "status": "pending",
       "schedule_days": [
         "Thứ 2",
         "Thứ 4",
         "Thứ 6"
       ],
-      "time_slot": "18:00-20:00",
+      "time_slot": "13:00-15:00",
       "max_students": 1,
       "total_weeks": 4,
-      "start_date": "2026-08-23",
+      "start_date": "2026-08-30",
       "schedule_type": "custom",
       "tutor_level": "Giáo viên",
-      "start_time": "18:00",
-      "end_time": "20:00",
-      "meet_link": "https://meet.google.com/fsx-ucng-kud",
-      "requests_id": "req-1787044535102",
-      "created_at": "2026-08-18T09:15:35.102Z"
+      "start_time": "13:00",
+      "end_time": "15:00",
+      "meet_link": "/room/room_1787296725507",
+      "requests_id": "req-1787296760569",
+      "created_at": "2026-08-21T07:19:20.569Z"
     }
   ],
   "request_applications": [
@@ -5854,7 +5943,7 @@
       "lesson_title": "Lớp Lập Trình Web - Đang Trong Giờ Học",
       "record_url": "https://drive.google.com/file/d/1kqeerGRTp5nAG-2LUwgi7Gwa5Du2uZoK/view",
       "tutor_note": "",
-      "session_status": "completed",
+      "session_status": "uncompleted",
       "created_at": "2026-08-16T12:21:17.691Z",
       "updated_at": "2026-08-16T12:21:17.691Z"
     },
