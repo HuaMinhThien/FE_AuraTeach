@@ -11,7 +11,8 @@ const JSON_SERVER_URL = "http://localhost:8000/api";
 class AdminChatService {
   constructor() {
     this.useApi = process.env.NEXT_PUBLIC_USE_API === "true";
-    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    // Dùng cùng URL với apiClient để token luôn khớp server
+    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.aurateach.io.vn/api";
     this.jsonServerUrl =
       process.env.NEXT_PUBLIC_JSON_SERVER_URL || JSON_SERVER_URL;
   }
@@ -20,7 +21,13 @@ class AdminChatService {
 
   _getToken() {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("token");
+    // Ưu tiên đúng thứ tự với authService (lưu "access_token") và apiClient
+    return (
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("user_token") ||
+      this._getCookieValue("token")
+    );
   }
 
   _authHeaders() {

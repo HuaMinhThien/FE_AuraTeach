@@ -178,7 +178,10 @@ export default function LoginPage() {
       document.cookie = `role=${userInfo.role}; path=/; max-age=${maxAgeSeconds}`;
 
       if (data.access_token || data.token) {
-        document.cookie = `token=${data.access_token || data.token}; path=/; max-age=${maxAgeSeconds}`;
+        const tokenValue = data.access_token || data.token;
+        document.cookie = `token=${tokenValue}; path=/; max-age=${maxAgeSeconds}`;
+        // Lưu vào localStorage để các service (adminChatService, apiClient...) có thể đọc
+        localStorage.setItem("access_token", tokenValue);
       }
 
       switch (data.user.role) {
