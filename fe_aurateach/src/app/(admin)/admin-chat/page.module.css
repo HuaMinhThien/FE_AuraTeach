@@ -368,16 +368,19 @@
   flex-direction: column;
   margin-bottom: 6px;
   max-width: 68%;
+  width: fit-content;
 }
 
 .msgOwn {
   align-self: flex-end;
   align-items: flex-end;
+  margin-left: auto;
 }
 
 .msgOther {
   align-self: flex-start;
   align-items: flex-start;
+  margin-right: auto;
 }
 
 .bubble {

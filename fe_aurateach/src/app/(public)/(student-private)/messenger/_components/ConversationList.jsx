@@ -7,7 +7,6 @@ const formatTime = (dateStr) => {
   if (!dateStr) return "";
   const date = new Date(dateStr);
   const diff = (new Date() - date) / 1000 / 60;
-
   if (diff < 1) return "Vừa xong";
   if (diff < 60) return `${Math.floor(diff)}p`;
   if (diff < 1440) return `${Math.floor(diff / 60)}h`;
@@ -20,19 +19,23 @@ const getInitials = (name) => {
   return parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0][0];
 };
 
-export default function ConversationList({ 
-  conversations, 
-  selectedId, 
-  onSelect, 
-  currentUserId 
+export default function ConversationList({
+  conversations,
+  selectedId,
+  onSelect,
+  currentUserId,
 }) {
-  // Sắp xếp cuộc trò chuyện tối ưu bằng useMemo
+  // Admin luôn đứng đầu, còn lại sort theo last_message_time mới nhất
   const sortedConversations = useMemo(() => {
     if (!Array.isArray(conversations)) return [];
     return [...conversations].sort((a, b) => {
-      const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
-      const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
-      return timeB - timeA;
+      const aIsAdmin = a.is_admin_conv || a.type === "admin_support";
+      const bIsAdmin = b.is_admin_conv || b.type === "admin_support";
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
+      const ta = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
+      const tb = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
+      return tb - ta;
     });
   }, [conversations]);
 
@@ -53,10 +56,13 @@ export default function ConversationList({
       </div>
       <div className={styles.items}>
         {sortedConversations.map((conv) => {
-          const convId = conv.conversation_id || conv.id;
-          const isActive = convId === selectedId;
-          const unreadCount = conv.unread_count || 0;
-          const displayName = conv.other_user?.full_name || "Người dùng";
+          const convId       = conv.conversation_id || conv.id;
+          const isActive     = convId === selectedId;
+          const unreadCount  = conv.unread_count || 0;
+          const isAdminConv  = conv.is_admin_conv || conv.type === "admin_support";
+          const displayName  = isAdminConv
+            ? (conv.other_user?.full_name || "AuraTeach Admin")
+            : (conv.other_user?.full_name || "Người dùng");
           const displayAvatar = conv.other_user?.avatar || "/img/default-avatar.svg";
 
           return (
@@ -67,8 +73,8 @@ export default function ConversationList({
             >
               <div className={styles.avatarWrapper}>
                 {displayAvatar && displayAvatar !== "/img/default-avatar.svg" ? (
-                  <img 
-                    src={displayAvatar} 
+                  <img
+                    src={displayAvatar}
                     alt={displayName}
                     className={styles.avatar}
                     onError={(e) => { e.target.src = "/img/default-avatar.svg"; }}
@@ -80,7 +86,7 @@ export default function ConversationList({
                 )}
                 {unreadCount > 0 && (
                   <span className={styles.unreadBadge}>
-                    {unreadCount > 99 ? '99+' : unreadCount}
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </div>
@@ -89,6 +95,9 @@ export default function ConversationList({
                 <div className={styles.conversationHeader}>
                   <span className={`${styles.name} ${unreadCount > 0 ? styles.nameUnread : ""}`}>
                     {displayName}
+                    {isAdminConv && (
+                      <span className={styles.adminBadge}>Hỗ trợ</span>
+                    )}
                   </span>
                   <span className={styles.time}>
                     {formatTime(conv.last_message_time)}

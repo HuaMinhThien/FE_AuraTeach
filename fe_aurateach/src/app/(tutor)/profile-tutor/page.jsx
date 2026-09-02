@@ -5,7 +5,8 @@ import styles from "./TutorProfile.module.css";
 import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
 import { categoryService } from "@/services/categoryService";
-import { uploadService } from "@/services/uploadService"; // 👈 Thêm dòng này vào đầu file
+import { uploadService } from "@/services/uploadService";
+import apiClient from "@/services/apiClient";
 
 const TIME_SLOT_OPTIONS = [
   "07:00 - 09:00",
@@ -78,11 +79,19 @@ export default function TutorProfile() {
 
   const [acceptSuggested, setAcceptSuggested] = useState(true);
   const [toggleLoading, setToggleLoading] = useState(false);
+  // Snapshot editFields tại thời điểm bắt đầu chỉnh sửa — dùng để so sánh "đã thay đổi"
+  const [originalFields, setOriginalFields] = useState(null);
 
   const isCategorySelected = (catName) => {
     if (!catName) return false;
     const cleanCat = catName.toLowerCase().trim();
-    return editFields.expertise.some(
+    // Đảm bảo expertise luôn là array trước khi .some()
+    const expertiseArr = Array.isArray(editFields.expertise)
+      ? editFields.expertise
+      : typeof editFields.expertise === "string"
+        ? editFields.expertise.split(",").map((i) => i.trim()).filter(Boolean)
+        : [];
+    return expertiseArr.some(
       (item) => item.toLowerCase().trim() === cleanCat
     );
   };
@@ -92,18 +101,28 @@ export default function TutorProfile() {
     if (!cleanCatName) return;
 
     setEditFields((prev) => {
-      const exists = isCategorySelected(cleanCatName);
+      // Đảm bảo expertise luôn là array
+      const prevExpertise = Array.isArray(prev.expertise)
+        ? prev.expertise
+        : typeof prev.expertise === "string"
+          ? prev.expertise.split(",").map((i) => i.trim()).filter(Boolean)
+          : [];
+
+      const exists = prevExpertise.some(
+        (item) => item.toLowerCase().trim() === cleanCatName.toLowerCase()
+      );
+
       if (exists) {
         return {
           ...prev,
-          expertise: prev.expertise.filter(
+          expertise: prevExpertise.filter(
             (item) => item.toLowerCase().trim() !== cleanCatName.toLowerCase()
           ),
         };
       } else {
         return {
           ...prev,
-          expertise: [...prev.expertise, cleanCatName],
+          expertise: [...prevExpertise, cleanCatName],
         };
       }
     });
@@ -232,33 +251,68 @@ export default function TutorProfile() {
       }
 
       try {
-        const [usersRes, tutorsRes, catRes] = await Promise.all([
+        const [userRes, tutorByUserRes, catRes] = await Promise.all([
           userService.getUsers(),
-          tutorService.getTutors(),
+          // Dùng getByUserId thay vì getTutors() để tránh bị filter bởi classSessions
+          apiClient.get(`/tutors/user/${currentUserId}`),
           categoryService.getCategories().catch(() => [])
         ]);
 
         if (!isMounted) return;
 
-        const users = usersRes.data || usersRes;
-        const tutors = tutorsRes.data || tutorsRes;
+        const users = userRes.data || userRes;
+        // BE trả về { success, data: [tutor, ...] } — apiClient đã parse JSON nên lấy thẳng
+        const tutorList = tutorByUserRes?.data || tutorByUserRes || [];
         const catList = catRes.data || catRes;
 
         setCategories(catList || []);
 
-        const userObj = users.find((u) => u.user_id === currentUserId || u.id === currentUserId);
-        const tutorObj = tutors.find((t) => t.user_id === currentUserId || t.id === currentUserId);
+        const userObj = Array.isArray(users)
+          ? users.find((u) => u.user_id === currentUserId || u.id === currentUserId)
+          : null;
+        const tutorObj = Array.isArray(tutorList) ? tutorList[0] : tutorList;
 
         if (userObj && tutorObj) {
           const mergedData = { ...userObj, ...tutorObj };
           
           if (isMounted) {
             setTutorData(mergedData);
-            setAcceptSuggested(mergedData.accept_suggested_classes !== false);
+            // receive_suggestions trong DB là varchar(50) lưu string 'true'/'false'
+            // handle thêm '1'/1/true để tương thích data cũ
+            const rawSuggestions = mergedData.receive_suggestions;
+            setAcceptSuggested(
+              rawSuggestions === true || rawSuggestions === 'true' || rawSuggestions === 1 || rawSuggestions === '1'
+            );
 
             const expArray = mergedData.expertise 
               ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
               : [];
+
+            // Map expertise cũ về đúng tên category trong danh sách
+            // (tránh trường hợp DB lưu "Toán học" nhưng category API trả về "Toán")
+            const normalizeExpertise = (rawArr, catList) => {
+              return rawArr.map((item) => {
+                const lowerItem = item.toLowerCase();
+                // Tìm category khớp chính xác trước
+                const exact = catList.find(
+                  (c) => getCategoryName(c).toLowerCase() === lowerItem
+                );
+                if (exact) return getCategoryName(exact);
+                // Nếu không khớp chính xác, tìm category mà tên nằm trong item hoặc item nằm trong tên
+                const partial = catList.find((c) => {
+                  const cn = getCategoryName(c).toLowerCase();
+                  return lowerItem.includes(cn) || cn.includes(lowerItem);
+                });
+                return partial ? getCategoryName(partial) : item; // giữ nguyên nếu không tìm được
+              });
+            };
+
+            const mappedExpArray = normalizeExpertise(expArray, catList || []);
+
+            console.log("🔍 [expertise] raw từ DB:", mergedData.expertise);
+            console.log("🔍 [expertise] parsed array:", expArray);
+            console.log("🔍 [expertise] after mapping:", mappedExpArray);
+            console.log("🔍 [categories] list tên:", (catList || []).map(c => getCategoryName(c)));
 
             const daysArray = mergedData.available_days
               ? (Array.isArray(mergedData.available_days) 
@@ -278,8 +332,8 @@ export default function TutorProfile() {
               experience: mergedData.experience || "",
               level: mergedData.level || "Giáo viên",
               cv_link: mergedData.cv_link || "",
-              avatar: mergedData.avatar || "", // <-- Thêm dòng này
-              expertise: expArray,
+              avatar: mergedData.avatar || "",
+              expertise: mappedExpArray,
               certificates: mergedData.certificates || [],
               available_days: daysArray,
               available_time_slots: timeSlotsArray
@@ -289,34 +343,23 @@ export default function TutorProfile() {
           }
 
           const currentTutorId = tutorObj.id || tutorObj.tutor_id;
-          const requestKey = `called_update_req_${currentTutorId}`;
 
-          // 🛡️ Chỉ gọi API check update nếu có ID và chưa từng gọi trước đó
-          if (currentTutorId && !sessionStorage.getItem(requestKey)) {
-            sessionStorage.setItem(requestKey, "true"); 
-
+          if (currentTutorId) {
             try {
-              // 🛠️ Sửa từ adminService thành tutorService
               const checkData = await tutorService.checkPendingUpdate(currentTutorId);
+              console.log("🔍 [checkPendingUpdate] response:", checkData);
               
+              // BE trả về: { success, hasPending, data: <object|null> }
               if (isMounted && checkData?.success && checkData?.hasPending) {
                 setHasPendingRequest(true);
               }
 
-              if (checkData.requests && Array.isArray(checkData.requests) && checkData.requests.length > 0) {
-                const latestReq = [...checkData.requests].sort((a, b) => {
-                  const timeA = new Date(a.created_at || a.updated_at || 0).getTime();
-                  const timeB = new Date(b.created_at || b.updated_at || 0).getTime();
-                  if (timeA && timeB) return timeB - timeA;
-                  return (b.tutor_update_req_id || "").localeCompare(a.tutor_update_req_id || "");
-                })[0];
-                setPendingRequestData(latestReq);
-              } else if (checkData.request) {
-                setPendingRequestData(checkData.request);
+              // BE trả về pending request trong key "data" (single object, không phải array)
+              if (checkData?.data) {
+                setPendingRequestData(checkData.data);
               }
 
             } catch (apiErr) {
-              sessionStorage.removeItem(requestKey);
               console.error("Lỗi gọi API check pending requests:", apiErr);
             }
           }
@@ -345,26 +388,25 @@ export default function TutorProfile() {
 
     try {
         const currentUserId = getUserIdFromCookie();
+        console.log("🔍 [toggleSuggestions] userId gửi lên:", currentUserId, "| newValue:", newValue);
         const result = await tutorService.toggleSuggestions(currentUserId, newValue);
 
         console.log("🔍 Kiểm tra log API:", result);
 
-        // Chuẩn hóa lấy dữ liệu (hỗ trợ cả trường hợp bị bọc qua .data của axios hoặc trả thẳng)
-        const resData = result?.data || result;
-
-        // Kiểm tra success hoặc kiểm tra nếu server trả về message thành công
-        const isSuccess = resData?.success === true || resData?.message?.includes("thành công");
+        // apiClient là fetch thuần — trả về thẳng JSON, không bọc thêm lớp .data
+        // BE trả về: { success: true, message: "...", receive_suggestions: false }
+        const isSuccess = result?.success === true || result?.message?.includes("thành công");
 
         if (isSuccess) {
-            // Lấy giá trị receive_suggestions mới từ server trả về nếu có, không thì dùng newValue
-            const finalValue = resData?.receive_suggestions !== undefined 
-                ? resData.receive_suggestions 
+            // receive_suggestions nằm thẳng trong result, không nằm trong result.data
+            const finalValue = result?.receive_suggestions !== undefined
+                ? result.receive_suggestions
                 : newValue;
 
             setAcceptSuggested(finalValue);
             console.log("✅ Cập nhật state thành công:", finalValue);
         } else {
-            const msg = resData?.message || "Không thể cập nhật trạng thái.";
+            const msg = result?.message || "Không thể cập nhật trạng thái.";
             alert("❌ Lỗi: " + msg);
         }
     } catch (err) {
@@ -435,14 +477,28 @@ export default function TutorProfile() {
   if (loading) return <div className={styles.loadingContainer}><div className={styles.spinner}></div></div>;
   if (errorMsg || !tutorData) return <div className={styles.errorContainer}>{errorMsg}</div>;
 
+  // Khi đang edit: so sánh originalFields (snapshot lúc bắt đầu) vs editFields (hiện tại)
+  // Khi có pendingRequest: dùng old_data/new_data từ server
+  const compareOld = originalFields || {
+    phone: "",
+    level: "Giáo viên",
+    experience: "",
+    cv_link: "",
+    expertise: "",
+    bio: "",
+    certificates: []
+  };
+
   const activeOldData = pendingRequestData?.old_data || {
-    phone: tutorData.phone || "",
-    level: tutorData.level || "Giáo viên",
-    experience: tutorData.experience || "",
-    cv_link: tutorData.cv_link || "",
-    expertise: tutorData.expertise || "",
-    bio: tutorData.bio || "",
-    certificates: tutorData.certificates || []
+    phone: compareOld.phone || "",
+    level: compareOld.level || "Giáo viên",
+    experience: compareOld.experience || "",
+    cv_link: compareOld.cv_link || "",
+    expertise: Array.isArray(compareOld.expertise)
+      ? compareOld.expertise.join(", ")
+      : (compareOld.expertise || ""),
+    bio: compareOld.bio || "",
+    certificates: compareOld.certificates || []
   };
 
   const activeNewData = pendingRequestData?.new_data || {
@@ -551,7 +607,7 @@ export default function TutorProfile() {
             </button>
           </div>
         ) : !isEditing ? (
-          <button className={styles.btnEdit} onClick={() => setIsEditing(true)}>
+          <button className={styles.btnEdit} onClick={() => { setIsEditing(true); setOriginalFields({...editFields}); }}>
             ⚙️ Chỉnh sửa thông tin
           </button>
         ) : (
@@ -566,13 +622,14 @@ export default function TutorProfile() {
               👁️ Xem thay đổi
             </button>
             <button className={styles.btnSave} onClick={handleSave}>💾 Gửi yêu cầu duyệt</button>
-            <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); setShowChangesModal(false); }}>Hủy</button>
+            <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); setShowChangesModal(false); setOriginalFields(null); }}>Hủy</button>
             <button className={styles.btnCancel} onClick={() => { 
               setIsEditing(false); 
               setIsDropdownOpen(false);
               setShowChangesModal(false);
               setIsTimeSlotsDropdownOpen(false);
               setIsDaysDropdownOpen(false);
+              setOriginalFields(null);
             }}>Hủy</button>
           </div>
         )}

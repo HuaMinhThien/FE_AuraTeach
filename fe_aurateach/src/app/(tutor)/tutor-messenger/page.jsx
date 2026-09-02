@@ -6,370 +6,294 @@ import ConversationList from "@/app/(public)/(student-private)/messenger/_compon
 import ChatWindow from "@/app/(public)/(student-private)/messenger/_components/ChatWindow";
 import WelcomeBanner from "@/app/(public)/(student-private)/messenger/_components/WelcomeBanner";
 import { authService } from "@/services/authService";
-import { conversationService } from "@/services/conversationService";
-import { messageService } from "@/services/messageService";
-import { tutorService } from "@/services/tutorService";
-import { userService } from "@/services/userService";
-import { uploadService } from "@/services/uploadService";
+import adminChatService from "@/services/adminChatService";
 import styles from "./page.module.css";
+
+const POLL_INTERVAL = 8000; // 8 giây — tránh 429 Too Many Requests
+
+// Chuẩn hóa conversation từ Laravel API về shape mà ConversationList / ChatWindow mong đợi
+function normalizeConversation(conv, currentUserId) {
+  const otherUser =
+    conv.other_user ||
+    (Array.isArray(conv.users)
+      ? conv.users.find((u) => u.user_id !== currentUserId)
+      : null);
+
+  return {
+    id:               conv.conversation_id ?? conv.id,
+    conversation_id:  conv.conversation_id ?? conv.id,
+    type:             conv.type ?? "private",
+    last_message:     conv.last_message ?? "",
+    last_message_time: conv.last_message_time ?? null,
+    unread_count:     conv.unread_count ?? 0,
+    other_user:       otherUser
+      ? {
+          user_id:   otherUser.user_id ?? otherUser.id,
+          full_name: otherUser.full_name ?? "Người dùng",
+          avatar:    otherUser.avatar ?? null,
+          role:      otherUser.role ?? "student",
+        }
+      : { full_name: "AuraTeach Admin", avatar: null, role: "admin" },
+    other_user_id:    otherUser?.user_id ?? otherUser?.id ?? null,
+    is_admin_conv:    conv.type === "admin_support",
+  };
+}
+
+// Admin conversation luôn đứng đầu, còn lại theo last_message_time giảm dần
+function sortConversations(convs) {
+  return [...convs].sort((a, b) => {
+    if (a.is_admin_conv && !b.is_admin_conv) return -1;
+    if (!a.is_admin_conv && b.is_admin_conv) return 1;
+    const ta = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
+    const tb = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
+    return tb - ta;
+  });
+}
 
 export default function TutorMessengerPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  
-  const pollingRef = useRef(null);
-  const isInitialLoadRef = useRef(true);
-  const isSendingRef = useRef(false);
-  const isPollingActiveRef = useRef(false);
-  const lastMessageCountRef = useRef(0);
 
+  const [user, setUser]                             = useState(null);
+  const [conversations, setConversations]           = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [messages, setMessages]                     = useState([]);
+  const [loading, setLoading]                       = useState(true);
+  const [sending, setSending]                       = useState(false);
+  const [hasMore]                                   = useState(false);
+  const [error, setError]                           = useState(null);
+  const [unreadCount, setUnreadCount]               = useState(0);
+
+  const pollingRef          = useRef(null);
+  const isPollingActiveRef  = useRef(false);
+  const isSendingRef        = useRef(false);
+  const isInitialLoadRef    = useRef(true);
+  const isFetchingMsgsRef   = useRef(false);
+
+  // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const initPage = async () => {
+    const init = async () => {
       try {
         const currentUser = await authService.getCurrentUser();
-        if (!currentUser) {
-          router.push("/login");
-          return;
-        }
+        if (!currentUser) { router.push("/login"); return; }
         setUser(currentUser);
-        
-        const userId = currentUser.user_id || currentUser.id;
+
+        const userId = currentUser.user_id ?? currentUser.id;
         if (!userId) {
-          setError("Không tìm thấy mã định danh người dùng từ Database.");
+          setError("Không tìm thấy thông tin người dùng");
           setLoading(false);
           return;
         }
-        
-        await fetchConversationsFromDB(userId);
+
+        await loadConversations(userId);
       } catch (err) {
-        console.error("❌ [DB ERROR] Lỗi khởi tạo:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    initPage();
+    init();
     return () => stopPolling();
   }, [router]);
 
+  // ── Load conversations ────────────────────────────────────────────────────
+  const loadConversations = async (userId) => {
+    try {
+      // 1. Lấy/tạo conversation admin_support
+      let adminConv = null;
+      try {
+        const adminRes = await adminChatService.ensureAdminConversation(userId);
+        if (adminRes?.data) adminConv = normalizeConversation(adminRes.data, userId);
+      } catch (e) {
+        console.warn("Không thể tạo/lấy conversation admin:", e.message);
+      }
+
+      // 2. Lấy toàn bộ conversations của user
+      let allConvs = [];
+      try {
+        console.log("🔍 [loadConversations] userId truyền vào getUserConversations:", userId);
+        const res = await adminChatService.getUserConversations(userId);
+        const raw = res?.data ?? [];
+        allConvs = raw.map((c) => normalizeConversation(c, userId));
+      } catch (e) {
+        console.warn("Lỗi lấy conversations:", e.message);
+      }
+
+      // 3. Merge — đảm bảo admin conv có mặt và không bị duplicate
+      if (adminConv) {
+        const exists = allConvs.some(
+          (c) => c.conversation_id === adminConv.conversation_id
+        );
+        if (!exists) {
+          allConvs.unshift(adminConv);
+        } else {
+          allConvs = allConvs.map((c) =>
+            c.conversation_id === adminConv.conversation_id ? { ...c, ...adminConv } : c
+          );
+        }
+      }
+
+      const sorted = sortConversations(allConvs);
+      setConversations(sorted);
+      setUnreadCount(sorted.reduce((s, c) => s + (c.unread_count || 0), 0));
+    } catch (err) {
+      console.error("loadConversations error:", err);
+    }
+  };
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  const fetchMessages = async (conversationId) => {
+    if (isFetchingMsgsRef.current) return;
+    isFetchingMsgsRef.current = true;
+    try {
+      const data = await adminChatService.getMessagesByConversation(conversationId);
+      const msgs = Array.isArray(data) ? data : (data?.data ?? []);
+      setMessages(msgs.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)));
+      isInitialLoadRef.current = true;
+    } catch (e) {
+      console.error("fetchMessages error:", e);
+      setMessages([]);
+    } finally {
+      isFetchingMsgsRef.current = false;
+    }
+  };
+
+  // ── Select conversation ───────────────────────────────────────────────────
+  const handleSelectConversation = useCallback(async (conversation) => {
+    stopPolling();
+    setSelectedConversation(conversation);
+    setMessages([]);
+    isInitialLoadRef.current = true;
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.conversation_id === conversation.conversation_id
+          ? { ...c, unread_count: 0 }
+          : c
+      )
+    );
+    setUnreadCount((prev) => Math.max(0, prev - (conversation.unread_count || 0)));
+
+    await fetchMessages(conversation.conversation_id);
+
+    try {
+      const uid = user?.user_id ?? user?.id;
+      if (uid) {
+        await adminChatService.updateConversation(conversation.conversation_id, {
+          unread_count: 0,
+          user_id: uid,
+        });
+      }
+    } catch (_) {}
+
+    startPolling(conversation.conversation_id);
+  }, [user]);
+
+  // ── Polling ───────────────────────────────────────────────────────────────
   const stopPolling = () => {
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
       pollingRef.current = null;
-      isPollingActiveRef.current = false;
     }
+    isPollingActiveRef.current = false;
   };
 
-  const saveMessagesToLocal = (conversationId, msgs) => {
-    try {
-      localStorage.setItem(`tutor_messages_${conversationId}`, JSON.stringify(msgs));
-    } catch (e) {
-      console.warn("⚠️ Cannot save to localStorage:", e);
-    }
-  };
-
-  const loadMessagesFromLocal = (conversationId) => {
-    try {
-      const saved = localStorage.getItem(`tutor_messages_${conversationId}`);
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
-  };
-
-  const fetchConversationsFromDB = async (userId) => {
-    try {
-      const rawRes = await conversationService.getConversations(userId);
-      const convList = Array.isArray(rawRes) ? rawRes : (rawRes?.data || []);
-
-      if (convList.length === 0) {
-        setConversations([]);
-        setUnreadCount(0);
-        return;
-      }
-
-      const normalizedConvList = convList.map(conv => {
-        let participantIds = conv.participants;
-        if (!participantIds && Array.isArray(conv.users)) {
-          participantIds = conv.users.map(u => u.user_id || u.id || u.tutor_id);
-        }
-        if (typeof participantIds === 'string') {
-          try {
-            participantIds = JSON.parse(participantIds);
-          } catch (e) {
-            participantIds = [];
-          }
-        }
-        return {
-          ...conv,
-          id: conv.id || conv.conversation_id,
-          participants: Array.isArray(participantIds) ? participantIds : []
-        };
-      });
-
-      const allTutorsRes = await tutorService.getTutors();
-      const tutorsList = Array.isArray(allTutorsRes) ? allTutorsRes : (allTutorsRes?.data || []);
-      
-      const tutorToUserMap = {};
-      const userToTutorMap = {};
-      tutorsList.forEach(t => {
-        if (t.tutor_id && t.user_id) {
-          tutorToUserMap[t.tutor_id] = t.user_id;
-          userToTutorMap[t.user_id] = t.tutor_id;
-        }
-      });
-
-      const myIds = [userId];
-      if (userToTutorMap[userId]) myIds.push(userToTutorMap[userId]);
-
-      const userConversations = normalizedConvList.filter(conv => conv.participants.some(p => myIds.includes(p)));
-      const totalUnread = userConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
-      setUnreadCount(totalUnread);
-
-      const convWithUsers = await Promise.all(
-        userConversations.map(async (conv) => {
-          const otherParticipantId = conv.participants.find(p => !myIds.includes(p));
-          let lookupUserId = tutorToUserMap[otherParticipantId] || otherParticipantId;
-          
-          try {
-            const usersRes = await userService.getUsers();
-            const users = Array.isArray(usersRes) ? usersRes : (usersRes?.data || []);
-            let matchedUser = users.find(u => (u.user_id === lookupUserId || u.id === lookupUserId));
-            
-            if (!matchedUser && Array.isArray(conv.users)) {
-              matchedUser = conv.users.find(u => (u.user_id === lookupUserId || u.id === lookupUserId || u.tutor_id === lookupUserId));
-            }
-
-            const otherUser = matchedUser || { 
-              full_name: "Học viên", 
-              avatar: "/img/default-avatar.svg",
-              role: "student"
-            };
-            
-            return { ...conv, other_user: otherUser, other_user_id: lookupUserId };
-          } catch {
-            return {
-              ...conv,
-              other_user: { full_name: "Học viên", avatar: "/img/default-avatar.svg", role: "student" },
-              other_user_id: lookupUserId,
-            };
-          }
-        })
-      );
-      
-      setConversations(convWithUsers);
-    } catch (error) {
-      console.error("❌ [DB ERROR] Lỗi khi truy vấn conversations từ DB:", error);
-      setConversations([]);
-    }
-  };
-
-  const fetchMessagesFromDB = async (conversationId, resetOffset = true) => {
-    if (!conversationId) return;
-    
-    let messagesToUse = null;
-    try {
-      const data = await messageService.getMessages(conversationId);
-      const msgList = Array.isArray(data) ? data : (data?.data || []);
-      if (msgList && msgList.length > 0) {
-        messagesToUse = msgList;
-        saveMessagesToLocal(conversationId, msgList);
-        lastMessageCountRef.current = msgList.length;
-      }
-    } catch (error) {
-      console.error("❌ [DB ERROR] Lỗi lấy tin nhắn từ API:", error);
-    }
-
-    if (!messagesToUse || messagesToUse.length === 0) {
-      const localMessages = loadMessagesFromLocal(conversationId);
-      if (localMessages && localMessages.length > 0) {
-        messagesToUse = localMessages;
-      }
-    }
-
-    if (messagesToUse && messagesToUse.length > 0) {
-      if (resetOffset) {
-        setMessages(messagesToUse);
-      } else {
-        setMessages(prev => [...prev, ...messagesToUse]);
-      }
-    } else {
-      if (resetOffset) setMessages([]);
-    }
-    setHasMore(false);
-  };
-
-  // 🚀 TỐI ƯU HÓA: Gửi tin nhắn và file trực tiếp dưới dạng URL Cloudinary vào content
-    const sendMessage = async (content) => {
-      const isFile = content !== null && typeof content === 'object';
-      if (!isFile && (!content || !content.trim())) return;
-      if (isFile && !content.name && !content.rawFile) return;
-      if (!selectedConversation || !user || isSendingRef.current) return;
-  
-      const convId = selectedConversation.conversation_id || selectedConversation.id;
-      if (!convId || convId === 'undefined') return;
-  
-      isSendingRef.current = true;
-      setSending(true);
-  
-      const senderId = user.user_id || user.id;
-      const receiverId = selectedConversation.other_user_id;
-  
-      try {
-        let messageContentText = "";
-        let finalFileUrl = null;
-  
-        if (isFile) {
-          // 🚀 Sử dụng trực tiếp rawFile hoặc tạo lại từ dữ liệu an toàn
-          const fileToUpload = content.rawFile || new File([content.rawFile], content.name, { type: content.type });
-  
-          const uploadRes = await uploadService.uploadFile(fileToUpload, "chat");
-          if (!uploadRes?.url) throw new Error("Không nhận được URL từ server upload");
-  
-          finalFileUrl = uploadRes.url;
-          messageContentText = finalFileUrl; 
-        } else {
-          messageContentText = content.trim();
-        }
-  
-        const tempMessageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-        const nowTime = new Date().toISOString();
-  
-        const newMessage = {
-          message_id: tempMessageId,
-          id: tempMessageId,
-          conversation_id: convId,
-          sender_id: senderId,
-          sender_role: user.role || "tutor",
-          receiver_id: receiverId,
-          receiver_role: selectedConversation.other_user?.role || "student",
-          content: messageContentText,
-          created_at: nowTime,
-          is_read: true,
-        };
-  
-        // 1. Cập nhật UI ngay lập tức
-        setMessages(prev => {
-          const updated = [...prev, newMessage];
-          saveMessagesToLocal(convId, updated);
-          return updated;
-        });
-  
-        // 2. Gửi API ngầm lên Database
-        const savedMsgRes = await messageService.sendMessage(newMessage);
-        const savedMsg = savedMsgRes?.data || savedMsgRes;
-  
-        if (savedMsg) {
-          setMessages(prev => {
-            const updated = prev.map(m => (m.message_id === tempMessageId || m.id === tempMessageId) ? savedMsg : m);
-            saveMessagesToLocal(convId, updated);
-            return updated;
-          });
-        }
-  
-        // 3. Cập nhật thông tin đoạn hội thoại
-        const previewText = isFile ? "[Hình ảnh]" : messageContentText;
-          await messageService.updateConversation(convId, {
-            last_message: previewText,
-            last_message_time: nowTime,
-            increment_unread_for: receiverId, // 👈 Báo backend tăng unread cho người nhận
-          });
-
-          setConversations(prev => prev.map(c => {
-            if ((c.conversation_id || c.id) === convId) {
-              return { ...c, last_message: previewText, last_message_time: nowTime };
-            }
-            return c;
-          }));
-  
-      } catch (error) {
-        console.error("❌ Lỗi gửi tin nhắn/file trên production:", error);
-        alert("Gửi tin nhắn hoặc file thất bại, vui lòng kiểm tra lại kết nối!");
-      } finally {
-        setSending(false);
-        isSendingRef.current = false;
-      }
-    };
-
-  const markAsRead = async (conversationId) => {
-    try {
-      if (!conversationId) return;
-      await messageService.updateConversation(conversationId, { unread_count: 0 });
-      setConversations(prev => prev.map(conv => ((conv.id || conv.conversation_id) === conversationId) ? { ...conv, unread_count: 0 } : conv));
-      
-      const conv = conversations.find(c => (c.id || c.conversation_id) === conversationId);
-      if (conv) {
-        setUnreadCount(prev => Math.max(0, prev - (conv.unread_count || 0)));
-      }
-    } catch (error) {
-      console.error("❌ Lỗi đánh dấu đã đọc:", error);
-    }
-  };
-
-  const handleSelectConversation = async (conversation) => {
-    setSelectedConversation(conversation);
-    setMessages([]);
-    isInitialLoadRef.current = true;
-    
-    const convId = conversation.id || conversation.conversation_id;
-    await markAsRead(convId);
-    await fetchMessagesFromDB(convId, true);
-  };
-
-  // 🔄 Polling tự động làm mới tin nhắn ngầm mỗi 3 giây
-  useEffect(() => {
-    stopPolling();
-    if (!selectedConversation) return;
-
-    const convId = selectedConversation.id || selectedConversation.conversation_id;
-    if (!convId) return;
-
+  const startPolling = (conversationId) => {
     isPollingActiveRef.current = true;
-    const fetchNewMessages = async () => {
+    pollingRef.current = setInterval(async () => {
       if (!isPollingActiveRef.current) return;
       try {
-        const data = await messageService.getMessages(convId);
-        const msgList = Array.isArray(data) ? data : (data?.data || []);
-        if (!msgList || msgList.length === 0) return;
-
-        setMessages(prev => {
-          const currentIds = prev.map(m => m.id || m.message_id);
-          const newMessages = msgList.filter(m => !currentIds.includes(m.id || m.message_id));
-          if (newMessages.length > 0) {
-            return [...prev, ...newMessages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-          }
-          if (prev.length === 0 && msgList.length > 0) return msgList;
-          return prev;
+        const data  = await adminChatService.getMessagesByConversation(conversationId);
+        const fresh = Array.isArray(data) ? data : (data?.data ?? []);
+        setMessages((prev) => {
+          const ids     = new Set(prev.map((m) => m.message_id ?? m.id));
+          const newMsgs = fresh.filter((m) => !ids.has(m.message_id ?? m.id));
+          return newMsgs.length ? [...prev, ...newMsgs] : prev;
         });
-
-        if (msgList.length > 0) {
-          const latestMsg = msgList[msgList.length - 1];
-          const isImg = latestMsg.content && latestMsg.content.includes('http');
-          const previewText = isImg ? "[Hình ảnh]" : latestMsg.content;
-          setConversations(prev => prev.map(c => ((c.id || c.conversation_id) === convId) ? { ...c, last_message: previewText, last_message_time: latestMsg.created_at } : c));
+        if (fresh.length > 0) {
+          const last = fresh[fresh.length - 1];
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.conversation_id === conversationId
+                ? { ...c, last_message: last.content, last_message_time: last.created_at }
+                : c
+            )
+          );
         }
-      } catch (error) {
-        console.error("❌ [POLLING ERROR] Lỗi khi fetch tin nhắn mới:", error);
-      }
+      } catch (_) {}
+    }, POLL_INTERVAL);
+  };
+
+  useEffect(() => () => stopPolling(), []);
+
+  // ── Send ──────────────────────────────────────────────────────────────────
+  const sendMessage = async (content) => {
+    if (!selectedConversation || !user || isSendingRef.current) return;
+    if (typeof content !== "string" || !content.trim()) return;
+
+    isSendingRef.current = true;
+    setSending(true);
+
+    const senderId   = user.user_id ?? user.id;
+    const receiverId = selectedConversation.other_user_id;
+    const now        = new Date().toISOString();
+    const tmpId      = `tmp_${Date.now()}`;
+
+    const tmpMsg = {
+      message_id:      tmpId,
+      id:              tmpId,
+      conversation_id: selectedConversation.conversation_id,
+      sender_id:       senderId,
+      sender_role:     user.role ?? "tutor",
+      receiver_id:     receiverId,
+      receiver_role:   selectedConversation.other_user?.role ?? "admin",
+      content:         content.trim(),
+      created_at:      now,
+      is_read:         false,
     };
 
-    pollingRef.current = setInterval(fetchNewMessages, 3000);
-    return () => stopPolling();
-  }, [selectedConversation]);
+    setMessages((prev) => [...prev, tmpMsg]);
 
+    try {
+      const saved    = await adminChatService.sendUserMessage({ ...tmpMsg });
+      const savedMsg = saved?.data ?? saved;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.message_id === tmpId || m.id === tmpId
+            ? { ...savedMsg, message_id: savedMsg.message_id ?? savedMsg.id }
+            : m
+        )
+      );
+
+      try {
+        await adminChatService.updateConversation(selectedConversation.conversation_id, {
+          last_message:         content.trim(),
+          last_message_time:    now,
+          increment_unread_for: receiverId,
+        });
+      } catch (_) {}
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.conversation_id === selectedConversation.conversation_id
+            ? { ...c, last_message: content.trim(), last_message_time: now }
+            : c
+        )
+      );
+    } catch (e) {
+      setMessages((prev) => prev.filter((m) => m.message_id !== tmpId && m.id !== tmpId));
+      alert("Không thể gửi tin nhắn. Vui lòng thử lại.");
+    } finally {
+      setSending(false);
+      isSendingRef.current = false;
+    }
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Đang kết nối cơ sở dữ liệu và tải tin nhắn...</p>
+        <div className={styles.loadingSpinner} />
+        <p>Đang tải tin nhắn...</p>
       </div>
     );
   }
@@ -390,12 +314,11 @@ export default function TutorMessengerPage() {
           <div className={styles.conversationListWrapper}>
             <ConversationList
               conversations={conversations}
-              selectedId={selectedConversation?.id || selectedConversation?.conversation_id}
+              selectedId={selectedConversation?.id ?? selectedConversation?.conversation_id}
               onSelect={handleSelectConversation}
-              currentUserId={user?.user_id || user?.id}
+              currentUserId={user?.user_id ?? user?.id}
             />
           </div>
-
           <div className={styles.chatWrapper}>
             {selectedConversation ? (
               <ChatWindow
@@ -409,8 +332,8 @@ export default function TutorMessengerPage() {
                 isInitialLoad={isInitialLoadRef}
               />
             ) : (
-              <WelcomeBanner 
-                userName={user?.full_name?.split(' ').pop() || "bạn"}
+              <WelcomeBanner
+                userName={user?.full_name?.split(" ").pop() ?? "bạn"}
                 unreadCount={unreadCount}
                 conversationCount={conversations.length}
               />

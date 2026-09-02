@@ -80,4 +80,18 @@ export const classSessionService = {
       throw error;
     }
   },
+
+  /**
+   * Tạo buổi học bù — BE sẽ check conflict lịch gia sư và tất cả học sinh trong lớp
+   * @param {Object} payload - { course_id, original_session_id, actual_date, start_time, end_time, tutor_note }
+   */
+  createMakeupSession: async (payload) => {
+    try {
+      const response = await apiClient.post('/class-sessions/makeup', payload);
+      return response;
+    } catch (error) {
+      console.error("❌ Lỗi khi tạo buổi học bù:", error);
+      throw error;
+    }
+  },
 };

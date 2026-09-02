@@ -69,23 +69,30 @@ export default function TutorTimesheetPage() {
     return `${y}-${m}-${day}`;
   }, []);
 
-  const getSessionStatusInfo = (session) => {
-    // Lấy giá trị trạng thái từ trường nào mà API đang trả về
-    const status = session.session_status ?? session.status;
+  const getStatusBadge = (status, isMakeup, isLive) => {
+    if (isMakeup) {
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffedd5', color: '#c2410c', fontWeight: 600 }}>Học bù</span>;
+    }
+    if (isLive) {
+      return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#dc3545', color: '#fff', fontWeight: 600 }}>Đang diễn ra</span>;
+    }
 
-    // Dùng dấu so sánh lỏng (==) hoặc chuyển về String/Number để bắt trọn số 5 hoặc chuỗi '5'
-    if (status == 5 || status === 'completed') {
-      return { label: 'Hoàn thành', type: 'completed' };
+    switch (String(status)) {
+      case '1':
+        return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#6c757d', color: '#fff' }}>Chưa diễn ra</span>;
+      case '2':
+        return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0dcaf0', color: '#000' }}>Sắp diễn ra</span>;
+      case '3':
+        return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#198754', color: '#fff' }}>Đang diễn ra</span>;
+      case '4':
+        return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffc107', color: '#000' }}>Chờ xác nhận</span>;
+      case '5':
+        return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0d6efd', color: '#fff' }}>Đã hoàn thành</span>;
+      case '6':
+        return <span className="badge" style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#dc2626', color: '#fff', fontWeight: 600 }}>Quá hạn</span>;
+      default:
+        return null;
     }
-    if (status == 2 || status === 'upcoming') {
-      return { label: 'Sắp diễn ra', type: 'upcoming' };
-    }
-    if (status == 3 || status === 'ongoing') {
-      return { label: 'Đang diễn ra', type: 'ongoing' };
-    }
-    
-    // Mặc định nếu không khớp cái nào
-    return { label: 'Sắp diễn ra', type: 'upcoming' };
   };
 
   const addTwoHours = (startTime) => {
@@ -110,7 +117,10 @@ export default function TutorTimesheetPage() {
   };
 
   const hasMakeupForSession = (sessionId) => {
-    return sessions.some(s => s.original_session_id === sessionId && s.is_makeup);
+    // Không có cột is_makeup trong DB — nhận biết buổi bù qua lesson_title
+    return sessions.some(s => 
+      (s.lesson_title || '').toLowerCase().includes('học bù')
+    );
   };
 
   const handleCreateMakeup = async (e) => {
@@ -122,38 +132,29 @@ export default function TutorTimesheetPage() {
 
       const courseId = selectedCancelledSession.course_id || selectedCancelledSession.courseId;
       const payload = {
-        course_id: courseId,
-        original_session_id: selectedCancelledSession.session_id || selectedCancelledSession.id,
+        course_id:   courseId,
         actual_date: makeupDate,
-        start_time: makeupStartTime,
-        end_time: makeupEndTime,
-        tutor_note: makeupNote,
-        is_makeup: true
+        start_time:  makeupStartTime,
+        end_time:    makeupEndTime,
+        tutor_note:  makeupNote,
       };
 
-      if (courseService.checkScheduleConflict) {
-        const conflictCheck = await courseService.checkScheduleConflict({
-          tutor_id: currentUser?.user_id || currentUser?.id,
-          date: makeupDate,
-          start_time: makeupStartTime,
-          end_time: makeupEndTime
-        });
-        if (conflictCheck && conflictCheck.hasConflict) {
-          alert("Lịch học bị trùng với một lớp khác trong khung giờ này. Vui lòng chọn giờ khác!");
-          setIsSubmittingMakeup(false);
-          return;
-        }
-      }
-
       await classSessionService.createMakeupSession(payload);
-      
-      alert("Đã tạo buổi học bù thành công!");
+
+      alert("✅ Đã tạo buổi học bù thành công!");
       setShowMakeupModal(false);
-      window.location.reload(); 
+      window.location.reload();
 
     } catch (error) {
       console.error("❌ Lỗi khi tạo buổi học bù:", error);
-      alert(error.response?.data?.message || "Có lỗi xảy ra khi tạo buổi học bù. Vui lòng thử lại!");
+
+      // BE trả 409 kèm message và field conflict — hiển thị rõ nguyên nhân
+      const msg = error?.message || "";
+      if (msg) {
+        alert("⚠️ " + msg);
+      } else {
+        alert("❌ Có lỗi xảy ra khi tạo buổi học bù. Vui lòng thử lại!");
+      }
     } finally {
       setIsSubmittingMakeup(false);
     }
@@ -235,7 +236,7 @@ export default function TutorTimesheetPage() {
   const totalCancelled = courseListMap.reduce((acc, item) => {
     return acc + item.allSessions.filter(s => {
       const status = String(s.session_status || s.status || '');
-      return (status === 'cancelled' || status === 'huy') && !s.is_makeup;
+      return (status === 'cancelled' || status === 'huy' || status === '0' || status === '6') && !s.is_makeup;
     }).length;
   }, 0);
 
@@ -410,9 +411,18 @@ export default function TutorTimesheetPage() {
                             .sort((a, b) => new Date(a.actual_date) - new Date(b.actual_date))
                             .map((s) => {
                               const sessionId = s.session_id || s.id;
-                              const isMakeup = s.is_makeup === true;
+                              const isMakeup = (s.lesson_title || '').toLowerCase().includes('học bù');
                               const alreadyHasMakeup = hasMakeupForSession(sessionId);
-                              const statusInfo = getSessionStatusInfo(s);
+
+                              // Xác định trạng thái buổi học
+                              const statusStr = String(s.session_status || s.status || '');
+                              const now = new Date();
+                              const sessionDate = s.actual_date ? new Date(s.actual_date) : null;
+                              const isToday = sessionDate
+                                ? sessionDate.toDateString() === now.toDateString()
+                                : false;
+                              const isLive = isToday && (statusStr === '3' || statusStr === 'ongoing');
+                              const isCancelled = statusStr === 'cancelled' || statusStr === 'huy' || statusStr === '0' || statusStr === '6';
 
                               return (
                                 <tr key={sessionId}>
@@ -426,19 +436,7 @@ export default function TutorTimesheetPage() {
                                       : '—'}
                                   </td>
                                   <td>
-                                    {statusInfo.type === 'completed' ? (
-                                      <span className={styles.badgeCompleted}>{statusInfo.label}</span>
-                                    ) : statusInfo.type === 'cancelled' ? (
-                                      <span className={styles.badgeMissed}>{statusInfo.label}</span>
-                                    ) : statusInfo.type === 'ongoing' ? (
-                                      <span style={{ color: '#d97706', background: '#fef3c7', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                        {statusInfo.label}
-                                      </span>
-                                    ) : (
-                                      <span style={{ color: '#2563eb', background: '#eff6ff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                        {statusInfo.label}
-                                      </span>
-                                    )}
+                                    {getStatusBadge(statusStr, isMakeup, isLive)}
                                   </td>
                                   <td>
                                     {s.record_url ? (
@@ -456,7 +454,7 @@ export default function TutorTimesheetPage() {
                                     {s.tutor_note && <div className={styles.note}>{s.tutor_note}</div>}
                                   </td>
                                   <td>
-                                    {statusInfo.type === 'cancelled' && !isMakeup && (
+                                    {isCancelled && !isMakeup && (
                                       alreadyHasMakeup ? (
                                         <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
                                           Đã tạo học bù

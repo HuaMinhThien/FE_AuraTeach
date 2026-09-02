@@ -5,20 +5,34 @@ import MessageInput from "./MessageInput";
 import styles from "./ChatWindow.module.css";
 
 // Tách hàm định dạng ra ngoài để tránh khởi tạo lại liên tục
+const toVNDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  // BE lưu giờ Asia/Ho_Chi_Minh (UTC+7) dưới dạng "YYYY-MM-DD HH:MM:SS" không có offset
+  // Parse như local time (không thêm Z) rồi hiển thị trực tiếp
+  const normalized = dateStr.toString().replace(" ", "T");
+  return new Date(normalized);
+};
+
 const formatTime = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  return toVNDate(dateStr).toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
+  const date = toVNDate(dateStr);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
   if (date.toDateString() === today.toDateString()) return "Hôm nay";
   if (date.toDateString() === yesterday.toDateString()) return "Hôm qua";
-  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 };
 
 // Helper kiểm tra và render nội dung tin nhắn (Ảnh hoặc Văn bản)
@@ -141,7 +155,13 @@ export default function ChatWindow({
         <div>
           <span className={styles.headerName}>{otherUserName}</span>
           <span className={styles.headerRole}>
-            {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}          </span>
+            {otherUserRole === "admin"
+              ? <>🛡️ Ban hỗ trợ AuraTeach</>
+              : otherUserRole === "tutor"
+                ? <><img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> Gia sư</>
+                : <><img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} /> Học viên</>
+            }
+          </span>
         </div>
       </div>
       <div className={styles.headerActions}>
@@ -165,6 +185,10 @@ export default function ChatWindow({
   }
 
   const currentUserId = getCurrentUserId();
+  // Debug: log để xác nhận sender_id vs currentUserId
+  if (messages.length > 0) {
+    console.log("🔍 [ChatWindow] currentUserId:", currentUserId, "| msg[0].sender_id:", messages[0].sender_id, "| sender_role:", messages[0].sender_role);
+  }
 
   return (
     <div className={styles.chatWindow}>
@@ -188,7 +212,9 @@ export default function ChatWindow({
               <span>{group.dateDisplay}</span>
             </div>
             {group.messages.map((msg, index) => {
-              const isOwn = msg.sender_id === currentUserId;
+              // sender_id có thể là user_id hoặc tutor_id tùy BE
+              const isOwn = msg.sender_id === currentUserId
+                || msg.user_id === currentUserId;
 
               return (
                 <div

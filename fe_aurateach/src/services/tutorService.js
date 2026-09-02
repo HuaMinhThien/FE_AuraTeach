@@ -50,11 +50,8 @@ export const tutorService = {
 
   async getTutorEarningsData(userId) {
     try {      
-      // 🚀 Sửa lại cách truyền tham số cho apiClient để Laravel chắc chắn nhận được user_id
-      const response = await apiClient.get("/tutors/earnings", {
-        params: { user_id: userId } 
-      });
-      
+      // apiClient.get không hỗ trợ options.params — build query string thủ công
+      const response = await apiClient.get(`/tutors/earnings?user_id=${encodeURIComponent(userId)}`);
       return response;
     } catch (error) {
       console.error("🔴 Lỗi API getTutorEarningsData chi tiết:", error);
@@ -121,8 +118,9 @@ export const tutorService = {
 
   checkPendingUpdate: async (tutorId) => {
     try {
-      const response = await apiClient.get(`/tutors/${tutorId}/pending-update-request`);
-      return response.data !== undefined ? response.data : response;
+      // apiClient.get already returns the parsed JSON body directly (no extra .data wrapping)
+      // BE returns: { success, hasPending, data: <TutorUpdateReq|null> }
+      return await apiClient.get(`/tutors/${tutorId}/pending-update-request`);
     } catch (error) {
       console.error("Lỗi kiểm tra pending update:", error);
       throw error;
