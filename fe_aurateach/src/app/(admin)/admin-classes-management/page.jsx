@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { adminService } from '@/services/adminService';
 import styles from './AdminClassesManagement.module.css';
 
@@ -18,21 +18,8 @@ export default function AdminClassesManagement() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedSession, setSelectedSession] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const getSessionStatusLabel = (statusCode) => {
-    switch (String(statusCode)) {
-      case '1': return 'Chưa diễn ra';
-      case '2': return 'Sắp diễn ra';
-      case '3': return 'Đang diễn ra';
-      case '4': return 'Chờ xác nhận';
-      case '5': return 'Đã hoàn thành';
-      case '6': return 'Quá hạn';
-      case 'completed': return 'Đã hoàn thành';
-      case 'uncompleted': return 'Chưa hoàn thành';
-      case 'scheduled': return 'Sắp diễn ra';
-      default: return statusCode || 'N/A';
-    }
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 8;
 
   useEffect(() => {
     let isMounted = true;
@@ -64,17 +51,18 @@ export default function AdminClassesManagement() {
     if (!dateStr) return 'N/A';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   };
 
   const getTutorInfo = (tutorId) => {
+    if (!tutorId) return { full_name: 'Chưa có gia sư', email: '', phone: '' };
     const tutor = tutors.find(t => t.tutor_id === tutorId || t.id === tutorId);
-    if (!tutor) return { full_name: 'N/A', email: 'N/A', phone: 'N/A' };
+    if (!tutor) return { full_name: 'N/A', email: '', phone: '' };
     const user = users.find(u => u.user_id === tutor.user_id || u.id === tutor.user_id);
     return {
       full_name: user?.full_name || 'Chưa cập nhật',
-      email: user?.email || 'Chưa cập nhật',
-      phone: user?.phone || 'Chưa cập nhật',
+      email: user?.email || '',
+      phone: user?.phone || '',
     };
   };
 
@@ -83,53 +71,106 @@ export default function AdminClassesManagement() {
     if (user) return { full_name: user.full_name, email: user.email, phone: user.phone };
     const student = students.find(s => s.student_id === studentId || s.id === studentId);
     if (student) {
-      const u = users.find(userObj => userObj.user_id === student.user_id);
-      return { full_name: u?.full_name || 'Chưa cập nhật', email: u?.email || 'N/A', phone: u?.phone || 'N/A' };
+      const u = users.find(u => u.user_id === student.user_id);
+      return { full_name: u?.full_name || 'N/A', email: u?.email || '', phone: u?.phone || '' };
     }
-    return { full_name: studentId || 'N/A', email: 'N/A', phone: 'N/A' };
+    return { full_name: studentId || 'N/A', email: '', phone: '' };
   };
 
   const getStatusLabel = (status) => {
-    switch (status) {
-      case 'active': return 'Đang hoạt động';
-      case 'closed': return 'Đã đóng';
-      case 'pending_tutor': return 'Chờ gia sư';
-      case 'pending_student': return 'Chờ học sinh';
-      case 'cancelled': return 'Đã hủy';
-      default: return status || 'N/A';
+    const map = {
+      active: 'Đang hoạt động',
+      closed: 'Đã đóng',
+      pending_tutor: 'Chờ gia sư',
+      pending_student: 'Chờ học sinh',
+      cancelled: 'Đã huỷ',
+      completed: 'Hoàn thành',
+    };
+    return map[status] || status;
+  };
+
+  // ✅ Hàm badge màu sắc cho trạng thái buổi học
+  const getStatusBadge = (status, isMakeup, isLive) => {
+    if (isMakeup) {
+      return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffedd5', color: '#c2410c', fontWeight: 600 }}>Học bù</span>;
+    }
+    if (isLive) {
+      return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#dc3545', color: '#fff', fontWeight: 600 }}>Đang diễn ra</span>;
+    }
+    switch (String(status)) {
+      case '1': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#6c757d', color: '#fff' }}>Chưa diễn ra</span>;
+      case '2': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0dcaf0', color: '#000' }}>Sắp diễn ra</span>;
+      case '3': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#198754', color: '#fff' }}>Đang diễn ra</span>;
+      case '4': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#ffc107', color: '#000' }}>Chờ xác nhận</span>;
+      case '5': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0d6efd', color: '#fff' }}>Đã hoàn thành</span>;
+      case '6': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#dc2626', color: '#fff', fontWeight: 600 }}>Quá hạn</span>;
+      case 'completed': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0d6efd', color: '#fff' }}>Đã hoàn thành</span>;
+      case 'scheduled': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#0dcaf0', color: '#000' }}>Sắp diễn ra</span>;
+      case 'uncompleted': return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#6c757d', color: '#fff' }}>Chưa hoàn thành</span>;
+      default: return <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, backgroundColor: '#e2e8f0', color: '#475569' }}>{status || 'N/A'}</span>;
     }
   };
 
-  // Nhóm courses theo title (tên lớp gốc)
-  const filteredCourses = courses.filter(course => {
-    const tutor = getTutorInfo(course.tutor_id);
-    const term = searchTerm.toLowerCase();
-    return (course.title || course.class_name || '').toLowerCase().includes(term)
-      || tutor.full_name.toLowerCase().includes(term);
-  });
+  // Group theo parent_course_id
+  const courseGroups = useMemo(() => {
+    const filtered = courses.filter(course => {
+      const tutorInfo = getTutorInfo(course.tutor_id);
+      const term = searchTerm.toLowerCase();
+      return (
+        (course.title || course.class_name || '').toLowerCase().includes(term) ||
+        tutorInfo.full_name?.toLowerCase().includes(term)
+      );
+    });
 
-  // Group by title
-  const grouped = filteredCourses.reduce((acc, course) => {
-    const key = course.title || course.class_name || course.course_id;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(course);
-    return acc;
-  }, {});
+    const groupMap = {};
+    filtered.forEach(course => {
+      const gid = course.parent_course_id || course.course_id || course.id;
+      if (!groupMap[gid]) {
+        groupMap[gid] = {
+          groupId: gid,
+          title: course.title || course.class_name || '',
+          baseTitle: (course.title || course.class_name || '').replace(/ - Nhóm \d+$/, ''),
+          level: course.level,
+          schedule_days: course.schedule_days,
+          time_slot: course.time_slot,
+          start_date: course.start_date,
+          sections: [],
+        };
+      }
+      groupMap[gid].sections.push(course);
+    });
 
-  const toggleGroup = (key) => {
-    setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
+    Object.values(groupMap).forEach(g => {
+      g.sections.sort((a, b) => (a.course_id || '').localeCompare(b.course_id || ''));
+    });
+
+    return Object.values(groupMap).sort((a, b) => {
+      const dateA = a.sections[0]?.created_at || '';
+      const dateB = b.sections[0]?.created_at || '';
+      return dateB.localeCompare(dateA);
+    });
+  }, [courses, searchTerm, tutors, users]);
+
+  const toggleGroup = (groupId) => {
+    setExpandedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
   };
+
+  const getGroupSummary = (sections) => ({
+    total: sections.length,
+    withTutor: sections.filter(s => s.tutor_id).length,
+    active: sections.filter(s => s.status === 'active').length,
+    pendingTutor: sections.filter(s => s.status === 'pending_tutor').length,
+    pendingStudent: sections.filter(s => s.status === 'pending_student').length,
+  });
 
   const currentCourseSessions = selectedCourse
     ? classSessions
-        .filter(s =>
-          s.course_id === selectedCourse.course_id ||
-          s.course_id === selectedCourse.id
-        )
+        .filter(s => s.course_id === selectedCourse.course_id || s.course_id === selectedCourse.id)
         .sort((a, b) => {
-          const dateA = new Date(a.actual_date || 0);
-          const dateB = new Date(b.actual_date || 0);
-          return dateA - dateB;
+          const numA = Number(a.session_number || a.lesson_number || 0);
+          const numB = Number(b.session_number || b.lesson_number || 0);
+          if (numA !== numB) return numA - numB;
+          return new Date(a.actual_date || a.session_date || 0) - new Date(b.actual_date || b.session_date || 0);
         })
     : [];
 
@@ -142,14 +183,22 @@ export default function AdminClassesManagement() {
 
   const getCurrentSessionAttendance = () => {
     if (!selectedSession) return [];
-    if (Array.isArray(selectedSession.attendance) && selectedSession.attendance.length > 0)
+    // BE giờ eager load attendances vào từng session
+    if (Array.isArray(selectedSession.attendances) && selectedSession.attendances.length > 0) {
+      return selectedSession.attendances;
+    }
+    // Fallback: tìm trong attendanceRecords rời rạc (tương thích data cũ)
+    if (Array.isArray(selectedSession.attendance) && selectedSession.attendance.length > 0) {
       return selectedSession.attendance;
+    }
     const sessionId = selectedSession.session_id || null;
     const dbId = selectedSession.id || null;
     return attendanceRecords.filter(a => {
       const attId = a.session_id || a.class_session_id || '';
       if (sessionId && attId === sessionId) return true;
       if (dbId && attId === dbId) return true;
+      if (sessionId && String(attId).includes(String(sessionId))) return true;
+      if (sessionId && String(sessionId).includes(String(attId)) && attId) return true;
       return false;
     });
   };
@@ -166,207 +215,303 @@ export default function AdminClassesManagement() {
           className={styles.searchInput}
           placeholder="Tìm kiếm theo tên lớp hoặc tên gia sư..."
           value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
+          onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
         />
       </div>
 
       {loading ? (
-        <div className={styles.loading}>Đang tải dữ liệu từ hệ thống...</div>
+        <div className={styles.loading}>Đang tải dữ liệu...</div>
+      ) : courseGroups.length === 0 ? (
+        <p className={styles.noData}>Không tìm thấy lớp học phù hợp.</p>
       ) : (
-        <div className={styles.groupList}>
-          {Object.keys(grouped).length === 0 ? (
-            <p className={styles.noData}>Không tìm thấy lớp học phù hợp.</p>
-          ) : (
-            Object.entries(grouped).map(([groupTitle, groupCourses]) => {
-              const isExpanded = expandedGroups[groupTitle] !== false; // mặc định mở
-              const sampleCourse = groupCourses[0];
-              const activeCount = groupCourses.filter(c => c.status === 'active').length;
-              const pendingTutorCount = groupCourses.filter(c => c.status === 'pending_tutor').length;
-              const pendingStudentCount = groupCourses.filter(c => c.status === 'pending_student').length;
+        <>
+          {/* Thông tin phân trang */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, fontSize: 14, color: '#64748b' }}>
+            <span>
+              Hiển thị <strong>{Math.min((currentPage - 1) * PAGE_SIZE + 1, courseGroups.length)}</strong> –{' '}
+              <strong>{Math.min(currentPage * PAGE_SIZE, courseGroups.length)}</strong> / <strong>{courseGroups.length}</strong> lớp
+            </span>
+          </div>
 
-              return (
-                <div key={groupTitle} className={styles.groupCard}>
-                  {/* Group Header — click để expand/collapse */}
-                  <div className={styles.groupHeader} onClick={() => toggleGroup(groupTitle)}>
-                    <div className={styles.groupHeaderLeft}>
-                      <div className={styles.groupTitleRow}>
-                        <span className={styles.groupTitle}>{groupTitle}</span>
-                        {sampleCourse.level && (
-                          <span className={styles.groupLevel}>{sampleCourse.level}</span>
-                        )}
-                        <span className={styles.groupSectionBadge}>{groupCourses.length} lớp</span>
-                      </div>
-                      <div className={styles.groupMeta}>
-                        <span>📚 {sampleCourse.category_name || 'Chưa phân loại'}</span>
-                        <span>💰 {sampleCourse.price_per_session?.toLocaleString('vi-VN') || 0}đ/buổi</span>
-                      </div>
-                      <div className={styles.groupStats}>
-                        {activeCount > 0 && (
-                          <span className={`${styles.statPill} ${styles.statActive}`}>{activeCount} đang hoạt động</span>
-                        )}
-                        {pendingTutorCount > 0 && (
-                          <span className={`${styles.statPill} ${styles.statPendingTutor}`}>{pendingTutorCount} chờ gia sư</span>
-                        )}
-                        {pendingStudentCount > 0 && (
-                          <span className={`${styles.statPill} ${styles.statPendingStudent}`}>{pendingStudentCount} chờ học sinh</span>
-                        )}
-                      </div>
+          <div className={styles.groupList}>
+            {courseGroups
+              .slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+              .map(group => {
+            const summary = getGroupSummary(group.sections);
+            const isExpanded = !!expandedGroups[group.groupId];
+            const isSingle = group.sections.length === 1;
+
+            const scheduleDaysArr = Array.isArray(group.schedule_days)
+              ? group.schedule_days
+              : typeof group.schedule_days === 'string'
+                ? (() => { try { return JSON.parse(group.schedule_days); } catch { return group.schedule_days ? [group.schedule_days] : []; } })()
+                : [];
+
+            return (
+              <div key={group.groupId} className={styles.groupCard}>
+                <div
+                  className={styles.groupHeader}
+                  onClick={() => !isSingle && toggleGroup(group.groupId)}
+                  style={{ cursor: isSingle ? 'default' : 'pointer' }}
+                >
+                  <div className={styles.groupHeaderLeft}>
+                    <div className={styles.groupTitleRow}>
+                      <span className={styles.groupTitle}>{group.baseTitle || group.title}</span>
+                      {group.level && <span className={styles.groupLevel}>{group.level}</span>}
+                      {group.sections.length > 1 && (
+                        <span className={styles.groupSectionBadge}>{group.sections.length} mã lớp</span>
+                      )}
                     </div>
+                    <div className={styles.groupMeta}>
+                      {scheduleDaysArr.length > 0 && <span>📅 {scheduleDaysArr.join(', ')}</span>}
+                      {group.time_slot && <span>⏰ {group.time_slot}</span>}
+                      {group.start_date && <span>🗓 Bắt đầu: {formatDate(group.start_date)}</span>}
+                    </div>
+                    {group.sections.length > 1 && (
+                      <div className={styles.groupStats}>
+                        {summary.active > 0 && (
+                          <span className={`${styles.statPill} ${styles.statActive}`}>{summary.active} đang hoạt động</span>
+                        )}
+                        {summary.pendingTutor > 0 && (
+                          <span className={`${styles.statPill} ${styles.statPendingTutor}`}>{summary.pendingTutor} chờ gia sư</span>
+                        )}
+                        {summary.pendingStudent > 0 && (
+                          <span className={`${styles.statPill} ${styles.statPendingStudent}`}>{summary.pendingStudent} chờ học sinh</span>
+                        )}
+                        <span className={`${styles.statPill} ${styles.statNeutral}`}>
+                          {summary.withTutor}/{summary.total} có gia sư
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {!isSingle && (
                     <div className={styles.groupToggle}>
                       <span className={isExpanded ? styles.arrowUp : styles.arrowDown}>▾</span>
                     </div>
-                  </div>
-
-                  {/* Section rows */}
-                  {isExpanded && (
-                    <div className={styles.sectionList}>
-                      {groupCourses.map((course, idx) => {
-                        const tutor = getTutorInfo(course.tutor_id);
-                        return (
-                          <div
-                            key={course.course_id || course.id}
-                            className={styles.sectionRow}
-                            onClick={() => setSelectedCourse(course)}
-                          >
-                            <div className={styles.sectionIndex}>Lớp {idx + 1}</div>
-
-                            <div className={styles.sectionInfo}>
-                              <span className={styles.sectionCourseId}>{course.course_id || course.id}</span>
-                              <span className={styles.sectionTutor}>
-                                {tutor.full_name}
-                                <span className={styles.tutorEmail}> — {tutor.email}</span>
-                              </span>
-                              <span className={styles.sectionStudents}>
-                                👥 {course.current_students ?? course.students?.length ?? 0} / {course.max_students || '?'} học viên
-                              </span>
-                            </div>
-
-                            <div className={styles.sectionRight}>
-                              <span className={`${styles.badge} ${styles[course.status] || ''}`}>
-                                {getStatusLabel(course.status)}
-                              </span>
-                              <span className={styles.sectionViewLink}>Xem chi tiết →</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
                   )}
                 </div>
-              );
-            })
+
+                {(isExpanded || isSingle) && (
+                  <div className={styles.sectionList}>
+                    {group.sections.map((course, idx) => {
+                      const tutorInfo = getTutorInfo(course.tutor_id);
+                      return (
+                        <div
+                          key={course.id || course.course_id || idx}
+                          className={styles.sectionRow}
+                          onClick={() => setSelectedCourse(course)}
+                        >
+                          <div className={styles.sectionIndex}>
+                            {group.sections.length > 1 ? `Nhóm ${idx + 1}` : 'Lớp'}
+                          </div>
+                          <div className={styles.sectionInfo}>
+                            <span className={styles.sectionCourseId}>#{course.course_id || course.id}</span>
+                            <span className={styles.sectionTutor}>
+                              👤 {tutorInfo.full_name}
+                              {tutorInfo.email && <span className={styles.tutorEmail}> — {tutorInfo.email}</span>}
+                            </span>
+                            <span className={styles.sectionStudents}>
+                              👥 {course.students?.length || course.current_students || 0}/{course.max_students} học sinh
+                            </span>
+                          </div>
+                          <div className={styles.sectionRight}>
+                            <span className={`${styles.badge} ${styles[course.status] || ''}`}>
+                              {getStatusLabel(course.status)}
+                            </span>
+                            <span className={styles.sectionViewLink}>Xem chi tiết →</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          </div>
+
+          {/* Pagination controls */}
+          {courseGroups.length > PAGE_SIZE && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 24, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: '6px 14px', borderRadius: 6, border: '1px solid #e2e8f0',
+                  background: currentPage === 1 ? '#f1f5f9' : '#fff',
+                  color: currentPage === 1 ? '#94a3b8' : '#334155',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 500
+                }}
+              >
+                ← Trước
+              </button>
+
+              {Array.from({ length: Math.ceil(courseGroups.length / PAGE_SIZE) }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  style={{
+                    padding: '6px 12px', borderRadius: 6, border: '1px solid',
+                    borderColor: page === currentPage ? '#2563eb' : '#e2e8f0',
+                    background: page === currentPage ? '#2563eb' : '#fff',
+                    color: page === currentPage ? '#fff' : '#334155',
+                    fontWeight: page === currentPage ? 700 : 400,
+                    cursor: 'pointer', minWidth: 36
+                  }}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(p + 1, Math.ceil(courseGroups.length / PAGE_SIZE)))}
+                disabled={currentPage === Math.ceil(courseGroups.length / PAGE_SIZE)}
+                style={{
+                  padding: '6px 14px', borderRadius: 6, border: '1px solid #e2e8f0',
+                  background: currentPage === Math.ceil(courseGroups.length / PAGE_SIZE) ? '#f1f5f9' : '#fff',
+                  color: currentPage === Math.ceil(courseGroups.length / PAGE_SIZE) ? '#94a3b8' : '#334155',
+                  cursor: currentPage === Math.ceil(courseGroups.length / PAGE_SIZE) ? 'not-allowed' : 'pointer', fontWeight: 500
+                }}
+              >
+                Sau →
+              </button>
+            </div>
           )}
-        </div>
+        </>
       )}
 
-      {/* Modal chi tiết lớp */}
+      {/* Modal chi tiết lớp học */}
       {selectedCourse && (
         <div className={styles.modalOverlay} onClick={() => setSelectedCourse(null)}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setSelectedCourse(null)}>✕</button>
             <h2>{selectedCourse.title || selectedCourse.class_name}</h2>
-
             <div className={styles.courseDetailHeader}>
               <p><strong>Mã lớp:</strong> {selectedCourse.course_id || selectedCourse.id}</p>
-              <p><strong>Cấp độ:</strong> {selectedCourse.level || 'N/A'}</p>
-              <p><strong>Học phí:</strong> {selectedCourse.price_per_session?.toLocaleString('vi-VN')}đ/buổi</p>
-              <p><strong>Số tuần:</strong> {selectedCourse.total_weeks || 'N/A'}</p>
-              <p><strong>Gia sư:</strong> {getTutorInfo(selectedCourse.tutor_id).full_name}</p>
-              <p>
-                <strong>Thời gian:</strong>{' '}
-                {selectedCourse.start_date && selectedCourse.end_date
-                  ? `${formatDate(selectedCourse.start_date)} - ${formatDate(selectedCourse.end_date)}`
-                  : Array.isArray(selectedCourse.schedules) && selectedCourse.schedules.length > 0
-                    ? `${formatDate(selectedCourse.schedules[0].start_date)} - ${formatDate(selectedCourse.schedules[0].end_date)}`
-                    : 'N/A'}
-              </p>
+              <p><strong>Cấp độ:</strong> {selectedCourse.level}</p>
+              <p><strong>Học phí:</strong> {selectedCourse.price_per_session?.toLocaleString('vi-VN')} đ/buổi</p>
+              <p><strong>Ngày bắt đầu:</strong> {formatDate(selectedCourse.start_date)}</p>
               <p>
                 <strong>Lịch học:</strong>{' '}
-                {Array.isArray(selectedCourse.schedules) && selectedCourse.schedules.length > 0
-                  ? Array.from(new Set(selectedCourse.schedules.map(s => s.day_of_week))).join(', ')
-                  : 'Chưa có lịch'}
+                {(() => {
+                  const days = selectedCourse.schedule_days;
+                  if (Array.isArray(days)) return days.join(', ');
+                  if (typeof days === 'string') { try { return JSON.parse(days).join(', '); } catch { return days; } }
+                  return 'N/A';
+                })()}
+                {selectedCourse.time_slot ? ` (${selectedCourse.time_slot})` : ''}
               </p>
-              <p><strong>Mô tả:</strong> {selectedCourse.description || '(Chưa có)'}</p>
+              <p><strong>Số tuần:</strong> {selectedCourse.total_weeks || 'N/A'} tuần</p>
+              <p><strong>Gia sư:</strong> {getTutorInfo(selectedCourse.tutor_id).full_name}</p>
+              <p><strong>Trạng thái:</strong> {getStatusLabel(selectedCourse.status)}</p>
+              <p style={{ gridColumn: '1 / -1' }}>
+                <strong>Mô tả:</strong> {selectedCourse.description || <em>(Chưa có mô tả)</em>}
+              </p>
+              <p style={{ gridColumn: '1 / -1' }}>
+                <strong>Phòng học online:</strong>{' '}
+                {(selectedCourse.meet_link || selectedCourse.permanent_room_url)
+                  ? <a href={selectedCourse.meet_link || selectedCourse.permanent_room_url} target="_blank" rel="noreferrer">{selectedCourse.meet_link || selectedCourse.permanent_room_url}</a>
+                  : 'Chưa tạo'}
+              </p>
             </div>
 
             <hr className={styles.divider} />
             <h3>Danh sách các buổi học</h3>
-            <p className={styles.subHint}>Bấm vào từng buổi để xem chi tiết và điểm danh.</p>
+            <p className={styles.subHint}>Bấm vào từng buổi học để xem chi tiết và điểm danh.</p>
 
             <div className={styles.sessionsGrid}>
               {currentCourseSessions.length > 0 ? (
                 currentCourseSessions.map(session => {
                   const displayDate = formatDate(session.actual_date || session.session_date);
-                  const isMakeup = session.is_makeup === true || (session.lesson_title || '').toLowerCase().includes('học bù');
-                  const statusCode = session.session_status || session.status;
+                  const isMakeup = session.is_makeup === true
+                    || (session.lesson_title || '').toLowerCase().includes('học bù');
+                  const statusCode = String(session.session_status || session.status || '');
+                  const now = new Date();
+                  const sessionDate = session.actual_date ? new Date(session.actual_date) : null;
+                  const isToday = sessionDate ? sessionDate.toDateString() === now.toDateString() : false;
+                  const isLive = isToday && statusCode === '3';
+
                   return (
                     <div
-                      key={session.session_id || session.id}
+                      key={session.id || session.session_id}
                       className={styles.sessionCard}
                       onClick={() => setSelectedSession(session)}
                       style={isMakeup ? { borderLeft: '4px solid #ea580c' } : {}}
                     >
                       <div className={styles.sessionBadge}>
-                        {displayDate}
-                        {isMakeup && (
-                          <span style={{ marginLeft: 6, background: '#ffedd5', color: '#c2410c', fontSize: 10, fontWeight: 600, borderRadius: 999, padding: '1px 6px' }}>
-                            Học bù
-                          </span>
-                        )}
+                        {displayDate || `Buổi ${session.session_number}`}
                       </div>
                       <div className={styles.sessionTitle}>
-                        {session.lesson_title || `Buổi học ngày ${displayDate}`}
+                        {session.title || session.lesson_title || `Buổi học ${displayDate}`}
                       </div>
                       <div className={styles.sessionDate}>📅 {displayDate}</div>
                       <div className={styles.sessionTime}>⏰ {session.start_time} - {session.end_time}</div>
-                      <div className={styles.sessionStatus}>
-                        Trạng thái: <span className={styles[statusCode]}>{getSessionStatusLabel(statusCode)}</span>
+                      <div className={styles.sessionStatus} style={{ marginTop: 8 }}>
+                        {getStatusBadge(statusCode, isMakeup, isLive)}
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <p className={styles.noData}>Lớp chưa có dữ liệu buổi học.</p>
+                <p className={styles.noData}>Lớp học này chưa khởi tạo dữ liệu buổi học.</p>
               )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal chi tiết buổi học */}
+      {/* Modal chi tiết buổi học & điểm danh */}
       {selectedSession && (
         <div className={styles.modalOverlay} onClick={() => setSelectedSession(null)}>
           <div className={`${styles.modalContent} ${styles.sessionModal}`} onClick={e => e.stopPropagation()}>
             <button className={styles.closeBtn} onClick={() => setSelectedSession(null)}>✕</button>
-
             <h2>
               Chi Tiết Buổi Học — {formatDate(selectedSession.actual_date || selectedSession.session_date)}
-              {(selectedSession.lesson_title || '').toLowerCase().includes('học bù') && (
+              {selectedSession.is_makeup && (
                 <span style={{ marginLeft: 10, padding: '3px 10px', background: '#ffedd5', color: '#c2410c', fontSize: 13, fontWeight: 600, borderRadius: 999 }}>
                   Học bù
                 </span>
               )}
+              {(selectedSession.title || selectedSession.lesson_title)
+                ? `: ${selectedSession.title || selectedSession.lesson_title}`
+                : ''}
             </h2>
 
             <div className={styles.sessionDetailInfo}>
               <p><strong>Ngày học:</strong> {formatDate(selectedSession.actual_date || selectedSession.session_date)}</p>
               <p><strong>Thời gian:</strong> {selectedSession.start_time} - {selectedSession.end_time}</p>
-              <p><strong>Trạng thái:</strong> {getSessionStatusLabel(selectedSession.session_status || selectedSession.status)}</p>
+              <p>
+                <strong>Trạng thái:</strong>{' '}
+                {getStatusBadge(
+                  String(selectedSession.session_status || selectedSession.status || ''),
+                  selectedSession.is_makeup === true || (selectedSession.lesson_title || '').toLowerCase().includes('học bù'),
+                  false
+                )}
+              </p>
+              {selectedSession.is_makeup && selectedSession.makeup_for_session_id && (
+                <p><strong>Bù cho buổi:</strong> {selectedSession.makeup_for_session_id}</p>
+              )}
               {(currentSessionConfirmation?.record_url || selectedSession.record_url) && (
                 <p>
-                  <strong>Record:</strong>{' '}
-                  <a href={currentSessionConfirmation?.record_url || selectedSession.record_url} target="_blank" rel="noreferrer">
-                    Xem record
+                  <strong>Record Link:</strong>{' '}
+                  <a
+                    href={(currentSessionConfirmation?.record_url || selectedSession.record_url).startsWith('http')
+                      ? (currentSessionConfirmation?.record_url || selectedSession.record_url)
+                      : `https://${currentSessionConfirmation?.record_url || selectedSession.record_url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {currentSessionConfirmation?.record_url || selectedSession.record_url}
                   </a>
                 </p>
               )}
               {(currentSessionConfirmation?.note || selectedSession.tutor_note) && (
-                <p><strong>Ghi chú:</strong> {currentSessionConfirmation?.note || selectedSession.tutor_note}</p>
+                <p><strong>Ghi chú gia sư:</strong> {currentSessionConfirmation?.note || selectedSession.tutor_note}</p>
               )}
             </div>
 
             <hr className={styles.divider} />
-            <h3>Danh Sách Điểm Danh Học Sinh</h3>
+            <h3>Danh Sách Điểm Danh</h3>
 
             <div className={styles.attendanceContainer}>
               {currentAttendance.length > 0 ? (
@@ -385,11 +530,13 @@ export default function AdminClassesManagement() {
                       const info = getStudentInfo(record.student_id || record.user_id);
                       const isPresent =
                         record.present === true ||
+                        String(record.attendance_status || '').toLowerCase() === 'present' ||
+                        String(record.attendance_status || '').toLowerCase() === 'attended' ||
                         record.attendance_status === true ||
-                        record.status === 'present' ||
-                        record.status === 'attended';
+                        String(record.status || '').toLowerCase() === 'present' ||
+                        String(record.status || '').toLowerCase() === 'attended';
                       return (
-                        <tr key={record.attendance_id || record.id || index}>
+                        <tr key={record.id || record.attendance_id || record.student_id || index}>
                           <td>{index + 1}</td>
                           <td><strong>{info.full_name}</strong></td>
                           <td>{info.email}<br /><small>{info.phone}</small></td>
@@ -405,7 +552,14 @@ export default function AdminClassesManagement() {
                   </tbody>
                 </table>
               ) : (
-                <p className={styles.noData}>Chưa có dữ liệu điểm danh.</p>
+                <p className={styles.noData}>
+                  Chưa có dữ liệu điểm danh.
+                  {selectedSession.is_makeup && (
+                    <span style={{ display: 'block', marginTop: 6, color: '#94a3b8', fontSize: 13 }}>
+                      (Buổi học bù — điểm danh chỉ có sau khi gia sư xác nhận hoàn thành)
+                    </span>
+                  )}
+                </p>
               )}
             </div>
           </div>
