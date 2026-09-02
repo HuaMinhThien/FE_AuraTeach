@@ -1,68 +1,59 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { courseService } from '@/services/courseService';
+import apiClient from '@/services/apiClient';
 import { categoryService } from '@/services/categoryService';
 
 function CoursesSection() {
-  const [categories, setCategories] = useState([]);
-  const [courses, setCourses] = useState([]);
-  
+  const [categories, setCategories]   = useState([]);
+  // featuredCourses = danh sách admin đã chọn (từ /home/featured-content)
+  const [featuredCourses, setFeaturedCourses] = useState([]);
   const [activeTabId, setActiveTabId] = useState('All');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]         = useState(true);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  // 🚀 Gộp chung việc tải Danh mục và Khóa học vào 1 useEffect duy nhất
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Gọi song song cả 2 API để tối ưu tốc độ tải trang
-        const [catResponse, courseResponse] = await Promise.all([
+        const [catResponse, featuredResponse] = await Promise.all([
           categoryService.getCategories().catch(() => []),
-          courseService.getCourses({
-            category_id: activeTabId === 'All' ? 'all' : activeTabId,
-            page: currentPage,
-            per_page: 8,
-            sort_by: 'current_students',
-            direction: 'asc'
-          }).catch(() => [])
+          apiClient.get('/home/featured-content').catch(() => null),
         ]);
 
-        // 1. Xử lý dữ liệu danh mục (chỉ cần lấy 1 lần hoặc cập nhật lại nếu muốn)
-        const categoriesData = Array.isArray(catResponse) ? catResponse : (catResponse.data || []);
+        // Categories
+        const categoriesData = Array.isArray(catResponse)
+          ? catResponse
+          : (catResponse?.data || []);
         setCategories(categoriesData);
 
-        // 2. Xử lý dữ liệu khóa học & phân trang theo Tab / Page hiện tại
-        if (Array.isArray(courseResponse)) {
-          setCourses(courseResponse);
-          setTotalPages(1);
-        } else {
-          setCourses(courseResponse.data || []);
-          setTotalPages(courseResponse.last_page || courseResponse.meta?.last_page || 1);
-        }
-
+        // Featured courses từ config admin
+        const coursesFromConfig = featuredResponse?.data?.courses || [];
+        setFeaturedCourses(coursesFromConfig);
       } catch (error) {
-        console.error('Lỗi tải dữ liệu trang:', error);
+        console.error('Lỗi tải dữ liệu lớp học đề cử:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [activeTabId, currentPage]); // Sẽ tự động chạy lại khi người dùng đổi tab hoặc chuyển trang
+  }, []);
 
-  const goToPage = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
+  // Lọc theo tab danh mục (client-side, vì dữ liệu đã đủ)
+  const displayedCourses = useMemo(() => {
+    if (activeTabId === 'All') return featuredCourses;
+    return featuredCourses.filter(
+      (c) => c.category?.category_id === activeTabId
+    );
+  }, [featuredCourses, activeTabId]);
 
-  if (loading && courses.length === 0) {
-    return <div style={{textAlign: 'center', padding: '40px'}}>Đang tải danh sách lớp học...</div>;
+  if (loading && featuredCourses.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        Đang tải danh sách lớp học...
+      </div>
+    );
   }
 
   return (
@@ -74,33 +65,36 @@ function CoursesSection() {
           </div>
 
           {/* THANH TAB DANH MỤC */}
-          <div className="teacher-sec3__tabs" style={{ display: 'flex', gap: '10px', marginBottom: '30px', flexWrap: 'wrap' }}>
+          <div
+            className="teacher-sec3__tabs"
+            style={{ display: 'flex', gap: '10px', marginBottom: '30px', flexWrap: 'wrap' }}
+          >
             <button
-              onClick={() => { setActiveTabId('All'); setCurrentPage(1); }}
+              onClick={() => setActiveTabId('All')}
               style={{
                 padding: '10px 20px', borderRadius: '20px', border: '1px solid #00236F',
                 backgroundColor: activeTabId === 'All' ? '#00236F' : '#FFFFFF',
                 color: activeTabId === 'All' ? '#FFFFFF' : '#00236F',
-                cursor: 'pointer', fontWeight: '500'
+                cursor: 'pointer', fontWeight: '500',
               }}
             >
               Tất cả
             </button>
 
             {categories
-              .filter(cat => cat.category_name !== 'Tất cả')
+              .filter((cat) => cat.category_name !== 'Tất cả')
               .map((cat) => {
-                const catId = cat.category_id || cat.id;
+                const catId   = cat.category_id || cat.id;
                 const isActive = activeTabId === catId;
                 return (
                   <button
                     key={catId}
-                    onClick={() => { setActiveTabId(catId); setCurrentPage(1); }}
+                    onClick={() => setActiveTabId(catId)}
                     style={{
                       padding: '10px 20px', borderRadius: '20px', border: '1px solid #00236F',
                       backgroundColor: isActive ? '#00236F' : '#FFFFFF',
                       color: isActive ? '#FFFFFF' : '#00236F',
-                      cursor: 'pointer', fontWeight: '500'
+                      cursor: 'pointer', fontWeight: '500',
                     }}
                   >
                     {cat.category_name}
@@ -110,25 +104,27 @@ function CoursesSection() {
           </div>
 
           {/* DANH SÁCH LỚP HỌC */}
-          {courses.length === 0 ? (
+          {displayedCourses.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
               Không có lớp học nào thuộc danh mục này.
             </div>
           ) : (
             <div className="teacher-sec3__grid">
-              {courses.map((course) => {
-                const categoryName = course.category?.category_name || 'Chưa phân loại';
+              {displayedCourses.map((course) => {
+                const categoryName =
+                  course.category?.category_name || 'Chưa phân loại';
 
                 return (
-                  <Link 
-                    key={course.id || course.course_id} 
-                    href={`/classList/${course.course_id || course.id}`}
+                  <Link
+                    key={course.course_id}
+                    href={`/classList/${course.course_id}`}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
                     <div className="course-card">
-                      <img 
-                        src={course.thumbnail || "/img/default-class-1.jpg"} 
-                        alt={course.title} 
+                      <img
+                        src={course.thumbnail || '/img/default-class-1.jpg'}
+                        alt={course.title}
+                        onError={(e) => { e.target.src = '/img/default-class-1.jpg'; }}
                       />
                       <div className="course-card__content">
                         <span className="course-card__tag">
@@ -138,10 +134,14 @@ function CoursesSection() {
                         <p className="course-card__description">{course.description}</p>
                         <div className="course-card__footer">
                           <div className="course-card__price">
-                            <span className="course-card__price-value">{parseInt(course.price_per_session || 0).toLocaleString('vi-VN')}đ / buổi</span>
+                            <span className="course-card__price-value">
+                              {parseInt(course.price_per_session || 0).toLocaleString('vi-VN')}đ / buổi
+                            </span>
                           </div>
                           <div className="course-card__students">
-                            <span>👨‍🎓 {course.current_students || course.students_count || 0}/{course.max_students} HS</span>
+                            <span>
+                              👨‍🎓 {course.current_students || 0}/{course.max_students} HS
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -151,38 +151,6 @@ function CoursesSection() {
               })}
             </div>
           )}
-
-          {/* PHÂN TRANG */}
-          {totalPages > 1 && (
-            <div className="teacher-sec3__pagination">
-              <button 
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="pagination-btn"
-              >
-                &lt;
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => goToPage(pageNum)}
-                  className={`pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
-                >
-                  {pageNum}
-                </button>
-              ))}
-
-              <button 
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="pagination-btn"
-              >
-                &gt;
-              </button>
-            </div>
-          )}
-
         </div>
       </div>
     </section>

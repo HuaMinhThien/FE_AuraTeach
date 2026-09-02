@@ -42,10 +42,14 @@ export default function AdminNotificationsPage() {
   // 🚀 Đánh dấu 1 thông báo đã đọc qua service
   const handleMarkAsRead = async (notif) => {
     if (notif.is_read) return;
+    const notifId = notif.notification_id || notif.id;
     try {
-      await notificationService.markAsRead(notif.id);
+      await notificationService.markAsRead(notifId);
       setNotifications(prev =>
-        prev.map(n => (n.id === notif.id ? { ...n, is_read: true } : n))
+        prev.map(n => {
+          const nId = n.notification_id || n.id;
+          return nId === notifId ? { ...n, is_read: true } : n;
+        })
       );
     } catch (error) {
       console.error("❌ [Admin Notif] Mark as read error:", error);
@@ -188,9 +192,9 @@ export default function AdminNotificationsPage() {
             <p>Không có thông báo nào</p>
           </div>
         ) : (
-          filteredNotifications.map((notif) => (
+          filteredNotifications.map((notif, idx) => (
             <div
-              key={notif.id}
+              key={notif.notification_id || notif.id || idx}
               className={`${styles.notifItem} ${!notif.is_read ? styles.unread : ""}`}
               onClick={() => handleMarkAsRead(notif)}
             >
