@@ -50,7 +50,6 @@ export function middleware(request) {
     "/forgot-password", 
     "/tutorList", 
     "/class-search",
-    "/api/bookings"
   ];
   const isPublicRoute = publicRoutes.some(route => 
     pathname === route || pathname.startsWith(route + "/")

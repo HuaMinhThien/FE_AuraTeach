@@ -202,7 +202,7 @@ export default function AdminCreateClass() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Tìm gia sư phù hợp qua Next.js API route → proxy sang Laravel BE
+  // Tìm gia sư phù hợp — gọi thẳng Laravel qua adminService
   const fetchEligibleTutors = async () => {
     if (formData.schedule_days.length === 0) {
       alert('Vui lòng chọn ngày học trước khi tìm Tutor!');
@@ -212,36 +212,21 @@ export default function AdminCreateClass() {
     try {
       const courseData = {
         category_id: formData.category_id,
-        level: tutorLevel,        // BE đọc field 'level', không phải 'tutor_level'
-        tutor_level: tutorLevel,  // giữ lại để backward-compat với classSuggestionService
+        level: tutorLevel,
+        tutor_level: tutorLevel,
         schedule_days: formData.schedule_days,
         time_slot: `${formData.start_time}-${formData.end_time}`,
       };
 
-      // Lấy token từ localStorage để truyền lên API route
-      const token =
-        (typeof window !== 'undefined' && (
-          localStorage.getItem('access_token') ||
-          localStorage.getItem('token') ||
-          localStorage.getItem('user_token')
-        )) || '';
+      const result = await adminService.getEligibleTutors(courseData);
+      const tutors = result?.data || result || [];
 
-      const res = await fetch('/api/admin/classes/eligible-tutors', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ course: courseData }),
-      });
-      const result = await res.json();
-
-      if (result.success) {
-        setEligibleTutors(result.data || []);
-        setSelectedTutors((result.data || []).map(t => t.tutor_id));
+      if (Array.isArray(tutors)) {
+        setEligibleTutors(tutors);
+        setSelectedTutors(tutors.map(t => t.tutor_id));
         setShowTutorList(true);
       } else {
-        alert('Không thể tìm tutor phù hợp: ' + (result.message || 'Lỗi không xác định'));
+        alert('Không thể tìm tutor phù hợp: ' + (result?.message || 'Lỗi không xác định'));
       }
     } catch (error) {
       console.error('Lỗi tìm tutor:', error);
@@ -366,11 +351,7 @@ export default function AdminCreateClass() {
 
       // Gửi đề xuất đồng loạt cho tất cả tutors được chọn
       try {
-        await fetch('/api/admin/classes/suggest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseId: createdCourseId, tutorIds: selectedTutors }),
-        });
+        await adminService.sendClassSuggestions(createdCourseId, selectedTutors);
       } catch (err) {
         console.error('Lỗi gửi đề xuất:', err);
       }

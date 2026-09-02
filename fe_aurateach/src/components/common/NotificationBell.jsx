@@ -143,18 +143,21 @@ export default function NotificationBell({ userId, userRole }) {
                 <p>Chưa có thông báo nào</p>
               </div>
             ) : (
-              notifications.map((notif) => (
+              notifications.map((notif, idx) => {
+                const notifId = notif.notification_id || notif.id;
+                return (
                 <div
-                  key={notif.id}
+                  key={notifId || idx}
                   className={`${styles.notifItem} ${!notif.is_read ? styles.unread : ''}`}
                   onClick={async () => {
                     if (!notif.is_read) {
                       try {
-                        await notificationService.markAsRead(notif.id);
+                        await notificationService.markAsRead(notifId);
                         setNotifications(prev => 
-                          prev.map(n => 
-                            n.id === notif.id ? { ...n, is_read: true } : n
-                          )
+                          prev.map(n => {
+                            const nId = n.notification_id || n.id;
+                            return nId === notifId ? { ...n, is_read: true } : n;
+                          })
                         );
                         setUnreadCount(prev => Math.max(0, prev - 1));
                       } catch (error) {
@@ -179,7 +182,8 @@ export default function NotificationBell({ userId, userRole }) {
                   </div>
                   {!notif.is_read && <div className={styles.unreadDot} />}
                 </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
