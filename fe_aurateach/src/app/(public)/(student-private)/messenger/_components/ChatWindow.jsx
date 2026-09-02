@@ -141,7 +141,13 @@ export default function ChatWindow({
         <div>
           <span className={styles.headerName}>{otherUserName}</span>
           <span className={styles.headerRole}>
-            {otherUserRole === "tutor" ? <img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> : <img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} />} {otherUserRole === "tutor" ? "Gia sư" : "Học viên"}          </span>
+            {otherUserRole === "admin"
+              ? <>🛡️ Ban hỗ trợ AuraTeach</>
+              : otherUserRole === "tutor"
+                ? <><img src="/img/icons/team.png" alt="Gia sư" className={styles.roleIcon} /> Gia sư</>
+                : <><img src="/img/icons/multiple-users-silhouette.png" alt="Học viên" className={styles.roleIcon} /> Học viên</>
+            }
+          </span>
         </div>
       </div>
       <div className={styles.headerActions}>

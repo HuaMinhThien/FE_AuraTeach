@@ -102,7 +102,6 @@ export default function Sidebar() {
         { 
             path: "/tutor-messenger", 
             text: "Tin nhắn",
-            // Thêm logic hiển thị 99+ cho đồng bộ với Header
             badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : null
         },
     ];
