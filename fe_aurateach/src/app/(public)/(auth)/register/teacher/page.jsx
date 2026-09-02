@@ -255,7 +255,7 @@ export default function TeacherRegisterPage() {
           <div className="aurateach-teacher-left">
             <div className="aurateach-teacher-hero">
               <img
-                src="/images/teacher-hero.jpg"
+                src="/img/banner/register-tutor.png"
                 alt="Đăng ký giảng viên AuraTeach"
                 className="aurateach-teacher-hero-img"
               />

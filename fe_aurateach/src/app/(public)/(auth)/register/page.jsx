@@ -139,7 +139,7 @@ export default function RegisterPage() {
           <div className="aurateach-register-left">
             <div className="aurateach-register-hero">
               <img
-                src="/images/register-hero.jpg"
+                src="/img/banner/register-student.png"
                 alt="Đăng ký AuraTeach"
                 className="aurateach-register-hero-img"
               />
