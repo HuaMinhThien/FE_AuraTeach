@@ -297,12 +297,10 @@ export default function AdminChatPage() {
       setLoadingMsgs(true);
       try {
         const res = await adminChatService.getAdminMessages(conv.conversation_id);
-        setMessages(
-          (res.data || []).map((m) => ({
-            ...m,
-            message_id: m.message_id ?? m.id,
-          }))
-        );
+        const sorted = (res.data || [])
+          .map((m) => ({ ...m, message_id: m.message_id ?? m.id }))
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        setMessages(sorted);
       } catch (e) {
         console.error("Lỗi tải tin nhắn:", e);
       } finally {
@@ -408,7 +406,10 @@ export default function AdminChatPage() {
         setMessages((prev) => {
           const ids = new Set(prev.map((m) => m.message_id));
           const newMsgs = fresh.filter((m) => !ids.has(m.message_id));
-          return newMsgs.length ? [...prev, ...newMsgs] : prev;
+          if (!newMsgs.length) return prev;
+          return [...prev, ...newMsgs].sort(
+            (a, b) => new Date(a.created_at) - new Date(b.created_at)
+          );
         });
         if (fresh.length > 0) {
           const last = fresh[fresh.length - 1];
@@ -439,9 +440,8 @@ export default function AdminChatPage() {
     setInput("");
 
     const tmpId = `tmp_${Date.now()}`;
-    setMessages((prev) => [
-      ...prev,
-      {
+    setMessages((prev) =>
+      [...prev, {
         message_id: tmpId,
         conversation_id: selected.conversation_id,
         sender_id: admin.user_id,
@@ -449,8 +449,8 @@ export default function AdminChatPage() {
         content: text,
         created_at: new Date().toISOString(),
         is_read: false,
-      },
-    ]);
+      }].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    );
 
     try {
       const res = await adminChatService.sendAdminMessage(
@@ -674,7 +674,10 @@ export default function AdminChatPage() {
                         <MessageBubble
                           key={msg.message_id}
                           msg={msg}
-                          isOwn={msg.sender_role === "admin"}
+                          isOwn={
+                            msg.sender_role === "admin" ||
+                            msg.sender_id === admin?.user_id
+                          }
                         />
                       ))}
                     </div>
