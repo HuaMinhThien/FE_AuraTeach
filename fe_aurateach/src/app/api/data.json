@@ -6022,7 +6022,7 @@
       "status": "pending",
       "createdAt": "2026-08-06T10:00:00.000Z",
       "updatedAt": "2026-08-06T10:00:00.000Z"
-    },
+    }
   ],
   "$schema": "./node_modules/json-server/schema.json"
 }

@@ -88,8 +88,8 @@ export default function Home() {
                             <div className="why-aurateach__icon-circle why-aurateach__icon-circle--payment">
                                 <Image src="/img/icons/payment.png" alt="Direct Payment" width={20} height={20} />
                             </div>
-                            <h3 className="why-aurateach__item-title">Thanh toán trực tiếp</h3>
-                            <p className="why-aurateach__item-desc">Gia sư và học viên tự do thỏa thuận phương thức thanh toán, không thông qua nền tảng.</p>
+                            <h3 className="why-aurateach__item-title">Kết nối nhanh chóng</h3>
+                            <p className="why-aurateach__item-desc">Tìm kiếm và kết nối trực tiếp với gia sư phù hợp chỉ trong vài thao tác đơn giản.</p>
                         </div>
 
                         <div className="why-aurateach__item">
@@ -97,7 +97,7 @@ export default function Home() {
                                 <Image src="/img/icons/glock.png" alt="Flexible Scheduling" width={20} height={20} />
                             </div>
                             <h3 className="why-aurateach__item-title">Linh hoạt thời gian</h3>
-                            <p className="why-aurateach__item-desc">Học online hoặc offline, thời gian linh hoạt theo nhu cầu riêng của bạn.</p>
+                            <p className="why-aurateach__item-desc">Thời gian học linh hoạt theo nhu cầu riêng của bạn.</p>
                         </div>
 
                         <div className="why-aurateach__item why-aurateach__item--bottom-row">
