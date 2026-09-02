@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import notificationService from "@/services/notificationService";
+﻿import { NextResponse } from "next/server";
+import { notificationService } from "@/services/notificationService";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 export async function POST(request) {
   try {
@@ -28,7 +28,6 @@ export async function POST(request) {
       );
     }
 
-    console.log(`✅ Approve tutor: userId=${userId}, tutorId=${tutorId}, levels=${teaching_levels.join(", ")}, level=${level}`);
 
     // Lấy tutor hiện tại
     const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${tutorId}`);
@@ -78,13 +77,11 @@ export async function POST(request) {
           status: 'approved',
           reason: null,
         });
-        console.log(`📬 Đã gửi thông báo duyệt tutor cho ${user.email}`);
       }
     } catch (notifError) {
       console.error("❌ Lỗi gửi thông báo duyệt tutor:", notifError);
     }
 
-    console.log(`✅ Tutor ${tutorId} đã được duyệt thành công`);
 
     return NextResponse.json({
       success: true,

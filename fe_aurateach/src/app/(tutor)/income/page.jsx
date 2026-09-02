@@ -33,20 +33,15 @@ export default function TutorRevenuePage() {
       setLoading(true);
 
       const currentUser = await authService.getCurrentUser();
-      console.log("🔍 Phản hồi gốc từ authService.getCurrentUser():", currentUser);
-
       const userData = currentUser?.data?.user || currentUser?.user || currentUser?.data || currentUser;
-      const userId = userData?.user_id || userData?.id || userData?.userId || 'u-Wy4QdEzm';
-
-      console.log("🎯 User ID quyết định sử dụng:", userId);
+      const userId = userData?.user_id || userData?.id || userData?.userId;
 
       if (!userId) {
-        console.error('Vẫn không tìm thấy userId!');
+        console.error('Không tìm thấy userId');
         return;
       }
 
       const result = await tutorService.getTutorEarningsData(userId);
-      console.log("📦 Dữ liệu thu nhập trả về từ API:", result);
 
       if (result && (result.success || result.data)) {
         const actualData = result.data || result;
@@ -104,8 +99,6 @@ export default function TutorRevenuePage() {
         is_default: newIsDefault,
       });
 
-      console.log("🔍 Kết quả nhận được từ addBankAccount:", result);
-
       if (result && (result.success || result.bank_account_id || result?.data?.bank_account_id)) {
         alert('Đã thêm tài khoản ngân hàng thành công!');
         setShowAddBankModal(false);
@@ -138,8 +131,6 @@ export default function TutorRevenuePage() {
         bank_account_id: bankAccountId,
       });
 
-      console.log("🔍 Kết quả phản hồi đặt mặc định:", result);
-
       const responseData = result?.data || result;
       const isSuccess = responseData?.success === true || result?.success === true;
 
@@ -160,28 +151,10 @@ export default function TutorRevenuePage() {
     setDetailBankInfo(null);
 
     if (payout.bank_account_id) {
-      try {
-        const found = bankAccounts.find(
-          (b) =>
-            b.bank_account_id === payout.bank_account_id ||
-            b.id === payout.bank_account_id
-        );
-        if (found) {
-          setDetailBankInfo(found);
-        } else {
-          const res = await fetch(
-            `http://localhost:3007/tutor_bank_accounts?bank_account_id=${payout.bank_account_id}`
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              setDetailBankInfo(data[0]);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Lỗi lấy thông tin ngân hàng:', err);
-      }
+      const found = bankAccounts.find(
+        (b) => b.bank_account_id === payout.bank_account_id || b.id === payout.bank_account_id
+      );
+      if (found) setDetailBankInfo(found);
     }
 
     setShowDetailModal(true);

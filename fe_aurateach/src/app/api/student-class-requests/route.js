@@ -1,4 +1,6 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
+
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 function generateMeetLink(courseId) {
   return `/room/${courseId}`;
@@ -14,10 +16,6 @@ function isTimeOverlap(start1, end1, start2, end2) {
   return Math.max(start1, start2) < Math.min(end1, end2);
 }
 
-/**
- * Lấy start/end phút từ một object (request hoặc course)
- * Ưu tiên start_time/end_time, nếu không có thì parse từ time_slot
- */
 function getTimeRange(item) {
   let start = 0;
   let end = 0;
@@ -38,7 +36,6 @@ function checkScheduleConflict(request, tutorCourses) {
   const reqDays = request.schedule_days || [];
   const { start: reqStart, end: reqEnd } = getTimeRange(request);
 
-  // Nếu lớp yêu cầu không có ngày hoặc không có giờ → không coi là trùng
   if (reqDays.length === 0 || (reqStart === 0 && reqEnd === 0)) {
     return false;
   }
@@ -60,13 +57,9 @@ function checkScheduleConflict(request, tutorCourses) {
   return false;
 }
 
-/**
- * Kiểm tra lớp có phù hợp với gia sư hay không
- */
 function isTutorSuitable(request, tutor) {
   if (!tutor) return false;
 
-  // 1. Kiểm tra trình độ gia sư (Sinh viên / Giáo viên)
   const requiredTutorLevel = (request.tutor_level || '').trim();
   const tutorLevel = (tutor.level || '').trim();
 
@@ -74,7 +67,6 @@ function isTutorSuitable(request, tutor) {
     return false;
   }
 
-  // 2. Kiểm tra cấp học
   const reqLevel = request.level || request.grade_level;
   const teachingLevels = Array.isArray(tutor.teaching_levels) ? tutor.teaching_levels : [];
 
@@ -82,28 +74,23 @@ function isTutorSuitable(request, tutor) {
     return false;
   }
 
-  // 3. Trường hợp đặc biệt: Cấp 1 + hỗ trợ bài tập về nhà
   if (reqLevel === 'Cấp 1' && request.category_id === 'cap1_homework') {
     return true;
   }
 
-  // 4. Kiểm tra môn học (expertise) – làm mềm hơn
   const categoryName = (request.category_name || '').trim().toLowerCase();
   if (!categoryName || categoryName === 'môn học') {
-    // Không có thông tin môn → cho phép (đã pass cấp + trình độ)
     return true;
   }
 
   const expertise = (tutor.expertise || '').toLowerCase().trim();
   if (!expertise) return false;
 
-  // Tách các môn
   const expertiseList = expertise
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
 
-  // So khớp linh hoạt (chứa nhau hoặc bằng nhau)
   const matched = expertiseList.some(exp => {
     return (
       exp === categoryName ||
@@ -112,7 +99,6 @@ function isTutorSuitable(request, tutor) {
     );
   });
 
-  // Fallback: expertise gốc có chứa tên môn
   if (!matched && expertise.includes(categoryName)) {
     return true;
   }
@@ -125,7 +111,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const rawTutorId = searchParams.get('tutor_id');
 
-    const reqRes = await fetch("http://localhost:3007/class_requests", { cache: 'no-store' });
+    const reqRes = await fetch(`${API_BASE}/class_requests`, { cache: 'no-store' });
     const classRequests = await reqRes.json();
 
     const uniqueRequestsMap = new Map();
@@ -139,10 +125,10 @@ export async function GET(request) {
     }
     const cleanRequests = Array.from(uniqueRequestsMap.values());
 
-    const catRes = await fetch("http://localhost:3007/categories", { cache: 'no-store' });
+    const catRes = await fetch(`${API_BASE}/categories`, { cache: 'no-store' });
     const categories = await catRes.json();
 
-    const appRes = await fetch("http://localhost:3007/request_applications", { cache: 'no-store' });
+    const appRes = await fetch(`${API_BASE}/request_applications`, { cache: 'no-store' });
     const applications = appRes.ok ? await appRes.json() : [];
 
     const enrichedData = cleanRequests.map(req => {
@@ -163,12 +149,12 @@ export async function GET(request) {
       return NextResponse.json(enrichedData, { status: 200 });
     }
 
-    const tutorsRes = await fetch("http://localhost:3007/tutors", { cache: 'no-store' });
+    const tutorsRes = await fetch(`${API_BASE}/tutors`, { cache: 'no-store' });
     const tutors = await tutorsRes.json();
     const matchedTutor = tutors.find(t => t.tutor_id === rawTutorId || t.user_id === rawTutorId);
     const actualTutorId = matchedTutor ? matchedTutor.tutor_id : rawTutorId;
 
-    const coursesRes = await fetch("http://localhost:3007/courses", { cache: 'no-store' });
+    const coursesRes = await fetch(`${API_BASE}/courses`, { cache: 'no-store' });
     const allCourses = await coursesRes.json();
     const tutorCourses = allCourses.filter(c => c.tutor_id === actualTutorId);
 
@@ -196,7 +182,6 @@ export async function GET(request) {
       proposed_classes: proposed,
       pending_classes: pendingApproval
     }, { status: 200 });
-
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -219,78 +204,72 @@ export async function POST(request) {
         description: body.description,
         level: body.grade_level || body.level,
         price_per_session: Number(body.price_per_session),
-        status: "pending",
+        status: 'pending',
         schedule_days: body.schedule_days || [],
         time_slot: `${body.start_time}-${body.end_time}`,
         max_students: 1,
-        total_weeks: Number(body.total_weeks || (body.schedule_type === "2_terms" ? 36 : body.schedule_type === "custom" ? 4 : 18)),
+        total_weeks: Number(body.total_weeks || (body.schedule_type === '2_terms' ? 36 : body.schedule_type === 'custom' ? 4 : 18)),
         start_date: body.start_date,
-        schedule_type: body.schedule_type || "1_term",
-        tutor_level: body.tutor_level || "Giáo viên",
+        schedule_type: body.schedule_type || '1_term',
+        tutor_level: body.tutor_level || 'Giáo viên',
         start_time: body.start_time,
         end_time: body.end_time,
         meet_link: meet_link,
         created_at: new Date().toISOString()
       };
 
-      const dbResponse = await fetch("http://localhost:3007/class_requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const dbResponse = await fetch(`${API_BASE}/class_requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newClassRequest),
       });
 
-      if (!dbResponse.ok) throw new Error("Không thể ghi dữ liệu vào JSON Server");
+      if (!dbResponse.ok) throw new Error('Không thể ghi dữ liệu vào JSON Server');
       const savedData = await dbResponse.json();
 
       return NextResponse.json({
         success: true,
-        message: "Đăng yêu cầu tạo lớp thành công!",
+        message: 'Đăng yêu cầu tạo lớp thành công!',
         data: savedData
       }, { status: 201 });
     }
 
-    // ========== XỬ LÝ NHẬN DẠY (action = 'apply') ==========
     const { requests_id, tutor_id } = body;
 
     if (!requests_id || !tutor_id) {
-      return NextResponse.json({ success: false, message: "Thiếu thông tin requests_id hoặc tutor_id" }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'Thiếu thông tin requests_id hoặc tutor_id' }, { status: 400 });
     }
 
-    // 1. Lấy thông tin gia sư
-    const tutorsRes = await fetch("http://localhost:3007/tutors", { cache: 'no-store' });
+    const tutorsRes = await fetch(`${API_BASE}/tutors`, { cache: 'no-store' });
     const tutors = await tutorsRes.json();
     const matchedTutor = tutors.find(t => t.tutor_id === tutor_id || t.user_id === tutor_id);
     const actualTutorId = matchedTutor ? matchedTutor.tutor_id : tutor_id;
 
-    // 2. Lấy thông tin lớp yêu cầu
-    const reqRes = await fetch("http://localhost:3007/class_requests", { cache: 'no-store' });
+    const reqRes = await fetch(`${API_BASE}/class_requests`, { cache: 'no-store' });
     const allRequests = await reqRes.json();
     const targetRequest = Array.isArray(allRequests)
       ? allRequests.find(r => (r.requests_id || r.id) === requests_id)
       : null;
 
     if (!targetRequest) {
-      return NextResponse.json({ success: false, message: "Không tìm thấy yêu cầu lớp học" }, { status: 404 });
+      return NextResponse.json({ success: false, message: 'Không tìm thấy yêu cầu lớp học' }, { status: 404 });
     }
 
-    // 3. Lấy danh sách lớp đang dạy của gia sư
-    const coursesRes = await fetch("http://localhost:3007/courses", { cache: 'no-store' });
+    const coursesRes = await fetch(`${API_BASE}/courses`, { cache: 'no-store' });
     const allCourses = await coursesRes.json();
     const tutorCourses = Array.isArray(allCourses)
       ? allCourses.filter(c => c.tutor_id === actualTutorId && c.status === 'active')
       : [];
 
-    // 4. Kiểm tra trùng lịch
     const isConflicted = checkScheduleConflict(targetRequest, tutorCourses);
     if (isConflicted) {
       return NextResponse.json({
         success: false,
-        message: "⚠️ Lớp này bị trùng lịch với lớp bạn đang dạy. Vui lòng chọn lớp khác!"
+        message: '⚠️ Lớp này bị trùng lịch với lớp bạn đang dạy. Vui lòng chọn lớp khác!'
       }, { status: 400 });
     }
 
-    // 5. Kiểm tra đã ứng tuyển chưa
-    const appResCheck = await fetch("http://localhost:3007/request_applications", { cache: 'no-store' });
+    const appResCheck = await fetch(`${API_BASE}/request_applications`, { cache: 'no-store' });
     const existingApps = appResCheck.ok ? await appResCheck.json() : [];
     const alreadyApplied = Array.isArray(existingApps) && existingApps.some(
       app => (app.requests_id === requests_id || app.request_id === requests_id) &&
@@ -300,37 +279,35 @@ export async function POST(request) {
     if (alreadyApplied) {
       return NextResponse.json({
         success: false,
-        message: "Bạn đã đăng ký nhận dạy lớp này rồi!"
+        message: 'Bạn đã đăng ký nhận dạy lớp này rồi!'
       }, { status: 400 });
     }
 
-    // 6. Tạo đơn nhận dạy
     const newApp = {
       id: `app-${Date.now()}`,
       requests_id: requests_id,
       tutor_id: actualTutorId,
-      status: "pending",
+      status: 'pending',
       created_at: new Date().toISOString()
     };
 
-    const appRes = await fetch("http://localhost:3007/request_applications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const appRes = await fetch(`${API_BASE}/request_applications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newApp)
     });
 
-    if (!appRes.ok) throw new Error("Lỗi khi lưu đơn nhận dạy");
+    if (!appRes.ok) throw new Error('Lỗi khi lưu đơn nhận dạy');
 
     return NextResponse.json({
       success: true,
-      message: "Đã đăng ký nhận dạy thành công. Vui lòng chờ học sinh duyệt!",
+      message: 'Đã đăng ký nhận dạy thành công. Vui lòng chờ học sinh duyệt!',
       data: newApp
     }, { status: 200 });
-
   } catch (error) {
     return NextResponse.json({
       success: false,
-      message: "Lỗi xử lý hệ thống",
+      message: 'Lỗi xử lý hệ thống',
       error: error.message
     }, { status: 500 });
   }

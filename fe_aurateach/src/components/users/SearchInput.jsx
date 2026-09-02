@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { FaSearch } from 'react-icons/fa'; 
@@ -15,7 +15,6 @@ function SearchComponent() {
       return;
     }
 
-    console.log('Đang tìm kiếm từ khóa:', searchTerm);
     alert(`Bạn đang tìm: ${searchTerm}`);
   };
 

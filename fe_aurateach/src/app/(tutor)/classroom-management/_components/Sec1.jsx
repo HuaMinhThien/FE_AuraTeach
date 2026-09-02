@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -22,7 +22,6 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
 
         if (userId) {
           const response = await tutorService.getByUserId(userId);
-          console.log("🔍 Dữ liệu tutor trả về từ Laravel:", response);
 
           // Xử lý linh hoạt mọi cấu trúc dữ liệu trả về (Mảng, Object bọc data, hoặc Object đơn)
           let tutorObj = null;
@@ -34,11 +33,9 @@ export default function FilterControl({ search, setSearch, statusFilter, onFilte
             tutorObj = response;
           }
 
-          console.log("📌 Tutor Object sau khi bóc tách:", tutorObj);
 
           if (tutorObj && tutorObj.verification_status) {
             const status = String(tutorObj.verification_status).toLowerCase().trim();
-            console.log("📌 Status thực tế sau khi chuẩn hóa:", status);
 
             // Chấp nhận tất cả các biến thể trạng thái đã duyệt phổ biến
             if (["approved", "aprroved", "đã xác minh", "da xac minh", "verified", "active"].includes(status)) {

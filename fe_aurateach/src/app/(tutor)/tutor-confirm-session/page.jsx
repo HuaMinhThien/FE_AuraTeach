@@ -67,7 +67,6 @@ export default function SessionConfirm() {
 
   useEffect(() => {
     const userId = getCookie('user_info');  
-    console.log("🍪 [Cookie] Giá trị đọc được từ cookie 'user_info':", userId);
     setCurrentTutorId(userId);
     if (userId) {
       fetchTodayData(userId);
@@ -76,29 +75,14 @@ export default function SessionConfirm() {
 
   const fetchTodayData = async (tutorId) => {
     try {
-      console.log("🚀 [FE Request] Bắt đầu gọi getTodaySessions với tutor_id:", tutorId);
-      
       const res = await classSessionService.getTodaySessions({ tutor_id: tutorId });
-      console.log("📥 [FE Response Raw] Dữ liệu thô nhận từ API:", res);
-
       const responseData = res?.data !== undefined ? res.data : res;
       const sessionsArray = Array.isArray(responseData) 
         ? responseData 
         : (responseData?.data || []);
-
-      console.log("📦 [FE Parsed Data] Danh sách buổi học sau khi parse:", sessionsArray);
-
-      if (sessionsArray.length === 0) {
-        console.warn("⚠️ [FE Warning] API trả về mảng rỗng! Không có buổi học nào cho gia sư này vào hôm nay.");
-      }
-
       setTodayItems(sessionsArray);
     } catch (err) {
-      console.error("❌ [FE Error] Lỗi chi tiết khi gọi getTodaySessions:", err);
-      if (err.response) {
-        console.error("🔴 Status code:", err.response.status);
-        console.error("🔴 Response error data:", err.response.data);
-      }
+      console.error("❌ Lỗi khi gọi getTodaySessions:", err);
     }
   };
 
@@ -107,7 +91,6 @@ export default function SessionConfirm() {
     setRecordLink(sessionItem.record_url || '');
     setTutorNote(sessionItem.document_url || sessionItem.tutor_note || '');
 
-    // 🔥 Quét toàn bộ các khả năng trường chứa danh sách học sinh từ API trả về
     const classStudents = 
       sessionItem.flattened_students || 
       sessionItem.students || 
@@ -117,8 +100,6 @@ export default function SessionConfirm() {
       sessionItem.course?.users ||
       sessionItem.course?.subscriptions?.map(sub => sub.student?.user || sub.student || sub.user) || 
       [];
-
-    console.log("👥 [Debug Students] Danh sách học sinh bắt được:", classStudents);
     setStudentsInClass(classStudents);
 
     const sessionId = sessionItem.session_id || sessionItem.id;

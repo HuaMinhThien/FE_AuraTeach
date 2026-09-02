@@ -33,9 +33,6 @@ export default function AdminDashboard() {
         adminService.getRevenueStats(period, customRange),
       ]);
       
-      // 👇 Thêm dòng log này để nhìn rõ cấu trúc thực tế trên F12 -> Console
-      console.log('Stats Data nhận được:', statsData);
-
       // Xử lý linh hoạt nếu API trả về dạng statsData.data hoặc thẳng vào object
       const actualStats = statsData?.data || statsData || {};
       setStats(actualStats);

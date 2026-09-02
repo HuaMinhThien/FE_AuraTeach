@@ -1,6 +1,6 @@
 // src/services/classSuggestionService.js
 
-const API_BASE = 'http://localhost:3007';
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 /**
  * Map category_id → các từ khóa môn học xuất hiện trong expertise string của tutor.
@@ -441,12 +441,10 @@ export async function checkClasses() {
             body: JSON.stringify({ status: 'active' })
           });
           results.activated.push(course.course_id);
-          console.log(`✅ Lớp ${course.title} đã được active (${studentCount}/${minStudents} học sinh)`);
         } else {
           // Không đủ → hủy
           await cancelCourseAndRefund(course);
           results.cancelled.push(course.course_id);
-          console.log(`❌ Lớp ${course.title} đã bị hủy (chỉ có ${studentCount}/${minStudents} học sinh)`);
         }
       }
     }
@@ -668,14 +666,9 @@ export async function getTutorSuggestions(tutorId) {
     const matchedTutor = tutors.find(t => t.tutor_id === tutorId || t.user_id === tutorId);
     const actualTutorId = matchedTutor ? matchedTutor.tutor_id : tutorId;
 
-    console.log('📡 [getTutorSuggestions] Received ID:', tutorId);
-    console.log('📡 [getTutorSuggestions] Mapped to tutor_id:', actualTutorId);
-
     // Lấy tất cả suggestions pending của tutor này
     const sugRes = await fetch(`${API_BASE}/class_suggestions?tutor_id=${actualTutorId}&status=pending`);
     const suggestions = await sugRes.json();
-
-    console.log('📋 [getTutorSuggestions] Found suggestions:', suggestions.length);
 
     // Lấy tất cả courses 1 lần để tính slot
     const allCoursesRes = await fetch(`${API_BASE}/courses`);
@@ -722,8 +715,6 @@ export async function getTutorSuggestions(tutorId) {
         slots_full: freeSlots === 0,
       });
     }
-
-    console.log('✅ [getTutorSuggestions] Returning:', result.length, 'classes');
 
     return result;
   } catch (error) {

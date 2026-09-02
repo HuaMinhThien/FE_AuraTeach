@@ -2,14 +2,11 @@
 // const API_BASE_URL = "https://api.aurateach.io.vn/api";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aurateach.io.vn/api";
 const getHeaders = (customHeaders = {}, isFormData = false) => {
-  // 🔍 Hỗ trợ tìm token ở nhiều key phổ biến khác nhau trong localStorage
   const token = 
     localStorage.getItem("access_token") || 
     localStorage.getItem("token") || 
     localStorage.getItem("user_token");
 
-  console.log("🔐 [apiClient] Token lấy từ storage:", token ? token.substring(0, 10) + "..." : "KHÔNG CÓ TOKEN!");
-  
   const headers = {
     "Accept": "application/json",
     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
@@ -26,8 +23,14 @@ const getHeaders = (customHeaders = {}, isFormData = false) => {
 
 // Hàm phụ trợ xử lý response thông minh hơn (tránh lỗi 204 No Content)
 const handleResponse = async (response) => {
-  // Nếu status là 204 (No Content) thì trả về null/true luôn, không gọi .json()
+  // Nếu status là 204 (No Content) thì trả về null luôn, không gọi .json()
   if (response.status === 204) {
+    return null;
+  }
+
+  // 429 Too Many Requests — trả về null thay vì throw để tránh crash component
+  if (response.status === 429) {
+    console.warn("⚠️ [apiClient] Rate limit hit (429). Bỏ qua request này.");
     return null;
   }
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { notificationService } from "@/services/notificationService"; // Điều chỉnh đường dẫn import service cho đúng
@@ -35,7 +35,6 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
         const user = JSON.parse(decodeURIComponent(userCookie));
         const id = user.user_id || user.id;
         setUserId(id);
-        console.log("👤 [Tutor_sec3] User ID:", id);
       } catch (e) {
         console.error("❌ Lỗi parse cookie:", e);
       }
@@ -44,16 +43,13 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
 
   useEffect(() => {
     if (!userId) {
-      console.log("⏳ [Tutor_sec3] Chưa có userId, chờ...");
       return;
     }
 
     const fetchNotifs = async () => {
       try {
-        console.log(`📡 [Tutor_sec3] Fetching notifications via service for user: ${userId}`);
         const data = await notificationService.getNotifications(userId);
         
-        console.log(`📊 [Tutor_sec3] Found ${data.length} notifications`);
         
         if (Array.isArray(data)) {
           // ✅ Sắp xếp mới nhất lên đầu

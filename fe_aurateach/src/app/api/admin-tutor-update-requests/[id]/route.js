@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BACKEND = "http://localhost:3007";
+const BACKEND = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 export async function PATCH(request, { params }) {
   try {

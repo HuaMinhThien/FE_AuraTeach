@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import notificationService from '@/services/notificationService';
+﻿import { NextResponse } from 'next/server';
+import { notificationService } from '@/services/notificationService';
 
-const BACKEND_URL = 'http://localhost:3007';
+const BACKEND_URL = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // 1. GET: Lấy danh sách học viên
 export async function GET() {
@@ -58,7 +58,6 @@ export async function PUT(request) {
           status,
           reason: status === 'banned' ? 'Vi phạm điều khoản sử dụng' : null,
         });
-        console.log(`📬 Đã gửi thông báo khóa/mở khóa cho ${user.email}`);
       } catch (notifError) {
         console.error("❌ Lỗi gửi thông báo khóa/mở khóa:", notifError);
       }

@@ -1,4 +1,4 @@
-// src/app/api/cron/check-classes/route.js
+﻿// src/app/api/cron/check-classes/route.js
 import { NextResponse } from 'next/server';
 import { checkClasses } from '@/services/classSuggestionService';
 
@@ -15,7 +15,6 @@ export async function GET(request) {
   }
 
   try {
-    console.log('🔄 [Cron] Manual trigger via API...');
     const results = await checkClasses();
     return NextResponse.json({
       success: true,
@@ -41,7 +40,6 @@ export async function POST(request) {
   }
 
   try {
-    console.log('🧪 [Cron] Test trigger via POST...');
     const results = await checkClasses();
     return NextResponse.json({
       success: true,

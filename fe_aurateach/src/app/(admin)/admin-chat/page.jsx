@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 import adminChatService from "@/services/adminChatService";
 import styles from "./page.module.css";
 

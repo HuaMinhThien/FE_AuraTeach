@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import notificationService from '@/services/notificationService';
+﻿import { NextResponse } from 'next/server';
+import { notificationService } from '@/services/notificationService';
 
-const API_BASE = 'http://localhost:3007';
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // ======================================================
 // ĐỔI NGÀY NÀY ĐỂ TEST CHỨC NĂNG TỰ ĐỘNG TẠO LƯƠNG
@@ -147,7 +147,6 @@ export async function GET() {
   try {
     // 1. Chạy logic tự động tạo phiếu lương (nếu đúng ngày)
     const autoResult = await autoCreateMonthlyPayouts();
-    console.log('[Auto Payout]', autoResult.message);
 
     // 2. Lấy danh sách tutor_payouts đang pending
     const [payoutRes, bankRes, tutorRes, userRes] = await Promise.all([

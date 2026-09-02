@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -27,9 +27,7 @@ export default function StudentBookingHistoryPage() {
     const initPage = async () => {
       try {
         setLoading(true);
-        console.log("📌 [1] Bắt đầu khởi tạo trang, đang gọi authService.getCurrentUser()...");
         const rawUserResponse = await authService.getCurrentUser();
-        console.log("🔍 [DEBUG USER RESPONSE]:", rawUserResponse);
         
         // Bóc tách chuẩn xác vào object user bên trong response
         const baseData = rawUserResponse?.data || rawUserResponse;
@@ -45,7 +43,6 @@ export default function StudentBookingHistoryPage() {
         
         // Lấy chính xác user_id (ví dụ: 'u-YdQ8WuFQ') để truyền vào API khóa học
         const userId = user?.user_id || user?.id || user?.sub;
-        console.log("📌 [2] ID người dùng xác định được (user_id):", userId);
 
         if (!userId) {
           console.error("❌ [DEBUG] Không thể tìm thấy user_id trong object user:", user);
@@ -54,10 +51,8 @@ export default function StudentBookingHistoryPage() {
         }
 
         // Gọi API lấy danh sách lớp đã đăng ký bằng user_id
-        console.log(`📌 [3] Đang gọi courseService.getSubscribedCourses(${userId})...`);
         const response = await courseService.getSubscribedCourses(userId);
         
-        console.log("📥 [DEBUG RAW API RESPONSE]:", response);
 
         // Chuẩn hóa mảng dữ liệu trả về từ API
         let listClasses = [];
@@ -69,14 +64,12 @@ export default function StudentBookingHistoryPage() {
           listClasses = response.courses || response.result || [];
         }
 
-        console.log("🎯 [DEBUG FINAL LIST CLASSES]:", listClasses);
         setBookedClasses(listClasses);
 
       } catch (error) {
         console.error("❌ [DEBUG LỖI TẠI INITPAGE]:", error);
       } finally {
         setLoading(false);
-        console.log("🏁 [Hoàn tất] Quá trình tải trang kết thúc.");
       }
     };
 
@@ -85,7 +78,6 @@ export default function StudentBookingHistoryPage() {
 
   const getTutorName = (item) => {
     const name = item?.tutor?.user?.full_name || item?.tutor_name || item?.tutorName;
-    console.log(`🔍 [DEBUG TUTOR NAME cho khóa ${item?.course_id || item?.id}]:`, name, item);
     return name || "Gia sư AuraTeach";
   };
 
@@ -108,7 +100,6 @@ export default function StudentBookingHistoryPage() {
     }
 
     const statusKey = item?.booking_status;
-    console.log("🔍 [DEBUG BOOKING STATUS KEY]:", statusKey);
     const statusMap = {
       'pending': { label: '⏳ Chờ xác nhận', className: 'status-pending' },
       'confirmed': { label: ' Đã xác nhận', className: 'status-confirmed' },
@@ -120,7 +111,6 @@ export default function StudentBookingHistoryPage() {
   };
 
   const getPaymentStatus = (paymentKey) => {
-    console.log("🔍 [DEBUG PAYMENT STATUS KEY]:", paymentKey);
     const statusMap = {
       'unpaid': { label: ' Chưa thanh toán', className: 'payment-unpaid' },
       'paid': { label: ' Đã thanh toán', className: 'payment-paid' },
@@ -304,7 +294,7 @@ export default function StudentBookingHistoryPage() {
           onClose={() => setShowRatingModal(false)}
           onSubmit={handleRatingSubmit}
           courseTitle={courseToRate.title}
-          tutorName={getTutorName(courseToRate.tutor_id)}
+          tutorName={getTutorName(courseToRate)}
           studentName={currentUser?.full_name || currentUser?.name || ""}
         />
       )}

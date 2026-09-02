@@ -59,11 +59,7 @@ export default function MyClassesPage() {
 
   const fetchStudentSessions = async (userId) => {
     try {
-      console.log(`📡 Fetching actual session schedule for student: ${userId}`);
-      
-      // 👇 Gọi qua courseScheduleService
       const response = await courseScheduleService.getStudentScheduleSessions(userId);
-      console.log("📥 Dữ liệu các buổi học trả về từ API:", response);
 
       let sessionsList = [];
       const resData = response.data || response;
@@ -74,7 +70,6 @@ export default function MyClassesPage() {
       }
 
       setSessions(sessionsList);
-      
     } catch (err) {
       console.error("❌ Lỗi lấy lịch học:", err);
       setError("Không thể tải danh sách lịch học");

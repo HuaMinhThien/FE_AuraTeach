@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 
-const BACKEND_URL = 'http://localhost:3007';
+const BACKEND_URL = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // 1. GET: Lấy danh sách gia sư tích hợp dữ liệu tổng hợp
 export async function GET() {

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -35,12 +35,8 @@ export default function ProfilePage() {
   // Hàm lấy thông tin học sinh từ API dựa vào user_id
   const fetchStudentInfo = async (userId) => {
     try {
-      console.log("👉 Đang gọi API lấy student với user_id:", userId);
       const response = await studentService.getStudents({ user_id: userId });
-      console.log("📦 Dữ liệu học sinh trả về từ API:", response);
-      
       const students = Array.isArray(response) ? response : (response?.data || []);
-      
       if (students.length > 0) {
         setStudentInfo(students[0]);
         setFormData(prev => ({
@@ -48,8 +44,6 @@ export default function ProfilePage() {
           grade: students[0].grade || "",
           school_name: students[0].school_name || "",
         }));
-      } else {
-        console.warn("⚠️ Không tìm thấy bản ghi student nào khớp với user_id này!");
       }
       return students[0] || null;
     } catch (error) {
@@ -64,29 +58,16 @@ export default function ProfilePage() {
       try {
         setLoading(true);
         const currentUser = await authService.getCurrentUser();
-        console.log("👤 Thông tin user hiện tại từ authService:", currentUser);
 
-        const getCookie = (name) => {
-          if (typeof window === "undefined") return null;
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(';').shift();
-          return null;
-        };
-        const role = getCookie("role");
-
-        // Trích xuất chuẩn xác object user bên trong
         const userData = currentUser?.user || currentUser;
 
         if (!userData) {
-          console.warn("⚠️ Không có dữ liệu user, chuyển hướng về login");
           router.push("/login");
           return;
         }
 
         setUser(userData);
 
-        // Đổ dữ liệu ban đầu vào form
         setFormData(prev => ({
           ...prev,
           full_name: userData.full_name || userData.name || "",
@@ -95,14 +76,9 @@ export default function ProfilePage() {
           birth_date: userData.birth_date || "",
         }));
 
-        // Trích xuất user_id an toàn
         const currentUserId = userData.user_id || userData.id;
-        console.log("🔑 ID được trích xuất để gọi API student:", currentUserId);
-
         if (currentUserId && currentUserId !== 'undefined') {
           await fetchStudentInfo(currentUserId);
-        } else {
-          console.error("🚨 Không tìm thấy ID hợp lệ trong object user!");
         }
 
       } catch (error) {

@@ -377,7 +377,7 @@ export default function ClassDetailPage({ params }) {
   const displayTimeSlot = firstSchedule.time_slot || course.time_slot || "Chưa cập nhật";
   const displayStartDate = firstSchedule.start_time || firstSchedule.start_date || course.start_date;
   const displayEndDate = firstSchedule.end_time || firstSchedule.end_date || course.end_date;
-  const roomUrl = firstSchedule.meeting_platform || firstSchedule.room_url || course.permanent_room_url;
+  const roomUrl = course.meet_link || firstSchedule.meeting_platform || firstSchedule.room_url || course.permanent_room_url || null;
 
   const pricePerSessionVal = course.price_per_session || 0;
   const billingData = calculateProratedFirstBill(course, pricePerSessionVal);
@@ -390,9 +390,9 @@ export default function ClassDetailPage({ params }) {
 
   const handleJoinClass = () => {
     if (roomUrl) {
-      window.open(roomUrl, '_blank');
+      window.open(roomUrl, '_blank', 'noopener,noreferrer');
     } else {
-      alert("Lớp học chưa có link phòng học. Vui lòng liên hệ gia sư để được hỗ trợ.");
+      alert("Lớp học chưa có link Google Meet. Vui lòng liên hệ gia sư để được hỗ trợ.");
     }
   };
 

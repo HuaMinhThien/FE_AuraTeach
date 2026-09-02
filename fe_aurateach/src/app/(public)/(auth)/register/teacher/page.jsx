@@ -64,8 +64,6 @@ export default function TeacherRegisterPage() {
       return allowedDomains.some(domain => 
         hostname === domain || hostname.endsWith('.' + domain)
       );
-      
-      return isAllowed;
     } catch {
       return false; // URL không hợp lệ
     }

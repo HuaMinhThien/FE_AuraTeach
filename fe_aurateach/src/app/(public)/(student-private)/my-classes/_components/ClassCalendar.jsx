@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getClassroomRoomPath } from "@/utils/roomUtils";
+import { getMeetLink, openMeetLink } from "@/utils/roomUtils";
 import styles from "./ClassCalendar.module.css";
 
 export default function ClassCalendar({ courses, makeupSessions = [], onDateClick }) {
@@ -204,31 +204,7 @@ export default function ClassCalendar({ courses, makeupSessions = [], onDateClic
 
   const handleJoinFromBlock = (course) => {
     if (!course) return;
-
-    // Ưu tiên lấy link phòng học lưu trực tiếp trong data
-    const roomUrl =
-      course.permanent_room_url ||
-      course.room_url ||
-      course.meeting_url ||
-      course.link ||
-      null;
-
-    if (roomUrl && typeof roomUrl === "string" && roomUrl.trim() !== "") {
-      window.open(roomUrl.trim(), "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    // Fallback: thử dùng utility (nếu có)
-    try {      
-      const roomPath = getClassroomRoomPath(course, "student");
-      if (roomPath) {
-        window.open(roomPath, "_blank", "noopener,noreferrer");
-        return;
-      }
-    } catch (e) {
-      console.warn("getClassroomRoomPath lỗi:", e);
-    }
-    alert("Lớp học này chưa có link tham gia!");
+    openMeetLink(course);
   };
 
   const handleClassClick = (course) => {

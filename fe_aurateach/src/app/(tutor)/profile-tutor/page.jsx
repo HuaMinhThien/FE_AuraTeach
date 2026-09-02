@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import styles from "./TutorProfile.module.css"; 
@@ -47,6 +47,18 @@ const getUserIdFromCookie = () => {
 const getCategoryName = (cat) => {
   if (typeof cat === "string") return cat.trim();
   return (cat.category_name || cat.name || "").trim();
+};
+
+const normalizeBoolean = (value, fallback = true) => {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "yes", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "off"].includes(normalized)) return false;
+
+  return fallback;
 };
 
 export default function TutorProfile() {
@@ -232,6 +244,7 @@ export default function TutorProfile() {
       }
 
       try {
+        console.log('📥 [useEffect] Fetching data for userId:', currentUserId);
         const [usersRes, tutorsRes, catRes] = await Promise.all([
           userService.getUsers(),
           tutorService.getTutors(),
@@ -249,12 +262,22 @@ export default function TutorProfile() {
         const userObj = users.find((u) => u.user_id === currentUserId || u.id === currentUserId);
         const tutorObj = tutors.find((t) => t.user_id === currentUserId || t.id === currentUserId);
 
+        console.log('📋 [useEffect] Tutor object found:', tutorObj);
+
         if (userObj && tutorObj) {
           const mergedData = { ...userObj, ...tutorObj };
           
           if (isMounted) {
             setTutorData(mergedData);
-            setAcceptSuggested(mergedData.accept_suggested_classes !== false);
+            // BE lưu field receive_suggestions; fallback sang accept_suggested_classes cho dữ liệu cũ
+            const suggestionValue =
+              mergedData.receive_suggestions !== undefined
+                ? mergedData.receive_suggestions
+                : mergedData.accept_suggested_classes;
+            console.log('🎯 [useEffect] receive_suggestions value:', suggestionValue, 'type:', typeof suggestionValue);
+            const normalized = normalizeBoolean(suggestionValue, true);
+            console.log('✅ [useEffect] After normalizeBoolean:', normalized);
+            setAcceptSuggested(normalized);
 
             const expArray = mergedData.expertise 
               ? mergedData.expertise.split(",").map((i) => i.trim()).filter(Boolean)
@@ -299,20 +322,24 @@ export default function TutorProfile() {
               // 🛠️ Sửa từ adminService thành tutorService
               const checkData = await tutorService.checkPendingUpdate(currentTutorId);
               
-              if (isMounted && checkData?.success && checkData?.hasPending) {
-                setHasPendingRequest(true);
-              }
+              if (!checkData) {
+                // API trả về null hoặc lỗi — bỏ qua, không crash
+              } else {
+                if (isMounted && checkData?.success && checkData?.hasPending) {
+                  setHasPendingRequest(true);
+                }
 
-              if (checkData.requests && Array.isArray(checkData.requests) && checkData.requests.length > 0) {
-                const latestReq = [...checkData.requests].sort((a, b) => {
-                  const timeA = new Date(a.created_at || a.updated_at || 0).getTime();
-                  const timeB = new Date(b.created_at || b.updated_at || 0).getTime();
-                  if (timeA && timeB) return timeB - timeA;
-                  return (b.tutor_update_req_id || "").localeCompare(a.tutor_update_req_id || "");
-                })[0];
-                setPendingRequestData(latestReq);
-              } else if (checkData.request) {
-                setPendingRequestData(checkData.request);
+                if (checkData.requests && Array.isArray(checkData.requests) && checkData.requests.length > 0) {
+                  const latestReq = [...checkData.requests].sort((a, b) => {
+                    const timeA = new Date(a.created_at || a.updated_at || 0).getTime();
+                    const timeB = new Date(b.created_at || b.updated_at || 0).getTime();
+                    if (timeA && timeB) return timeB - timeA;
+                    return (b.tutor_update_req_id || "").localeCompare(a.tutor_update_req_id || "");
+                  })[0];
+                  setPendingRequestData(latestReq);
+                } else if (checkData.request) {
+                  setPendingRequestData(checkData.request);
+                }
               }
 
             } catch (apiErr) {
@@ -340,38 +367,67 @@ export default function TutorProfile() {
 
   const handleToggleSuggestions = async () => {
     if (toggleLoading) return;
-    const newValue = !acceptSuggested; 
+    const newValue = !acceptSuggested;
+    console.log('🔄 [TOGGLE START] Current state:', acceptSuggested, '→ New value:', newValue);
     setToggleLoading(true);
 
     try {
-        const currentUserId = getUserIdFromCookie();
-        const result = await tutorService.toggleSuggestions(currentUserId, newValue);
+      // Ưu tiên lấy userId từ cookie, fallback sang localStorage
+      let currentUserId = getUserIdFromCookie();
 
-        console.log("🔍 Kiểm tra log API:", result);
+      if (!currentUserId) {
+        try {
+          const localUser =
+            localStorage.getItem('user') ||
+            localStorage.getItem('userInfo') ||
+            localStorage.getItem('user_info');
+          if (localUser) {
+            const parsed = JSON.parse(localUser);
+            currentUserId = parsed.user_id || parsed.id || parsed._id;
+          }
+        } catch (e) {}
+      }
 
-        // Chuẩn hóa lấy dữ liệu (hỗ trợ cả trường hợp bị bọc qua .data của axios hoặc trả thẳng)
-        const resData = result?.data || result;
+      // Nếu vẫn không có, lấy từ tutorData đã load sẵn
+      if (!currentUserId && tutorData) {
+        currentUserId = tutorData.user_id || tutorData.id;
+      }
 
-        // Kiểm tra success hoặc kiểm tra nếu server trả về message thành công
-        const isSuccess = resData?.success === true || resData?.message?.includes("thành công");
-
-        if (isSuccess) {
-            // Lấy giá trị receive_suggestions mới từ server trả về nếu có, không thì dùng newValue
-            const finalValue = resData?.receive_suggestions !== undefined 
-                ? resData.receive_suggestions 
-                : newValue;
-
-            setAcceptSuggested(finalValue);
-            console.log("✅ Cập nhật state thành công:", finalValue);
-        } else {
-            const msg = resData?.message || "Không thể cập nhật trạng thái.";
-            alert("❌ Lỗi: " + msg);
-        }
-    } catch (err) {
-        console.error("Lỗi:", err);
-        alert("Không thể kết nối đến máy chủ.");
-    } finally {
+      if (!currentUserId) {
+        console.error('❌ No userId found');
+        alert('❌ Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.');
         setToggleLoading(false);
+        return;
+      }
+
+      console.log('📤 [TOGGLE] Sending to API with userId:', currentUserId, 'newValue:', newValue);
+      const result = await tutorService.toggleSuggestions(currentUserId, newValue);
+      console.log('📥 [TOGGLE] API Response:', result);
+
+      const resData = result?.data || result;
+      const isSuccess = resData?.success === true || resData?.message?.includes('thành công');
+
+      console.log('✅ [TOGGLE] Success check:', isSuccess, 'resData:', resData);
+
+      if (isSuccess) {
+        const finalValue =
+          resData?.accept_suggested_classes !== undefined
+            ? resData.accept_suggested_classes
+            : resData?.receive_suggestions !== undefined
+              ? resData.receive_suggestions
+              : newValue;
+        console.log('🎯 [TOGGLE] Final value from API:', finalValue, 'typeof:', typeof finalValue);
+        console.log('🎯 [TOGGLE] Boolean(finalValue):', Boolean(finalValue));
+        setAcceptSuggested(Boolean(finalValue));
+      } else {
+        const msg = resData?.message || 'Không thể cập nhật trạng thái.';
+        alert('❌ Lỗi: ' + msg);
+      }
+    } catch (err) {
+      console.error('❌ [TOGGLE ERROR]:', err);
+      alert('Không thể kết nối đến máy chủ.');
+    } finally {
+      setToggleLoading(false);
     }
   };
 
@@ -417,7 +473,6 @@ export default function TutorProfile() {
         new_data: newPayload
       });
 
-      console.log("Response từ server:", result);
 
       setIsEditing(false);
       setIsDropdownOpen(false);
@@ -556,7 +611,6 @@ export default function TutorProfile() {
           </button>
         ) : (
           <div className={styles.btnActionGroup} style={{ display: "flex", gap: "8px" }}>
-            {/* Nút xem trước thông tin đã thay đổi khi đang edit */}
             <button 
               type="button" 
               className={styles.btnSave}
@@ -566,7 +620,6 @@ export default function TutorProfile() {
               👁️ Xem thay đổi
             </button>
             <button className={styles.btnSave} onClick={handleSave}>💾 Gửi yêu cầu duyệt</button>
-            <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); setShowChangesModal(false); }}>Hủy</button>
             <button className={styles.btnCancel} onClick={() => { 
               setIsEditing(false); 
               setIsDropdownOpen(false);

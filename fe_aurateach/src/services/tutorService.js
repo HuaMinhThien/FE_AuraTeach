@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+﻿import apiClient from './apiClient';
 
 export const tutorService = {
   getTutors: async (params = {}) => {
@@ -46,7 +46,6 @@ export const tutorService = {
     return await apiClient.patch(`/tutors/${tutorDbId}`, data);
   },
 
-  // 🚀 CÁC HÀM CÓ TÍCH HỢP CONSOLE.LOG BẮT LỖI CHI TIẾT
 
   async getTutorEarningsData(userId) {
     try {      
@@ -63,13 +62,11 @@ export const tutorService = {
   },
 
   addBankAccount: async (bankData) => {
-    console.log("🟡 Đang gửi dữ liệu thêm tài khoản ngân hàng:", bankData);
     try {
       const response = await apiClient.post('/tutors/earnings-actions', {
         action: 'add_bank_account',
         ...bankData,
       });
-      console.log("🟢 Phản hồi thành công thêm ngân hàng:", response);
       
       // 🚀 Sửa lại chỗ này: Trả về thẳng response.data để giữ lại các trường { success, message, data }
       return response.data; 
@@ -84,13 +81,11 @@ export const tutorService = {
   },
 
   setDefaultBank: async (bankData) => {
-    console.log("🟡 Đang gửi yêu cầu đặt ngân hàng mặc định lên server:", bankData);
     try {
       const response = await apiClient.post('/tutors/earnings-actions', {
         action: 'set_default_bank',
         ...bankData,
       });
-      console.log("🟢 Phản hồi thành công đặt ngân hàng mặc định:", response);
       return response; 
     } catch (error) {
       console.error("🔴 Lỗi API setDefaultBank chi tiết:", {
@@ -103,11 +98,9 @@ export const tutorService = {
   },
 
   sendUpdateEvaluationRequest: async (payload) => {
-    console.log("🟡 Đang gửi yêu cầu chỉnh sửa hồ sơ lên server:", payload);
     try {
       // Endpoint này trỏ tới route nhận yêu cầu cập nhật hồ sơ từ phía gia sư
       const response = await apiClient.post('/admin-tutor-update-requests', payload);
-      console.log("🟢 Phản hồi thành công gửi yêu cầu cập nhật:", response);
       return response.data !== undefined ? response.data : response;
     } catch (error) {
       console.error("🔴 Lỗi API sendUpdateEvaluationRequest chi tiết:", {
@@ -122,10 +115,11 @@ export const tutorService = {
   checkPendingUpdate: async (tutorId) => {
     try {
       const response = await apiClient.get(`/tutors/${tutorId}/pending-update-request`);
+      if (!response) return null;
       return response.data !== undefined ? response.data : response;
     } catch (error) {
       console.error("Lỗi kiểm tra pending update:", error);
-      throw error;
+      return null;
     }
   },
 
@@ -134,6 +128,7 @@ export const tutorService = {
         try {
             const response = await apiClient.patch('/tutor/toggle-suggestions', {
                 userId: userId,
+                accept_suggested_classes: receiveSuggestions,
                 receive_suggestions: receiveSuggestions
             });
             

@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 
-const JSON_SERVER_URL = 'http://localhost:3007';
+const JSON_SERVER_URL = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // Bắt buộc không cache — tránh lấy dữ liệu điểm danh cũ
 export const dynamic = 'force-dynamic';

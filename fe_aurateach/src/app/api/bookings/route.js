@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // GET: Lấy danh sách bookings
 export async function GET(request) {
@@ -54,11 +54,6 @@ export async function POST(request) {
 const body = await request.json();
     const { courseId, studentId, tutorId, notes = "", paymentMethod = "wallet" } = body;
 
-    console.log("📝 Tạo booking với dữ liệu:", { courseId, studentId, tutorId, notes, paymentMethod });
-
-    // ✅ Cho phép tutorId rỗng (null) khi lớp do Admin tạo đang ở trạng thái
-    // pending_tutor (chưa có gia sư nhận). Học viên vẫn có thể đăng ký và thanh
-    // toán ngay để vào lớp, không cần chờ gia sư.
     if (!courseId || !studentId) {
       return NextResponse.json(
         { success: false, message: "Thiếu thông tin bắt buộc" },
@@ -78,7 +73,6 @@ const body = await request.json();
       );
     }
 
-    console.log("📚 Course found:", { id: course.id, course_id: course.course_id, title: course.title });
 
 // 2. Kiểm tra trạng thái lớp học
     // ✅ Cho phép đăng ký ở các trạng thái đang tuyển sinh:
@@ -120,11 +114,8 @@ const body = await request.json();
       (b.status === 'pending' || b.status === 'confirmed')
     );
 
-    console.log(`📋 Tìm thấy ${studentActiveBookings.length} booking đang hoạt động của student`);
-
     if (studentActiveBookings.length > 0) {
       const bookedCourseIds = studentActiveBookings.map(b => b.course_id);
-      console.log("📋 Course IDs đã booking:", bookedCourseIds);
 
       const bookedCoursesRes = await Promise.all(
         bookedCourseIds.map(id => 
@@ -134,7 +125,6 @@ const body = await request.json();
         )
       );
       const bookedCourses = bookedCoursesRes.flat();
-      console.log(`📋 Tìm thấy ${bookedCourses.length} course đã booking`);
 
       let hasConflict = false;
       let conflictDetails = [];
@@ -148,8 +138,6 @@ const body = await request.json();
         const commonDays = bookedDays.filter(day => newDays.includes(day));
         
         if (commonDays.length === 0) continue;
-
-        console.log(`⚠️ Trùng ngày ${commonDays.join(', ')} với course ${bookedCourse.course_id}`);
 
         const bookedTimeSlot = bookedCourse.time_slot || "";
         const newTimeSlot = course.time_slot || "";
@@ -189,7 +177,6 @@ const body = await request.json();
             days: commonDays,
             time_slot: bookedTimeSlot
           });
-          console.log(`❌ TRÙNG LỊCH với course ${bookedCourse.course_id}: ${bookedTimeSlot}`);
         }
       }
 
@@ -208,8 +195,6 @@ const body = await request.json();
       }
     }
 
-    // 6. Tạo booking mới
-    // 🔥 QUAN TRỌNG: Nếu paymentMethod là "wallet", set payment_status = "paid"
     const isPaid = paymentMethod === "wallet";
     
     const newBooking = {
@@ -228,9 +213,6 @@ const body = await request.json();
       transaction_id: isPaid ? `txn-${Date.now()}` : null
     };
 
-    console.log("💾 Lưu booking:", newBooking);
-
-    // Lưu booking vào JSON Server
     const createRes = await fetch(`${API_BASE}/bookings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -239,20 +221,13 @@ const body = await request.json();
 
     if (!createRes.ok) {
       const errorText = await createRes.text();
-      console.error("❌ Lỗi tạo booking:", errorText);
       throw new Error(`Không thể tạo booking: ${errorText}`);
     }
 
     const createdBooking = await createRes.json();
-    console.log("✅ Booking created:", createdBooking);
 
     // 7. Cập nhật course: thêm student vào danh sách
     const updatedStudents = [...currentStudents, studentId];
-    console.log("🔄 Cập nhật course students:", { 
-      courseId: course.id, 
-      oldStudents: currentStudents, 
-      newStudents: updatedStudents 
-    });
 
     const updateRes = await fetch(`${API_BASE}/courses/${course.id}`, {
       method: "PATCH",
@@ -262,216 +237,110 @@ const body = await request.json();
 
     if (!updateRes.ok) {
       const errorText = await updateRes.text();
-      console.error("❌ Lỗi cập nhật course:", errorText);
-      
       // Rollback: Xóa booking vừa tạo
-      await fetch(`${API_BASE}/bookings/${createdBooking.id}`, {
-        method: "DELETE"
-      });
+      await fetch(`${API_BASE}/bookings/${createdBooking.id}`, { method: "DELETE" });
       throw new Error(`Không thể cập nhật danh sách học viên: ${errorText}`);
     }
 
     const updatedCourse = await updateRes.json();
-    console.log("✅ Course updated:", updatedCourse);
 
-    // 8. Tự động đóng lớp khi đạt max_students
     if (updatedStudents.length >= course.max_students) {
-      console.log(`🔒 Lớp ${course.course_id} đã đủ sĩ số. Đang đóng lớp...`);
       const closeRes = await fetch(`${API_BASE}/courses/${course.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "closed" })
       });
-      if (closeRes.ok) {
-        console.log(`✅ Đã đóng lớp ${course.course_id}`);
-        
-        // Kiểm tra xem tất cả các section cùng parent_course_id đã đóng chưa
-        if (course.parent_course_id) {
-          const allSecRes = await fetch(`${API_BASE}/courses?parent_course_id=${course.parent_course_id}`);
-          const allSecs = await allSecRes.json();
-          const allClosed = allSecs.every(s => s.status === 'closed' || s.status === 'completed' || s.status === 'cancelled');
-          
-          if (allClosed) {
-            console.log(`🏁 Tất cả mã lớp của khóa học ${course.parent_course_id} đã đóng.`);
-            // Có thể cập nhật trạng thái của "parent entity" nếu có
-          }
-        }
+      if (closeRes.ok && course.parent_course_id) {
+        const allSecRes = await fetch(`${API_BASE}/courses?parent_course_id=${course.parent_course_id}`);
+        const allSecs = await allSecRes.json();
+        // Tất cả slot đóng → có thể xử lý thêm sau
       }
     }
 
-    // ============================================================
-    // 🔥 PHẦN QUAN TRỌNG: GỬI THÔNG BÁO & CẬP NHẬT VÍ TUTOR
-    // ============================================================
+    // Gửi thông báo & cập nhật ví tutor
     try {
-      // === 1. TÌM THÔNG TIN TUTOR ===
       let tutorInfo = null;
       let tutorUserId = null;
-      let tutorIdForSearch = tutorId;
 
-      console.log("🔍 Đang tìm tutor với tutor_id:", tutorIdForSearch);
-
-      // Thử tìm theo tutor_id trước
-      const tutorRes1 = await fetch(`${API_BASE}/tutors?tutor_id=${tutorIdForSearch}`, { cache: "no-store" });
-      const tutorData1 = await tutorRes1.json();
-      const tutorArr1 = Array.isArray(tutorData1) ? tutorData1 : [];
-      
-      if (tutorArr1.length > 0) {
-        tutorInfo = tutorArr1[0];
-        tutorUserId = tutorInfo.user_id;
-        console.log("✅ Tìm thấy tutor theo tutor_id:", tutorInfo.tutor_id, "-> user_id:", tutorUserId);
-      } else {
-        // Fallback: tìm theo user_id (trường hợp tutorId là user_id)
-        console.log("🔍 Không tìm thấy theo tutor_id, thử tìm theo user_id:", tutorIdForSearch);
-        const tutorRes2 = await fetch(`${API_BASE}/tutors?user_id=${tutorIdForSearch}`, { cache: "no-store" });
-        const tutorData2 = await tutorRes2.json();
-        const tutorArr2 = Array.isArray(tutorData2) ? tutorData2 : [];
-        
-        if (tutorArr2.length > 0) {
-          tutorInfo = tutorArr2[0];
+      if (tutorId) {
+        const tutorRes1 = await fetch(`${API_BASE}/tutors?tutor_id=${tutorId}`, { cache: "no-store" });
+        const tutorArr1 = await tutorRes1.json();
+        if (Array.isArray(tutorArr1) && tutorArr1.length > 0) {
+          tutorInfo = tutorArr1[0];
           tutorUserId = tutorInfo.user_id;
-          console.log("✅ Tìm thấy tutor theo user_id:", tutorUserId);
+        } else {
+          const tutorRes2 = await fetch(`${API_BASE}/tutors?user_id=${tutorId}`, { cache: "no-store" });
+          const tutorArr2 = await tutorRes2.json();
+          if (Array.isArray(tutorArr2) && tutorArr2.length > 0) {
+            tutorInfo = tutorArr2[0];
+            tutorUserId = tutorInfo.user_id;
+          }
         }
       }
 
-      if (!tutorInfo) {
-        console.error("❌ Không tìm thấy tutor cho tutorId:", tutorId);
-      } else {
-        console.log("✅ Tutor info:", {
-          tutor_id: tutorInfo.tutor_id,
-          user_id: tutorInfo.user_id,
-          pending_balance: tutorInfo.pending_balance,
-          available_balance: tutorInfo.available_balance
-        });
-      }
-
-      // === 2. LẤY TÊN HỌC VIÊN ===
       let studentName = "Học viên";
       try {
         const studentRes = await fetch(`${API_BASE}/users?user_id=${studentId}`, { cache: "no-store" });
-        const studentData = await studentRes.json();
-        const studentArr = Array.isArray(studentData) ? studentData : [];
-        if (studentArr.length > 0) {
+        const studentArr = await studentRes.json();
+        if (Array.isArray(studentArr) && studentArr.length > 0) {
           studentName = studentArr[0]?.full_name || "Học viên";
-          console.log("👤 Student name:", studentName);
         }
-      } catch (e) {
-        console.error("⚠️ Lỗi tìm student:", e);
-      }
+      } catch { /* không quan trọng */ }
 
       const courseTitle = course.title || "Khóa học";
-
-      // === 3. CẬP NHẬT VÍ TUTOR ===
-      // 🔥 Điều kiện: payment_method = "wallet" HOẶC payment_status = "paid"
-      const shouldUpdateWallet = (newBooking.payment_method === 'wallet' || newBooking.payment_status === 'paid');
-      console.log(`💰 Kiểm tra cập nhật ví: payment_method=${newBooking.payment_method}, payment_status=${newBooking.payment_status}, shouldUpdate=${shouldUpdateWallet}`);
+      const shouldUpdateWallet = newBooking.payment_method === 'wallet' || newBooking.payment_status === 'paid';
 
       if (tutorInfo && shouldUpdateWallet) {
-        const tutorAmount = newBooking.payment_amount || 0;
-        const currentPending = tutorInfo.pending_balance || 0;
-        const currentAvailable = tutorInfo.available_balance || 0;
-        const currentTotalEarnings = tutorInfo.total_earnings || 0;
-        
-        // Phí sàn 35%: Tutor nhận 65%, Admin giữ 35%
-        const tutorEarning = Math.round(tutorAmount * 0.65);
-        const adminFee = tutorAmount - tutorEarning;
-
-        console.log(`💰 Cập nhật ví tutor:`, {
-          tutorId: tutorInfo.tutor_id,
-          tutorUserId: tutorUserId,
-          amount: tutorAmount,
-          tutorEarning: tutorEarning,
-          adminFee: adminFee,
-          currentPending: currentPending,
-          newPending: currentPending + tutorEarning
-        });
-
-        // Cập nhật pending_balance và total_earnings
-        const updateWalletRes = await fetch(`${API_BASE}/tutors/${tutorInfo.id}`, {
+        const tutorEarning = Math.round((newBooking.payment_amount || 0) * 0.65);
+        await fetch(`${API_BASE}/tutors/${tutorInfo.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            pending_balance: currentPending + tutorEarning,
-            total_earnings: currentTotalEarnings + tutorEarning,
+            pending_balance: (tutorInfo.pending_balance || 0) + tutorEarning,
+            total_earnings: (tutorInfo.total_earnings || 0) + tutorEarning,
             updated_at: new Date().toISOString(),
           }),
         });
-
-        if (updateWalletRes.ok) {
-          console.log(`💰 [Tutor Wallet] Updated: ${currentPending} → ${currentPending + tutorEarning}`);
-        } else {
-          console.error("❌ Lỗi cập nhật ví tutor:", await updateWalletRes.text());
-        }
-      } else {
-        console.log("⏭️ Bỏ qua cập nhật ví (không đủ điều kiện)");
       }
 
-      // === 4. GỬI THÔNG BÁO CHO TUTOR ===
-      if (tutorUserId) {
-        const nowTime = new Date().toISOString();
-        const tutorNotifData = {
-          id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          receiver_id: tutorUserId,
-          receiver_role: 'tutor',
-          type: 'booking',
-          title: '📩 Đăng ký khóa học mới',
-          message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}".`,
-          related_id: createdBooking.booking_id,
-          related_type: 'booking',
-          is_read: false,
-          created_at: nowTime,
-        };
-
-        console.log("📬 Gửi notification cho tutor:", {
-          receiver_id: tutorUserId,
-          title: tutorNotifData.title
-        });
-
-        const tutorNotifRes = await fetch(`${API_BASE}/notifications`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(tutorNotifData),
-        });
-
-        if (tutorNotifRes.ok) {
-          console.log(`📬 Tutor notif sent successfully to: ${tutorUserId}`);
-        } else {
-          console.error("❌ Lỗi gửi tutor notification:", await tutorNotifRes.text());
-        }
-      }
-
-      // === 5. GỬI THÔNG BÁO CHO ADMIN ===
-      const adminNotifData = {
-        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        receiver_id: 'u-admin-1',
-        receiver_role: 'admin',
-        type: 'booking',
-        title: '📊 Đăng ký khóa học mới',
-        message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}" với gia sư.`,
+      const nowTime = new Date().toISOString();
+      const notifBase = {
+        is_read: false,
+        created_at: nowTime,
         related_id: createdBooking.booking_id,
         related_type: 'booking',
-        is_read: false,
-        created_at: new Date().toISOString(),
+        type: 'booking',
       };
 
-      console.log("📬 Gửi notification cho admin:", {
-        receiver_id: 'u-admin-1',
-        title: adminNotifData.title
-      });
-
-      const adminNotifRes = await fetch(`${API_BASE}/notifications`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(adminNotifData),
-      });
-
-      if (adminNotifRes.ok) {
-        console.log(`📬 Admin notif sent successfully`);
-      } else {
-        console.error("❌ Lỗi gửi admin notification:", await adminNotifRes.text());
+      if (tutorUserId) {
+        await fetch(`${API_BASE}/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...notifBase,
+            id: `notif_${Date.now()}_t`,
+            receiver_id: tutorUserId,
+            receiver_role: 'tutor',
+            title: '📩 Đăng ký khóa học mới',
+            message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}".`,
+          }),
+        });
       }
 
+      await fetch(`${API_BASE}/notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...notifBase,
+          id: `notif_${Date.now()}_a`,
+          receiver_id: 'u-admin-1',
+          receiver_role: 'admin',
+          title: '📊 Đăng ký khóa học mới',
+          message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}".`,
+        }),
+      });
     } catch (notifError) {
-      console.error("⚠️ Lỗi trong quá trình gửi thông báo/cập nhật ví:", notifError);
+      console.error("⚠️ Lỗi gửi thông báo/cập nhật ví:", notifError);
     }
 
     return NextResponse.json({

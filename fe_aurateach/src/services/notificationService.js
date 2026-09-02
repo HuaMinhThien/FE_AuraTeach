@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+﻿import apiClient from "./apiClient";
 
 export const notificationService = {
   /**
@@ -48,7 +48,6 @@ export const notificationService = {
 
       const response = await apiClient.post('/notifications', newNotification);
       const saved = response.data || response;
-      console.log(`📬 [Notification] Created for ${receiver_role} (${receiver_id}):`, saved);
       return { success: true, data: saved };
     } catch (error) {
       console.error('❌ Lỗi tạo thông báo:', error);
@@ -144,7 +143,6 @@ export const notificationService = {
         unreadList.map(notif => this.markAsRead(notif.id))
       );
 
-      console.log(`✅ Đã đánh dấu ${unreadList.length} thông báo là đã đọc`);
       return { success: true, count: unreadList.length };
     } catch (error) {
       console.error('❌ Lỗi đánh dấu tất cả đã đọc:', error);

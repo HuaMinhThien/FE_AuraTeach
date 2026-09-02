@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import styles from './TutorDetail.module.css';
 import BookingModal from '@/components/users/BookingModal';
 import { tutorService } from '@/services/tutorService';
@@ -9,8 +9,10 @@ import { reviewService } from '@/services/reviewService';
 import { courseSubscriptionService } from '@/services/courseSubscriptionService';
 import apiClient from '@/services/apiClient';
 
-export default function TutorDetailPage({ params }) {
+export default function TutorDetailPage() {
   const router = useRouter();
+  const params = useParams();
+  const currentTutorId = params?.id;
   const [tutorDetails, setTutorDetails] = useState(null);
   const [accountUser, setAccountUser] = useState(null);
   const [tutorCourses, setTutorCourses] = useState([]);
@@ -48,17 +50,10 @@ export default function TutorDetailPage({ params }) {
 
   // Fetch dữ liệu gia sư chi tiết thông qua các API service chuẩn
   useEffect(() => {
+    if (!currentTutorId) return;
+
     const fetchAllTutorData = async () => {
       try {
-        const resolvedParams = await params;
-        const currentTutorId = resolvedParams?.id;
-
-        if (!currentTutorId) {
-          console.error("Không tìm thấy ID gia sư");
-          setIsLoading(false);
-          return;
-        }
-
         // 1. Lấy thông tin chi tiết gia sư hiện tại bằng tutorService đã cấu hình
         const tutorData = await tutorService.getDetail(currentTutorId);
         
@@ -71,7 +66,7 @@ export default function TutorDetailPage({ params }) {
         setTutorDetails(tutorData);
         setAccountUser(tutorData.user || null);
 
-        // 2. Lấy danh sách khóa học của gia sư này trước
+        // 2. Lấy danh sách khóa học của gia sư này
         let coursesList = [];
         try {
           const coursesRes = await apiClient.get(`/courses?tutor_id=${currentTutorId}`);
@@ -82,7 +77,7 @@ export default function TutorDetailPage({ params }) {
           setTutorCourses([]);
         }
 
-        // 3. Sau khi đã có danh sách khóa học, tiến hành lấy review thông qua reviewService và gia sư liên quan
+        // 3. Lấy review và gia sư liên quan
         try {
           const [reviewsRes, relatedRes] = await Promise.all([
             reviewService.getReviews().catch(() => []),
@@ -90,23 +85,19 @@ export default function TutorDetailPage({ params }) {
           ]);
 
           const reviewsList = Array.isArray(reviewsRes) ? reviewsRes : (reviewsRes.data || []);
-          
-          // Lấy chính xác mảng course_id thuộc gia sư này để lọc đánh giá khớp với database của bạn
           const matchedReviews = reviewsList.filter(r => 
-              String(r.tutor_id) === String(currentTutorId)
-            );
-            setTutorReviews(matchedReviews);
+            String(r.tutor_id) === String(currentTutorId)
+          );
+          setTutorReviews(matchedReviews);
 
-          // Xử lý dữ liệu trả về từ tutorService.getRelatedTutors
           const relatedListRaw = Array.isArray(relatedRes) ? relatedRes : (relatedRes.data || []);
           const related = relatedListRaw.map(other => ({
             id: other.tutor_id || other.id,
             name: other.user?.full_name || "Gia sư AuraTeach",
-            avatar: other.user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+            avatar: other.user?.avatar || "https://res.cloudinary.com/ghbrskob/image/upload/v1786685723/aurateach_reports/v09h1kwwsnzbczsggiuy.webp",
             subject: other.expertise || other.bio || "Gia sư chuyên môn",
-            rating: other.rating || 4.5
+            rating: other.rating || 0
           }));
-          
           setRelatedTutorsList(related);
 
         } catch (subErr) {
@@ -121,13 +112,11 @@ export default function TutorDetailPage({ params }) {
     };
 
     fetchAllTutorData();
-  }, [params]);
+  }, [currentTutorId]);
 
   // ===== HÀM TÌM HOẶC TẠO CONVERSATION =====
   const findOrCreateConversation = async (studentId, userId, tutorId) => {
     try {
-      console.log("🛠️ [DEBUG] Đang tìm conversation với studentId:", studentId, "và targetId:", userId || tutorId);
-
       const url = `/conversations?user_id=${encodeURIComponent(studentId)}`;
       const response = await apiClient.get(url);
       
@@ -145,20 +134,15 @@ export default function TutorDetailPage({ params }) {
       });
       
       if (existingConv) {
-        console.log("✅ Đã tìm thấy conversation cũ:", existingConv);
         return existingConv;
       }
       
-      // 🚀 Kiểm tra xem ID nào thực sự là user_id của gia sư (ưu tiên dùng userId của accountUser)
       const targetUserId = userId || tutorId;
       const newConvPayload = {
         participants: [studentId, targetUserId]
       };
       
-      console.log("🚀 [DEBUG] Đang gửi payload tạo conversation mới:", newConvPayload);
-
       const createdRes = await apiClient.post("/conversations", newConvPayload);
-      console.log("🚀 [DEBUG] Kết quả tạo conversation từ server:", createdRes);
 
       const createdData = createdRes.data || createdRes;
       return createdData.data || createdData;
@@ -172,7 +156,7 @@ export default function TutorDetailPage({ params }) {
   // ===== HÀM XỬ LÝ LIÊN HỆ =====
   const handleContact = async () => {
     if (!currentUser) {
-      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id || tutorDetails?.id}`);
+      router.push(`/login?redirect=/tutorList/${currentTutorId}`);
       return;
     }
 
@@ -241,17 +225,15 @@ export default function TutorDetailPage({ params }) {
 
    const handleReport = () => {
     if (!currentUser) {
-      router.push(`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`);
+      router.push(`/login?redirect=/tutorList/${currentTutorId}`);
       return;
     }
     
-    // Kiểm tra nếu là học viên
     if (currentUser.role !== 'student') {
       alert('⚠️ Chỉ học viên mới có thể báo cáo gia sư!');
       return;
     }
 
-    // Chuyển đến trang báo cáo
     const tutorId = tutorDetails?.tutor_id;
     if (tutorId) {
       router.push(`/report-tutor/${tutorId}`);
@@ -340,16 +322,19 @@ export default function TutorDetailPage({ params }) {
 
           <div className={styles.sectionBlock}>
             <h2 className={styles.sectionTitle}>Thành tích nổi bật</h2>
-            <img 
-              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=1200" 
-              alt="Chứng nhận thành tích gia sư" 
-              className={styles.achievementImage} 
-            />
-            <div className={styles.achievementList}>
-              <div>🏅 Giải nhất Olympic Tin học sinh viên</div>
-              <div>📜 Chứng chỉ Professional Software Engineer (PSE)</div>
-              <div>👥 Thành viên tích cực cộng đồng giáo dục</div>
-            </div>
+            {tutorDetails.achievements ? (
+              <div className={styles.achievementList}>
+                {tutorDetails.achievements.split('\n').filter(Boolean).map((item, i) => (
+                  <div key={i}>🏅 {item}</div>
+                ))}
+              </div>
+            ) : tutorDetails.qualification ? (
+              <div className={styles.achievementList}>
+                <div>📜 {tutorDetails.qualification}</div>
+              </div>
+            ) : (
+              <p style={{ color: '#64748b' }}>Gia sư chưa cập nhật thành tích.</p>
+            )}
           </div>
 
           <div className={styles.sectionBlock}>
@@ -370,7 +355,9 @@ export default function TutorDetailPage({ params }) {
                       </div>
                       <div className={styles.courseCardFooter}>
                         <span className={styles.coursePrice}>
-                          {course.price_per_session || 'Liên hệ'}
+                          {course.price_per_session
+                            ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(course.price_per_session)
+                            : 'Liên hệ'}
                         </span>
                         <button className={styles.registerBtn} onClick={() => handleOpenBooking(course)}>Đăng ký học</button>
                       </div>
@@ -516,7 +503,7 @@ export default function TutorDetailPage({ params }) {
               </div>
             ) : (
               <Link 
-                href={`/login?redirect=/tutorList/${tutorDetails?.tutor_id}`}
+                href={`/login?redirect=/tutorList/${currentTutorId}`}
                 className={styles.reportBtn}
                 style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
               >

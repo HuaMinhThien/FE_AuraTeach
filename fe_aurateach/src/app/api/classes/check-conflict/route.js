@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -8,13 +10,11 @@ export async function GET(request) {
     const days = searchParams.get("days")?.split(",") || [];
     const [newStart, newEnd] = (searchParams.get("slot") || "").split("-");
     
-    // Lấy id_tutor từ query params
     const idTutor = searchParams.get("id_tutor") || searchParams.get("tutor_id");
 
-    // Ghép tham số lọc theo tutor_id nếu có
     const fetchUrl = idTutor
-      ? `http://localhost:3007/courses?tutor_id=${idTutor}`
-      : "http://localhost:3007/courses";
+      ? `${API_BASE}/courses?tutor_id=${idTutor}`
+      : `${API_BASE}/courses`;
 
     const res = await fetch(fetchUrl, { cache: "no-store" });
     if (!res.ok) return NextResponse.json({ success: true, isConflict: false });

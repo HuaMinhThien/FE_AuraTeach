@@ -60,9 +60,6 @@ export async function PATCH(request, { params }) {
     const { id } = await params;
     const body = await request.json();
 
-    console.log("📝 PATCH /api/users/[id] - User ID:", id);
-    console.log("📝 Update data:", body);
-
     const { data, path: filePath } = readDataFile();
 
     // Tìm user cần cập nhật
@@ -106,7 +103,6 @@ export async function PATCH(request, { params }) {
 
     // Trả về user đã cập nhật (không bao gồm password)
     const { password, ...userInfo } = updatedUser;
-    console.log("✅ Updated user:", userInfo.email);
 
     return NextResponse.json({
       success: true,

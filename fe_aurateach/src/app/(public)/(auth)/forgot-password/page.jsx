@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Headers from "@/components/users/Header";
-import authService from "@/services/authService";
+import { authService } from "@/services/authService";
 import "./forgot-password.css";
 
 export default function ForgotPasswordPage() {

@@ -1,14 +1,11 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
-// POST: Admin giải ngân tiền cho tutor (chuyển pending_balance → available_balance)
 export async function POST(request) {
   try {
     const body = await request.json();
     const { tutorId, amount, adminId } = body;
-
-    console.log("📤 [Payout Release] Release request:", { tutorId, amount, adminId });
 
     if (!tutorId || !amount) {
       return NextResponse.json(
@@ -17,7 +14,6 @@ export async function POST(request) {
       );
     }
 
-    // 1. Tìm tutor
     const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${tutorId}`);
     const tutors = await tutorRes.json();
     const tutor = Array.isArray(tutors) ? tutors[0] : tutors;
@@ -29,20 +25,19 @@ export async function POST(request) {
       );
     }
 
-    const pendingBalance = tutor.pending_balance || 0;
-    const availableBalance = tutor.available_balance || 0;
+    const pendingBalance = Number(tutor.pending_balance || 0);
+    const availableBalance = Number(tutor.available_balance || 0);
+    const releaseAmount = Number(amount);
 
-    // 2. Kiểm tra số dư chờ đủ để giải ngân
-    if (pendingBalance < amount) {
+    if (pendingBalance < releaseAmount) {
       return NextResponse.json(
         { success: false, message: `Số dư chờ không đủ. Hiện có: ${pendingBalance.toLocaleString('vi-VN')}đ` },
         { status: 400 }
       );
     }
 
-    // 3. Cập nhật ví: giảm pending, tăng available
-    const updatedPending = pendingBalance - amount;
-    const updatedAvailable = availableBalance + amount;
+    const updatedPending = pendingBalance - releaseAmount;
+    const updatedAvailable = availableBalance + releaseAmount;
 
     const updateRes = await fetch(`${API_BASE}/tutors/${tutor.id}`, {
       method: "PATCH",
@@ -58,16 +53,15 @@ export async function POST(request) {
       throw new Error("Không thể cập nhật số dư");
     }
 
-    // 4. Ghi log giao dịch
     const payoutRecord = {
       id: `payout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       tutor_id: tutorId,
-      amount: amount,
+      amount: releaseAmount,
       type: 'release',
       status: 'completed',
       admin_id: adminId || 'u-admin-1',
       created_at: new Date().toISOString(),
-      note: `Giải ngân ${amount.toLocaleString('vi-VN')}đ từ số dư chờ`,
+      note: `Giải ngân ${releaseAmount.toLocaleString('vi-VN')}đ từ số dư chờ`,
     };
 
     await fetch(`${API_BASE}/payouts`, {
@@ -76,41 +70,33 @@ export async function POST(request) {
       body: JSON.stringify(payoutRecord),
     });
 
-    // 5. Tạo thông báo cho tutor
     const notif = {
       id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       receiver_id: tutor.user_id || tutorId,
       receiver_role: 'tutor',
       type: 'payment',
       title: '💰 Giải ngân thành công',
-      message: `Admin đã giải ngân ${amount.toLocaleString('vi-VN')}đ vào ví khả dụng của bạn.`,
+      message: `Admin đã giải ngân ${releaseAmount.toLocaleString('vi-VN')}đ vào ví khả dụng của bạn.`,
       related_id: payoutRecord.id,
       related_type: 'payout',
       is_read: false,
       created_at: new Date().toISOString(),
     };
+
     await fetch(`${API_BASE}/notifications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(notif),
     });
 
-    console.log("✅ [Payout Release] Success:", {
-      tutorId,
-      amount,
-      pendingBalance,
-      updatedPending,
-      updatedAvailable,
-    });
-
     return NextResponse.json({
       success: true,
-      message: `Giải ngân ${amount.toLocaleString('vi-VN')}đ thành công!`,
+      message: `Giải ngân ${releaseAmount.toLocaleString('vi-VN')}đ thành công!`,
       data: {
         tutor_id: tutorId,
         pending_balance: updatedPending,
         available_balance: updatedAvailable,
-        released_amount: amount,
+        released_amount: releaseAmount,
         payout_id: payoutRecord.id,
       },
     });
@@ -123,7 +109,6 @@ export async function POST(request) {
   }
 }
 
-// GET: Lấy danh sách lịch sử giải ngân
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -138,7 +123,6 @@ export async function GET(request) {
       filtered = filtered.filter(p => p.tutor_id === tutorId);
     }
 
-    // Sắp xếp mới nhất lên đầu
     filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     return NextResponse.json({

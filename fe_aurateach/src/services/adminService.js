@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+﻿import apiClient from './apiClient';
 
 export const adminService = {
   // --- BỔ SUNG: Lấy danh sách tất cả tài khoản ---
@@ -156,7 +156,6 @@ export const adminService = {
 
   getInitialReportData: async (tutorId, studentId) => {
     try {
-      console.log("🚀 Đang truyền tutorId lên:", tutorId);
 
       // CÁCH AN TOÀN NHẤT: Nối thẳng chuỗi vào URL để chắc chắn request có chứa param
       const url = `/admin-tutor-reports/initial-data?tutorId=${tutorId}&studentId=${studentId}`;

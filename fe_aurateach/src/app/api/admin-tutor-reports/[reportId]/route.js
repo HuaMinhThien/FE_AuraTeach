@@ -1,8 +1,8 @@
 // src/app/api/admin-tutor-reports/[reportId]/route.js
 import { NextResponse } from "next/server";
-import notificationService from "@/services/notificationService";
+import { notificationService } from "@/services/notificationService";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // PUT: Cập nhật trạng thái báo cáo
 export async function PUT(request, { params }) {
@@ -71,9 +71,8 @@ export async function PUT(request, { params }) {
           status,
           tutorName,
         });
-        console.log(`📬 Đã gửi thông báo xử lý báo cáo cho ${student.email}`);
-      }
-    } catch (notifError) {
+        console.log(`📬 Đã gửi thông báo xử lý báo cáo cho học viên`);
+      }    } catch (notifError) {
       console.error("❌ Lỗi gửi thông báo xử lý báo cáo:", notifError);
     }
 

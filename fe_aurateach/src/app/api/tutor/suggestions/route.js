@@ -1,7 +1,7 @@
-// src/app/api/tutor/suggestions/route.js
+﻿// src/app/api/tutor/suggestions/route.js
 import { NextResponse } from 'next/server';
 
-const API_BASE = 'http://localhost:3007';
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 export async function GET(request) {
   try {
@@ -15,7 +15,6 @@ export async function GET(request) {
       );
     }
 
-    console.log('📡 [Tutor Suggestions] Received ID:', tutorId);
 
     // ✅ Quan trọng: Map user_id → tutor_id (vì cookie lưu user_id, nhưng class_suggestions lưu tutor_id)
     const tutorsRes = await fetch(`${API_BASE}/tutors`);
@@ -23,7 +22,6 @@ export async function GET(request) {
     const matchedTutor = tutors.find(t => t.tutor_id === tutorId || t.user_id === tutorId);
     const actualTutorId = matchedTutor ? matchedTutor.tutor_id : tutorId;
 
-    console.log('📡 [Tutor Suggestions] Mapped to tutor_id:', actualTutorId);
 
     // 1. Lấy tất cả suggestions của tutor này
     const sugRes = await fetch(
@@ -31,7 +29,6 @@ export async function GET(request) {
     );
     const suggestions = await sugRes.json();
 
-    console.log('📋 [Tutor Suggestions] Found suggestions:', suggestions.length);
 
     // 2. Lấy thông tin course cho từng suggestion
     const result = [];
@@ -55,7 +52,6 @@ export async function GET(request) {
       }
     }
 
-    console.log('✅ [Tutor Suggestions] Returning:', result.length, 'classes');
 
     return NextResponse.json({
       success: true,

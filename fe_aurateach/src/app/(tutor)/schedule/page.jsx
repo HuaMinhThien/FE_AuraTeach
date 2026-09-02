@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./schedule.module.css";
 import { tutorService } from "@/services/tutorService";
 import { courseService } from "@/services/courseService";
+import { classSessionService } from "@/services/classSessionService";
 
 // Màu thống nhất theo theme xanh navy của AuraTeach
 const CLASS_COLOR = {
@@ -71,7 +72,27 @@ export default function SchedulePage() {
         const courses = Array.isArray(coursesData) ? coursesData : (coursesData.data || []);
         
         // Lọc các lớp active
-        setClasses(courses.filter(c => c.status === "active"));
+        const activeClasses = courses.filter(c => c.status === "active");
+        setClasses(activeClasses);
+
+        // ===== Load buổi học bù =====
+        const courseIds = activeClasses.map(c => c.course_id || c.id).filter(Boolean);
+        if (courseIds.length > 0) {
+          try {
+            const sessionsRes = await classSessionService.getSessions({ course_ids: courseIds.join(",") });
+            const allSessions = Array.isArray(sessionsRes) ? sessionsRes : (sessionsRes?.data || []);
+            const makeups = allSessions.filter(
+              s => s.is_makeup === true &&
+                   courseIds.includes(s.course_id) &&
+                   (s.session_status || s.status) !== "cancelled"
+            );
+            setMakeupSessions(makeups);
+          } catch {
+            setMakeupSessions([]);
+          }
+        } else {
+          setMakeupSessions([]);
+        }
       } catch (error) {
         console.error("Lỗi tải lịch học:", error);
       } finally {
@@ -145,9 +166,16 @@ export default function SchedulePage() {
       const topPosition = startHour * ROW_HEIGHT;
       const cardHeight = duration * ROW_HEIGHT - 8; 
 
-      if (!cls.schedule_days || !Array.isArray(cls.schedule_days)) return;
+      if (!cls.schedule_days) return;
+      
+      // Handle cả JSON string lẫn array
+      let scheduleDaysArr = cls.schedule_days;
+      if (typeof scheduleDaysArr === 'string') {
+        try { scheduleDaysArr = JSON.parse(scheduleDaysArr); } catch { return; }
+      }
+      if (!Array.isArray(scheduleDaysArr)) return;
 
-      cls.schedule_days.forEach((dayStr) => {
+      scheduleDaysArr.forEach((dayStr) => {
         const dayIdx = mapScheduleDayIndex[dayStr];
         if (dayIdx === undefined) return;
 
@@ -317,12 +345,18 @@ export default function SchedulePage() {
   const renderCards = renderClassCards();
   
   const totalHoursThisWeek = classes.reduce((total, cls) => {
-    if (!cls.time_slot || !cls.time_slot.includes("-") || !cls.schedule_days) return total;
+    if (!cls.time_slot || !cls.time_slot.includes("-")) return total;
     const [start, end] = cls.time_slot.split("-");
     const diff = parseInt(end.split(":")[0]) - parseInt(start.split(":")[0]);
 
+    let scheduleDaysArr = cls.schedule_days;
+    if (typeof scheduleDaysArr === 'string') {
+      try { scheduleDaysArr = JSON.parse(scheduleDaysArr); } catch { return total; }
+    }
+    if (!Array.isArray(scheduleDaysArr)) return total;
+
     let actualDaysInWeek = 0;
-    cls.schedule_days.forEach((dayStr) => {
+    scheduleDaysArr.forEach((dayStr) => {
       const dayIdx = mapScheduleDayIndex[dayStr];
       if (dayIdx === undefined) return;
       const targetDayInstance = currentWeekDays[dayIdx].dateObj;
@@ -381,7 +415,7 @@ export default function SchedulePage() {
             <div style={{ padding: "40px", textAlign: "center", width: "100%" }}>
               Đang tải lịch trình giảng dạy...
             </div>
-          ) : classes.length === 0 ? (
+          ) : classes.length === 0 && makeupSessions.length === 0 ? (
             <div style={{ padding: "60px", textAlign: "center", width: "100%", color: "#94a3b8" }}>
               Chưa có lớp học nào để hiển thị
             </div>

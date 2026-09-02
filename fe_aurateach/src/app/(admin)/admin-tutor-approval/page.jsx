@@ -20,13 +20,12 @@ export default function TutorApprovalPage() {
   const [selectedTutorLevel, setSelectedTutorLevel] = useState("Sinh viên");
 
 
-  // Hàm tải dữ liệu chung dùng adminService
+  // Hàm tải dữ liệu — gọi lại sau khi approve/reject
   const loadData = async () => {
     setIsLoading(true);
     try {
       if (activeTab === "pending_tutors") {
         const result = await adminService.getPendingTutors();
-        // Xử lý linh hoạt: nhận result.data hoặc lấy chính result nếu nó là mảng
         const tutorsList = result?.data || (Array.isArray(result) ? result : []);
         setPendingTutors(tutorsList);
       } else {
@@ -42,36 +41,7 @@ export default function TutorApprovalPage() {
   };
 
   useEffect(() => {
-    let ignore = false;
-
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        if (activeTab === "pending_tutors") {
-          const result = await adminService.getPendingTutors();
-          if (!ignore) {
-            const tutorsList = result?.data || (Array.isArray(result) ? result : []);
-            setPendingTutors(tutorsList);
-          }
-        } else {
-          const result = await adminService.getPendingUpdateRequests();
-          if (!ignore) {
-            const requestsList = result?.data || (Array.isArray(result) ? result : []);
-            setUpdateRequests(requestsList);
-          }
-        }
-      } catch (error) {
-        console.error("Lỗi tải dữ liệu:", error);
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-
-    fetchData();
-
-    return () => {
-      ignore = true;
-    };
+    loadData();
   }, [activeTab]);
 
   const handleLevelToggle = (level) => {

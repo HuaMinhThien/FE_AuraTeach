@@ -70,8 +70,8 @@ export default function TeacherListPage() {
             return {
               id: tutor.tutor_id || tutor.id,
               name: user.full_name || "Gia sư AuraTeach",
-              // Lấy rating từ BE, nếu null/undefined thì fallback về 0 hoặc 5.0
               rating: tutor.rating !== null && tutor.rating !== undefined ? Number(tutor.rating) : 0,
+              reviewCount: tutor.review_count || tutor.reviews_count || 0,
               desc: bioText.length > 135 ? bioText.substring(0, 132) + "..." : bioText || "Chưa có thông tin giới thiệu.",
               expertise: expertiseText,
               experience: experienceText,
@@ -231,7 +231,7 @@ export default function TeacherListPage() {
                         <StarIcon />
                       </span>
                       <span>{tutor.rating.toFixed(1)}</span>
-                      <small>({tutor.reviews})</small>
+                      <small>({tutor.reviewCount})</small>
                     </div>
                   </div>
 

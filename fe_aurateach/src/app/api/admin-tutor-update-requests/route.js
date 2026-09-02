@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 
-const BACKEND = "http://localhost:3007";
+const BACKEND = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 // 1. API GET: Kiểm tra xem gia sư có yêu cầu đang chờ duyệt hay không
 export async function GET(request) {
   try {
@@ -73,7 +73,7 @@ export async function POST(request) {
     };
 
     // Lưu vào Database
-    const backendRes = await fetch("http://localhost:3007/tutor_update_requests", {
+    const backendRes = await fetch(`${BACKEND}/tutor_update_requests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

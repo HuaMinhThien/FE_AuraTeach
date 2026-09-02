@@ -1,7 +1,7 @@
-// src/app/api/admin-tutor-reports/route.js
+﻿// src/app/api/admin-tutor-reports/route.js
 import { NextResponse } from "next/server";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 // GET: Lấy danh sách báo cáo
 export async function GET(request) {

@@ -481,6 +481,12 @@ export default function CreateClassRequest() {
     }
   };
 
+  // Mở Google Meet để lấy link và dán vào
+  const handleGenerateMeetLink = () => {
+    window.open("https://meet.google.com/", "_blank", "noopener,noreferrer");
+    alert("💡 Hướng dẫn:\n1. Nhấn 'Cuộc họp mới' trên Google Meet vừa mở\n2. Chọn 'Tạo cuộc họp để dùng sau'\n3. Copy link và dán vào ô bên dưới");
+  };
+
   const handlePaymentSuccess = async () => {
     if (pendingAcceptance) {
       try {
@@ -496,10 +502,10 @@ export default function CreateClassRequest() {
           await courseSubscriptionService.updateSubscriptionCourse(subscriptionId, { course_id: newCourseId });
         }
 
-        // 3. Cập nhật trạng thái class request: chuyển sang approved và gán tutor_id[cite: 1]
-        await classRequestService.updateClassRequestStatus(reqId, { 
+        // 3. Cập nhật trạng thái class request: chuyển sang approved và gán tutor_id
+        await classRequestService.updateClassRequestStatus(reqId, {
           status: "approved",
-          tutor_id: tutorId // Cập nhật tutor_id của gia sư được chấp nhận vào lại request_class[cite: 1]
+          tutor_id: tutorId,
         });
 
         // 4. Cập nhật trạng thái application của gia sư thành accepted
@@ -663,9 +669,10 @@ export default function CreateClassRequest() {
 
       setPendingAcceptance({
         reqId,
-        appId: currentAppId, // Gán chính xác giá trị app_id
+        appId: currentAppId,
         coursePayload,
-        subscriptionId: subscriptionId // Sửa lại biến response thành subscriptionId đã lấy ở trên
+        subscriptionId: subscriptionId,
+        tutorId: tutor.tutor_id,
       });
 
       const paymentRes = await paymentService.createQR(
@@ -895,18 +902,24 @@ export default function CreateClassRequest() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Link Google Meet</label>
+                  <label>Link Google Meet <span>*</span></label>
                   <div className={styles.meetBox}>
                     <input
-                      type="text"
+                      type="url"
                       className={styles.meetInput}
-                      value={formData.meet_link || "Chưa khởi tạo..."}
-                      readOnly
+                      placeholder="https://meet.google.com/abc-defg-hij"
+                      value={formData.meet_link || ""}
+                      onChange={(e) => setFormData({ ...formData, meet_link: e.target.value })}
                     />
                     <button type="button" className={styles.genBtn} onClick={handleGenerateMeetLink}>
                       {formData.meet_link ? "Tạo lại link" : "Lấy link Meet"}
                     </button>
                   </div>
+                  {formData.meet_link && !isValidGoogleMeetLink(formData.meet_link) && (
+                    <small className={styles.priceHintError}>
+                      ⚠️ Link không đúng định dạng. VD: https://meet.google.com/abc-defg-hij
+                    </small>
+                  )}
                 </div>
 
                 <div className={styles.sectionTitle} style={{ marginTop: "20px" }}>Lịch học dự kiến</div>
@@ -925,15 +938,36 @@ export default function CreateClassRequest() {
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label>Số tuần dự kiến</label>
+                    <label>Hình thức học <span>*</span></label>
+                    <select
+                      className={styles.select}
+                      value={formData.schedule_style}
+                      onChange={(e) => {
+                        const style = e.target.value;
+                        const weeks = style === "1_term" ? 18 : style === "2_terms" ? 36 : formData.total_weeks;
+                        setFormData({ ...formData, schedule_style: style, total_weeks: weeks });
+                      }}
+                    >
+                      <option value="1_term">1 kỳ (18 tuần)</option>
+                      <option value="2_terms">2 kỳ (36 tuần)</option>
+                      <option value="custom">Tùy chọn số tuần</option>
+                    </select>
+                  </div>
+                </div>
+
+                {formData.schedule_style === "custom" && (
+                  <div className={styles.formGroup}>
+                    <label>Số tuần dự kiến <span>*</span></label>
                     <input
                       type="number"
                       className={styles.input}
+                      min={1}
+                      max={52}
                       value={formData.total_weeks}
-                      disabled={formData.schedule_style !== "custom"}
+                      onChange={(e) => setFormData({ ...formData, total_weeks: Number(e.target.value) || 1 })}
                     />
                   </div>
-                </div>
+                )}
 
                 <div className={styles.formGroup}>
                   <label>Chọn thứ trong tuần <span>*</span></label>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -35,7 +35,6 @@ export default function Header() {
                 if (!userId) return;
 
                 const response = await tutorService.getTutorEarningsData(userId);
-                console.log("📦 Header - Dữ liệu thu nhập trả về từ API:", response);
 
                 if (response) {
                     // Hứng trọn mọi trường hợp cấu trúc trả về (giống trang income)

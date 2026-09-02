@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 export async function GET() {
   try {
-    console.log("=== GET PENDING TUTORS FROM JSON SERVER ===");
 
     // Lấy tất cả tutors từ JSON Server
     const tutorsRes = await fetch(`${API_BASE}/tutors`);
@@ -27,7 +26,6 @@ export async function GET() {
         };
       });
 
-    console.log(`📊 Tìm thấy ${pendingTutors.length} hồ sơ chờ duyệt`);
 
     return NextResponse.json({
       success: true,

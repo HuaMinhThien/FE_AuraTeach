@@ -7,7 +7,7 @@ import StudentSidebar from "@/components/users/StudentSidebar.jsx";
 import { authService } from "@/services/authService";
 import { courseService } from "@/services/courseService";
 import { courseScheduleService } from "@/services/courseScheduleService";
-import { getClassroomRoomPath } from "@/utils/roomUtils";
+import { getMeetLink, openMeetLink } from "@/utils/roomUtils";
 import styles from "./ClassDetail.module.css";
 
 export default function ClassDetailPage() {
@@ -49,21 +49,12 @@ export default function ClassDetailPage() {
 
   const fetchCourseDetail = async (id, currentUserId) => {
     try {
-      console.log(`📡 [DEBUG] Bắt đầu fetch chi tiết khóa học ID: ${id}`);
-      
       const courseData = await courseService.getCourseDetail(id);
-      console.log("📥 [DEBUG] Dữ liệu courseData gốc từ API:", courseData);
 
       if (!courseData) {
-        console.warn("⚠️ [DEBUG] Không tìm thấy courseData!");
         setError("Không tìm thấy lớp học");
         return;
       }
-
-      // --- KIỂM TRA QUAN HỆ TUTOR & USERS ---
-      console.log("🔍 [DEBUG] Kiểm tra trường tutor_id:", courseData.tutor_id);
-      console.log("🔍 [DEBUG] Kiểm tra object tutor:", courseData.tutor);
-      console.log("🔍 [DEBUG] Kiểm tra bảng users bên trong tutor:", courseData.tutor?.user || courseData.tutor?.users);
 
       // Bóc tách tên gia sư linh hoạt từ nhiều tầng dữ liệu quan hệ
       const tutorName = 
@@ -73,20 +64,16 @@ export default function ClassDetailPage() {
         courseData.tutor_name || 
         "Gia sư";
 
-      console.log("✅ [DEBUG] Tên gia sư sau khi bóc tách:", tutorName);
-
       // Lấy danh sách buổi học từ course_schedules
       let sessions = courseData.class_sessions || courseData.classSessions || [];
-      console.log("📋 [DEBUG] Danh sách sessions:", sessions);
 
       if (sessions.length === 0) {
         try {
           const allSessions = await courseScheduleService.getCourseSchedules();
           sessions = (Array.isArray(allSessions) ? allSessions : allSessions.data || [])
             .filter(session => String(session.course_id) === String(id));
-          console.log("📋 [DEBUG] Danh sách sessions lọc từ service phụ:", sessions);
         } catch (err) {
-          console.warn("⚠️ [DEBUG] Lỗi tải danh sách buổi học phụ:", err);
+          console.warn("Lỗi tải danh sách buổi học phụ:", err);
         }
       }
 
@@ -94,7 +81,6 @@ export default function ClassDetailPage() {
       setClassSessions(sessions);
 
       const primarySchedule = (courseData.schedules && courseData.schedules[0]) || sessions[0] || {};
-      console.log("📅 [DEBUG] Lịch học chính (primarySchedule):", primarySchedule);
 
       setCourse({
         ...courseData,
@@ -136,13 +122,13 @@ export default function ClassDetailPage() {
 
   const handleJoinClass = () => {
     if (course) {
-      window.open(getClassroomRoomPath(course, "student"), "_blank");
+      openMeetLink(course);
     } else {
-      alert("Lớp học này chưa có link tham gia!");
+      alert("Lớp học này chưa có link Google Meet!");
     }
   };
 
-  const roomPath = course ? getClassroomRoomPath(course, "student") : "";
+  const meetLink = course ? getMeetLink(course) : null;
 
   if (loading) {
     return (
@@ -223,19 +209,19 @@ export default function ClassDetailPage() {
                   <p>{course.description || "Không có mô tả"}</p>
                 </div>
                 <div className={`${styles.infoItem} ${styles.fullWidth}`}>
-                  <label>🔗 Link phòng học cố định</label>
+                  <label>🔗 Link Google Meet</label>
                   <p>
-                    {roomPath  ? (
+                    {meetLink ? (
                       <a 
-                        href={roomPath } 
+                        href={meetLink} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className={styles.roomLink}
                       >
-                        {roomPath }
+                        {meetLink}
                       </a>
                     ) : (
-                      "Chưa có link"
+                      "Chưa có link Google Meet"
                     )}
                   </p>
                 </div>
@@ -290,12 +276,12 @@ export default function ClassDetailPage() {
               </div>
 
               <div className={styles.actions} style={{ marginTop: "24px" }}>
-                {roomPath  && (
+                {meetLink && (
                   <button 
                     className={styles.joinBtn}
                     onClick={handleJoinClass}
                   >
-                    🚀 Tham gia lớp học
+                    🚀 Tham gia lớp học (Google Meet)
                   </button>
                 )}
                 <button 

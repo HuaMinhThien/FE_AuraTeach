@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import styles from "./notifications.module.css";
-import notificationService from "@/services/notificationService";
+import { notificationService } from "@/services/notificationService";
 
 const ADMIN_USER_ID = "u-admin-1"; // ID mặc định của Admin
 

@@ -1,10 +1,9 @@
-// src/services/messageService.js
+﻿// src/services/messageService.js
 import apiClient from './apiClient';
 
 export const messageService = {
   // Lấy danh sách tin nhắn theo cuộc trò chuyện
   getMessages: async (conversationId) => {
-    console.log("🔍 [DEBUG messageService.getMessages] Nhận vào conversationId:", conversationId, typeof conversationId);
 
     if (!conversationId || conversationId === 'undefined' || conversationId === '[object Object]') {
       throw new Error("Thiếu hoặc không hợp lệ conversation_id");

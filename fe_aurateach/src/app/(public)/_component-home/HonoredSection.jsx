@@ -9,8 +9,8 @@ function HonoredSection() {
   useEffect(() => {
     const fetchHonoredData = async () => {
       try {
-        // 🌟 1. SỬA ĐỔI: Thêm tham số ?section=honored vào URL để lấy đúng Object dữ liệu vinh danh
-        const response = await fetch('http://localhost:3007/honored_members');
+        const JSON_SERVER = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
+        const response = await fetch(`${JSON_SERVER}/honored_members`);
         if (!response.ok) {
           throw new Error('Không thể tải dữ liệu vinh danh');
         }

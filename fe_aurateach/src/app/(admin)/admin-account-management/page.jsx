@@ -82,12 +82,8 @@ export default function AccountManager() {
 
     setUpdatingId(userId);
     try {
-      console.log("Đang gửi request cập nhật status cho user:", userId);
       const response = await adminService.updateAccountStatus(userId, nextStatus);
-      console.log("KẾT QUẢ TRẢ VỀ TỪ API:", response);
 
-      // Cập nhật giao diện ngay lập tức mà không cần quan tâm response trả về ra sao 
-      // (vì bạn đã xác nhận là Database đã đổi thành công)
       setUsers(prevUsers => 
         prevUsers.map(u => (u.user_id === userId || u.id === userId) ? { ...u, status: nextStatus } : u)
       );
@@ -100,7 +96,6 @@ export default function AccountManager() {
 
     } catch (error) {
       console.error("Lỗi chi tiết khi catch:", error);
-      // In rõ lỗi từ Axios trả về (nếu có response từ server)
       const errorMsg = error.response?.data?.message || error.message || "Đã xảy ra lỗi kết nối!";
       alert("Cập nhật thất bại! Lỗi: " + errorMsg);
     } finally {

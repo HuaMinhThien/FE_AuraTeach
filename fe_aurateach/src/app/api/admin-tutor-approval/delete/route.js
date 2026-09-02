@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
-const API_BASE = "http://localhost:3007";
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 export async function DELETE(request) {
   try {
@@ -13,7 +13,6 @@ export async function DELETE(request) {
       );
     }
 
-    console.log(`🗑️ Delete tutor: userId=${userId}, tutorId=${tutorId}`);
 
     // Lấy tutor hiện tại
     const tutorRes = await fetch(`${API_BASE}/tutors?tutor_id=${tutorId}`);
@@ -53,10 +52,8 @@ export async function DELETE(request) {
       await fetch(`${API_BASE}/users/${user.id}`, {
         method: "DELETE"
       });
-      console.log(`🗑️ Đã xóa user ${userId}`);
     }
 
-    console.log(`🗑️ Đã xóa hoàn toàn hồ sơ tutor ${tutorId} và user ${userId}`);
 
     return NextResponse.json({
       success: true,

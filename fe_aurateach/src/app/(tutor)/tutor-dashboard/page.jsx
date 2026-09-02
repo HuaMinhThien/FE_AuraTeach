@@ -66,15 +66,13 @@ export default function TutorDashboardPage() {
       const calculatedTotalIncome = availableWallet + pendingWallet;
 
       setStats({
-        totalIncome: availableWallet,
+        totalIncome: `${calculatedTotalIncome.toLocaleString("vi-VN")}đ`,
         incomeGrowth: pendingWallet > 0 ? `+${((pendingWallet / (calculatedTotalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` : "Ổn định",
         totalStudents,
         studentsGrowth: `+${activeClasses.length} lớp`,
         openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
         rating: `${tutorDetail?.rating || 0}/5.0`
       });
-
-      console.log("Dữ liệu các khóa học từ API:", coursesData);
 
       const formattedClasses = coursesData
         .map((course) => {
@@ -176,7 +174,73 @@ export default function TutorDashboardPage() {
 
       formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
 
-      setClassesList(formattedClasses);
+      // ===== BUỔI HỌC BÙ =====
+      const allSessionsData = coursesData.flatMap(c => c.class_sessions || c.sessions || []);
+      const now2 = new Date();
+
+      const makeupItems = allSessionsData
+        .filter(s => {
+          if (s.is_makeup !== true) return false;
+          if (!['scheduled', 'pending'].includes(s.session_status || s.status)) return false;
+          if (!s.actual_date || !s.start_time || !s.end_time) return false;
+          const sessionDate = new Date(s.actual_date);
+          const [endH, endM] = s.end_time.split(":").map(Number);
+          const sessionEnd = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate(), endH, endM || 0);
+          return now2 <= sessionEnd;
+        })
+        .map(s => {
+          const relatedCourse = coursesData.find(c => (c.course_id || c.id) === s.course_id);
+          const sessionDate = new Date(s.actual_date);
+          const [startH, startM] = s.start_time.split(":").map(Number);
+          const [endH, endM] = s.end_time.split(":").map(Number);
+          const sessionStart = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate(), startH, startM || 0);
+          const sessionEnd = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate(), endH, endM || 0);
+          const canJoinTime = new Date(sessionStart.getTime() - 15 * 60 * 1000);
+          const isLive = now2 >= canJoinTime && now2 <= sessionEnd;
+          const formattedDateString = sessionStart.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+          let dateTag = "";
+          if (isLive) {
+            dateTag = "🔴 ĐANG DIỄN RA";
+          } else if (sessionStart.toDateString() === now2.toDateString()) {
+            dateTag = `HÔM NAY, ${formattedDateString}`;
+          } else {
+            const diffDays = Math.ceil((sessionStart.getTime() - now2.getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays === 1) {
+              dateTag = `NGÀY MAI, ${formattedDateString}`;
+            } else {
+              const weekdays = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+              dateTag = `${weekdays[sessionStart.getDay()]}, ${formattedDateString}`;
+            }
+          }
+          const enrolledStudents = (relatedCourse?.students || []).map(stId => {
+            const u = (Array.isArray(allUsers) ? allUsers : []).find(usr => usr.user_id === stId || usr.id === stId);
+            return u
+              ? { user_id: stId, full_name: u.full_name, email: u.email, phone: u.phone, avatar: u.avatar }
+              : { user_id: stId, full_name: "Học sinh " + stId };
+          });
+          return {
+            id: s.session_id || s.id,
+            tag: dateTag,
+            title: relatedCourse?.title || s.lesson_title || "Buổi học bù",
+            level: relatedCourse?.level,
+            description: relatedCourse?.description || "Buổi học bù",
+            price_per_session: relatedCourse?.price_per_session || 0,
+            schedule_days: relatedCourse?.schedule_days,
+            time: `${s.start_time} - ${s.end_time}`,
+            studentsCount: relatedCourse?.students?.length || 0,
+            enrolledStudentsDetails: enrolledStudents,
+            sortTimestamp: sessionStart.getTime(),
+            isLive,
+            isMakeup: true,
+            thumbnail: relatedCourse?.thumbnail,
+            permanent_room_url: relatedCourse?.permanent_room_url || null
+          };
+        });
+
+      const allUpcoming = [...formattedClasses, ...makeupItems];
+      allUpcoming.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+
+      setClassesList(allUpcoming.slice(0, 5));
       setChartData([
         { name: "Th1", income: Math.round(availableWallet * 0.15 / 1000000) || 4 },
         { name: "Th2", income: Math.round(availableWallet * 0.3 / 1000000) || 7 },

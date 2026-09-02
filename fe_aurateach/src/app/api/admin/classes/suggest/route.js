@@ -1,7 +1,7 @@
-// src/app/api/admin/classes/suggest/route.js
+﻿// src/app/api/admin/classes/suggest/route.js
 import { NextResponse } from 'next/server';
 
-const API_BASE = 'http://localhost:3007';
+const API_BASE = process.env.NEXT_PUBLIC_JSON_SERVER_URL || 'http://localhost:3007';
 
 export async function POST(request) {
   try {
@@ -14,7 +14,6 @@ export async function POST(request) {
       );
     }
 
-    console.log('📡 [Suggest] Gửi đề xuất cho:', { courseId, tutorIds });
 
     // 1. Lấy course hiện tại
     const courseRes = await fetch(`${API_BASE}/courses?course_id=${courseId}`);
@@ -33,7 +32,6 @@ export async function POST(request) {
     const suggestedTutors = course.suggested_tutors || [];
     const newSuggested = [...new Set([...suggestedTutors, ...tutorIds])];
 
-    console.log('📝 [Suggest] Cập nhật suggested_tutors:', newSuggested);
 
     // ✅ CHỈ CẬP NHẬT suggested_tutors, GIỮ NGUYÊN tutor_id = null
     await fetch(`${API_BASE}/courses/${course.id}`, {
@@ -66,7 +64,6 @@ export async function POST(request) {
           status: 'pending'
         };
 
-        console.log('📝 [Suggest] Tạo suggestion:', suggestion);
 
         await fetch(`${API_BASE}/class_suggestions`, {
           method: 'POST',
@@ -103,7 +100,6 @@ export async function POST(request) {
       }
     }
 
-    console.log('✅ [Suggest] Gửi đề xuất thành công! KHÔNG tự động gán tutor.');
 
     return NextResponse.json({
       success: true,

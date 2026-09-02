@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./NotificationBell.module.css";
@@ -13,23 +13,19 @@ export default function NotificationBell({ userId, userRole }) {
 
   // Debug
   useEffect(() => {
-    console.log("🔔 [NotificationBell] Mounted with userId:", userId);
   }, [userId]);
 
   // Fetch notifications thông qua notificationService
   useEffect(() => {
     if (!userId) {
-      console.log("⏳ [NotificationBell] No userId, skipping fetch");
       return;
     }
 
     const fetchNotifications = async () => {
       try {
         setLoading(true);
-        console.log(`📡 [NotificationBell] Fetching for user: ${userId}`);
         
         const data = await notificationService.getNotifications(userId);
-        console.log(`📊 [NotificationBell] Found ${data.length} notifications`);
         
         if (Array.isArray(data)) {
           const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -65,7 +61,6 @@ export default function NotificationBell({ userId, userRole }) {
   }, []);
 
   const toggleDropdown = () => {
-    console.log("🔔 [NotificationBell] Toggle dropdown, current state:", isOpen);
     setIsOpen(!isOpen);
   };
 
