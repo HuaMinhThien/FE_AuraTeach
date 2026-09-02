@@ -137,10 +137,13 @@ export const notificationService = {
   async markAllAsRead(userId) {
     try {
       const notifications = await this.getNotifications(userId);
-      const unreadList = notifications.filter(n => !n.is_read);
+      const unreadList = notifications.filter(n =>
+        n.is_read === false || n.is_read === 0 || n.is_read === "0"
+      );
 
       await Promise.all(
-        unreadList.map(notif => this.markAsRead(notif.id))
+        // Dùng notification_id (primary key thực tế của bảng), fallback sang id
+        unreadList.map(notif => this.markAsRead(notif.notification_id ?? notif.id))
       );
 
       return { success: true, count: unreadList.length };

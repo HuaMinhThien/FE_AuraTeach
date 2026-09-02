@@ -6,7 +6,7 @@
 //   - NEXT_PUBLIC_USE_API=false → JSON Server (localhost:3007) để test UI local
 //   - NEXT_PUBLIC_USE_API=true  → Laravel API thật (NEXT_PUBLIC_API_URL)
 
-const JSON_SERVER_URL = "http://localhost:8000/api";
+const JSON_SERVER_URL = "http://localhost:3007";
 
 class AdminChatService {
   constructor() {
