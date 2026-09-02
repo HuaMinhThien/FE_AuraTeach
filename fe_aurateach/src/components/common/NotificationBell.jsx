@@ -150,15 +150,16 @@ export default function NotificationBell({ userId, userRole }) {
             ) : (
               notifications.map((notif) => (
                 <div
-                  key={notif.id}
+                  key={notif.notification_id || notif.id}
                   className={`${styles.notifItem} ${!notif.is_read ? styles.unread : ''}`}
                   onClick={async () => {
                     if (!notif.is_read) {
                       try {
-                        await notificationService.markAsRead(notif.id);
-                        setNotifications(prev => 
-                          prev.map(n => 
-                            n.id === notif.id ? { ...n, is_read: true } : n
+                        const notifId = notif.notification_id || notif.id;
+                        await notificationService.markAsRead(notifId);
+                        setNotifications(prev =>
+                          prev.map(n =>
+                            (n.notification_id || n.id) === notifId ? { ...n, is_read: true } : n
                           )
                         );
                         setUnreadCount(prev => Math.max(0, prev - 1));

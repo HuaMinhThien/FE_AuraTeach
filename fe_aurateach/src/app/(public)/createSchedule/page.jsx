@@ -485,33 +485,42 @@ export default function CreateClassRequest() {
     if (pendingAcceptance) {
       try {
         const { reqId, appId, coursePayload, subscriptionId, tutorId } = pendingAcceptance;
+        console.log("🔍 [handlePaymentSuccess] pendingAcceptance:", { reqId, appId, subscriptionId, tutorId });
+        console.log("🔍 [handlePaymentSuccess] coursePayload:", coursePayload);
 
         // 1. Tạo course sau khi thanh toán thành công
         const createdCourseRes = await courseService.createCourse(coursePayload);
+        console.log("✅ [handlePaymentSuccess] createCourse result:", createdCourseRes);
         const createdCourse = createdCourseRes.data !== undefined ? createdCourseRes.data : createdCourseRes;
         const newCourseId = createdCourse?.course_id || createdCourse?.id;
+        console.log("✅ [handlePaymentSuccess] newCourseId:", newCourseId);
 
         // 2. Cập nhật course_id vào bảng course_subscriptions
         if (subscriptionId && newCourseId) {
-          await courseSubscriptionService.updateSubscriptionCourse(subscriptionId, { course_id: newCourseId });
+          const subUpdateRes = await courseSubscriptionService.updateSubscriptionCourse(subscriptionId, { course_id: newCourseId });
+          console.log("✅ [handlePaymentSuccess] updateSubscriptionCourse result:", subUpdateRes);
         }
 
         // 3. Cập nhật trạng thái class request: chuyển sang approved và gán tutor_id[cite: 1]
-        await classRequestService.updateClassRequestStatus(reqId, { 
+        const reqUpdateRes = await classRequestService.updateClassRequestStatus(reqId, { 
           status: "approved",
-          tutor_id: tutorId // Cập nhật tutor_id của gia sư được chấp nhận vào lại request_class[cite: 1]
+          tutor_id: tutorId
         });
+        console.log("✅ [handlePaymentSuccess] updateClassRequestStatus result:", reqUpdateRes);
 
         // 4. Cập nhật trạng thái application của gia sư thành accepted
         if (appId) {
-          await classRequestService.updateApplicationStatus(appId, { status: "accepted" });
+          const appUpdateRes = await classRequestService.updateApplicationStatus(appId, { status: "accepted" });
+          console.log("✅ [handlePaymentSuccess] updateApplicationStatus result:", appUpdateRes);
         }
 
         setRequestsList((prev) => prev.filter((r) => (r.requests_id || r.id) !== reqId));
         alert("🎉 Thanh toán thành công! Lớp học đã được khởi tạo và gán gia sư thành công.");
       } catch (error) {
-        console.error("⚠️ Lỗi khi khởi tạo lớp học sau thanh toán thành công:", error);
-        alert("Thanh toán thành công nhưng có lỗi khi cập nhật thông tin lớp. Vui lòng liên hệ hỗ trợ!");
+        console.error("⚠️ [handlePaymentSuccess] Lỗi chi tiết:", error);
+        console.error("⚠️ [handlePaymentSuccess] error.message:", error?.message);
+        console.error("⚠️ [handlePaymentSuccess] error.response:", error?.response);
+        alert("Thanh toán thành công nhưng có lỗi khi cập nhật thông tin lớp. Vui lòng liên hệ hỗ trợ!\n\nLỗi: " + (error?.message || "Không xác định"));
       }
     }
 
@@ -896,17 +905,13 @@ export default function CreateClassRequest() {
 
                 <div className={styles.formGroup}>
                   <label>Link Google Meet</label>
-                  <div className={styles.meetBox}>
-                    <input
-                      type="text"
-                      className={styles.meetInput}
-                      value={formData.meet_link || "Chưa khởi tạo..."}
-                      readOnly
-                    />
-                    <button type="button" className={styles.genBtn} onClick={handleGenerateMeetLink}>
-                      {formData.meet_link ? "Tạo lại link" : "Lấy link Meet"}
-                    </button>
-                  </div>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={formData.meet_link || ""}
+                    onChange={(e) => setFormData({ ...formData, meet_link: e.target.value })}
+                    placeholder="https://meet.google.com/abc-defg-hij"
+                  />
                 </div>
 
                 <div className={styles.sectionTitle} style={{ marginTop: "20px" }}>Lịch học dự kiến</div>

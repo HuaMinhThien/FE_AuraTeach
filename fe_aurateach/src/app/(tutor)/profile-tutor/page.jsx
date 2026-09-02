@@ -630,7 +630,7 @@ export default function TutorProfile() {
               setIsTimeSlotsDropdownOpen(false);
               setIsDaysDropdownOpen(false);
               setOriginalFields(null);
-            }}>Hủy</button>
+            }}></button>
           </div>
         )}
       </div>

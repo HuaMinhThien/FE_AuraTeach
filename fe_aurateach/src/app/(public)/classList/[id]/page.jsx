@@ -178,11 +178,8 @@ export default function ClassDetailPage({ params }) {
       const responseData = result.data || result;
       
       // 🔥 Ép buộc khóa nút và lưu cache ngay lập tức khi gửi request thành công
-      setIsBooked(true);
-      if (courseId && studentId) {
-        localStorage.setItem(`booked_${studentId}_${courseId}`, 'true');
-      }
-
+      // Trả về kết quả để BookingModal xử lý — KHÔNG set isBooked ở đây
+      // isBooked chỉ được set true sau khi payment hoàn tất (handleBookingSuccess)
       return {
         success: true,
         data: responseData
@@ -689,7 +686,16 @@ export default function ClassDetailPage({ params }) {
             calculatedTotalPrice: currentMonthPrice,    
           }}
           tutorName={tutorInfo?.full_name || userTutor?.full_name}
-          onClose={() => setShowBookingModal(false)}
+          onClose={() => {
+            // Nếu đóng modal mà chưa thanh toán thành công, xóa cache để tránh hiển thị sai
+            if (!isBooked) {
+              const studentId = currentUser?.user_id || currentUser?.id;
+              if (studentId && courseId) {
+                localStorage.removeItem(`booked_${studentId}_${courseId}`);
+              }
+            }
+            setShowBookingModal(false);
+          }}
           onConfirm={confirmBooking}
           onSuccess={handleBookingSuccess}
           loading={bookingLoading}
