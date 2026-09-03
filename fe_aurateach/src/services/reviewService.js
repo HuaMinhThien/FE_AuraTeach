@@ -8,9 +8,15 @@ export const reviewService = {
     return await apiClient.get(endpoint);
   },
 
-  // 💡 HÀM MỚI: Gửi đánh giá mới (Yêu cầu gửi kèm token đăng nhập qua apiClient)
+  // Kiểm tra học sinh đã đánh giá lớp này chưa
+  // Trả về { reviewed: true/false }
+  checkReviewed: async (studentId, courseId) => {
+    const params = new URLSearchParams({ student_id: studentId, course_id: courseId }).toString();
+    return await apiClient.get(`/reviews/check?${params}`);
+  },
+
+  // Gửi đánh giá mới
   createReview: async (reviewData) => {
-    // reviewData bao gồm: { course_id, student_id, rating, comment }
     return await apiClient.post('/reviews', reviewData);
   },
 };

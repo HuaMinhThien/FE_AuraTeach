@@ -13,6 +13,7 @@ export default function BookingDetailModal({
   onClose,
   onJoinClass,
   onRating,
+  alreadyReviewed,
   studentId
 }) {
 
@@ -263,9 +264,15 @@ export default function BookingDetailModal({
             </button>
                         <div className="detail-action-right">
               {onRating && (
-                <button className="detail-rating-btn" onClick={() => onRating(course)}>
-                  Đánh giá
-                </button>
+                alreadyReviewed ? (
+                  <button className="detail-rating-btn" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                    ✅ Đã đánh giá
+                  </button>
+                ) : (
+                  <button className="detail-rating-btn" onClick={() => onRating(course)}>
+                    ⭐ Đánh giá
+                  </button>
+                )
               )}
               <button className="detail-close-btn" onClick={onClose}>
                 Đóng

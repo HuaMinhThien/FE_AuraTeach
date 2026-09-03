@@ -22,6 +22,8 @@ export default function StudentBookingHistoryPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [courseToRate, setCourseToRate] = useState(null);
+  // Set lưu course_id mà học sinh đã đánh giá rồi
+  const [reviewedCourseIds, setReviewedCourseIds] = useState(new Set());
 
   useEffect(() => {
     const initPage = async () => {
@@ -71,6 +73,27 @@ export default function StudentBookingHistoryPage() {
 
         console.log("🎯 [DEBUG FINAL LIST CLASSES]:", listClasses);
         setBookedClasses(listClasses);
+
+        // Kiểm tra từng lớp xem học sinh đã đánh giá chưa
+        if (listClasses.length > 0 && userId) {
+          const checked = await Promise.allSettled(
+            listClasses.map(async (c) => {
+              const courseId = c.course_id || c.id;
+              try {
+                const res = await reviewService.checkReviewed(userId, courseId);
+                return { courseId, reviewed: res?.reviewed === true };
+              } catch {
+                return { courseId, reviewed: false };
+              }
+            })
+          );
+          const reviewedSet = new Set(
+            checked
+              .filter(r => r.status === 'fulfilled' && r.value.reviewed)
+              .map(r => r.value.courseId)
+          );
+          setReviewedCourseIds(reviewedSet);
+        }
 
       } catch (error) {
         console.error("❌ [DEBUG LỖI TẠI INITPAGE]:", error);
@@ -161,7 +184,6 @@ export default function StudentBookingHistoryPage() {
 
   const handleRatingSubmit = async (ratingData) => {
     try {
-      // Gọi service đã tạo sẵn
       const response = await reviewService.createReview({
         studentId: currentUser.user_id || currentUser.id,
         tutorId: courseToRate.tutor_id,
@@ -171,11 +193,16 @@ export default function StudentBookingHistoryPage() {
         isAnonymous: ratingData.isAnonymous === true,
       });
 
-      // apiClient thường trả về trực tiếp dữ liệu (hoặc kết quả chuẩn hóa), kiểm tra response thành công
-      if (response && (response.success !== false)) {
+      if (response && response.success !== false) {
+        // Đánh dấu lớp này đã được đánh giá
+        const courseId = courseToRate.course_id || courseToRate.id;
+        setReviewedCourseIds(prev => new Set([...prev, courseId]));
         alert("Cảm ơn bạn đã đánh giá!");
         setShowRatingModal(false);
         setCourseToRate(null);
+      } else if (response?.already_reviewed) {
+        alert("Bạn đã đánh giá lớp học này rồi.");
+        setShowRatingModal(false);
       } else {
         alert(response?.message || "Có lỗi xảy ra");
       }
@@ -294,6 +321,7 @@ export default function StudentBookingHistoryPage() {
           onClose={handleCloseModal}
           onJoinClass={handleJoinClass}
           onRating={handleOpenRating}
+          alreadyReviewed={reviewedCourseIds.has(selectedCourse.course_id || selectedCourse.id)}
         />
       )}
 
