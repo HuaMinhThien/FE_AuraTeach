@@ -623,14 +623,14 @@ export default function TutorProfile() {
             </button>
             <button className={styles.btnSave} onClick={handleSave}>💾 Gửi yêu cầu duyệt</button>
             <button className={styles.btnCancel} onClick={() => { setIsEditing(false); setIsDropdownOpen(false); setShowChangesModal(false); setOriginalFields(null); }}>Hủy</button>
-            <button className={styles.btnCancel} onClick={() => { 
+            {/*<button className={styles.btnCancel} onClick={() => { 
               setIsEditing(false); 
               setIsDropdownOpen(false);
               setShowChangesModal(false);
               setIsTimeSlotsDropdownOpen(false);
               setIsDaysDropdownOpen(false);
               setOriginalFields(null);
-            }}></button>
+            }}></button>*/}
           </div>
         )}
       </div>

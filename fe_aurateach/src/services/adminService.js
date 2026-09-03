@@ -204,5 +204,15 @@ export const adminService = {
   refundStudentsForCourse: async (courseId) => {
     const response = await apiClient.post(`/admin/courses/${courseId}/refund`);
     return response.data !== undefined ? response.data : response;
-  }
+  },
+
+  getContentManagementData: async () => {
+    const response = await apiClient.get('/admin/content-management');
+    return response.data !== undefined ? response.data : response;
+  },
+
+  updateFeaturedContent: async (section, payload) => {
+    const response = await apiClient.post(`/admin/content-management/${section}`, payload);
+    return response.data !== undefined ? response.data : response;
+  },
 };

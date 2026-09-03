@@ -102,6 +102,7 @@ export default function AdminCreateClass() {
     thumbnail: DEFAULT_IMAGES[0],
     min_students: 3,
     course_type: '1_term',
+    meet_link: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -216,6 +217,9 @@ export default function AdminCreateClass() {
     }
     if (!formData.total_weeks || Number(formData.total_weeks) <= 0) {
       newErrors.total_weeks = 'Vui lòng nhập số tuần học hợp lệ';
+    }
+    if (formData.meet_link && !/^https:\/\/meet\.google\.com\/[a-z0-9\-]+(\/[a-z0-9\-]*)?$/i.test(formData.meet_link)) {
+      newErrors.meet_link = '⚠️ Link không hợp lệ. Định dạng đúng: https://meet.google.com/xxx-xxxx-xxx';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -334,7 +338,7 @@ export default function AdminCreateClass() {
         
         start_time: formData.start_time,
         end_time: formData.end_time,
-        meet_link: `https://meet.google.com/room_${requestId}`,
+        meet_link: formData.meet_link || `https://meet.google.com/room_${requestId}`,
         status: 'pending',
         tutor_id: null,                  
         target_tutors: selectedTutors    
@@ -343,7 +347,18 @@ export default function AdminCreateClass() {
       const createdRequest = await classRequestService.createClassRequest(classRequestPayload);
       
       if (createdRequest) {
-        alert(`Đã tạo thành công yêu cầu lớp học chung`);
+        // Tự động gửi đề xuất đồng loạt — backend tự lọc tutor phù hợp (môn, level, lịch trống)
+        try {
+          const suggestionResult = await adminService.sendClassSuggestions(requestId, []);
+          if (suggestionResult?.sentTo > 0) {
+            alert(`✅ Đã tạo lớp và gửi đề xuất tới ${suggestionResult.sentTo} gia sư phù hợp!`);
+          } else {
+            alert(`✅ Đã tạo lớp thành công!\n⚠️ Chưa tìm thấy gia sư nào phù hợp với lịch này — đề xuất sẽ được gửi khi có gia sư đăng ký.`);
+          }
+        } catch (suggestionErr) {
+          console.warn('Gửi đề xuất thất bại:', suggestionErr);
+          alert('✅ Đã tạo lớp thành công! (Gửi đề xuất sẽ thử lại sau)');
+        }
         router.push('/admin-classes-management');
       }
     } catch (error) {
@@ -621,14 +636,31 @@ export default function AdminCreateClass() {
               />
               {errors.description && <span className={styles.errorText}>{errors.description}</span>}
 
-              <div className={styles.descriptionSuggestionBox}>
-                <div className={styles.suggestionTitle}>Gợi ý cấu trúc 1 buổi học hiệu quả:</div>
+              <div className={styles.descriptionSuggestionBox}>                <div className={styles.suggestionTitle}>Gợi ý cấu trúc 1 buổi học hiệu quả:</div>
                 <ul className={styles.suggestionList}>
                   <li><strong>Mở đầu (10 - 15 phút):</strong> Ôn tập kiến thức bài cũ, giải đáp thắc mắc bài tập về nhà.</li>
                   <li><strong>Nội dung chính (60 - 70 phút):</strong> Giảng dạy lý thuyết bài mới, hướng dẫn ví dụ minh họa và cho học sinh thực hành làm bài tại chỗ.</li>
                   <li><strong>Tổng kết (10 - 15 phút):</strong> Tóm tắt lại trọng tâm kiến thức, giao bài tập về nhà và dặn dò chuẩn bị cho buổi sau.</li>
                 </ul>
               </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Link Google Meet</label>
+              <input
+                type="url"
+                name="meet_link"
+                value={formData.meet_link}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData(prev => ({ ...prev, meet_link: val }));
+                  if (errors.meet_link) setErrors(prev => ({ ...prev, meet_link: '' }));
+                }}
+                placeholder="VD: https://meet.google.com/abc-defg-hij"
+                className={errors.meet_link ? styles.inputError : ''}
+              />
+              {errors.meet_link && <span className={styles.errorText}>{errors.meet_link}</span>}
+              <p className={styles.hintText}>📎 Để trống nếu chưa có, có thể cập nhật sau khi tạo lớp.</p>
             </div>
           </section>
 
