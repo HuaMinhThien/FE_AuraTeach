@@ -69,7 +69,7 @@ export default function Header() {
             }
         };
 
-        const interval = setInterval(checkUser, 1000);
+        const interval = setInterval(checkUser, 5000); // tăng từ 1s → 5s để giảm req
         return () => clearInterval(interval);
     }, [isMounted, user]);
 
@@ -146,7 +146,7 @@ export default function Header() {
         
         const interval = setInterval(() => {
             fetchUnreadCount(currentUserId);
-        }, 10000); // Polling mỗi 10 giây
+        }, 30000); // tăng từ 10s → 30s
         
         return () => {
             clearTimeout(timeout);

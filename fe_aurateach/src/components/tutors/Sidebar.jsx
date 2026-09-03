@@ -67,10 +67,10 @@ export default function Sidebar() {
         // Gọi ngay lần đầu
         fetchUnreadCount(currentUserId);
         
-        // Polling mỗi 10 giây
+        // Polling mỗi 30 giây
         const interval = setInterval(() => {
             fetchUnreadCount(currentUserId);
-        }, 10000); 
+        }, 30000); 
         
         return () => clearInterval(interval);
     }, [user, fetchUnreadCount]);

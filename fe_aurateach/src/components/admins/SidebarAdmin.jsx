@@ -75,7 +75,7 @@ export default function Sidebar() {
     };
 
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 10000); // Poll mỗi 10s
+    const interval = setInterval(fetchUnreadCount, 30000); // tăng từ 10s → 30s
     return () => clearInterval(interval);
   }, [mounted, adminUserId]);
 

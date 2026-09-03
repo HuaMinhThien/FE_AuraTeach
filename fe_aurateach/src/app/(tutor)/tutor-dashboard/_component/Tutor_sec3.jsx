@@ -69,7 +69,7 @@ export default function Tutor_sec3({ activitiesData: propActivities }) {
     };
 
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 10000);
+    const interval = setInterval(fetchNotifs, 30000); // tăng từ 10s → 30s
     return () => clearInterval(interval);
   }, [userId]);
 

@@ -35,7 +35,7 @@ export default function AdminNotificationsPage() {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000); // Polling mỗi 10s
+    const interval = setInterval(fetchNotifications, 30000); // tăng từ 10s → 30s
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
