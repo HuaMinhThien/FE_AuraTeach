@@ -91,22 +91,27 @@ export default function AdminContentManagementPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await adminService.getContentManagementData();
-      if (!res.success || !res.data) throw new Error('Không tải được dữ liệu');
+      // Gọi 1 endpoint duy nhất — public, không cần auth
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/content-management`, {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store',
+      });
+      const json = await res.json();
+      if (!json.success || !json.data) throw new Error(json.message || 'Không tải được dữ liệu');
 
-      const { tutors, reviews, courses, config } = res.data;
+      const { tutors, reviews, courses, config } = json.data;
 
-      setAllTutors(tutors);
-      setAllReviews(reviews);
-      setAllCourses(courses);
+      setAllTutors(tutors || []);
+      setAllReviews(reviews || []);
+      setAllCourses(courses || []);
 
       if (config) {
-        if (config.featured_tutors)  setTutorConfig(config.featured_tutors);
-        if (config.featured_reviews) setReviewConfig(config.featured_reviews);
-        if (config.featured_courses) setCourseConfig(config.featured_courses);
+        if (config.featured_tutors)  setTutorConfig(c => ({ ...c, ...config.featured_tutors }));
+        if (config.featured_reviews) setReviewConfig(c => ({ ...c, ...config.featured_reviews }));
+        if (config.featured_courses) setCourseConfig(c => ({ ...c, ...config.featured_courses }));
       }
     } catch (err) {
-      showToast('error', 'Không thể tải dữ liệu. Vui lòng thử lại.');
+      showToast('error', 'Không thể tải dữ liệu: ' + err.message);
     } finally {
       setLoading(false);
     }

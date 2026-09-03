@@ -9,6 +9,7 @@ import { tutorService } from "@/services/tutorService";
 import { userService } from "@/services/userService";
 import { courseService } from "@/services/courseService";
 import { authService } from "@/services/authService";
+import apiClient from "@/services/apiClient";
 
 export default function TutorDashboardPage() {
   const [userName, setUserName] = useState("Gia Sư");
@@ -65,13 +66,30 @@ export default function TutorDashboardPage() {
       const pendingWallet = tutorDetail?.pending_balance || 0;
       const calculatedTotalIncome = availableWallet + pendingWallet;
 
+      // Lấy số liệu thật từ DB
+      let realStats = null;
+      try {
+        const statsRes = await apiClient.get(`/tutors/dashboard-stats?user_id=${userId}`);
+        realStats = statsRes?.data || statsRes;
+      } catch (e) {
+        console.warn('Không lấy được dashboard-stats, fallback về dữ liệu local:', e);
+      }
+
+      const availableBalance = realStats?.availableBalance ?? availableWallet;
+      const pendingBalance   = realStats?.pendingBalance   ?? pendingWallet;
+      const realStudents     = realStats?.totalStudents    ?? uniqueStudentIds.size;
+      const realOpenClasses  = realStats?.openClasses      ?? activeClasses.length;
+      const realRating       = realStats?.avgRating        ?? (tutorDetail?.rating || 0);
+
       setStats({
-        totalIncome: availableWallet,
-        incomeGrowth: pendingWallet > 0 ? `+${((pendingWallet / (calculatedTotalIncome || 1)) * 100).toFixed(0)}% chờ duyệt` : "Ổn định",
-        totalStudents,
-        studentsGrowth: `+${activeClasses.length} lớp`,
-        openClasses: activeClasses.length < 10 ? `0${activeClasses.length}` : activeClasses.length.toString(),
-        rating: `${tutorDetail?.rating || 0}/5.0`
+        totalIncome:   availableBalance,
+        incomeGrowth:  pendingBalance > 0
+          ? `+${(((pendingBalance) / ((availableBalance + pendingBalance) || 1)) * 100).toFixed(0)}% chờ duyệt`
+          : "Ổn định",
+        totalStudents: realStudents,
+        studentsGrowth: `+${realOpenClasses} lớp`,
+        openClasses: realOpenClasses < 10 ? `0${realOpenClasses}` : `${realOpenClasses}`,
+        rating: `${realRating}/5.0`,
       });
 
       console.log("Dữ liệu các khóa học từ API:", coursesData);
@@ -177,14 +195,20 @@ export default function TutorDashboardPage() {
       formattedClasses.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
 
       setClassesList(formattedClasses);
-      setChartData([
-        { name: "Th1", income: Math.round(availableWallet * 0.15 / 1000000) || 4 },
-        { name: "Th2", income: Math.round(availableWallet * 0.3 / 1000000) || 7 },
-        { name: "Th3", income: Math.round(availableWallet * 0.45 / 1000000) || 11 },
-        { name: "Th4", income: Math.round(availableWallet * 0.6 / 1000000) || 14 },
-        { name: "Th5", income: Math.round(availableWallet * 0.8 / 1000000) || 18 },
-        { name: "Th6", income: Math.round(calculatedTotalIncome / 1000000) || 22 },
-      ]);
+
+      // Lấy thu nhập thực tế từng tháng từ DB
+      try {
+        const monthlyRes = await apiClient.get(`/tutors/earnings/monthly?user_id=${userId}`);
+        const monthlyData = (monthlyRes?.data || monthlyRes) ?? [];
+        if (Array.isArray(monthlyData) && monthlyData.length > 0) {
+          setChartData(monthlyData);
+        } else {
+          setChartData([]);
+        }
+      } catch (chartErr) {
+        console.warn('Không lấy được dữ liệu biểu đồ:', chartErr);
+        setChartData([]);
+      }
 
     } catch (error) {
       console.error("Lỗi xử lý API tại trang Dashboard:", error);

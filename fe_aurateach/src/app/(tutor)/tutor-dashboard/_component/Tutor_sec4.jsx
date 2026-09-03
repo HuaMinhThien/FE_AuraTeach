@@ -61,7 +61,15 @@ export default function Tutor_sec4({ chartData }) {
               tickFormatter={(value) => `${value}M`}
               domain={[0, 'auto']}
             />
-            <Tooltip formatter={(value) => [`${value.toLocaleString()} Triệu`, "Thu nhập"]} />
+            <Tooltip 
+              formatter={(value, name, props) => {
+                const raw = props.payload?.incomeRaw;
+                if (raw !== undefined) {
+                  return [raw.toLocaleString('vi-VN') + ' đ', 'Thu nhập'];
+                }
+                return [`${value.toLocaleString()} triệu đ`, 'Thu nhập'];
+              }}
+            />
             <Bar 
               dataKey="income" 
               fill="#0a37a3" 
