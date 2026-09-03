@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import styles from "./schedule.module.css";
@@ -66,12 +66,9 @@ export default function SchedulePage() {
           return;
         }
 
-        // 2. Gọi hàm getCourses có sẵn trong courseService
-        const coursesData = await courseService.getCourses({ tutor_id: tutorId });
-        const courses = Array.isArray(coursesData) ? coursesData : (coursesData.data || []);
-        
-        // Lọc các lớp active
-        setClasses(courses.filter(c => c.status === "active"));
+        // 2. Dùng getTutorScheduleCourses — lấy tất cả lớp của gia sư, bỏ completed, không phân trang
+        const courses = await courseService.getTutorScheduleCourses(tutorId);
+        setClasses(courses);
       } catch (error) {
         console.error("Lỗi tải lịch học:", error);
       } finally {
@@ -130,6 +127,14 @@ export default function SchedulePage() {
 
   const ROW_HEIGHT = 75; 
 
+  // Parse "HH:MM" hoặc "HH:MM:SS" thành số giờ thập phân (vd: "07:30" → 7.5)
+  const parseTimeToHours = (timeStr) => {
+    const parts = timeStr.trim().split(":");
+    const h = parseInt(parts[0]) || 0;
+    const m = parseInt(parts[1]) || 0;
+    return h + m / 60;
+  };
+
   const renderClassCards = () => {
     const cards = [];
 
@@ -137,13 +142,16 @@ export default function SchedulePage() {
       if (!cls.time_slot || !cls.time_slot.includes("-")) return;
 
       const colorStyle = getColorForClass();
-      const [start, end] = cls.time_slot.split("-");
-      const startHour = parseInt(start.split(":")[0]);
-      const endHour = parseInt(end.split(":")[0]);
-      const duration = endHour - startHour;
+      const dashIdx = cls.time_slot.indexOf("-");
+      const start = cls.time_slot.substring(0, dashIdx);
+      const end = cls.time_slot.substring(dashIdx + 1);
+      const startHours = parseTimeToHours(start);
+      const endHours = parseTimeToHours(end);
+      const duration = Math.max(endHours - startHours, 0.5);
 
-      const topPosition = startHour * ROW_HEIGHT;
-      const cardHeight = duration * ROW_HEIGHT - 8; 
+      const topPosition = startHours * ROW_HEIGHT;
+      // +1 để card chiếm luôn ô giờ kết thúc (lớp 7-9g chiếm ô 7, 8, 9)
+      const cardHeight = (endHours - startHours + 1) * ROW_HEIGHT - 4;
 
       if (!cls.schedule_days || !Array.isArray(cls.schedule_days)) return;
 
@@ -240,12 +248,13 @@ export default function SchedulePage() {
       if (dayIdx === -1) return; // không thuộc tuần này
 
       const colorStyle = getColorForMakeup();
-      const startHour = parseInt(session.start_time.split(":")[0]);
-      const endHour = parseInt(session.end_time.split(":")[0]);
-      const duration = Math.max(endHour - startHour, 1);
+      const startHours = parseTimeToHours(session.start_time);
+      const endHours = parseTimeToHours(session.end_time);
+      const duration = Math.max(endHours - startHours, 0.5);
 
-      const topPosition = startHour * ROW_HEIGHT;
-      const cardHeight = duration * ROW_HEIGHT - 8;
+      const topPosition = startHours * ROW_HEIGHT;
+      // +1 để card chiếm luôn ô giờ kết thúc (lớp 7-9g chiếm ô 7, 8, 9)
+      const cardHeight = (endHours - startHours + 1) * ROW_HEIGHT - 4;
       const leftPosition = (dayIdx * 100) / 7;
 
       // Tìm tên lớp từ courses
@@ -318,8 +327,8 @@ export default function SchedulePage() {
   
   const totalHoursThisWeek = classes.reduce((total, cls) => {
     if (!cls.time_slot || !cls.time_slot.includes("-") || !cls.schedule_days) return total;
-    const [start, end] = cls.time_slot.split("-");
-    const diff = parseInt(end.split(":")[0]) - parseInt(start.split(":")[0]);
+    const dashIdx = cls.time_slot.indexOf("-");
+    const diff = parseTimeToHours(cls.time_slot.substring(dashIdx + 1)) - parseTimeToHours(cls.time_slot.substring(0, dashIdx));
 
     let actualDaysInWeek = 0;
     cls.schedule_days.forEach((dayStr) => {

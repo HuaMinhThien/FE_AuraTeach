@@ -9,6 +9,13 @@ export const courseService = {
     return await apiClient.get(endpoint);
   },
 
+  // Lấy tất cả lớp học của gia sư để hiển thị lịch trình (không phân trang, bỏ completed)
+  getTutorScheduleCourses: async (tutorId) => {
+    const response = await apiClient.get(`/tutor/schedule-courses?tutor_id=${tutorId}`);
+    const data = response.data !== undefined ? response.data : response;
+    return Array.isArray(data) ? data : (data.data || []);
+  },
+
   getCourseDashboard: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/tutor/courses-dashboard${queryString ? `?${queryString}` : ''}`;

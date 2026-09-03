@@ -195,7 +195,8 @@ export default function ClassCalendar({ courses, makeupSessions = [], onDateClic
         endMin,
         durationMin: endMin - startMin,
         topPercent: (startMin / totalMinutes) * 100,
-        heightPercent: ((endMin - startMin) / totalMinutes) * 100,
+        // +60 phút để card chiếm luôn ô giờ kết thúc (lớp 7-9g chiếm ô 7, 8, 9)
+        heightPercent: ((endMin - startMin + 60) / totalMinutes) * 100,
         isMakeup: cls.isMakeup || false,
         session: cls.session || null,        
       };

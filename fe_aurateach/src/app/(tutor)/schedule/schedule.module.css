@@ -113,24 +113,30 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  overflow: hidden;
+  /* KHÔNG dùng overflow ở đây — để scrollContainer tự quản lý scroll */
 }
 
 .scrollContainer {
   max-height: 500px;
   overflow-y: auto;
   overflow-x: auto;
+  border-radius: 0 0 16px 16px; /* bo góc dưới cho scrollContainer thay vì outer wrapper */
 }
 
 /* KHU VỰC THÂN LỊCH TRÌNH CHÍNH */
 .mainGridBody {
-  position: relative; /* Làm gốc tọa độ cho lớp thẻ nổi tuyệt đối */
+  position: relative;
   min-width: 1000px;
+  height: 1800px; /* 24h × 75px — phải khớp với ROW_HEIGHT trong JS */
 }
 
 .timetableGridBackground {
   display: grid;
   grid-template-columns: 80px repeat(7, minmax(140px, 1fr));
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .stickyHeaderRow {
@@ -186,7 +192,7 @@
 }
 
 .timeColCell {
-  padding: 10px 8px;
+  padding: 4px 8px 0;
   font-size: 12px;
   font-weight: 600;
   color: #475569;
@@ -195,9 +201,9 @@
   border-right: 1px solid #e2e8f0;
   background: #f8fafc;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  height: 75px; /* Chiều cao cố định của mỗi ô mốc giờ */
+  height: 75px;
   box-sizing: border-box;
 }
 
@@ -207,16 +213,18 @@
   height: 75px;
   background: #ffffff;
   box-sizing: border-box;
+  vertical-align: top;
 }
 
 /* VÙNG CHỨA CÁC THẺ LỚP HỌC TUYỆT ĐỐI */
 .cardsOverlayArea {
   position: absolute;
   top: 0;
-  right: 0;
-  bottom: 0;
   left: 80px; /* Bỏ qua 80px của cột mốc thời gian để khớp chuẩn vào 7 ngày */
+  right: 0;
+  height: 1800px; /* 24h × 75px — khớp đúng với grid nền */
   pointer-events: none; /* Tránh cản trở scroll nếu cần */
+  overflow: visible;
 }
 
 /* --- ĐỊNH DẠNG LẠI THẺ LỚP HỌC (GỘP ĐƯỢC NHIỀU TIẾNG) --- */
