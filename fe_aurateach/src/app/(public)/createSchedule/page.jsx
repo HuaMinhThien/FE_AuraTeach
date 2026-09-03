@@ -102,7 +102,7 @@ export default function CreateClassRequest() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [requestsList, setRequestsList] = useState([]);
-  const [existingCourses, setExistingCourses] = useState([]);
+  const [existingCourses, setExistingCourses] = useState([]); // Lớp học sinh đang đăng ký
   const [editingRequestId, setEditingRequestId] = useState(null);
   const [expandedRequestId, setExpandedRequestId] = useState(null);
 
@@ -147,57 +147,132 @@ export default function CreateClassRequest() {
     return `${formattedHour}:${m < 10 ? "0" + m : m}`;
   }, [formData.start_time]);
 
-  // Hàm kiểm tra trùng lịch học
-  const checkConflictSchedule = () => {
+  // Hàm kiểm tra trùng lịch học — check với lớp đang đăng ký VÀ yêu cầu khác của học sinh
+  const checkConflictSchedule = (overrideReqId = null) => {
     if (!formData.start_time || formData.schedule_days.length === 0 || !formData.start_date) {
       setConflictError("");
       return false;
     }
 
     const newStartHour = parseInt(formData.start_time.split(":")[0], 10);
-    const newEndHour = newStartHour + 2; // Mặc định mỗi buổi kéo dài 2 tiếng
+    const newEndHour = newStartHour + 2;
     const newStartDateObj = new Date(formData.start_date);
     const totalWeeks = Number(formData.total_weeks || 1);
     const newEndDateObj = new Date(newStartDateObj);
     newEndDateObj.setDate(newEndDateObj.getDate() + totalWeeks * 7);
 
-    for (const course of existingCourses) {
-      if (!course.start_date || !course.end_date || !course.schedule_days || !course.time_slot) continue;
+    // Chuẩn hóa 1 item lịch học về dạng chuẩn để so sánh
+    // schedule_days, time_slot, start_date, end_date có thể nằm trong nested schedules[]
+    const normalizeItem = (item) => {
+      // Lấy days: direct field trước, fallback từ schedules array
+      let days = item.schedule_days;
+      if ((!days || (Array.isArray(days) && days.length === 0)) && Array.isArray(item.schedules) && item.schedules.length > 0) {
+        days = item.schedules.map(s => s.day_of_week || s.day).filter(Boolean);
+      }
+      if (typeof days === "string") {
+        try { days = JSON.parse(days); } catch { days = days.split(",").map(s => s.trim()); }
+      }
+      if (!Array.isArray(days)) days = [];
 
-      const cStartDate = new Date(course.start_date);
-      const cEndDate = new Date(course.end_date);
+      // Lấy time_slot: direct field trước, fallback từ schedules[0]
+      const timeSlot = item.time_slot
+        || (Array.isArray(item.schedules) && item.schedules.length > 0
+            ? (item.schedules[0].time_slot || item.schedules[0].slot || "")
+            : "");
 
-      // Kiểm tra xem khoảng thời gian có bị giao nhau không
+      // Lấy start/end date: direct field trước, fallback từ schedules[0]
+      // Lưu ý: trong DB, schedule.start_time/end_time lưu ngày (date), không phải giờ
+      const startDate = item.start_date
+        || (Array.isArray(item.schedules) && item.schedules.length > 0
+            ? (item.schedules[0].start_date || item.schedules[0].start_time || null)
+            : null);
+      const endDate = item.end_date
+        || (Array.isArray(item.schedules) && item.schedules.length > 0
+            ? (item.schedules[0].end_date || item.schedules[0].end_time || null)
+            : null);
+
+      const [slotStart, slotEnd] = timeSlot.split("-").map(t => parseInt((t || "0").split(":")[0], 10));
+
+      return {
+        title: item.title || item.class_name || "Lớp học",
+        start_date: startDate,
+        end_date: endDate,
+        schedule_days: days,
+        startHour: isNaN(slotStart) ? newStartHour : slotStart,
+        endHour: isNaN(slotEnd) ? newStartHour + 2 : slotEnd,
+        timeSlot: timeSlot,
+      };
+    };
+
+    // Tổng hợp tất cả nguồn cần check:
+    // 1. Lớp học sinh đang đăng ký (subscribed courses)
+    // 2. Các yêu cầu tạo lớp khác của học sinh (bỏ qua yêu cầu đang edit)
+    const reqIdToSkip = overrideReqId || editingRequestId;
+    const otherRequests = requestsList
+      .filter(r => {
+        const rId = r.request_id || r.requests_id || r.id;
+        return String(rId) !== String(reqIdToSkip);
+      })
+      .map(r => ({
+        title: r.title,
+        start_date: r.start_date,
+        end_date: (() => {
+          const s = new Date(r.start_date || Date.now());
+          s.setDate(s.getDate() + Number(r.total_weeks || 1) * 7);
+          return s.toISOString().split("T")[0];
+        })(),
+        schedule_days: r.schedule_days,
+        time_slot: r.start_time
+          ? `${r.start_time.substring(0,5)}-${(() => {
+              const h = parseInt(r.start_time.split(":")[0], 10) + 2;
+              return `${h < 10 ? "0"+h : h}:00`;
+            })()}`
+          : "",
+      }));
+
+    const allItemsToCheck = [...existingCourses, ...otherRequests];
+
+    console.log("🔍 [checkConflict] formData:", {
+      start_date: formData.start_date,
+      schedule_days: formData.schedule_days,
+      start_time: formData.start_time,
+      total_weeks: formData.total_weeks,
+    });
+    console.log("🔍 [checkConflict] existingCourses count:", existingCourses.length);
+    console.log("🔍 [checkConflict] otherRequests count:", otherRequests.length);
+    console.log("🔍 [checkConflict] allItemsToCheck sample:", allItemsToCheck.slice(0,2).map(i => ({
+      title: i.title,
+      start_date: i.start_date,
+      end_date: i.end_date,
+      schedule_days: i.schedule_days,
+      time_slot: i.time_slot,
+    })));
+
+    for (const item of allItemsToCheck) {
+      // Bỏ qua nếu không có schedules hoặc không có lịch học nào
+      const hasScheduleData = item.schedule_days || (Array.isArray(item.schedules) && item.schedules.length > 0);
+      if (!hasScheduleData) continue;
+      const norm = normalizeItem(item);
+      if (norm.schedule_days.length === 0) continue;
+
+      const cStartDate = new Date(norm.start_date);
+      const cEndDate = norm.end_date ? new Date(norm.end_date) : new Date(cStartDate.getTime() + 365*24*3600*1000);
+
       const isDateOverlap = newStartDateObj <= cEndDate && newEndDateObj >= cStartDate;
+      if (!isDateOverlap) continue;
 
-      if (isDateOverlap) {
-        // Kiểm tra xem có trùng ngày trong tuần không
-        let courseDays = course.schedule_days;
-        if (typeof courseDays === "string") {
-          try {
-            courseDays = JSON.parse(courseDays);
-          } catch (e) {
-            courseDays = course.schedule_days.split(",").map(s => s.trim());
-          }
-        }
+      const hasCommonDay = formData.schedule_days.some(day => norm.schedule_days.includes(day));
+      if (!hasCommonDay) continue;
 
-        const hasCommonDay = formData.schedule_days.some(day => courseDays.includes(day));
-
-        if (hasCommonDay) {
-          const [cStart, cEnd] = (course.time_slot || "00:00-00:00")
-            .split("-")
-            .map((t) => parseInt(t.split(":")[0], 10));
-
-          if (
-            (newStartHour >= cStart && newStartHour < cEnd) ||
-            (newEndHour > cStart && newEndHour <= cEnd)
-          ) {
-            setConflictError(
-              `⚠️ Trùng lịch học với lớp "${course.title}" (${course.time_slot} vào các ngày ${course.schedule_days.join(", ")})`
-            );
-            return true;
-          }
-        }
+      if (
+        (newStartHour >= norm.startHour && newStartHour < norm.endHour) ||
+        (newEndHour > norm.startHour && newEndHour <= norm.endHour) ||
+        (newStartHour <= norm.startHour && newEndHour >= norm.endHour)
+      ) {
+        setConflictError(
+          `⚠️ Trùng lịch học với "${norm.title}" (${norm.timeSlot || `${norm.startHour}:00-${norm.endHour}:00`} vào các ngày ${norm.schedule_days.join(", ")})`
+        );
+        return true;
       }
     }
 
@@ -259,13 +334,14 @@ export default function CreateClassRequest() {
         return;
       }
 
-      const [resCat, resReq, resCourse, resApp, resTutors] = await Promise.all([
+      const [resCat, resReq, resSubscribed, resApp, resTutors] = await Promise.all([
         categoryService.getCategories().catch(() => null),
         classRequestService.getClassRequests().catch(() => null),
-        courseService.getCourses().catch(() => null),
+        // Lấy lớp học sinh đang đăng ký để check trùng lịch
+        courseService.getSubscribedCourses(currentStudentId).catch(() => null),
         classRequestService.getRequestApplications().catch((err) => {
           console.error("Lỗi lấy danh sách ứng tuyển:", err);
-          return null; // Trả về null để không làm sập toàn bộ Promise.all
+          return null;
         }),
         tutorService.getTutors().catch(() => []),
       ]);
@@ -275,10 +351,11 @@ export default function CreateClassRequest() {
         if (Array.isArray(catData)) setCategories(catData);
       }
 
-      // Lưu trữ các khóa học hiện tại để check trùng lịch
-      if (resCourse) {
-        const courseData = resCourse.data !== undefined ? resCourse.data : resCourse;
-        if (Array.isArray(courseData)) setExistingCourses(courseData);
+      // Lưu lớp học sinh đang đăng ký để check trùng lịch
+      if (resSubscribed) {
+        const subData = resSubscribed.data !== undefined ? resSubscribed.data : resSubscribed;
+        if (Array.isArray(subData)) setExistingCourses(subData);
+        else if (Array.isArray(subData?.courses)) setExistingCourses(subData.courses);
       }
 
       let applications = [];
@@ -672,9 +749,10 @@ export default function CreateClassRequest() {
 
       setPendingAcceptance({
         reqId,
-        appId: currentAppId, // Gán chính xác giá trị app_id
+        appId: currentAppId,
+        tutorId: tutor.tutor_id,  // truyền tutor_id để update class_request
         coursePayload,
-        subscriptionId: subscriptionId // Sửa lại biến response thành subscriptionId đã lấy ở trên
+        subscriptionId: subscriptionId
       });
 
       const paymentRes = await paymentService.createQR(
@@ -978,6 +1056,22 @@ export default function CreateClassRequest() {
                     />
                   </div>
                 </div>
+
+                {conflictError && (
+                  <div style={{
+                    padding: '10px 14px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fca5a5',
+                    borderRadius: 8,
+                    color: '#dc2626',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    lineHeight: 1.5,
+                    marginBottom: 12,
+                  }}>
+                    {conflictError}
+                  </div>
+                )}
 
                 <button type="submit" className={styles.submitBtn} disabled={loading || !isPriceValid || !!conflictError}>
                   {loading ? "Đang xử lý..." : editingRequestId ? "Cập Nhật Yêu Cầu" : "Gửi Yêu Cầu"}
