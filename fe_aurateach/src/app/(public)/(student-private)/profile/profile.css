@@ -168,6 +168,7 @@
   gap: 4px;
   padding: 12px 0;
   border-bottom: 1px solid #f3f4f6;
+  min-width: 0; /* Quan trọng: ngăn grid item phình vượt cell */
 }
 
 .profile-info-item:last-child {
@@ -204,6 +205,7 @@
   background: #f8fafc;
   transition: all 0.3s ease;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .input-edit:focus {

@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import styles from './proposed-class.module.css';
 import { classRequestService } from '@/services/classRequestService';
 import { authService } from '@/services/authService';
-import { categoryService } from '@/services/categoryService'; // <-- Import service danh mục của bạn
+import { categoryService } from '@/services/categoryService';
 import { adminService } from '@/services/adminService';
+import { courseService } from '@/services/courseService';
+import { tutorService } from '@/services/tutorService';
 
 export default function ProposedClassPage() {
   const router = useRouter();
-  const [currentTutorId, setCurrentTutorId] = useState(null);
+  const [currentTutorId, setCurrentTutorId] = useState(null);  // user_id
+  const [realTutorId, setRealTutorId] = useState(null);         // tutor_id thực trong bảng tutors
   const [activeTab, setActiveTab] = useState('student');
 
   const [proposedClasses, setProposedClasses] = useState([]);
@@ -29,7 +32,21 @@ export default function ProposedClassPage() {
       try {
         const user = await authService.getCurrentUser();
         if (user && (user.user_id || user.id)) {
-          setCurrentTutorId(user.user_id || user.id);
+          const userId = user.user_id || user.id;
+          setCurrentTutorId(userId);
+
+          // Resolve tutor_id thực để dùng cho check trùng lịch
+          try {
+            const tutorRes = await tutorService.getByUserId(userId);
+            const tutorData = tutorRes?.data || tutorRes;
+            // BE trả về array (->get()), lấy phần tử đầu tiên
+            const tutorObj = Array.isArray(tutorData) ? tutorData[0] : tutorData;
+            const tid = tutorObj?.tutor_id || tutorObj?.id;
+            if (tid) setRealTutorId(tid);
+            console.log('[ProposedClass] Resolved tutor_id:', tid, 'from tutorData:', tutorObj);
+          } catch (e) {
+            console.warn('[ProposedClass] Không resolve được tutor_id:', e);
+          }
         } else {
           alert("Vui lòng đăng nhập để xem danh sách lớp!");
           router.push('/login');
@@ -103,6 +120,19 @@ export default function ProposedClassPage() {
   };
 
   const handleApplyClass = async (requestId) => {
+    // Tìm object lớp để check trùng lịch
+    const targetClass = proposedClasses.find(
+      c => (c.request_id || c.requests_id || c.id) === requestId
+    );
+
+    if (targetClass) {
+      const { conflict, message } = await checkTutorScheduleConflict(targetClass);
+      if (conflict) {
+        const confirmed = window.confirm(message);
+        if (!confirmed) return;
+      }
+    }
+
     setSubmitting(true);
     try {
       await classRequestService.applyClassRequest({
@@ -122,6 +152,13 @@ export default function ProposedClassPage() {
   const handleAcceptSuggestion = async (course) => {
     if (!confirm(`Bạn có chắc muốn nhận lớp "${course.title}"?`)) return;
 
+    // Kiểm tra trùng lịch dạy
+    const { conflict, message } = await checkTutorScheduleConflict(course);
+    if (conflict) {
+      const confirmed = window.confirm(message);
+      if (!confirmed) return;
+    }
+
     setSubmitting(true);
     try {
       // ✅ SỬA LẠI: Truyền chính xác course.request_id
@@ -139,6 +176,102 @@ export default function ProposedClassPage() {
       alert(error.message || "Có lỗi xảy ra.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Hàm kiểm tra trùng lịch dạy của gia sư
+  // Trả về { conflict: true, message: "..." } nếu trùng, { conflict: false } nếu không
+  const checkTutorScheduleConflict = async (newClass) => {
+    try {
+      const tidToUse = realTutorId || currentTutorId;
+      const courses = await courseService.getTutorScheduleCourses(tidToUse);
+      const courseList = Array.isArray(courses) ? courses : (courses?.data || []);
+
+      console.log('[ConflictCheck] tutor_id used:', tidToUse);
+      console.log('[ConflictCheck] existing courses:', courseList.length, courseList.map(c => ({ title: c.title, status: c.status, schedule_days: c.schedule_days, time_slot: c.time_slot })));
+      console.log('[ConflictCheck] newClass:', { title: newClass.title, schedule_days: newClass.schedule_days, start_time: newClass.start_time, time_slot: newClass.time_slot });
+
+      // Lấy thông tin lịch của lớp mới
+      let newDays = [];
+      if (Array.isArray(newClass.schedule_days)) {
+        newDays = newClass.schedule_days;
+      } else if (typeof newClass.schedule_days === 'string') {
+        try { newDays = JSON.parse(newClass.schedule_days); } catch { newDays = newClass.schedule_days.split(',').map(s => s.trim()); }
+      }
+
+      // Xây time_slot từ start_time nếu không có sẵn (lớp từ học sinh chỉ có start_time)
+      let newTimeSlot = newClass.time_slot || '';
+      if (!newTimeSlot && newClass.start_time) {
+        const startH = parseInt(newClass.start_time.split(':')[0], 10);
+        const endH = startH + 2;
+        newTimeSlot = `${String(startH).padStart(2,'0')}:00-${String(endH).padStart(2,'0')}:00`;
+      }
+      const [newStartStr, newEndStr] = newTimeSlot.split('-').map(s => s?.trim());
+      const newStartH = parseInt((newStartStr || '0').split(':')[0], 10);
+      const newEndH = parseInt((newEndStr || '0').split(':')[0], 10) || (newStartH + 2);
+
+      const newStartDate = newClass.start_date ? new Date(newClass.start_date) : null;
+      const totalWeeks = Number(newClass.total_weeks || 1);
+      const newEndDate = newStartDate ? new Date(new Date(newStartDate).setDate(newStartDate.getDate() + totalWeeks * 7)) : null;
+
+      if (newDays.length === 0) return { conflict: false };
+
+      const dayOrder = { 'Thứ 2':1,'Thứ 3':2,'Thứ 4':3,'Thứ 5':4,'Thứ 6':5,'Thứ 7':6,'Chủ Nhật':7,'CN':7 };
+
+      for (const existing of courseList) {
+        if (['completed', 'cancelled'].includes(existing.status)) continue;
+
+        // Lấy lịch của lớp đang dạy
+        const eSchedules = Array.isArray(existing.schedules) ? existing.schedules : [];
+        let eDays = [];
+        if (eSchedules.length > 0) {
+          eDays = [...new Set(eSchedules.map(s => s.day_of_week || s.days).filter(Boolean))];
+        } else if (existing.schedule_days) {
+          eDays = Array.isArray(existing.schedule_days)
+            ? existing.schedule_days
+            : (() => { try { return JSON.parse(existing.schedule_days); } catch { return existing.schedule_days.split(',').map(s => s.trim()); } })();
+        }
+
+        const eTimeSlot = eSchedules[0]?.time_slot || existing.time_slot || '';
+        const [eStartStr, eEndStr] = eTimeSlot.split('-').map(s => s?.trim());
+        const eStartH = parseInt((eStartStr || '0').split(':')[0], 10);
+        const eEndH = parseInt((eEndStr || '0').split(':')[0], 10) || (eStartH + 2);
+
+        const eStart = existing.start_date || eSchedules[0]?.start_time;
+        const eEnd = existing.end_date || eSchedules[0]?.end_time;
+        const eStartDate = eStart ? new Date(eStart) : null;
+        const eEndDate = eEnd ? new Date(eEnd) : (eStartDate ? new Date(eStartDate.getTime() + 365 * 24 * 3600 * 1000) : null);
+
+        if (eDays.length === 0) continue;
+
+        // 1. Kiểm tra trùng khoảng ngày
+        if (newStartDate && eStartDate && eEndDate) {
+          const dateOverlap = newStartDate <= eEndDate && (newEndDate || newStartDate) >= eStartDate;
+          if (!dateOverlap) continue;
+        }
+
+        // 2. Kiểm tra trùng thứ
+        const commonDays = newDays.filter(d => eDays.includes(d));
+        if (commonDays.length === 0) continue;
+
+        // 3. Kiểm tra trùng khung giờ
+        const timeOverlap = newStartH < eEndH && newEndH > eStartH;
+        if (!timeOverlap) continue;
+
+        const sortedDays = commonDays.sort((a, b) => (dayOrder[a] || 99) - (dayOrder[b] || 99));
+        return {
+          conflict: true,
+          message:
+            `⚠️ Trùng lịch dạy với lớp "${existing.title}"!\n\n` +
+            `📅 Trùng vào: ${sortedDays.join(', ')} — ${eTimeSlot || `${eStartH}:00 - ${eEndH}:00`}\n\n` +
+            `Bạn vẫn muốn nhận lớp này?`,
+        };
+      }
+
+      return { conflict: false };
+    } catch (err) {
+      console.warn('[ConflictCheck] Lỗi khi kiểm tra trùng lịch:', err);
+      return { conflict: false }; // Không chặn nếu API lỗi
     }
   };
 

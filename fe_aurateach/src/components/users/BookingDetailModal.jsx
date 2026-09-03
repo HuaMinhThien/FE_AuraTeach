@@ -259,39 +259,48 @@ export default function BookingDetailModal({
 
           {/* Actions */}
           <div className="booking-detail-actions">
-            <button className="detail-report-btn" onClick={handleReportTutor}>
-              Tố cáo gia sư
-            </button>
-                        <div className="detail-action-right">
-              {onRating && (
-                alreadyReviewed ? (
-                  <button className="detail-rating-btn" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                    ✅ Đã đánh giá
-                  </button>
-                ) : (
-                  <button className="detail-rating-btn" onClick={() => onRating(course)}>
-                    ⭐ Đánh giá
-                  </button>
-                )
-              )}
-              <button className="detail-close-btn" onClick={onClose}>
-                Đóng
-              </button>
-
-              {course?.permanent_room_url && course?.status === 'active' && (
-                <button 
-                  className="detail-join-btn"
-                  onClick={() => onJoinClass(course.permanent_room_url)}
-                >
-                  Tham gia lớp học
+            {/* Chỉ hiện các hành động khi đã thanh toán */}
+            {course?.payment_status === 'paid' ? (
+              <>
+                <button className="detail-report-btn" onClick={handleReportTutor}>
+                  Tố cáo gia sư
                 </button>
-              )}
-              {course?.status !== 'active' && (
-                <button className="detail-join-btn disabled" disabled>
-                  {course?.status === 'closed' ? 'Lớp đã đóng' : 'Chờ duyệt'}
+                <div className="detail-action-right">
+                  {onRating && (
+                    alreadyReviewed ? (
+                      <button className="detail-rating-btn" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                        ✅ Đã đánh giá
+                      </button>
+                    ) : (
+                      <button className="detail-rating-btn" onClick={() => onRating(course)}>
+                        ⭐ Đánh giá
+                      </button>
+                    )
+                  )}
+                  <button className="detail-close-btn" onClick={onClose}>
+                    Đóng
+                  </button>
+                  {course?.permanent_room_url && (
+                    <button
+                      className="detail-join-btn"
+                      onClick={() => onJoinClass(course.permanent_room_url)}
+                    >
+                      Tham gia lớp học
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Chưa thanh toán — chỉ hiện nút Đóng */
+              <div className="detail-action-right" style={{ width: '100%', justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: '13px', color: '#9ca3af', marginRight: 'auto' }}>
+                  ⚠️ Hoàn tất thanh toán để mở khóa các tính năng
+                </span>
+                <button className="detail-close-btn" onClick={onClose}>
+                  Đóng
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

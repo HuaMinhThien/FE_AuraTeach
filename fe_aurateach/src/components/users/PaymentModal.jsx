@@ -6,7 +6,8 @@ import '@/css/student-style/paymentModal.css';
 
 export default function PaymentModal({ 
   course, 
-  subscriptionId, 
+  subscriptionId,
+  initialPaymentId,
   studentId, 
   amount,
   onClose, 
@@ -14,7 +15,7 @@ export default function PaymentModal({
   paymentService 
 }) {
   const [qrCode, setQrCode] = useState(null);
-  const [paymentId, setPaymentId] = useState(null);
+  const [paymentId, setPaymentId] = useState(initialPaymentId || null);
   const [status, setStatus] = useState('pending');
   const [expiryTime, setExpiryTime] = useState(null);
   const [countdown, setCountdown] = useState('');
@@ -27,7 +28,15 @@ export default function PaymentModal({
 
   const pollIntervalRef = useRef(null);
   const countdownIntervalRef = useRef(null);
-  const hasInitializedRef = useRef(false); 
+  const hasInitializedRef = useRef(false);
+  const hasCalledSuccessRef = useRef(false); // Guard chống gọi onSuccess 2 lần
+
+  // Wrapper đảm bảo onSuccess chỉ chạy đúng 1 lần dù polling hay nút "Hoàn tất" trigger
+  const callOnSuccess = () => {
+    if (hasCalledSuccessRef.current) return;
+    hasCalledSuccessRef.current = true;
+    if (typeof onSuccess === 'function') onSuccess();
+  };
 
   const formatPrice = (price) => {
     if (!price) return '0đ';
@@ -143,7 +152,7 @@ export default function PaymentModal({
           if (currentStatus === 'paid') {
             clearAllIntervals();
             if (typeof onSuccess === 'function') {
-              onSuccess(); // 🚀 Tự động kích hoạt thành công, khóa lớp và reload ngay lập tức khi API báo paid
+              callOnSuccess();
             }
           } else if (currentStatus === 'expired') {
             clearAllIntervals();
@@ -159,6 +168,10 @@ export default function PaymentModal({
   const handleCancelPayment = async () => {
     clearAllIntervals();
     if (!paymentId) {
+      // Không có paymentId, cancel subscription trực tiếp nếu có
+      if (subscriptionId && paymentService.cancelBooking) {
+        try { await paymentService.cancelBooking(subscriptionId); } catch (_) {}
+      }
       onClose();
       return;
     }
@@ -169,7 +182,11 @@ export default function PaymentModal({
         await paymentService.cancelPayment(paymentId);
       }
     } catch (err) {
-      console.error('Lỗi khi hủy giao dịch:', err);
+      console.error('Lỗi khi hủy giao dịch qua payment, fallback cancel subscription:', err);
+      // Fallback: nếu cancel payment fail, cancel thẳng subscription
+      if (subscriptionId && paymentService.cancelBooking) {
+        try { await paymentService.cancelBooking(subscriptionId); } catch (_) {}
+      }
     } finally {
       onClose();
     }
@@ -300,7 +317,7 @@ export default function PaymentModal({
 
                 {status === 'paid' && (
                   <div className="payment-success-actions">
-                    <button className="payment-done-btn" onClick={onSuccess}>
+                    <button className="payment-done-btn" onClick={callOnSuccess}>
                       Hoàn tất
                     </button>
                   </div>

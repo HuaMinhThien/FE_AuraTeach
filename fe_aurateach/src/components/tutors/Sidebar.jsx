@@ -12,6 +12,7 @@ export default function Sidebar() {
     const pathname = usePathname();
     const [unreadCount, setUnreadCount] = useState(0);
     const [user, setUser] = useState(null);
+    const [verificationStatus, setVerificationStatus] = useState(null);
 
     const getCookie = (name) => {
         if (typeof window === "undefined") return null;
@@ -35,7 +36,27 @@ export default function Sidebar() {
         }
     }, []);
 
-    // 2. Lấy số lượng tin nhắn chưa đọc chuẩn xác bằng conversationService.getUnreadCount (giống Header)
+    // 2. Lấy verification_status từ API khi đã có user
+    useEffect(() => {
+        if (!user) return;
+        const userId = user.user_id || user.id;
+        if (!userId) return;
+
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/tutors/user/${userId}`, {
+            headers: { "Accept": "application/json" }
+        })
+            .then(r => r.json())
+            .then(res => {
+                const tutorList = res?.data || res || [];
+                const tutor = Array.isArray(tutorList) ? tutorList[0] : tutorList;
+                if (tutor?.verification_status) {
+                    setVerificationStatus(tutor.verification_status);
+                }
+            })
+            .catch(() => {});
+    }, [user]);
+
+    // 3. Lấy số lượng tin nhắn chưa đọc chuẩn xác bằng conversationService.getUnreadCount (giống Header)
     const fetchUnreadCount = useCallback(async (userId) => {
         if (!userId) return; 
 
@@ -48,7 +69,7 @@ export default function Sidebar() {
         }
     }, []);
 
-    // 3. Polling định kỳ lấy unread count giống hệt Header để cập nhật badge đồng bộ
+    // 4. Polling định kỳ lấy unread count giống hệt Header để cập nhật badge đồng bộ
     useEffect(() => {
         const userCookie = getCookie("user_info");
         let currentUserId = user?.user_id || user?.id;
@@ -102,10 +123,13 @@ export default function Sidebar() {
         { 
             path: "/tutor-messenger", 
             text: "Tin nhắn",
-            // Thêm logic hiển thị 99+ cho đồng bộ với Header
             badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : null
         },
     ];
+
+    // Các path được phép truy cập khi bị rejected
+    const ALLOWED_WHEN_REJECTED = ["/tutor-dashboard", "/profile-tutor"];
+    const isRejected = verificationStatus === 'rejected';
 
     return (
         <aside className="sidebar">
@@ -125,11 +149,51 @@ export default function Sidebar() {
                 </div>
             </div>
 
+            {/* Banner cảnh báo khi bị rejected */}
+            {isRejected && (
+                <div style={{
+                    margin: "0 12px 8px",
+                    padding: "10px 12px",
+                    background: "#fef2f2",
+                    border: "1px solid #fca5a5",
+                    borderRadius: "8px",
+                    fontSize: "0.78rem",
+                    color: "#dc2626",
+                    lineHeight: 1.4
+                }}>
+                    ⚠️ Hồ sơ bị từ chối. Vui lòng cập nhật lại <strong>Hồ sơ</strong> để nộp lại.
+                </div>
+            )}
+
             <nav className="sidebar-menu">
                 <ul>
                     {menuItems.map((item, index) => {
                         const isActive = pathname === item.path;
+                        const isLocked = isRejected && !ALLOWED_WHEN_REJECTED.includes(item.path);
                         
+                        if (isLocked) {
+                            return (
+                                <li key={index}>
+                                    <span
+                                        className="menu-item"
+                                        title="Hồ sơ của bạn chưa được duyệt"
+                                        style={{
+                                            opacity: 0.4,
+                                            cursor: "not-allowed",
+                                            userSelect: "none",
+                                            textDecoration: "none",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "8px"
+                                        }}
+                                    >
+                                        <span className="text">{item.text}</span>
+                                        <span style={{ fontSize: "0.7rem" }}>🔒</span>
+                                    </span>
+                                </li>
+                            );
+                        }
+
                         return (
                             <li key={index}>
                                 <Link 

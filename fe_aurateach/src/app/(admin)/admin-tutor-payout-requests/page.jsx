@@ -74,7 +74,7 @@ export default function AdminPayoutRequestsPage() {
     try {
       await adminService.updatePayoutRequestStatus({
           id: item.id || item.tutor_payout_id,
-          status: 'approved',
+          status: 'completed',
           processed_by: adminId,
       });
       setMessage({

@@ -204,7 +204,7 @@ export async function GET() {
 }
 
 // ====================== PATCH ======================
-// Xác nhận thanh toán lương (pending → approved)
+// Xác nhận thanh toán lương (pending → completed)
 export async function PATCH(request) {
   try {
     const body = await request.json();
@@ -217,10 +217,10 @@ export async function PATCH(request) {
       );
     }
 
-    // Chỉ cho phép chuyển sang approved
-    if (status !== 'approved') {
+    // Chỉ cho phép chuyển sang completed
+    if (status !== 'completed') {
       return NextResponse.json(
-        { message: 'Chỉ hỗ trợ trạng thái approved' },
+        { message: 'Chỉ hỗ trợ trạng thái completed' },
         { status: 400 }
       );
     }
@@ -242,8 +242,8 @@ export async function PATCH(request) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        status: 'approved',
-        admin_id: processed_by || 'admin_system',
+        status: 'completed',
+        user_id: processed_by || 'admin_system',
         created_at: new Date().toISOString(),
       }),
     });
@@ -271,7 +271,7 @@ export async function PATCH(request) {
         await notificationService.notifyPayoutStatus({
           tutor: currentUser,
           payoutRequest: currentPayout,
-          status: 'approved',
+          status: 'completed',
           reason: null,
         });
       }

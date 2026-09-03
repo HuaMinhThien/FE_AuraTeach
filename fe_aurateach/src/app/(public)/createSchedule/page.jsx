@@ -137,6 +137,17 @@ export default function CreateClassRequest() {
   const [formData, setFormData] = useState(getInitialFormData());
   const [loading, setLoading] = useState(false);
   const [conflictError, setConflictError] = useState("");
+  const [courseType, setCourseType] = useState("1_term");
+
+  const handleCourseTypeChange = (value) => {
+    setCourseType(value);
+    const weeksMap = { "1_term": 18, "2_terms": 36 };
+    setFormData((prev) => ({
+      ...prev,
+      schedule_style: value,
+      total_weeks: weeksMap[value] !== undefined ? weeksMap[value] : prev.total_weeks,
+    }));
+  };
 
   // Đặt endTime SAU KHI formData đã được khởi tạo xong
   const endTime = useMemo(() => {
@@ -990,6 +1001,19 @@ export default function CreateClassRequest() {
                     onChange={(e) => setFormData({ ...formData, meet_link: e.target.value })}
                     placeholder="https://meet.google.com/abc-defg-hij"
                   />
+                </div>
+
+                <div className={styles.formGroup} style={{ marginBottom: "20px" }}>
+                  <label>Lựa chọn hình thức / Lộ trình học <span className={styles.required}>*</span></label>
+                  <select
+                    value={courseType}
+                    onChange={(e) => handleCourseTypeChange(e.target.value)}
+                    style={{ padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", width: "100%" }}
+                  >
+                    <option value="1_term">Dạy theo 1 kỳ (Quy đổi thành 18 tuần học)</option>
+                    <option value="2_terms">Dạy theo 2 kỳ (Quy đổi thành 36 tuần học)</option>
+                    <option value="custom">Dạy riêng lẻ dành cho các lớp học thêm, lớp củng cố kiến thức,... (Tùy chọn số tuần)</option>
+                  </select>
                 </div>
 
                 <div className={styles.sectionTitle} style={{ marginTop: "20px" }}>Lịch học dự kiến</div>

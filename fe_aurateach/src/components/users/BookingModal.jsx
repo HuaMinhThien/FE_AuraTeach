@@ -73,7 +73,11 @@ export default function BookingModal({
       try {
         await paymentService.cancelPayment(bookingData.booking_id);
       } catch (error) {
-        console.error('Cancel payment error:', error);
+        console.error('Cancel payment error, fallback to cancelBooking:', error);
+        // Fallback: cancel subscription trực tiếp nếu cancel payment fail
+        if (bookingData?.subscription_id && paymentService.cancelBooking) {
+          try { await paymentService.cancelBooking(bookingData.subscription_id); } catch (_) {}
+        }
       }
     }
     onClose();
@@ -244,10 +248,9 @@ export default function BookingModal({
             totalSessions: payableSessions,
             calculatedTotalPrice
           }}
-          subscriptionId={bookingData.payment_id || bookingData.subscription_id} 
+          subscriptionId={bookingData.subscription_id}
+          initialPaymentId={bookingData.payment_id}
           studentId={bookingData.student_id || course?.student_id}
-          // 💡 Ưu tiên lấy amount từ bookingData (nếu backend trả về đúng), 
-          // nếu không thì lấy calculatedTotalPrice đã được tính đúng theo kỳ đầu ở trên (4.000đ)
           amount={calculatedTotalPrice}
           onClose={handlePaymentClose}
           onSuccess={handlePaymentSuccess}

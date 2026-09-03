@@ -73,17 +73,22 @@ export default function ClassDetailPage({ params }) {
 
       let isAlreadyBooked = false;
 
-      // 💡 Bước A: Kiểm tra nhanh trong localStorage trước để tránh độ trễ API/Database
+      // 💡 Bước A: Log localStorage để debug (không dùng làm nguồn sự thật nữa)
       if (studentId && courseId) {
         const localChecked = localStorage.getItem(`booked_${studentId}_${courseId}`);
-        if (localChecked === 'true') {
-          isAlreadyBooked = true;
-        }
+        console.log('[BookingCheck] localStorage key:', `booked_${studentId}_${courseId}`, '→ value:', localChecked);
       }
 
-      // Bước B: Nếu localStorage chưa có, tiến hành check sâu từ dữ liệu API trả về
-      if (!isAlreadyBooked && studentId) {
-        const stringUserId = String(studentId); // u-d4W7Kon9
+      // Bước B: Luôn verify với dữ liệu API — localStorage chỉ là cache hint, không phải nguồn sự thật
+      if (studentId) {
+        const stringUserId = String(studentId);
+
+        // DEBUG: log raw data để xác định nguồn gây khóa nút
+        console.group('[BookingCheck] Debug');
+        console.log('studentId:', stringUserId);
+        console.log('subscriptions array:', subscriptions);
+        console.log('courseObj.students:', courseObj?.students);
+        console.groupEnd();
 
         // 1. Kiểm tra trong danh sách subscriptions dựa vào cấu trúc dữ liệu thực tế vừa log
         const hasValidSubscription = subscriptions.some(sub => {
@@ -95,27 +100,42 @@ export default function ClassDetailPage({ params }) {
           
           const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed'];
           
-          // Khớp nếu user_id của bản ghi trùng với user_id đang đăng nhập
           const isMatched = (subUserId === stringUserId);
           const isValidStatus = validStatuses.includes(subStatus);
+
+          if (isMatched) {
+            console.log('[BookingCheck] Sub matched user:', { subUserId, subStatus, isValidStatus, sub });
+          }
 
           // Quan trọng: Status hợp lệ VÀ KHÔNG PHẢI cancelled
           return isMatched && isValidStatus && subStatus !== 'cancelled';
         });
 
         // 2. Kiểm tra trong mảng courseObj.students (nếu các phần tử cũng có dạng chứa student/user)
+        // BE đã filter chỉ trả về student có subscription active/paid, nhưng phòng thủ thêm ở FE
         const courseStudents = Array.isArray(courseObj.students) ? courseObj.students : [];
         const isInCourseStudents = courseStudents.some(stu => {
           if (!stu) return false;
           const sUserId = String(stu.user?.user_id || stu.user_id || '');
+          // Nếu student object có kèm status (sub status), bỏ qua cancelled/pending
+          const stuStatus = String(stu.subscription_status || stu.status || 'active').toLowerCase();
+
+          if (sUserId === stringUserId) {
+            console.log('[BookingCheck] Student matched user:', { sUserId, stuStatus, stu });
+          }
+
+          if (stuStatus === 'cancelled' || stuStatus === 'pending') return false;
           return sUserId === stringUserId;
         });
 
         isAlreadyBooked = isInCourseStudents || hasValidSubscription;
         
-        // Nếu API xác nhận đã đăng ký, đồng bộ ngược lại vào localStorage để cache
+        // Đồng bộ localStorage với kết quả thực từ DB
         if (isAlreadyBooked) {
           localStorage.setItem(`booked_${studentId}_${courseId}`, 'true');
+        } else {
+          // DB nói chưa đăng ký (hoặc đã bị cancel) → xóa cache sai nếu có
+          localStorage.removeItem(`booked_${studentId}_${courseId}`);
         }
       }
 
@@ -158,6 +178,76 @@ export default function ClassDetailPage({ params }) {
     if (currentStudentsCount >= course.max_students) {
       alert("Lớp học đã đủ số lượng học viên!");
       return;
+    }
+
+    // --- Kiểm tra trùng lịch với các lớp học sinh đang đăng ký ---
+    try {
+      const userId = currentUser.user_id || currentUser.id;
+      const subscribedRes = await courseService.getSubscribedCourses(userId);
+      const subscribedList = Array.isArray(subscribedRes)
+        ? subscribedRes
+        : (subscribedRes?.data || subscribedRes?.courses || []);
+
+      // Lấy lịch của lớp đang xem
+      const newSchedules = Array.isArray(course.schedules) ? course.schedules : [];
+      const newDays = [...new Set(newSchedules.map(s => s.day_of_week || s.days).filter(Boolean))];
+      const newTimeSlot = newSchedules[0]?.time_slot || course.time_slot || "";
+      const [newStartStr, newEndStr] = newTimeSlot.split("-").map(s => s?.trim());
+      const newStartH = parseInt((newStartStr || "0").split(":")[0], 10);
+      const newEndH = parseInt((newEndStr || "0").split(":")[0], 10) || newStartH + 2;
+      const newStart = course.start_date || newSchedules[0]?.start_time;
+      const newEnd = course.end_date || newSchedules[0]?.end_time;
+
+      if (newDays.length > 0 && newStart && newEnd) {
+        const newStartDate = new Date(newStart);
+        const newEndDate = new Date(newEnd);
+
+        const dayOrder = { "Thứ 2":1,"Thứ 3":2,"Thứ 4":3,"Thứ 5":4,"Thứ 6":5,"Thứ 7":6,"Chủ Nhật":7,"CN":7 };
+
+        for (const enrolled of subscribedList) {
+          // Bỏ qua lớp đã đóng/hoàn thành hoặc payment chưa paid
+          if (['closed', 'completed', 'cancelled'].includes(enrolled.status)) continue;
+          if (enrolled.payment_status && enrolled.payment_status !== 'paid') continue;
+
+          const eSchedules = Array.isArray(enrolled.schedules) ? enrolled.schedules : [];
+          const eDays = [...new Set(eSchedules.map(s => s.day_of_week || s.days).filter(Boolean))];
+          const eTimeSlot = eSchedules[0]?.time_slot || enrolled.time_slot || "";
+          const [eStartStr, eEndStr] = eTimeSlot.split("-").map(s => s?.trim());
+          const eStartH = parseInt((eStartStr || "0").split(":")[0], 10);
+          const eEndH = parseInt((eEndStr || "0").split(":")[0], 10) || eStartH + 2;
+          const eStart = enrolled.start_date || eSchedules[0]?.start_time;
+          const eEnd = enrolled.end_date || eSchedules[0]?.end_time;
+
+          if (eDays.length === 0 || !eStart) continue;
+
+          const eStartDate = new Date(eStart);
+          const eEndDate = eEnd ? new Date(eEnd) : new Date(eStartDate.getTime() + 365 * 24 * 3600 * 1000);
+
+          // Kiểm tra trùng khoảng thời gian (ngày)
+          const dateOverlap = newStartDate <= eEndDate && newEndDate >= eStartDate;
+          if (!dateOverlap) continue;
+
+          // Kiểm tra trùng thứ
+          const commonDays = newDays.filter(d => eDays.includes(d));
+          if (commonDays.length === 0) continue;
+
+          // Kiểm tra trùng khung giờ
+          const timeOverlap = newStartH < eEndH && newEndH > eStartH;
+          if (!timeOverlap) continue;
+
+          const sortedCommonDays = commonDays.sort((a, b) => (dayOrder[a] || 99) - (dayOrder[b] || 99));
+          const confirm = window.confirm(
+            `⚠️ Lịch học bị trùng với lớp "${enrolled.title}" bạn đang học!\n\n` +
+            `📅 Trùng vào: ${sortedCommonDays.join(", ")} — ${eTimeSlot}\n\n` +
+            `Bạn vẫn muốn đăng ký lớp này?`
+          );
+          if (!confirm) return;
+          break; // Chỉ cảnh báo lần đầu tìm thấy trùng
+        }
+      }
+    } catch (err) {
+      // Không chặn đăng ký nếu check trùng lịch bị lỗi
+      console.warn('[ConflictCheck] Không thể kiểm tra trùng lịch:', err);
     }
 
     setShowBookingModal(true);
@@ -687,12 +777,15 @@ export default function ClassDetailPage({ params }) {
           }}
           tutorName={tutorInfo?.full_name || userTutor?.full_name}
           onClose={() => {
-            // Nếu đóng modal mà chưa thanh toán thành công, xóa cache để tránh hiển thị sai
+            // Luôn xóa cache khi đóng modal nếu chưa thanh toán thành công
+            // isBooked chỉ true sau handleBookingSuccess — nếu đóng trước đó subscription đã bị cancel
             if (!isBooked) {
               const studentId = currentUser?.user_id || currentUser?.id;
               if (studentId && courseId) {
                 localStorage.removeItem(`booked_${studentId}_${courseId}`);
               }
+              // Re-fetch để đồng bộ trạng thái thực từ DB sau khi cancel
+              fetchClassData(false);
             }
             setShowBookingModal(false);
           }}

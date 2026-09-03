@@ -451,22 +451,26 @@ export default function TutorProfile() {
         return;
       }
 
-      // 🛠️ Đổi sang dùng tutorService thay vì adminService
-      const result = await tutorService.sendUpdateEvaluationRequest({
+      const isResubmit = tutorData.verification_status === 'rejected';
+
+      await tutorService.sendUpdateEvaluationRequest({
         tutor_update_req_id: `req_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
         tutor_id: tutorId,
         old_data: oldPayload,
         new_data: newPayload
       });
 
-      console.log("Response từ server:", result);
-
       setIsEditing(false);
       setIsDropdownOpen(false);
       setHasPendingRequest(true);
       setIsTimeSlotsDropdownOpen(false);
       setIsDaysDropdownOpen(false);
-      alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
+
+      if (isResubmit) {
+        alert("✅ Hồ sơ của bạn đã được nộp lại thành công! Vui lòng chờ Admin xét duyệt.");
+      } else {
+        alert("✅ Yêu cầu chỉnh sửa hồ sơ đã gửi thành công! Vui lòng chờ Admin phê duyệt.");
+      }
 
     } catch (error) {
       console.error("Lỗi gửi yêu cầu cập nhật:", error);
@@ -634,6 +638,53 @@ export default function TutorProfile() {
           </div>
         )}
       </div>
+
+      {/* Banner thông báo hồ sơ bị từ chối */}
+      {tutorData.verification_status === 'rejected' && !hasPendingRequest && (
+        <div style={{
+          background: "#fef2f2",
+          border: "1px solid #fca5a5",
+          borderLeft: "4px solid #ef4444",
+          borderRadius: "8px",
+          padding: "16px 20px",
+          marginBottom: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "1.2rem" }}>❌</span>
+            <strong style={{ color: "#dc2626", fontSize: "1rem" }}>Hồ sơ của bạn đã bị từ chối</strong>
+          </div>
+          {tutorData.rejection_reason && (
+            <p style={{ color: "#7f1d1d", fontSize: "0.9rem", margin: 0 }}>
+              <strong>Lý do:</strong> {tutorData.rejection_reason}
+            </p>
+          )}
+          <p style={{ color: "#6b7280", fontSize: "0.875rem", margin: 0 }}>
+            Vui lòng cập nhật lại thông tin hồ sơ rồi bấm <strong>"Gửi yêu cầu duyệt"</strong> để nộp lại.
+          </p>
+          {!isEditing && (
+            <button
+              onClick={() => { setIsEditing(true); setOriginalFields({...editFields}); }}
+              style={{
+                alignSelf: "flex-start",
+                marginTop: "4px",
+                padding: "8px 16px",
+                background: "#ef4444",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "0.9rem",
+                fontWeight: "600"
+              }}
+            >
+              ✏️ Cập nhật & Nộp lại hồ sơ
+            </button>
+          )}
+        </div>
+      )}
 
       <div className={styles.suggestionToggleCard}>
         <div className={styles.suggestionToggleLeft}>

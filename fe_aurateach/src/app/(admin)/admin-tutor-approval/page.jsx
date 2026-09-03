@@ -463,14 +463,17 @@ export default function TutorApprovalPage() {
               <h2>❌ Từ Chối Hồ Sơ: {selectedTutor.full_name}</h2>
             </div>
             <div className={styles.modalBody}>
-              <div className={styles.infoItem}>
-                <label>Vui lòng nhập lý do từ chối (Gửi thông báo đến gia sư):</label>
+              <div className={styles.infoItem} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontWeight: "600", color: "#374151", fontSize: "0.9rem" }}>
+                  Vui lòng nhập lý do từ chối (Gửi thông báo đến gia sư):
+                </label>
                 <textarea
                   className={styles.textarea}
                   rows={4}
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="Nhập lý do chi tiết..."
+                  style={{ width: "100%", boxSizing: "border-box" }}
                 />
               </div>
               <div className={styles.modalActions} style={{ marginTop: "20px" }}>

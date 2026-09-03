@@ -22,7 +22,7 @@ const paymentService = {
 
   // 4. Hủy booking nếu đóng modal mà chưa thanh toán
   cancelBooking: async (subscriptionId) => {
-    return await apiClient.delete(`/course-subscription/${subscriptionId}`);
+    return await apiClient.delete(`/course-subscriptions/${subscriptionId}`);
   },
 
   // 🔹 5. Bổ sung hàm hủy giao dịch thanh toán theo paymentId

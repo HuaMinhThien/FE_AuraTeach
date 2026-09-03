@@ -642,7 +642,7 @@ export default function CreateClassPage() {
                 <label>Học phí mong muốn (đ / buổi / hs) <span className={styles.required}>*</span></label>
                 <input 
                   type="number" 
-                  step="10000"
+                  step="1000"
                   min={currentPriceConfig?.min}
                   max={currentPriceConfig?.max}
                   value={pricePerSession}
