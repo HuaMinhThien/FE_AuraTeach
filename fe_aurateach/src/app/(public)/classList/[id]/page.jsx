@@ -93,7 +93,7 @@ export default function ClassDetailPage({ params }) {
           const subUserId = String(sub.student?.user?.user_id || sub.user_id || '');
           const subStatus = String(sub.status || '').toLowerCase();
           
-          const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed', 'pending', 'waiting', 'processing'];
+          const validStatuses = ['paid', 'active', 'approved', 'success', 'completed', 'confirmed'];
           
           // Khớp nếu user_id của bản ghi trùng với user_id đang đăng nhập
           const isMatched = (subUserId === stringUserId);

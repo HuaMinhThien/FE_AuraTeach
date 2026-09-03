@@ -68,11 +68,12 @@ export default function BookingModal({
   const handlePaymentClose = async () => {
     if (isSuccess) return; 
     setShowPaymentModal(false);
-    if (bookingData && !showPaymentModal) {
+    // Hủy payment theo payment_id — backend sẽ tự cancel subscription tương ứng
+    if (bookingData?.booking_id) {
       try {
-        await paymentService.cancelBooking(bookingData.booking_id);
+        await paymentService.cancelPayment(bookingData.booking_id);
       } catch (error) {
-        console.error('Cancel booking error:', error);
+        console.error('Cancel payment error:', error);
       }
     }
     onClose();
