@@ -65,7 +65,7 @@ export default function ClassDetailModal({ selectedClass, onCloseModal, onCloseC
           <div style={{ marginTop: "16px" }}>
             <button 
               type="button"
-              onClick={handleJoinRoom}
+              onClick={() => handleJoinRoom(selectedClass)}
               style={{
                 backgroundColor: "#2563eb",
                 color: "#ffffff",

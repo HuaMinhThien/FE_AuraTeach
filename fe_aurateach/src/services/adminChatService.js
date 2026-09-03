@@ -6,14 +6,14 @@
 //   - Gọi trực tiếp Laravel API (NEXT_PUBLIC_API_URL)
 //   - NEXT_PUBLIC_USE_API=true  → Laravel API thật (NEXT_PUBLIC_API_URL)
 
-// const JSON_SERVER_URL = "http://localhost:8000/api";
-const JSON_SERVER_URL = "https://api.aurateach.io.vn/api";
+const JSON_SERVER_URL = "http://localhost:8000/api";
+// const JSON_SERVER_URL = "https://api.aurateach.io.vn/api";
 
 class AdminChatService {
   constructor() {
     this.useApi = process.env.NEXT_PUBLIC_USE_API === "true";
-    // this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.aurateach.io.vn/api";
+    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    // this.apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.aurateach.io.vn/api";
     this.jsonServerUrl =
       process.env.NEXT_PUBLIC_JSON_SERVER_URL || JSON_SERVER_URL;
   }

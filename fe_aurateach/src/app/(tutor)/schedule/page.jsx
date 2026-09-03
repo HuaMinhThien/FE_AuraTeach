@@ -40,44 +40,80 @@ const getUserIdFromCookie = () => {
 
 export default function SchedulePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [classes, setClasses] = useState([]);
-  const [makeupSessions, setMakeupSessions] = useState([]);
+  const [sessions, setSessions] = useState([]); // class_sessions thực tế của tuần
+  const [coursesMap, setCoursesMap] = useState({}); // map course_id → course info
   const [loading, setLoading] = useState(true);
 
+  // Tính monday của tuần hiện tại từ currentDate
+  const getMondayOfWeek = (date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const offset = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + offset);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const formatDateParam = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  // Re-fetch khi tuần thay đổi
   useEffect(() => {
     async function loadSchedule() {
       try {
         setLoading(true);
         const userId = getUserIdFromCookie();
-        if (!userId) {
-          setLoading(false);
-          return;
-        }
+        if (!userId) { setLoading(false); return; }
 
-        // 1. Gọi hàm getByUserId có sẵn trong tutorService
+        // 1. Lấy tutor_id
         const tutorData = await tutorService.getByUserId(userId);
-        
-        // Trích xuất tutor_id từ kết quả trả về (hỗ trợ cả dạng mảng lẫn object)
         const tutor = Array.isArray(tutorData) ? tutorData[0] : tutorData;
-        const tutorId = tutor?.tutor_id || tutor?.id || tutor?._id;
+        const tutorId = tutor?.tutor_id || tutor?.id;
+        if (!tutorId) { setLoading(false); return; }
 
-        if (!tutorId) {
-          setLoading(false);
-          return;
-        }
-
-        // 2. Dùng getTutorScheduleCourses — lấy tất cả lớp của gia sư, bỏ completed, không phân trang
+        // 2. Lấy tất cả courses của gia sư (để có tên lớp, permanent_room_url)
         const courses = await courseService.getTutorScheduleCourses(tutorId);
-        setClasses(courses);
+        const map = {};
+        (Array.isArray(courses) ? courses : []).forEach((c) => {
+          map[c.course_id || c.id] = c;
+        });
+        setCoursesMap(map);
+
+        // 3. Tính from_date / to_date của tuần đang xem
+        const monday = getMondayOfWeek(currentDate);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        const courseIds = Object.keys(map);
+        if (courseIds.length === 0) { setSessions([]); setLoading(false); return; }
+
+        // 4. Fetch class_sessions thực tế theo tuần
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+        const params = new URLSearchParams({
+          course_ids: courseIds.join(','),
+          from_date: formatDateParam(monday),
+          to_date: formatDateParam(sunday),
+        });
+        const token = typeof window !== 'undefined'
+          ? (localStorage.getItem('access_token') || localStorage.getItem('token') || '')
+          : '';
+        const res = await fetch(`${API_BASE}/class-sessions?${params}`, {
+          headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+        });
+        const data = await res.json();
+        setSessions(Array.isArray(data) ? data : (data?.data || []));
       } catch (error) {
-        console.error("Lỗi tải lịch học:", error);
+        console.error('Lỗi tải lịch học:', error);
       } finally {
         setLoading(false);
       }
     }
-
     loadSchedule();
-  }, []);
+  }, [currentDate]); // re-fetch khi đổi tuần
 
   // Các phần logic hiển thị lịch và giao diện giữ nguyên...
   const todayString = new Date().toDateString();
@@ -138,104 +174,20 @@ export default function SchedulePage() {
   const renderClassCards = () => {
     const cards = [];
 
-    classes.forEach((cls, classIdx) => {
-      if (!cls.time_slot || !cls.time_slot.includes("-")) return;
-
-      const colorStyle = getColorForClass();
-      const dashIdx = cls.time_slot.indexOf("-");
-      const start = cls.time_slot.substring(0, dashIdx);
-      const end = cls.time_slot.substring(dashIdx + 1);
-      const startHours = parseTimeToHours(start);
-      const endHours = parseTimeToHours(end);
-      const duration = Math.max(endHours - startHours, 0.5);
-
-      const topPosition = startHours * ROW_HEIGHT;
-      // +1 để card chiếm luôn ô giờ kết thúc (lớp 7-9g chiếm ô 7, 8, 9)
-      const cardHeight = (endHours - startHours + 1) * ROW_HEIGHT - 4;
-
-      if (!cls.schedule_days || !Array.isArray(cls.schedule_days)) return;
-
-      cls.schedule_days.forEach((dayStr) => {
-        const dayIdx = mapScheduleDayIndex[dayStr];
-        if (dayIdx === undefined) return;
-
-        const targetDayInstance = currentWeekDays[dayIdx].dateObj;
-        const targetDateKey = new Date(
-          targetDayInstance.getFullYear(),
-          targetDayInstance.getMonth(),
-          targetDayInstance.getDate()
-        );
-
-        if (cls.start_date && targetDateKey < new Date(cls.start_date).setHours(0,0,0,0)) return;
-        if (cls.end_date && targetDateKey > new Date(cls.end_date).setHours(0,0,0,0)) return;
-
-        const leftPosition = (dayIdx * 100) / 7;
-
-        cards.push(
-          <div
-            key={`${classIdx}-${dayStr}`}
-            className={styles.slotCard}
-            style={{
-              top: `${topPosition}px`,
-              left: `calc(${leftPosition}% + 4px)`,
-              width: `calc(${100 / 7}% - 8px)`,
-              height: `${cardHeight}px`,
-              backgroundColor: colorStyle.bg,
-              color: colorStyle.text,
-              borderLeft: `4px solid ${colorStyle.border}`
-            }}
-          >
-            <div className={styles.cardHeaderFlex}>
-              <div
-                className={styles.classTitle}
-                title={cls.class_name}
-                style={{ color: colorStyle.text }}
-              >                
-              {cls.title || cls.class_name}
-              </div>
-              <span
-                className={styles.timeBadge}
-                style={{
-                  backgroundColor: "rgba(10, 55, 163, 0.08)",
-                  color: colorStyle.text,
-                }}
-              >                
-              {cls.time_slot}
-              </span>
-            </div>
-            
-            <div className={styles.cardFooterFlex}>
-              <div className={styles.tutorName} style={{ color: colorStyle.text }}>
-                👤 {cls.students?.length || 0} học viên
-              </div>
-              {cls.permanent_room_url && (
-                <a
-                  href={cls.permanent_room_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.meetBtn}
-                  style={{ backgroundColor: colorStyle.border, color: "#ffffff" }}
-                >
-                  Vào lớp
-                </a>
-              )}
-            </div>
-          </div>
-        );
-      });
-    });
-
-    makeupSessions.forEach((session) => {
+    sessions.forEach((session) => {
       if (!session.actual_date || !session.start_time || !session.end_time) return;
 
+      const course = coursesMap[session.course_id] || session.course || {};
+      const isMakeup = session.is_makeup == true || session.session_type === 'makeup';
+      const colorStyle = isMakeup ? getColorForMakeup() : getColorForClass();
+
+      // Tìm dayIdx trong tuần hiện tại
       const sessionDate = new Date(session.actual_date);
       const sessionDateOnly = new Date(
         sessionDate.getFullYear(),
         sessionDate.getMonth(),
         sessionDate.getDate()
       );
-
-      // Tìm xem buổi này có nằm trong tuần đang xem không
       const dayIdx = currentWeekDays.findIndex((d) => {
         const dOnly = new Date(
           d.dateObj.getFullYear(),
@@ -244,32 +196,21 @@ export default function SchedulePage() {
         );
         return dOnly.getTime() === sessionDateOnly.getTime();
       });
+      if (dayIdx === -1) return;
 
-      if (dayIdx === -1) return; // không thuộc tuần này
-
-      const colorStyle = getColorForMakeup();
       const startHours = parseTimeToHours(session.start_time);
       const endHours = parseTimeToHours(session.end_time);
-      const duration = Math.max(endHours - startHours, 0.5);
-
       const topPosition = startHours * ROW_HEIGHT;
-      // +1 để card chiếm luôn ô giờ kết thúc (lớp 7-9g chiếm ô 7, 8, 9)
       const cardHeight = (endHours - startHours + 1) * ROW_HEIGHT - 4;
       const leftPosition = (dayIdx * 100) / 7;
 
-      // Tìm tên lớp từ courses
-      const relatedCourse = classes.find(
-        (c) => (c.course_id || c.id) === session.course_id
-      );
-      const className =
-        relatedCourse?.title ||
-        relatedCourse?.class_name ||
-        session.lesson_title ||
-        "Buổi học bù";
+      const className = course.title || course.class_name || session.lesson_title || 'Buổi học';
+      const timeLabel = `${session.start_time.slice(0, 5)} - ${session.end_time.slice(0, 5)}`;
+      const roomUrl = course.permanent_room_url || null;
 
       cards.push(
         <div
-          key={`makeup-${session.session_id || session.id}`}
+          key={session.session_id || session.id}
           className={styles.slotCard}
           style={{
             top: `${topPosition}px`,
@@ -282,35 +223,30 @@ export default function SchedulePage() {
           }}
         >
           <div className={styles.cardHeaderFlex}>
-            <div
-              className={styles.classTitle}
-              title={className}
-              style={{ color: colorStyle.text }}
-            >
-              {className}
+            <div className={styles.classTitle} title={className} style={{ color: colorStyle.text }}>
+              {isMakeup ? '🔄 ' : ''}{className}
             </div>
             <span
               className={styles.timeBadge}
               style={{
-                backgroundColor: "rgba(234, 88, 12, 0.12)",
+                backgroundColor: isMakeup ? 'rgba(234, 88, 12, 0.12)' : 'rgba(10, 55, 163, 0.08)',
                 color: colorStyle.text,
               }}
             >
-              {session.start_time} - {session.end_time}
+              {timeLabel}
             </span>
           </div>
-
           <div className={styles.cardFooterFlex}>
             <div className={styles.tutorName} style={{ color: colorStyle.text }}>
-              🔄 Học bù
+              {isMakeup ? '🔄 Học bù' : `👤 ${course.students?.length || 0} học viên`}
             </div>
-            {relatedCourse?.permanent_room_url && (
+            {roomUrl && (
               <a
-                href={relatedCourse.permanent_room_url}
+                href={roomUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.meetBtn}
-                style={{ backgroundColor: colorStyle.border, color: "#ffffff" }}
+                style={{ backgroundColor: colorStyle.border, color: '#ffffff' }}
               >
                 Vào lớp
               </a>
@@ -325,32 +261,9 @@ export default function SchedulePage() {
 
   const renderCards = renderClassCards();
   
-  const totalHoursThisWeek = classes.reduce((total, cls) => {
-    if (!cls.time_slot || !cls.time_slot.includes("-") || !cls.schedule_days) return total;
-    const dashIdx = cls.time_slot.indexOf("-");
-    const diff = parseTimeToHours(cls.time_slot.substring(dashIdx + 1)) - parseTimeToHours(cls.time_slot.substring(0, dashIdx));
-
-    let actualDaysInWeek = 0;
-    cls.schedule_days.forEach((dayStr) => {
-      const dayIdx = mapScheduleDayIndex[dayStr];
-      if (dayIdx === undefined) return;
-      const targetDayInstance = currentWeekDays[dayIdx].dateObj;
-      const targetDateKey = new Date(
-        targetDayInstance.getFullYear(),
-        targetDayInstance.getMonth(),
-        targetDayInstance.getDate()
-      );
-
-      let isValid = true;
-      if (cls.start_date && targetDateKey < new Date(cls.start_date).setHours(0, 0, 0, 0))
-        isValid = false;
-      if (cls.end_date && targetDateKey > new Date(cls.end_date).setHours(0, 0, 0, 0))
-        isValid = false;
-      
-      if (isValid) actualDaysInWeek++;
-    });
-
-    return total + diff * actualDaysInWeek;
+  const totalHoursThisWeek = sessions.reduce((total, session) => {
+    if (!session.start_time || !session.end_time) return total;
+    return total + (parseTimeToHours(session.end_time) - parseTimeToHours(session.start_time));
   }, 0);
 
   return (
@@ -390,9 +303,9 @@ export default function SchedulePage() {
             <div style={{ padding: "40px", textAlign: "center", width: "100%" }}>
               Đang tải lịch trình giảng dạy...
             </div>
-          ) : classes.length === 0 ? (
+          ) : sessions.length === 0 ? (
             <div style={{ padding: "60px", textAlign: "center", width: "100%", color: "#94a3b8" }}>
-              Chưa có lớp học nào để hiển thị
+              Không có buổi học nào trong tuần này
             </div>
           ) : (
             <div className={styles.mainGridBody}>
@@ -451,8 +364,8 @@ export default function SchedulePage() {
             <span className={styles.statLabel}>Tổng giờ dạy dự kiến</span>
           </div>
           <div className={styles.statGroup}>
-            <span className={styles.statValue}>{classes.length}</span>
-            <span className={styles.statLabel}>Lớp học đang mở</span>
+            <span className={styles.statValue}>{sessions.length}</span>
+            <span className={styles.statLabel}>Buổi học trong tuần</span>
           </div>
         </div>
       </div>
