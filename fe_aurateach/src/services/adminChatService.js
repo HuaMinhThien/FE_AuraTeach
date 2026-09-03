@@ -3,7 +3,7 @@
 // Service cho chức năng chat hỗ trợ: Admin <-> Student/Tutor
 //
 // Pattern giống adminService.js / authService.js của dự án:
-//   - NEXT_PUBLIC_USE_API=false → JSON Server (localhost:3007) để test UI local
+//   - Gọi trực tiếp Laravel API (NEXT_PUBLIC_API_URL)
 //   - NEXT_PUBLIC_USE_API=true  → Laravel API thật (NEXT_PUBLIC_API_URL)
 
 // const JSON_SERVER_URL = "http://localhost:8000/api";

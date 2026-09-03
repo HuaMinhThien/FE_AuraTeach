@@ -124,13 +124,21 @@ export const adminService = {
     return response;
   },
 
+  generatePayouts: async (month, year) => {
+    const response = await apiClient.post('/admin-tutor-payout-requests/generate', { month, year });
+    return response?.data ?? response;
+  },
+
   getTutorPayouts: async () => {
-    return await apiClient.get('/admin-tutor-payout-requests');
+    const response = await apiClient.get('/admin-tutor-payout-requests');
+    // apiClient trả về toàn bộ JSON body: { success, data }
+    return response?.data ?? (Array.isArray(response) ? response : []);
   },
 
   // --- Cập nhật trạng thái yêu cầu rút tiền (Duyệt / Từ chối kèm lý do) ---
   updatePayoutRequestStatus: async (payload) => {
-    return await apiClient.patch('/admin-tutor-payout-requests', payload);
+    const response = await apiClient.patch('/admin-tutor-payout-requests', payload);
+    return response?.data ?? response;
   },
 
   getReports: async (params = {}) => {

@@ -35,12 +35,13 @@ export default function AdminPayoutRequestsPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setMessage(null);
     try {
-      const enrichedRequests = await adminService.getTutorPayouts();
-      setRequests(Array.isArray(enrichedRequests) ? enrichedRequests : (enrichedRequests?.data || []));
+      const data = await adminService.getTutorPayouts();
+      setRequests(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setMessage({ type: 'error', text: 'Không thể tải danh sách thanh toán lương' });
+      setMessage({ type: 'error', text: `Không thể tải danh sách thanh toán lương: ${error.message || 'Lỗi kết nối server'}` });
     } finally {
       setLoading(false);
     }
@@ -101,6 +102,25 @@ export default function AdminPayoutRequestsPage() {
         </div>
         <button onClick={fetchData} className={styles.detailBtn} style={{ height: 'fit-content' }}>
           🔄 Làm mới
+        </button>
+        <button
+          onClick={async () => {
+            const now = new Date();
+            const month = now.getMonth() === 0 ? 12 : now.getMonth(); // tháng trước
+            const year  = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+            if (!window.confirm(`Tạo phiếu lương tháng ${month}/${year} cho tất cả gia sư?`)) return;
+            try {
+              const res = await adminService.generatePayouts(month, year);
+              setMessage({ type: 'success', text: res?.message || 'Đã tạo phiếu lương!' });
+              fetchData();
+            } catch (err) {
+              setMessage({ type: 'error', text: err.message || 'Lỗi tạo phiếu lương' });
+            }
+          }}
+          className={styles.detailBtn}
+          style={{ height: 'fit-content', background: '#16a34a', color: '#fff', border: 'none' }}
+        >
+          💰 Tạo phiếu lương
         </button>
       </header>
 
