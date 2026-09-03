@@ -6,6 +6,7 @@ import styles from './proposed-class.module.css';
 import { classRequestService } from '@/services/classRequestService';
 import { authService } from '@/services/authService';
 import { categoryService } from '@/services/categoryService'; // <-- Import service danh mục của bạn
+import { adminService } from '@/services/adminService';
 
 export default function ProposedClassPage() {
   const router = useRouter();
@@ -89,8 +90,9 @@ export default function ProposedClassPage() {
   const fetchAdminSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
-      // Sửa lại truyền vào một object { tutor_id: currentTutorId }
-      const response = await classRequestService.getAvailableForTutor({ tutor_id: currentTutorId });
+      // ✅ Dùng đúng endpoint: GET /tutors/{userId}/suggestions
+      // Backend tự resolve user_id → tutor_id và trả về các lớp pending phù hợp
+      const response = await adminService.getTutorSuggestions(currentTutorId);
       const listData = response.data || response;
       setAdminSuggestions(Array.isArray(listData) ? listData : []);
     } catch (error) {
