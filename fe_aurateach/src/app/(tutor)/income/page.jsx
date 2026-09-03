@@ -169,15 +169,8 @@ export default function TutorRevenuePage() {
         if (found) {
           setDetailBankInfo(found);
         } else {
-          const res = await fetch(
-            `http://localhost:3007/tutor_bank_accounts?bank_account_id=${payout.bank_account_id}`
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              setDetailBankInfo(data[0]);
-            }
-          }
+          // bank_account_id không tìm thấy trong danh sách đã tải — không cần gọi thêm
+          console.warn('Không tìm thấy thông tin ngân hàng cho bank_account_id:', payout.bank_account_id);
         }
       } catch (err) {
         console.error('Lỗi lấy thông tin ngân hàng:', err);

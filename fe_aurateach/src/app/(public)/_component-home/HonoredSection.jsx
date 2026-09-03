@@ -2,6 +2,25 @@
 
 import React, { useState, useEffect } from 'react';
 
+// Dữ liệu mặc định khi API chưa có endpoint honored_members
+const DEFAULT_HONORED = {
+  sectionTitle: 'Học viên tiêu biểu',
+  studentSpotlight: {
+    badge: '🏆 Học viên xuất sắc',
+    quote: 'Nhờ AuraTeach tôi đã cải thiện điểm số đáng kể',
+    name: 'Nguyễn Văn A',
+    role: 'Học sinh lớp 12',
+    resultImage: '/img/class/default-class-1.jpg',
+    achievement: 'Đạt 9.5 môn Toán',
+  },
+  parentReview: {
+    quote: 'Tôi rất hài lòng với chất lượng giảng dạy tại AuraTeach',
+    avatar: '/img/avt/avt.jpg',
+    name: 'Phụ huynh học sinh',
+    role: 'Phụ huynh',
+  },
+};
+
 function HonoredSection() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,12 +29,14 @@ function HonoredSection() {
     const fetchHonoredData = async () => {
       try {
         // 🌟 1. SỬA ĐỔI: Thêm tham số ?section=honored vào URL để lấy đúng Object dữ liệu vinh danh
-        const response = await fetch('http://localhost:3007/honored_members');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.aurateach.io.vn/api';
+        const response = await fetch(`${API_URL}/admin/content-management`);
         if (!response.ok) {
           throw new Error('Không thể tải dữ liệu vinh danh');
         }
         const resData = await response.json();
-        setData(resData);
+        // honored_members là dữ liệu tĩnh — nếu BE chưa có thì dùng mặc định
+        setData(resData.honored_members ?? resData.data?.honored_members ?? DEFAULT_HONORED);
       } catch (error) {
         console.error('Lỗi gọi API Section 6:', error);
         setData(null);

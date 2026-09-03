@@ -284,7 +284,7 @@ export default function TutorApprovalPage() {
                   <thead>
                     <tr>
                       <th>Mã Yêu Cầu</th>
-                      <th>Gia sư (ID)</th>
+                      <th>Gia sư</th>
                       <th>Trình độ mới</th>
                       <th>Thời gian yêu cầu</th>
                       <th>Trạng thái</th>
@@ -295,13 +295,22 @@ export default function TutorApprovalPage() {
                     {updateRequests.map((req) => (
                       <tr key={req.update_req_id || req.id} className={styles.tableRow}>
                         <td className={styles.boldText}>#{req.update_req_id || req.id}</td>
-                        <td>{req.tutor_id}</td>
+                        <td className={styles.boldText}>
+                          {req.tutor?.user?.full_name || req.tutor?.full_name || `Gia sư #${req.tutor_id}`}
+                        </td>
                         <td>
                           <span className={styles.badgeLevel}>{req.new_data?.level || "Không đổi"}</span>
                         </td>
                         <td>{new Date(req.created_at).toLocaleString("vi-VN")}</td>
                         <td>
-                          <span className={styles.badgePending}>Chờ duyệt</span>
+                          {req.tutor?.verification_status === 'rejected' ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <span className={styles.badgePending}>Chờ duyệt YC</span>
+                              <span className={styles.badgeRejected}>Gia sư bị từ chối</span>
+                            </div>
+                          ) : (
+                            <span className={styles.badgePending}>Chờ duyệt</span>
+                          )}
                         </td>
                         <td>
                           <div className={styles.actionGroup}>
@@ -504,10 +513,25 @@ export default function TutorApprovalPage() {
             </button>
 
             <div className={styles.modalHeader}>
-              <h2>🔄 Đối Chiếu Thay Đổi Thông Tin (ID: #{selectedRequest.id})</h2>
+              <h2>🔄 Đối Chiếu Thay Đổi Thông Tin — {selectedRequest.tutor?.user?.full_name || selectedRequest.tutor?.full_name || `Gia sư #${selectedRequest.tutor_id}`}</h2>
             </div>
 
             <div className={styles.modalBody}>
+              {/* Banner cảnh báo khi gia sư đang bị từ chối */}
+              {selectedRequest.tutor?.verification_status === 'rejected' && (
+                <div className={styles.warningBanner}>
+                  <span className={styles.warningIcon}>⚠️</span>
+                  <div>
+                    <strong>Gia sư này đang bị từ chối hồ sơ.</strong>
+                    <p>Nếu bạn <strong>duyệt</strong> yêu cầu thay đổi này, gia sư sẽ được cập nhật thông tin và tự động chuyển về trạng thái <strong>chờ xét duyệt làm gia sư</strong> — xuất hiện lại ở tab "Hồ sơ đăng ký mới".</p>
+                    {selectedRequest.tutor?.rejection_reason && (
+                      <p style={{ marginTop: '6px', fontSize: '12px', color: '#92400e' }}>
+                        Lý do từ chối trước: <em>"{selectedRequest.tutor.rejection_reason}"</em>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className={styles.compareGrid}>
                 {/* Cột dữ liệu CŨ */}
                 <div className={styles.compareColOld}>

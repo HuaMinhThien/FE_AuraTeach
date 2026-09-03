@@ -441,3 +441,48 @@
 .rejectForm {
   margin-bottom: 16px;
 }
+
+/* Badge trạng thái gia sư bị từ chối */
+.badgeRejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Banner cảnh báo trong modal đối chiếu khi gia sư bị từ chối */
+.warningBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.warningBanner strong {
+  display: block;
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.warningBanner p {
+  margin: 0;
+  color: #78350f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.warningIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}

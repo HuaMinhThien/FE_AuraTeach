@@ -21,7 +21,7 @@ export async function POST(request) {
             );
         }
 
-        const BACKEND_URL = process.env.BACKEND_API_URL || "http://127.0.0.1:8000/api";
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.aurateach.io.vn/api";
 
         // 1. Tìm ID của user dựa vào email từ Laravel
         const usersRes = await fetch(`${BACKEND_URL}/users?email=${encodeURIComponent(email)}`, {

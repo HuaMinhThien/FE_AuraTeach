@@ -1,10 +1,7 @@
 import apiClient from "./apiClient";
 
 export const notificationService = {
-  /**
-   * Lấy danh sách thông báo theo userId 
-   * @param {string|number} userId 
-   */
+  // Lấy danh sách thông báo theo userId
   async getNotifications(userId) {
     try {
       const response = await apiClient.get(`/notifications?user_id=${userId}`);
@@ -15,10 +12,7 @@ export const notificationService = {
     }
   },
 
-  /**
-   * Lấy số lượng thông báo chưa đọc của user
-   * @param {string|number} userId 
-   */
+  // Lấy số lượng thông báo chưa đọc
   async getUnreadCount(userId) {
     try {
       const notifications = await this.getNotifications(userId);
@@ -30,127 +24,84 @@ export const notificationService = {
     }
   },
 
-  /**
-   * TẠO THÔNG BÁO MỚI
-   */
-  async createNotification({ receiver_id, receiver_role, type, title, message, related_id, related_type }) {
+  // Tạo thông báo mới — backend nhận receiver_id/receiver_role và map sang user_id/role
+  async createNotification({ receiver_id, receiver_role, type, title, message }) {
     try {
-      const newNotification = {
+      const response = await apiClient.post('/notifications', {
         receiver_id,
         receiver_role,
-        type, 
-        title,
-        message,
-        related_id: related_id || null,
-        related_type: related_type || null,
-        is_read: false,
-      };
-
-      const response = await apiClient.post('/notifications', newNotification);
-      const saved = response.data || response;
-      console.log(`📬 [Notification] Created for ${receiver_role} (${receiver_id}):`, saved);
-      return { success: true, data: saved };
+        type:    type    || 'system',
+        title:   title   || 'Thông báo',
+        message: message || '',
+      });
+      return { success: true, data: response.data || response };
     } catch (error) {
       console.error('❌ Lỗi tạo thông báo:', error);
       return { success: false, message: error.message };
     }
   },
 
-  /**
-   * TẠO THÔNG BÁO KHI CÓ BOOKING MỚI
-   */
+  // Thông báo khi có booking mới
   async notifyNewBooking(bookingData, tutorUserId, studentName, courseTitle) {
-    const results = [];
-
-    const tutorNotif = await this.createNotification({
-      receiver_id: tutorUserId,
-      receiver_role: 'tutor',
-      type: 'booking',
-      title: '📩 Đăng ký khóa học mới',
-      message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}".`,
-      related_id: bookingData.booking_id,
-      related_type: 'booking',
-    });
-    results.push(tutorNotif);
-
-    const adminNotif = await this.createNotification({
-      receiver_id: 'u-admin-1',
-      receiver_role: 'admin',
-      type: 'booking',
-      title: '📊 Đăng ký khóa học mới',
-      message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}" với gia sư.`,
-      related_id: bookingData.booking_id,
-      related_type: 'booking',
-    });
-    results.push(adminNotif);
-
-    return results;
+    return Promise.all([
+      this.createNotification({
+        receiver_id:   tutorUserId,
+        receiver_role: 'tutor',
+        type:    'booking',
+        title:   '📩 Đăng ký khóa học mới',
+        message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}".`,
+      }),
+      this.createNotification({
+        receiver_id:   'u-admin-1',
+        receiver_role: 'admin',
+        type:    'booking',
+        title:   '📊 Đăng ký khóa học mới',
+        message: `Học viên ${studentName} đã đăng ký khóa học "${courseTitle}" với gia sư.`,
+      }),
+    ]);
   },
 
-  /**
-   * TẠO THÔNG BÁO KHI THANH TOÁN THÀNH CÔNG
-   */
+  // Thông báo khi thanh toán thành công
   async notifyPaymentSuccess(bookingData, tutorUserId, studentName, courseTitle, amount) {
-    const results = [];
-
-    const tutorNotif = await this.createNotification({
-      receiver_id: tutorUserId,
-      receiver_role: 'tutor',
-      type: 'payment',
-      title: '💰 Thanh toán thành công',
-      message: `Học viên ${studentName} đã thanh toán ${amount?.toLocaleString('vi-VN')}đ cho khóa học "${courseTitle}".`,
-      related_id: bookingData.booking_id,
-      related_type: 'payment',
-    });
-    results.push(tutorNotif);
-
-    const adminNotif = await this.createNotification({
-      receiver_id: 'u-admin-1',
-      receiver_role: 'admin',
-      type: 'payment',
-      title: '💰 Thanh toán mới',
-      message: `Học viên ${studentName} đã thanh toán ${amount?.toLocaleString('vi-VN')}đ cho khóa học "${courseTitle}".`,
-      related_id: bookingData.booking_id,
-      related_type: 'payment',
-    });
-    results.push(adminNotif);
-
-    return results;
+    const amountStr = amount?.toLocaleString('vi-VN') + 'đ';
+    return Promise.all([
+      this.createNotification({
+        receiver_id:   tutorUserId,
+        receiver_role: 'tutor',
+        type:    'payment',
+        title:   '💰 Thanh toán thành công',
+        message: `Học viên ${studentName} đã thanh toán ${amountStr} cho khóa học "${courseTitle}".`,
+      }),
+      this.createNotification({
+        receiver_id:   'u-admin-1',
+        receiver_role: 'admin',
+        type:    'payment',
+        title:   '💰 Thanh toán mới',
+        message: `Học viên ${studentName} đã thanh toán ${amountStr} cho khóa học "${courseTitle}".`,
+      }),
+    ]);
   },
 
-  /**
-   * Đánh dấu một thông báo là đã đọc
-   * @param {string|number} id 
-   */
-  async markAsRead(id) {
+  // Đánh dấu 1 thông báo là đã đọc — dùng notification_id
+  async markAsRead(notificationId) {
     try {
-      return await apiClient.patch(`/notifications/${id}`, { is_read: true });
+      return await apiClient.patch(`/notifications/${notificationId}`, { is_read: true });
     } catch (error) {
-      console.error(`❌ Lỗi đánh dấu đã đọc thông báo ${id}:`, error);
+      console.error(`❌ Lỗi đánh dấu đã đọc thông báo ${notificationId}:`, error);
       throw error;
     }
   },
 
-  /**
-   * Đánh dấu tất cả thông báo của user là đã đọc
-   * @param {string|number} userId 
-   */
+  // Đánh dấu tất cả thông báo của user là đã đọc — dùng endpoint bulk
   async markAllAsRead(userId) {
     try {
-      const notifications = await this.getNotifications(userId);
-      const unreadList = notifications.filter(n => !n.is_read);
-
-      await Promise.all(
-        unreadList.map(notif => this.markAsRead(notif.id))
-      );
-
-      console.log(`✅ Đã đánh dấu ${unreadList.length} thông báo là đã đọc`);
-      return { success: true, count: unreadList.length };
+      const response = await apiClient.patch('/notifications-mark-all', { user_id: userId });
+      return { success: true, count: response?.updated ?? 0 };
     } catch (error) {
       console.error('❌ Lỗi đánh dấu tất cả đã đọc:', error);
       return { success: false, count: 0 };
     }
-  }
+  },
 };
 
 export default notificationService;

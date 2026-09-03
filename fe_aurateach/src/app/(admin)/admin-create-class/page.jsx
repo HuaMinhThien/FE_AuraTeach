@@ -338,7 +338,7 @@ export default function AdminCreateClass() {
         
         start_time: formData.start_time,
         end_time: formData.end_time,
-        meet_link: formData.meet_link || `https://meet.google.com/room_${requestId}`,
+        meet_link: formData.meet_link || `https://meet.google.com/whj-tgog-mhe`,
         status: 'pending',
         tutor_id: null,                  
         target_tutors: selectedTutors    
@@ -562,13 +562,18 @@ export default function AdminCreateClass() {
 
               <div className={styles.formGroup}>
                 <label>Học phí mong muốn (đ / buổi) <span className={styles.required}>*</span></label>
+                {currentPriceConfig && (
+                  <p className={styles.hintText}>
+                    💡 Khung giá gợi ý: {currentPriceConfig.label}
+                  </p>
+                )}
                 <input
                   type="number"
-                  step="10000"
-                  min={currentPriceConfig?.min || 0}
-                  max={currentPriceConfig?.max || 999999999}
+                  step="any"
+                  min="0"
                   value={formData.price_per_session}
                   onChange={(e) => setFormData(prev => ({ ...prev, price_per_session: e.target.value }))}
+                  placeholder={currentPriceConfig ? `${currentPriceConfig.min.toLocaleString('vi-VN')} - ${currentPriceConfig.max.toLocaleString('vi-VN')}` : 'Nhập học phí'}
                   required
                 />
                 {priceError && (
@@ -586,7 +591,7 @@ export default function AdminCreateClass() {
                 </label>
                 <input
                   type="number"
-                  step="10000"
+                  step="any"
                   min="0"
                   value={formData.tutor_salary_per_session}
                   onChange={(e) => setFormData(prev => ({ ...prev, tutor_salary_per_session: e.target.value }))}
